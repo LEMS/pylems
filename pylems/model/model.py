@@ -6,6 +6,34 @@ Model storage
 @contact: gautham@textensor.com, gautham@lisphacker.org
 """
 
+class ComponentType:
+    pass
+
+class Dimension:
+    pass
+
+class Unit:
+    pass
+
+class Context:
+    """ Store the context """
+
+    parent_context = None
+    """ Parent context
+    @type: Context """
+
+    component_types = None
+    """ Component types defined in the local context
+    @type: dict(string -> pylems.model.model.ComponentType) """
+    
+    def __init__(self):
+        parent_context = None
+        component_types = None
+
+    def __init__(self, parent):
+        self.__init__()
+        self.parent_context = parent
+
 class Model:
     """
     Store the model read from a LEMS file.
