@@ -53,9 +53,7 @@ class LEMSParser(Parser):
         print 'component type'
 
     def parse_default_run(self, node):
-        print 'default run'
-        print node.attrib
-        print 'a'
+        self.model.set_default_run(node.attrib['component'])
     
     def parse_dimension(self, node):
         print 'dimension'
