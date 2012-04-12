@@ -7,7 +7,7 @@
 
 import sys
 from pylems.parser.lems import LEMSParser
-from pylems.base.errors import ParseError
+from pylems.base.errors import ParseError,ModelError
 
 model_file = sys.argv[1]
 
@@ -18,11 +18,11 @@ try:
     parser.parse_file(model_file)
 except ParseError as e:
     print e
-    #sys.exit(-1)
+except ModelError as e:
+    print e
 except Exception as e:
     print type(e)
     print e
-    sys.exit(-1)
     
 print '\n\nModel settings'
 print parser.get_model()

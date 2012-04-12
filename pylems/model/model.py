@@ -6,33 +6,7 @@ Model storage
 @contact: gautham@textensor.com, gautham@lisphacker.org
 """
 
-class ComponentType:
-    pass
-
-class Dimension:
-    pass
-
-class Unit:
-    pass
-
-class Context:
-    """ Store the context """
-
-    parent_context = None
-    """ Parent context
-    @type: Context """
-
-    component_types = None
-    """ Component types defined in the local context
-    @type: dict(string -> pylems.model.model.ComponentType) """
-    
-    def __init__(self):
-        parent_context = None
-        component_types = None
-
-    def __init__(self, parent):
-        self.__init__()
-        self.parent_context = parent
+from pylems.base.errors import ModelError
 
 class Model:
     """
@@ -43,15 +17,71 @@ class Model:
     """ Name of the default simulation to run.
     @type: string """
 
+    dimensions = None
+    """ Dictionary of references to dimensions defined in the model.
+    @type: dict(string -> pylems.base.units.Dimension) """
+
+    units = None
+    """ Dictionary of references to units defined in the model.
+    @type: dict(string -> pylems.base.units.Unit) """
+
     def set_default_run(self, default_run):
-        """ Set the name of the default simulation to run.
+        """
+        Set the name of the default simulation to run.
+        
         @param default_run: Name of a simulation to run by default
         @type default_run: string """
         self.default_run = default_run
+
+    def add_dimension(self, dimension):
+        """
+        Adds a dimension to the list of defined dimensions.
+
+        @param dimension: Dimension to be added to the model.
+        @type dimension: pylems.base.units.Dimension
+
+        @raise ModelError: Raised when the dimension is already defined.
+        """
+
+        if self.dimensions == None:
+            self.dimensions = dict()
+
+        if dimension.name in self.dimensions:
+            raise ModelError('Duplicate dimension - ' + dimension.name)
+        else:
+            self.dimensions[dimension.name] = dimension
+        
+    def add_unit(self, unit):
+        """
+        Adds a unit to the list of defined units.
+
+        @param unit: Unit to be added to the model.
+        @type unit: pylems.base.units.Unit
+
+        @raise ModelError: Raised when the unit is already defined.
+        """
+
+        if self.units == None:
+            self.units = dict()
+
+        if unit.symbol in self.units:
+            raise ModelError('Duplicate unit - ' + unit.symbol)
+        else:
+            self.units[unit.symbol] = unit
 
     def __str__(self):
         s = ''
 
         s += 'Default run: ' + self.default_run + '\n'
+        
+        s += 'Dimensions:' + '\n'
+        if self.dimensions != None:
+            for d in self.dimensions:
+                s += '  ' + d + '\n'
 
+        s += 'Units:' + '\n'
+        if self.units != None:
+            for u in self.units:
+                s += '  ' + u + '\n'
+            
         return s

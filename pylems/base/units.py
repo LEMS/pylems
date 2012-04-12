@@ -45,6 +45,33 @@ class Dimension:
     """ Quantity (default unit - mole)
     @type: int """
 
+    def __init__(self, name, *dims):
+        """
+        Constructor
+
+        @param name: Name of the new dimension.
+        @type name: string
+
+        @param dims: Dimensionality for the seven fundamental SI units in
+        the order - length, mass, time, electric current, temperature,
+        luninous intensity and quantity.
+        @type dims: list (variable number of arguments)
+        """
+        
+        self.name = name
+
+        if len(dims) != 7:
+            raise Error
+
+        self.l = dims[0]
+        self.m = dims[1]
+        self.t = dims[2]
+        self.i = dims[3]
+        self.k = dims[4]
+        self.c = dims[5]
+        self.n = dims[6]
+            
+
 class Unit:
     """
     Store definition of unit symbols (eg, mV, ug) in terms of
