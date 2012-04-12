@@ -1,0 +1,369 @@
+<Lems>
+   <Dimension>
+      <name>voltage</name>
+      <mass>1</mass>
+      <length>2</length>
+      <time>-3</time>
+      <current>-1</current>
+   </Dimension>
+
+   <Dimension>
+      <name>time</name>
+      <time>1</time>
+   </Dimension>
+
+   <Dimension>
+      <name>per_time</name>
+      <time>-1</time>
+   </Dimension>
+
+   <Dimension>
+      <name>conductance</name>
+      <mass>-1</mass>
+      <length>-2</length>
+      <time>3</time>
+      <current>2</current>
+   </Dimension>
+
+   <Dimension>
+      <name>capacitance</name>
+      <mass>-1</mass>
+      <length>-2</length>
+      <time>4</time>
+      <current>2</current>
+   </Dimension>
+
+   <Dimension>
+      <name>current</name>
+      <current>1</current>
+   </Dimension>
+
+   <Dimension>
+      <name>none</name>
+   </Dimension>
+
+   <ComponentType>
+      <name>iaf1</name>
+      <Parameter>
+         <name>threshold</name>
+         <dimension>voltage</dimension>
+      </Parameter>
+      <Parameter>
+         <name>refractoryPeriod</name>
+         <dimension>time</dimension>
+      </Parameter>
+      <Parameter>
+         <name>capacitance</name>
+         <dimension>capacitance</dimension>
+      </Parameter>
+   </ComponentType>
+
+   <ComponentType>
+      <name>iaf2</name>
+      <extends>iaf1</extends>
+   </ComponentType>
+
+   <ComponentType>
+      <name>iaf3</name>
+      <extends>iaf1</extends>
+      <Parameter>
+         <name>leakConductance</name>
+         <dimension>conductance</dimension>
+      </Parameter>
+      <Parameter>
+         <name>leakReversal</name>
+         <dimension>voltage</dimension>
+      </Parameter>
+      <Parameter>
+         <name>deltaV</name>
+         <dimension>voltage</dimension>
+      </Parameter>
+      <EventPort>
+         <name>spikes-in</name>
+         <direction>in</direction>
+      </EventPort>
+   </ComponentType>
+
+   <ComponentType>
+      <name>spikeGenerator</name>
+      <Parameter>
+         <name>period</name>
+         <dimension>time</dimension>
+      </Parameter>
+      <EventPort>
+         <name>a</name>
+         <direction>out</direction>
+      </EventPort>
+   </ComponentType>
+
+   <ComponentType>
+      <name>spikeGenerator2</name>
+      <extends>spikeGenerator</extends>
+      <EventPort>
+         <name>a</name>
+         <direction>out</direction>
+      </EventPort>
+   </ComponentType>
+
+   <ComponentType>
+      <name>HHRate</name>
+      <Parameter>
+         <name>rate</name>
+         <dimension>per_time</dimension>
+      </Parameter>
+      <Parameter>
+         <name>midpoint</name>
+         <dimension>voltage</dimension>
+      </Parameter>
+      <Parameter>
+         <name>scale</name>
+         <dimension>voltage</dimension>
+      </Parameter>
+   </ComponentType>
+
+   <ComponentType>
+      <name>HHExpRate</name>
+      <extends>HHRate</extends>
+   </ComponentType>
+
+   <ComponentType>
+      <name>HHSigmoidRate</name>
+      <extends>HHRate</extends>
+   </ComponentType>
+
+   <ComponentType>
+      <name>HHExpLinearRate</name>
+      <extends>HHRate</extends>
+   </ComponentType>
+
+   <ComponentType>
+      <name>HHGate0</name>
+      <Parameter>
+         <name>power</name>
+         <dimension>none</dimension>
+      </Parameter>
+      <Child>
+         <name>Forward</name>
+         <componentType>HHRate</componentType>
+      </Child>
+      <Child>
+         <name>Reverse</name>
+         <componentType>HHRate</componentType>
+      </Child>
+   </ComponentType>
+
+   <ComponentType>
+      <name>HHGate</name>
+      <Parameter>
+         <name>power</name>
+         <dimension>none</dimension>
+      </Parameter>
+      <Child>
+         <name>Forward</name>
+         <componentType>HHRate</componentType>
+      </Child>
+      <Child>
+         <name>Reverse</name>
+         <componentType>HHRate</componentType>
+      </Child>
+   </ComponentType>
+
+   <ComponentType>
+      <name>HHChannel</name>
+      <Parameter>
+         <name>conductance</name>
+         <dimension>conductance</dimension>
+      </Parameter>
+      <Children>
+         <name>gates</name>
+         <type>HHGate</type>
+      </Children>
+   </ComponentType>
+
+   <ComponentType>
+      <name>ChannelPopulation</name>
+      <Parameter>
+         <name>number</name>
+         <dimension>none</dimension>
+      </Parameter>
+      <Parameter>
+         <name>erev</name>
+         <dimension>voltage</dimension>
+      </Parameter>
+      <ComponentRef>
+         <name>channel</name>
+         <type>HHChannel</type>
+      </ComponentRef>
+   </ComponentType>
+
+   <ComponentType>
+      <name>HHCell</name>
+      <Parameter>
+         <name>capacitance</name>
+         <dimension>capacitance</dimension>
+      </Parameter>
+      <Parameter>
+         <name>injection</name>
+         <dimension>current</dimension>
+      </Parameter>
+      <Parameter>
+         <name>v0</name>
+         <dimension>voltage</dimension>
+      </Parameter>
+      <Children>
+         <name>populations</name>
+         <type>ChannelPopulation</type>
+      </Children>
+   </ComponentType>
+
+   <Component>
+      <id>celltype_a</id>
+      <type>iaf1</type>
+      <value parameter="threshold">-0.03</value>
+      <value parameter="refractoryPeriod">0.002</value>
+      <value parameter="capacitance">3.0E-6</value>
+   </Component>
+
+   <Component>
+      <id>ctb</id>
+      <type>iaf1</type>
+      <value parameter="threshold">-0.03</value>
+      <value parameter="refractoryPeriod">0.002</value>
+      <value parameter="capacitance">1.0E-6</value>
+   </Component>
+
+   <Component>
+      <id>na</id>
+      <type>HHChannel</type>
+      <value parameter="conductance">2.0E-11</value>
+      <Component>
+         <id>m</id>
+         <type>HHGate</type>
+         <value parameter="power">3.0</value>
+         <Component>
+            <id>null</id>
+            <type>HHExpLinearRate</type>
+            <value parameter="rate">1000.0</value>
+            <value parameter="midpoint">-0.04</value>
+            <value parameter="scale">0.01</value>
+         </Component>
+         <Component>
+            <id>null</id>
+            <type>HHExpRate</type>
+            <value parameter="rate">4000.0</value>
+            <value parameter="midpoint">-0.065</value>
+            <value parameter="scale">-0.018000000000000002</value>
+         </Component>
+      </Component>
+      <Component>
+         <id>h</id>
+         <type>HHGate</type>
+         <value parameter="power">1.0</value>
+         <Component>
+            <id>null</id>
+            <type>HHExpRate</type>
+            <value parameter="rate">70.0</value>
+            <value parameter="midpoint">-0.065</value>
+            <value parameter="scale">-0.02</value>
+         </Component>
+         <Component>
+            <id>null</id>
+            <type>HHSigmoidRate</type>
+            <value parameter="rate">1000.0</value>
+            <value parameter="midpoint">-0.035</value>
+            <value parameter="scale">0.01</value>
+         </Component>
+      </Component>
+   </Component>
+
+   <Component>
+      <id>k</id>
+      <type>HHChannel</type>
+      <value parameter="conductance">2.0E-11</value>
+      <Component>
+         <id>n</id>
+         <type>HHGate</type>
+         <value parameter="power">4.0</value>
+         <Component>
+            <id>null</id>
+            <type>HHExpLinearRate</type>
+            <value parameter="rate">100.0</value>
+            <value parameter="midpoint">-0.055</value>
+            <value parameter="scale">0.01</value>
+         </Component>
+         <Component>
+            <id>null</id>
+            <type>HHExpRate</type>
+            <value parameter="rate">125.0</value>
+            <value parameter="midpoint">-0.065</value>
+            <value parameter="scale">-0.08</value>
+         </Component>
+      </Component>
+   </Component>
+
+   <Component>
+      <id>hhcell_1</id>
+      <type>HHCell</type>
+      <value parameter="capacitance">1.0E-12</value>
+      <value parameter="injection">4.0E-12</value>
+      <value parameter="v0">-0.06</value>
+      <Component>
+         <id>null</id>
+         <type>ChannelPopulation</type>
+         <value parameter="number">6000.0</value>
+         <value parameter="erev">0.05</value>
+      </Component>
+      <Component>
+         <id>null</id>
+         <type>ChannelPopulation</type>
+         <value parameter="number">1800.0</value>
+         <value parameter="erev">-0.077</value>
+      </Component>
+   </Component>
+
+   <Component>
+      <id>celltype_c</id>
+      <type>iaf3</type>
+      <value parameter="leakConductance">3.0E-12</value>
+      <value parameter="leakReversal">-0.05</value>
+      <value parameter="deltaV">0.005</value>
+      <value parameter="threshold">0.045</value>
+      <value parameter="refractoryPeriod">0.003</value>
+      <value parameter="capacitance">1.0E-6</value>
+   </Component>
+
+   <Component>
+      <id>celltype_d</id>
+      <extends>celltype_c</extends>
+      <value parameter="leakConductance">5.0E-12</value>
+      <value parameter="leakReversal">-0.05</value>
+      <value parameter="deltaV">0.005</value>
+      <value parameter="threshold">0.045</value>
+      <value parameter="refractoryPeriod">0.003</value>
+      <value parameter="capacitance">1.0E-6</value>
+   </Component>
+
+   <Component>
+      <id>gen1</id>
+      <type>spikeGenerator</type>
+      <value parameter="period">0.03</value>
+   </Component>
+
+   <Component>
+      <id>gen2</id>
+      <type>spikeGenerator2</type>
+      <value parameter="period">0.032</value>
+   </Component>
+
+   <Component>
+      <id>iaf3cpt</id>
+      <type>iaf3</type>
+      <value parameter="leakConductance">5.0E-11</value>
+      <value parameter="leakReversal">-0.05</value>
+      <value parameter="deltaV">0.05</value>
+      <value parameter="threshold">-0.03</value>
+      <value parameter="refractoryPeriod">0.004</value>
+      <value parameter="capacitance">1.0E-12</value>
+   </Component>
+
+</Lems>

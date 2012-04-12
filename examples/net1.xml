@@ -1,0 +1,234 @@
+<Lems>
+
+	<DefaultRun component="sim1" />
+
+	<Dimension name="length" l="1" />
+	<Dimension name="time" t="1" />
+	<Unit symbol="ms" dimension="time" powTen="-3" />
+	<Unit symbol="um" dimension="length" powTen="-6" />
+
+
+	<ComponentType name="GridPoint">
+	</ComponentType>
+
+
+	<ComponentType name="GridPoint1D" extends="GridPoint">
+		<Property name="position" dimension="length" />
+	</ComponentType>
+
+
+	<ComponentType name="Grid">
+	</ComponentType>
+
+
+	<ComponentType name="PosGrid1D" extends="Grid">
+		<Parameter name="min" dimension="length" />
+		<Parameter name="max" dimension="length" />
+		<Parameter name="step" dimension="length" />
+		<DerivedParameter name="n" dimension="none"
+			value="(max - min) / step" />
+		<Text name="quantity" />
+
+		<Behavior>
+			<Build>
+				<MultiInstantiate componentType="GridPoint1D"
+					number="n">
+					<Assign property="position" value="min + step * index"
+						exposeAs="quantity" />
+				</MultiInstantiate>
+			</Build>
+		</Behavior>
+	</ComponentType>
+
+
+	<ComponentType name="GridPoint2D" extends="GridPoint">
+		<Property name="xpos" dimension="length" />
+		<Property name="ypos" dimension="length" />
+	</ComponentType>
+
+
+
+
+	<ComponentType name="Group">
+		<ComponentTypeRef name="of" />
+		<PathParameter name="select" />
+		<Collection name="elements" />
+		<Behavior>
+			<Build>
+				<Gather pathParameter="select" collection="elements" />
+			</Build>
+		</Behavior>
+	</ComponentType>
+
+
+
+
+	<ComponentType name="GridBasedNetwork">
+		<Children type="Grid" />
+		<Children type="Group" />
+		<Children type="Population" />
+		<Children type="FromToConnections" />
+	</ComponentType>
+
+
+        <ComponentType name="spikeGenerator">
+            <Parameter name="period" dimension="time"/>
+            <EventPort name="a" direction="out"/>
+            <Exposure name="tsince" dimension="time"/>
+            <Behavior>
+                <StateVariable name="tsince" exposure="tsince" dimension="time"/>
+                <TimeDerivative variable="tsince" value="1"/>
+                <OnCondition test="tsince .gt. period">
+                    <StateAssignment variable="tsince" value="0"/>
+                    <EventOut port="a"/>
+                </OnCondition>
+            </Behavior>
+        </ComponentType>
+
+	<ComponentType name="Cell">
+		<EventPort name="spikes-in" direction="in" />
+		<EventPort name="spikes-out" direction="out" />
+
+                <Exposure name="n" dimension="none" />
+
+		<Behavior>
+			<StateVariable name="n" exposure="n" dimension="none" />
+			<OnEvent port="spikes-in">
+				<StateAssignment variable="n" value="n + 1" />
+			</OnEvent>
+
+			<OnCondition test="n .eq. 100">
+				<EventOut port="spikes-out" />
+			</OnCondition>
+		</Behavior>
+
+	</ComponentType>
+
+
+
+	<ComponentType name="Population">
+		<ComponentRef name="component" type="Component" />
+
+	</ComponentType>
+
+
+	<ComponentType name="PointBasedPopulation" extends="Population">
+		<Link type="Group" name="points" />
+
+		<Behavior>
+			<Build>
+				<CoInstantiate at="points" component="component" />
+			</Build>
+		</Behavior>
+	</ComponentType>
+
+
+
+	<ComponentType name="PairSelector">
+		<PairCollection name="pairs" />
+	</ComponentType>
+
+
+	<ComponentType name="FromToConnections">
+		<Children name="selectors" type="PairSelector" />
+		<Link name="from" type="Population" />
+		<Link name="to" type="Population" />
+		<Behavior>
+			<Build>
+				<Apply components="selectors">
+					<PairsEventConnection pairs="pairs" />
+				</Apply>
+			</Build>
+		</Behavior>
+	</ComponentType>
+
+
+
+	<ComponentType name="BoxCarSelector" extends="PairSelector">
+		<Parameter name="range" dimension="length" />
+		<Text name="fromQuantity" />
+		<Text name="toQuantity" />
+
+		<Behavior>
+			<Build>
+				<GatherPairs collection="pairs" pFrom="../from" qFrom="../to">
+					<PairFilter select="x[abs(p:fromQuantity - q:toQuantity) .lt. range]" />
+				</GatherPairs>
+			</Build>
+		</Behavior>
+
+	</ComponentType>
+
+
+
+
+	<ComponentType name="RandomPairs" extends="PairSelector">
+		<Parameter name="probability" dimension="none" />
+		<Behavior>
+			<Build>
+				<ForEach instances="../from" as="src">
+					<ForEach instances="../to" as="tgt">
+						<If test="random() .lt. prob">
+							<IncludePair collection="pairs" />
+						</If>
+					</ForEach>
+				</ForEach>
+			</Build>
+		</Behavior>
+	</ComponentType>
+
+
+	<Cell id="excit_cell">
+	</Cell>
+
+
+	<spikeGenerator id="inhib_cell" period="10ms">
+	</spikeGenerator>
+
+
+	<Component type="GridBasedNetwork" id="net2">
+		<PosGrid1D id="line" min="0um" max="20um" step="2um"
+			quantity="distance" />
+
+		<Group of="GridPoint" id="ipoints" select="line[index % 5 .eq. 0]" />
+		<Group of="GridPoint" id="epoints" select="line .minus. ipoints" />
+
+		<PointBasedPopulation id="pe" component="excit_cell"
+			points="epoints" />
+		<PointBasedPopulation id="pi" component="inhib_cell"
+			points="ipoints" />
+
+		<Group of="Cell" id="all" select="pe .or. pi" />
+
+
+		<FromToConnections id="proj1" from="pi" to="pe">
+			<BoxCarSelector range="5um" fromQuantity="distance"
+				toQuantity="distance" />
+		</FromToConnections>
+
+	</Component>
+
+
+
+
+	<GridBasedNetwork id="net1">
+		<PosGrid1D id="line" min="0um" max="20um" step="2um" />
+	</GridBasedNetwork>
+
+
+	<Include file="SimpleSimulation.xml" />
+
+	<Simulation id="sim1" length="200ms" step="0.05ms" target="net2">
+		<Display id="d0" timeScale="1ms" title="Network example: excitatory cells">
+                        <Line id="ve0" quantity="pe[0]/n" scale="1" color="#0000f0" save="pe0.dat"/>
+                        <Line id="ve1" quantity="pe[1]/n" scale="1" color="#00f0f0" save="pe1.dat"/>
+                        <Line id="ve2" quantity="pe[2]/n" scale="1" color="#f0f0f0" save="pe2.dat"/>
+		</Display>
+		<Display id="d2" timeScale="1ms" title="Network example: inhibitory cells">
+                        <Line id="vi0" quantity="pi[0]/tsince" scale="1ms" color="#0000f0" save="pi0.dat"/>
+                        <Line id="vi1" quantity="pi[1]/tsince" scale="1ms" color="#00f0f0" save="pi1.dat"/>
+		</Display>
+	</Simulation>
+
+
+</Lems>

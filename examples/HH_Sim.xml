@@ -1,0 +1,51 @@
+<Lems>
+
+<DefaultRun component="sim1"/> 
+
+<!--  the base types for hh channels etc -->
+<Include file="HH_Environment.xml"/>
+<Include file="HH_Channel.xml"/>
+<Include file="HH_Cell.xml"/>
+<Include file="SimpleSimulation.xml"/>
+
+
+<!--  the standard HH na and k channels -->
+<Include file="HH_Models.xml"/>
+
+ 
+
+<Unit symbol="pF" dimension="capacitance" powTen="-12"/>
+<Unit symbol="pA" dimension="current" powTen="-12"/>
+<Unit symbol="mV" dimension="voltage" powTen="-3"/>
+<Unit symbol="ms" dimension="time" powTen="-3"/>
+
+
+
+
+
+
+<Environment id="env1">     
+   <MembranePotential species="Na" reversal="50mV" />     
+   <MembranePotential species="K" reversal="-80mV" />    
+</Environment>
+
+
+
+<HHCell id="hhcell_1" capacitance="1pF" injection="4pA" v0="-60mV">
+    <ChannelPopulation id="na_chans" channel="nachan" number="6000" erev="50mV"/>
+    <ChannelPopulation id="k_chans" channel="kchan" number="1800" erev="-77mV"/>
+</HHCell>
+
+
+<Simulation id="sim1" length="50ms" step="0.05ms" target="hhcell_1">
+    <Display timeScale="1ms">
+      <Line id="v" quantity="v" scale="1mV" color="#0000f0"/>
+      <Line id="l2" quantity="na_chans/nachan/m/q" scale="0.1" color="#ff00ff" />         
+      <Line id="l3" quantity="na_chans/nachan/h/q" scale="0.1" color="#ffffff" />         
+      <Line id="l4" quantity="k_chans/kchan/n/q" scale="0.1" color="#ffff00" />      
+        
+    </Display>
+</Simulation>
+
+
+</Lems>

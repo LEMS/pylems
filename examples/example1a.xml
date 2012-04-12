@@ -1,0 +1,257 @@
+<Lems>
+    <Dimension name="voltage" m="1" l="2" t="-3" i="-1" k="0" c="0"/>
+    <Dimension name="time" m="0" l="0" t="1" i="0" k="0" c="0"/>
+    <Dimension name="per_time" m="0" l="0" t="-1" i="0" k="0" c="0"/>
+    <Dimension name="conductance" m="-1" l="-2" t="3" i="2" k="0" c="0"/>
+    <Dimension name="capacitance" m="-1" l="-2" t="4" i="2" k="0" c="0"/>
+    <Dimension name="current" m="0" l="0" t="0" i="1" k="0" c="0"/>
+    <Dimension name="none" m="0" l="0" t="0" i="0" k="0" c="0"/>
+    <Unit symbol="mV" dimension="voltage" powTen="-3" scale="1.0" offset="0.0"/>
+    <Unit symbol="ms" dimension="time" powTen="-3" scale="1.0" offset="0.0"/>
+    <Unit symbol="pS" dimension="conductance" powTen="-12" scale="1.0" offset="0.0"/>
+    <Unit symbol="nS" dimension="conductance" powTen="-9" scale="1.0" offset="0.0"/>
+    <Unit symbol="uF" dimension="capacitance" powTen="-6" scale="1.0" offset="0.0"/>
+    <Unit symbol="nF" dimension="capacitance" powTen="-9" scale="1.0" offset="0.0"/>
+    <Unit symbol="pF" dimension="capacitance" powTen="-12" scale="1.0" offset="0.0"/>
+    <Unit symbol="per_ms" dimension="per_time" powTen="3" scale="1.0" offset="0.0"/>
+    <Unit symbol="pA" dimension="current" powTen="-12" scale="1.0" offset="0.0"/>
+    <Unit symbol="none" dimension="none" powTen="0" scale="1.0" offset="0.0"/>
+    <ComponentType name="iaf1">
+        <Parameter name="threshold" dimension="voltage"/>
+        <Parameter name="refractoryPeriod" dimension="time"/>
+        <Parameter name="capacitance" dimension="capacitance"/>
+    </ComponentType>
+    <ComponentType name="iaf2" extends="iaf1">
+        <Fixed parameter="threshold" value="-45mV"/>
+    </ComponentType>
+    <ComponentType name="iaf3" extends="iaf1">
+        <Parameter name="leakConductance" dimension="conductance"/>
+        <Parameter name="leakReversal" dimension="voltage"/>
+        <Parameter name="deltaV" dimension="voltage"/>
+        <Exposure name="v" dimension="voltage"/>
+        <Behavior consolidate="false">
+            <StateVariable name="v" dimension="voltage" exposure="v"/>
+            <TimeDerivative variable="v" value="leakConductance * (leakReversal - v) / capacitance"/>
+            <OnEvent port="spikes-in">
+                <StateAssignment variable="v" value="v + deltaV"/>
+            </OnEvent>
+        </Behavior>
+        <EventPort name="spikes-in" direction="in"/>
+    </ComponentType>
+    <ComponentType name="spikeGenerator">
+        <Parameter name="period" dimension="time"/>
+        <Exposure name="tsince" dimension="time"/>
+        <Behavior consolidate="false">
+            <StateVariable name="tsince" dimension="time" exposure="tsince"/>
+            <TimeDerivative variable="tsince" value="1"/>
+            <OnCondition test="tsince .gt. period">
+                <StateAssignment variable="tsince" value="0"/>
+                <EventOut port="a"/>
+            </OnCondition>
+        </Behavior>
+        <EventPort name="a" direction="out"/>
+    </ComponentType>
+    <ComponentType name="spikeGenerator2" extends="spikeGenerator">
+        <Behavior consolidate="false">
+            <DerivedVariable name="tsince" value="t - tlast" exposure="tsince"/>
+            <StateVariable name="tlast" dimension="time"/>
+            <OnCondition test="t - tlast .gt. period">
+                <StateAssignment variable="tlast" value="t"/>
+                <EventOut port="a"/>
+            </OnCondition>
+        </Behavior>
+    </ComponentType>
+    <ComponentType name="HHRate">
+        <Parameter name="rate" dimension="per_time"/>
+        <Parameter name="midpoint" dimension="voltage"/>
+        <Parameter name="scale" dimension="voltage"/>
+        <Requirement name="v" dimension="voltage"/>
+        <Exposure name="r" dimension="per_time"/>
+    </ComponentType>
+    <ComponentType name="HHExpRate" extends="HHRate">
+        <Behavior consolidate="false">
+            <DerivedVariable name="r" value="rate * exp((v - midpoint)/scale)" exposure="r"/>
+        </Behavior>
+    </ComponentType>
+    <ComponentType name="HHSigmoidRate" extends="HHRate">
+        <Behavior consolidate="false">
+            <DerivedVariable name="r" value="rate / (1 + exp( -(v - midpoint)/scale))" exposure="r"/>
+        </Behavior>
+    </ComponentType>
+    <ComponentType name="HHExpLinearRate" extends="HHRate">
+        <Behavior consolidate="false">
+            <DerivedVariable name="x" value="(v - midpoint) / scale"/>
+            <DerivedVariable name="r" value="rate * x / (1 - exp(-x))" exposure="r"/>
+        </Behavior>
+    </ComponentType>
+    <ComponentType name="HHGate0">
+        <Parameter name="power" dimension="none"/>
+        <Requirement name="v" dimension="voltage"/>
+        <Exposure name="fcond" dimension="none"/>
+        <Child name="Forward" type="HHRate"/>
+        <Child name="Reverse" type="HHRate"/>
+        <Behavior consolidate="false">
+            <DerivedVariable name="rf" select="Forward/r" dimension="per_time"/>
+            <DerivedVariable name="rr" select="Reverse/r" dimension="per_time"/>
+            <DerivedVariable name="fcond" value="q^power" exposure="fcond"/>
+            <StateVariable name="q" dimension="none"/>
+            <TimeDerivative variable="q" value="rf * (1 - q) - rr * q"/>
+        </Behavior>
+    </ComponentType>
+    <ComponentType name="HHGate">
+        <Parameter name="power" dimension="none"/>
+        <Requirement name="v" dimension="voltage"/>
+        <Exposure name="fcond" dimension="none"/>
+        <Child name="Forward" type="HHRate"/>
+        <Child name="Reverse" type="HHRate"/>
+        <Behavior consolidate="false">
+            <DerivedVariable name="ex" value="exp(x)" dimension="none"/>
+            <DerivedVariable name="q" value="ex / (1 + ex)" dimension="none"/>
+            <DerivedVariable name="rf" select="Forward/r" dimension="per_time"/>
+            <DerivedVariable name="rr" select="Reverse/r" dimension="per_time"/>
+            <DerivedVariable name="fcond" value="q^power" exposure="fcond"/>
+            <StateVariable name="x" dimension="none"/>
+            <TimeDerivative variable="x" value="(1 + ex)^2 / ex * (rf * (1 - q) - rr * q)"/>
+        </Behavior>
+    </ComponentType>
+    <ComponentType name="HHChannel">
+        <Parameter name="conductance" dimension="conductance"/>
+        <Exposure name="g" dimension="conductance"/>
+        <Children name="gates" type="HHGate"/>
+        <Behavior consolidate="false">
+            <DerivedVariable name="gatefeff" select="gates[*]/fcond" dimension="none" reduce="multiply"/>
+            <DerivedVariable name="g" value="conductance * gatefeff" dimension="conductance" exposure="g"/>
+        </Behavior>
+    </ComponentType>
+    <ComponentType name="ChannelPopulation">
+        <Parameter name="number" dimension="none"/>
+        <Parameter name="erev" dimension="voltage"/>
+        <Requirement name="v" dimension="voltage"/>
+        <Exposure name="current" dimension="current"/>
+        <ComponentRef name="channel" type="HHChannel" isAny="false"/>
+        <Behavior consolidate="false">
+            <DerivedVariable name="channelg" select="channel/g" dimension="conductance"/>
+            <DerivedVariable name="geff" value="channelg * number"/>
+            <DerivedVariable name="current" value="geff * (erev - v)" exposure="current"/>
+            <Build>
+                <ChildInstance component="channel"/>
+            </Build>
+        </Behavior>
+    </ComponentType>
+    <ComponentType name="HHCell">
+        <Parameter name="capacitance" dimension="capacitance"/>
+        <Parameter name="injection" dimension="current"/>
+        <Parameter name="v0" dimension="voltage"/>
+        <Exposure name="v" dimension="voltage"/>
+        <Children name="populations" type="ChannelPopulation"/>
+        <Behavior consolidate="true">
+            <DerivedVariable name="totcurrent" select="populations[*]/current" dimension="current" reduce="add"/>
+            <StateVariable name="v" dimension="voltage" exposure="v"/>
+            <TimeDerivative variable="v" value="(totcurrent + injection) / capacitance"/>
+            <OnStart>
+                <StateAssignment variable="v" value="v0"/>
+            </OnStart>
+        </Behavior>
+    </ComponentType>
+    <ComponentType name="Network">
+        <Children name="populations" type="Population"/>
+        <Children name="connectivities" type="EventConnectivity"/>
+    </ComponentType>
+    <ComponentType name="Population">
+        <Parameter name="size" dimension="none"/>
+        <ComponentRef name="component" type="Component" isAny="true"/>
+        <Behavior consolidate="false">
+            <Build>
+                <MultiInstantiate number="size" indexVariable="index" component="component"/>
+            </Build>
+        </Behavior>
+    </ComponentType>
+    <ComponentType name="EventConnectivity">
+        <Child name="Connections" type="ConnectionPattern"/>
+        <Link name="source" type="Population" isAny="false"/>
+        <Link name="target" type="Population" isAny="false"/>
+    </ComponentType>
+    <ComponentType name="ConnectionPattern"/>
+    <ComponentType name="AllAll" extends="ConnectionPattern">
+        <Behavior consolidate="false">
+            <Build>
+                <ForEach instances="../source" as="a">
+                    <ForEach instances="../target" as="b">
+                        <EventConnection from="a" to="b"/>
+                    </ForEach>
+                </ForEach>
+            </Build>
+        </Behavior>
+    </ComponentType>
+    <ComponentType name="Display">
+        <Parameter name="timeScale" dimension="time"/>
+        <Children name="lines" type="Line"/>
+        <Behavior consolidate="false">
+            <Show scale="timeScale" src="lines"/>
+        </Behavior>
+        <Text name="title"/>
+    </ComponentType>
+    <ComponentType name="Line">
+        <Parameter name="scale" dimension="*"/>
+        <Behavior consolidate="false">
+            <Record quantity="quantity" scale="scale" color="color" save="save"/>
+        </Behavior>
+        <Path name="quantity"/>
+        <Text name="color"/>
+    </ComponentType>
+    <ComponentType name="Simulation">
+        <Parameter name="length" dimension="time"/>
+        <Parameter name="step" dimension="time"/>
+        <Children name="displays" type="Display"/>
+        <ComponentRef name="target" type="Component" isAny="true"/>
+        <Behavior consolidate="false">
+            <StateVariable name="t" dimension="time"/>
+            <Show src="displays"/>
+            <Run component="target" variable="t" increment="step" total="length"/>
+        </Behavior>
+    </ComponentType>
+    <iaf1 id="celltype_a" threshold="-30 mV" refractoryPeriod="2 ms" capacitance="3uF"/>
+    <iaf1 id="ctb" threshold="-30 mV" refractoryPeriod="2 ms" capacitance="1uF"/>
+    <HHChannel id="na" conductance="20pS">
+        <HHGate id="m" power="3">
+            <Reverse type="HHExpRate" rate="4per_ms" midpoint="-65mV" scale="-18mV"/>
+            <Forward type="HHExpLinearRate" rate="1.per_ms" midpoint="-40mV" scale="10mV"/>
+        </HHGate>
+        <HHGate id="h" power="1">
+            <Reverse type="HHSigmoidRate" rate="1per_ms" midpoint="-35mV" scale="10mV"/>
+            <Forward type="HHExpRate" rate="0.07per_ms" midpoint="-65.mV" scale="-20.mV"/>
+        </HHGate>
+    </HHChannel>
+    <HHChannel id="k" conductance="20pS">
+        <HHGate id="n" power="4">
+            <Reverse type="HHExpRate" rate="0.125per_ms" midpoint="-65mV" scale="-80mV"/>
+            <Forward type="HHExpLinearRate" rate="0.1per_ms" midpoint="-55mV" scale="10mV"/>
+        </HHGate>
+    </HHChannel>
+    <HHCell id="hhcell_1" capacitance="1pF" injection="4pA" v0="-60mV">
+        <ChannelPopulation channel="na" number="6000" erev="50mV"/>
+        <ChannelPopulation channel="k" number="1800" erev="-77mV"/>
+    </HHCell>
+    <iaf3 id="celltype_c" leakConductance="3 pS" refractoryPeriod="3 ms" threshold="45 mV" leakReversal="-50 mV" deltaV="5mV" capacitance="1uF"/>
+    <iaf3 extends="celltype_c" id="celltype_d" leakConductance="5 pS"/>
+    <spikeGenerator id="gen1" period="30ms"/>
+    <spikeGenerator2 id="gen2" period="32ms"/>
+    <iaf3 id="iaf3cpt" leakReversal="-50mV" deltaV="50mV" threshold="-30mV" leakConductance="50pS" refractoryPeriod="4ms" capacitance="1pF"/>
+    <Network id="net1">
+        <Population id="p1" component="gen1" size="1"/>
+        <Population id="p2" component="gen2" size="1"/>
+        <Population id="p3" component="iaf3cpt" size="1"/>
+        <Population id="hhpop" component="hhcell_1" size="1"/>
+        <EventConnectivity id="p1-p3" source="p1" target="p3">
+            <Connections type="AllAll"/>
+        </EventConnectivity>
+    </Network>
+    <Simulation id="sim1" target="net1" length="80ms" step="0.05ms">
+        <Display id="d0" timeScale="1ms" title="Example 1: Dimensions, Units, ComponentTypes and Components">
+            <Line id="tsince" quantity="p1[0]/tsince" scale="1ms" color="#00c000"/>
+            <Line id="p3v" quantity="p3[0]/v" scale="1mV" color="#0000f0"/>
+            <Line id="p0v" quantity="hhpop[0]/v" scale="1mV" color="#ff4040"/>
+        </Display>
+    </Simulation>
+    <DefaultRun component="sim1"/>
+</Lems>

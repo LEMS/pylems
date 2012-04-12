@@ -1,0 +1,204 @@
+<lems>
+        
+        <!-- NOTE: Example added at Antwerp Oct10 NineML meeting. May not work yet!! -->
+
+
+	<ComponentType name="delay">
+		<Parameter name="delay" dimension="time"/>
+		<EventPort name="in" direction="in"/>
+		<EventPort name="out" direction="out"/>
+		<Behavior>
+			<StateVariable name="td" dimension="time"/>
+			<OnEvent port="in">
+				<StateAssignment variable="td" value="t"/>
+			</OnEvent>
+			<OnCondition test="t .gt. td + delay">
+				<SendEvent port="out"/>
+			</OnCondition>
+		</Behavior>
+	
+	</ComponentType>
+
+
+	<ComponentType name="STDPSynapse">
+    	 <EventPort name="pre_cell" direction="in"/>
+		<EventPort name="post_cell" direction="in"/>
+		
+		<Paramater name="predelay" dimension="time"/>
+		<Parameter name="postdelay" dimension="time"/>
+	
+		<Behavior>
+			<DerivedVariable name="weight"/>
+		</Behavior>
+	</ComponentType>
+
+
+	<ComponentType name="GuetigSTDP" extends="STDPSynapse">
+		 
+		
+		<Behavior>
+			<StateVariable name="t_last_pre_cell"/>
+			<StateVariable name="t_last_post_cell"/>
+			
+			<OnEvent port="pre">
+				<StateAssignment variable="t_latest_pre_cell" value="t"/>
+			</OnEvent>
+			
+			
+			<OnCondition test="t > t_latest_pre_cell + pre_delay">
+				
+			</OnCondition>
+			
+			<OnEvent port="post">
+			
+			
+				<StateAssignment variable="t_last_post_cell" value="t"/>
+			</OnEvent>
+			
+			
+		</Behavior>
+		
+	</ComponentType>
+
+
+
+
+        <ComponentType name="GuetigSTDP" extends="STDPSynapse">
+		 <Parameter name="A_minus" dimension="none"/>
+		  <Parameter name="A_plus" dimension="none"/>
+		 <Parameter name="W_max" dimension="none"/>
+		 <Parameter name="mu" dimension="none"/>
+		 <Parameter name="tau_minus" dimension="time"/>
+		 <Parameter name="tau_plus" dimension="time"/>
+		
+		<Behavior>
+			<StateVariable name="t_last_pre"/>
+			<StateVariable name="t_last_post"/>
+			
+			<StateVariable name="weight" dimension="none"/> 
+			
+			<OnEvent port="pre">
+				<DerivedVariable name="dtf" value="(t - t_last_post) / tau_minus"/>
+				<DerivedVariable name="dw" value="W_max * A_minus * pow(W / W_max, mu) * exp(dtf)"/>
+			
+				<StateAssignment variable="weight" value="weight - dw"/>
+				<Test condition="w .lt. 0">
+					<StateAssignment variable="weight" value="0"/>
+				</Test>
+				
+				<StateAssignment variable="t_last_pre" value="t"/>
+			</OnEvent>
+			
+			 
+			<OnEvent port="post">
+			    <DerivedVariable name="dtf" value="(t - t_last_pre) / tau_plus"/>
+				<DerivedVariable name="dw" value="W_max * A_plus * pow(1 - W / W_max, mu) * exp(dtf)"/>
+			
+				<StateAssignment variable="weight" value="weight + dw"/>
+					<Test condition="w .gt. w_max">
+					<StateAssignment variable="weight" value="w_max"/>
+				</Test>
+							 
+				<StateAssignment variable="t_last_post" value="t"/>
+			</OnEvent>
+			
+		</Behavior>
+	</ComponentType>
+
+
+
+        <ComponentType name="GuetigSTDPAllAll" extends="STDPSynapse">
+		 <Parameter name="A_minus" dimension="none"/>
+		  <Parameter name="A_plus" dimension="none"/>
+		 <Parameter name="W_max" dimension="none"/>
+		 <Parameter name="mu" dimension="none"/>
+		 <Parameter name="tau_minus" dimension="time"/>
+		 <Parameter name="tau_plus" dimension="time"/>
+		
+		<Behavior>
+			<Array name="pre_spike_times"/>
+			<Array name="post_spike_times"/>
+			
+			<StateVariable name="weight" dimension="none"/> 
+			
+		 
+			
+			<OnEvent port="pre">
+			    <StateAssignment variable="w_a" select="w"/>
+			
+				<StateAssignment variable="dw_total" value="0"/>
+				<ForEach select="post_spike_times" as="t_post">
+					<DerivedVariable name="dtf" value="(t - t_post) / tau_minus"/>
+					<DerivedVariable name="dw" value="W_max * A_minus * pow(w_a / W_max, mu) * exp(dtf)"/>	
+					
+					<StateAssignment variable="dw_total" value="dw_total + dw"/>
+				</ForEach>
+
+				<StateAssignment variable="w" value="w - dw_total"/> 
+			     <Test condition="w .lt. 0">
+					<StateAssignment variable="weight" value="0"/>					
+				 </Test>
+					
+				<Push array="pre_spike_times" value="t"/>
+			</OnEvent>
+			
+			
+			 
+			<OnEvent port="post">
+				<ForEach select="pre_spike_times" as="t_pret">
+			
+      			    <DerivedVariable name="dtf" value="(t - t_pre) / tau_plus"/>
+		    		<DerivedVariable name="dw" value="W_max * A_plus * pow(1 - W / W_max, mu) * exp(dtf)"/>
+			
+			    	<StateAssignment variable="weight" value="weight + dw"/>	
+				    <Test condition="w .gt. w_max">
+					    <StateAssignment variable="weight" value="w_max"/>
+				    </Test>
+				
+				</ForEach>
+						 
+				 <Push array="post_spike_times" value="t"/>
+			</OnEvent>
+			
+		</Behavior>
+		
+		
+		
+	</ComponentType>
+
+	<Behavior>
+			<OnEvent port="pre">
+			 <StateAssignment variable="weight" value="weight - sum(dw)"/>	
+			 	<Where>
+		    		<DerivedArayVariable name="dw" value="W_max * A_minus * pow(W / W_max, mu) * exp(dtf)">
+		    			<Where>
+		      			    <DerivedArrayVariable name="dtf" value="(t - t_post_times) / tau_minus"/>    			
+		    			</Where>
+		    		</DerivedArayVariable>
+			 	</Where>
+				    <Test condition="w .lt. 0">
+					    <StateAssignment variable="w" value="0"/>
+				    </Test>
+			 
+				 <Push array="post_spike_times" value="t"/>
+			</OnEvent>
+
+
+			<OnEvent port="post">
+			 
+      			    <DerivedArrayVariable name="dtf" value="(t - t_pre_times) / tau_plus"/>
+		    		<DerivedArayVariable name="dw" value="W_max * A_plus * pow(1 - W / W_max, mu) * exp(dtf)"/>
+			
+			    	<StateAssignment variable="weight" value="weight + sum(dw)"/>	
+				    <Test condition="w .gt. w_max">
+					    <StateAssignment variable="weight" value="w_max"/>
+				    </Test>
+			 
+				 <Push array="post_spike_times" value="t"/>
+			</OnEvent>
+	</Behavior>
+
+
+
+
+</lems>

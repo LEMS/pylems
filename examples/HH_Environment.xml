@@ -1,0 +1,19 @@
+<Lems>
+
+<ComponentType name="Species">
+    <Text name="name"/>
+    <Parameter name="charge" dimension="none"/>
+</ComponentType>
+
+
+<ComponentType name="Environment">
+    <Children name="membranePotentials" type="MembranePotential"/>
+</ComponentType>
+
+
+<ComponentType name="MembranePotential">
+    <ComponentRef name="species" type="Species"/>
+    <Parameter name="reversal" dimension="voltage"/>
+</ComponentType>
+
+</Lems>
