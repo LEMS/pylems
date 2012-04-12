@@ -63,6 +63,7 @@ class LEMSParser(Parser):
         self.tag_parse_table['defaultrun'] = self.parse_default_run
         self.tag_parse_table['dimension'] = self.parse_dimension
         self.tag_parse_table['unit'] = self.parse_unit
+        self.tag_parse_table['parameter'] = self.parse_parameter
 
     def get_model(self):
         """
@@ -75,6 +76,13 @@ class LEMSParser(Parser):
         return self.model
 
     def parse_component_type(self, node):
+        """
+        Parse <ComponentType>
+
+        @param node: Node containing the <ComponentType> element
+        @type node: xml.etree.Element
+        """
+        
         print 'component type'
 
     def parse_default_run(self, node):
@@ -109,6 +117,16 @@ class LEMSParser(Parser):
         self.model.add_dimension(Dimension(name, dim[0], dim[1], dim[2],
                                            dim[3], dim[4], dim[4], dim[6]))
             
+    def parse_parameter(self, node):
+        """
+        Parse <Parameter>
+
+        @param node: Node containing the <Parameter> element
+        @type node: xml.etree.Element
+        """
+        
+        print 'parameter'
+
     def parse_unit(self, node):
         """
         Parse <Unit>
