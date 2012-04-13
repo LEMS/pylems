@@ -8,7 +8,7 @@ LEMS parser
 
 from xml.etree import ElementTree as xml
 
-from pylems.base.units import Dimension,Unit
+from pylems.model.simple import Dimension,Unit
 from pylems.base.parser import Parser
 from pylems.model.model import Model
 from pylems.base.errors import ParseError
@@ -43,6 +43,8 @@ class LEMSParser(Parser):
 
     valid_children = None
     """ Dictionary mapping each tag to it's list of valid child tags """
+
+    context_stack = None
 
     def init_parser(self):
         """
@@ -83,6 +85,17 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
         
+        try:
+            name = node.attrib['name']
+        except:
+            raise ParseError('Component type must have a name')
+
+        for child in node:
+            if child.tag in self.valid_children['componenttype']:
+                self.tag_parse_table[child.tag](child)
+            else:
+                # TODO: Check symbol table
+                raise ParseError('Unexpected tag - <' + child.tag + '>')
         print 'component type'
 
     def parse_default_run(self, node):
