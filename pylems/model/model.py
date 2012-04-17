@@ -99,10 +99,10 @@ class Model(Contextual):
                         s += ' extends ' + t.extends
                     s += '\n'
 
-                    if t.parameters:
-                        for pn in t.parameters:
-                            p = t.parameters[pn]
-                            s += '    ' + p.name + ': ' + p.dimension + '\n'
+                    if t.parameter_types:
+                        for pn in t.parameter_types:
+                            p = t.parameter_types[pn]
+                            s += '    ' + p.name + ': ' + p.dimension.name + '\n'
 
             
         return s

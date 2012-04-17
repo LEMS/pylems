@@ -11,10 +11,10 @@ from xml.etree import ElementTree as xml
 from pylems.model.simple import Dimension,Unit
 from pylems.base.parser import Parser
 from pylems.model.model import Model
-from pylems.base.errors import ParseError
+from pylems.base.errors import ParseError,ModelError
 from pylems.model.context import Context,Contextual
 from pylems.model.component import Component,ComponentType
-from pylems.model.parameter import Parameter
+from pylems.model.parameter import Parameter,ParameterType
 
 def xmltolower(node):
     """ Converts the tag and attribute names in the given XML node and
@@ -26,11 +26,12 @@ def xmltolower(node):
     node.tag = node.tag.lower()
     lattrib = dict()
     for key in node.attrib:
+        lattrib[key] = node.attrib[key]
         lattrib[key.lower()] = node.attrib[key]
     node.attrib = lattrib
     for child in node:
         xmltolower(child)
-    
+
 class LEMSParser(Parser):
     """
     Parser for LEMS files
@@ -56,13 +57,13 @@ class LEMSParser(Parser):
     """ Currently active (being parsed) context.
     @type: pylems.model.context.Context """
 
-    parametric_stack = []
-    """ Stack of parametric objects used for handling nested component types.
-    @type: list(pylems.model.parameter.Parametric) """
+    component_type_stack = []
+    """ Stack of component type objects used for handling nested component types.
+    @type: list(pylems.model.parameter.ComponentType) """
 
-    current_parametric = None
-    """ Parametric object being parsed.
-    @type: pylems.model.parameter.Parametric """
+    current_component_type = None
+    """ Component type object being parsed.
+    @type: pylems.model.parameter.ComponentType """
 
     def push_context(self, context):
         self.context_stack = [context] + self.context_stack
@@ -77,18 +78,18 @@ class LEMSParser(Parser):
         else:
             self.current_context = self.context_stack[0]
  
-    def push_parametric(self, parametric):
-        self.parametric_stack = [parametric] + self.parametric_stack
-        self.current_parametric = parametric
+    def push_component_type(self, component_type):
+        self.component_type_stack = [component_type] + self.component_type_stack
+        self.current_component_type = component_type
 
-    def pop_parametric(self):
-        if len(self.parametric_stack) == 0:
-            raise ParseError('Parametric stack underflow')
-        self.parametric_stack = self.parametric_stack[1:]
-        if len(self.parametric_stack) == 0:
-            self.current_parametric = None
+    def pop_component_type(self):
+        if len(self.component_type_stack) == 0:
+            raise ParseError('Component_Type stack underflow')
+        self.component_type_stack = self.component_type_stack[1:]
+        if len(self.component_type_stack) == 0:
+            self.current_component_type = None
         else:
-            self.current_parametric = self.parametric_stack[0]
+            self.current_component_type = self.component_type_stack[0]
 
     def init_parser(self):
         """
@@ -102,7 +103,7 @@ class LEMSParser(Parser):
         self.valid_children = dict()
         self.valid_children['lems'] = ['component', 'componenttype', 'defaultrun',
                                        'dimension', 'unit']
-        self.valid_children['componenttype'] = ['parameter']
+        self.valid_children['componenttype'] = ['fixed', 'parameter']
         
         self.tag_parse_table = dict()
         self.tag_parse_table['component'] = self.parse_component
@@ -111,6 +112,45 @@ class LEMSParser(Parser):
         self.tag_parse_table['dimension'] = self.parse_dimension
         self.tag_parse_table['unit'] = self.parse_unit
         self.tag_parse_table['parameter'] = self.parse_parameter
+
+    def process_nested_tags(self, node):
+        """
+        Process child tags.
+
+        @param node: Current node being parsed.
+        @type node: xml.etree.Element
+
+        @raise ParseError: Raised when an unexpected nested tag is found.
+        """
+        for child in node:
+            if child.tag in self.valid_children[node.tag]:
+                self.tag_parse_table[child.tag](child)
+            elif child.tag in self.current_context.component_types:
+                self.parse_component_by_typename(child, child.tag)
+            else:
+                raise ParseError('Unexpected tag - <' + child.tag + '>')
+
+    def resolve_typename(self, typename):
+        """ 
+        Resolve type name from the contex stack.
+
+        @param typename: Name of the type to be resolved.
+        @type typename: string
+
+        @return: Component type corresponding to the type name or None if undefined.
+        @rtype: pylems.model.component.ComponentType
+        """
+
+        stack = self.context_stack
+        found = False
+        while stack != [] and (not found):
+            if typename in stack[0].component_types:
+                found = True
+                
+        if found:
+            return stack[0].component_types[typename]
+        else:
+            return None
 
     def get_model(self):
         """
@@ -122,9 +162,60 @@ class LEMSParser(Parser):
         
         return self.model
 
+    def parse_component_by_typename(self, node, typename):
+        """
+        Parses components defined directly by component name.
+
+        @param node: Node containing the <Component> element
+        @type node: xml.etree.Element
+
+        @param typename: Name of the component type.
+        @type typename: string
+
+        @raise ParseError: Raised when the component does not have an id.
+        @raise ModelError: Raised when the component has an undefined type.
+        """
+
+        try:
+            id = node.attrib['id']
+        except:
+            raise ParseError('Component must have an id')
+
+        component_type = self.resolve_typename(typename)
+        if component_type == None:
+            raise ModelError('Undefined component type')
+
+        component = Component(id, component_type)
+        
+        for param in node.attrib:
+            if param != 'id' and param != 'type':
+                if param in component.parameters:
+                    component.parameters[param].set_value_text(node.attrib[param], self.model)
+
+        for param in component.parameters:
+            if component.parameters[param].value == None:
+                raise ModelError('Parameter ' + param + ' not initialized in component ' + id)
+
+    def parse_component(self, node):
+        """
+        Parses <Component>
+
+        @param node: Node containing the <ComponentType> element
+        @type node: xml.etree.Element
+
+        @raise ParseError: Raised when the component does not have a type.
+        """
+        
+        try:
+            type = node.attrib['type']
+        except:
+            raise ParseError('Component must have a type')
+
+        self.parse_component_by_typename(node, type)
+
     def parse_component_type(self, node):
         """
-        Parse <ComponentType>
+        Parses <ComponentType>
 
         @param node: Node containing the <ComponentType> element
         @type node: xml.etree.Element
@@ -132,7 +223,6 @@ class LEMSParser(Parser):
         @raise ParseError: Raised when the component type does not have a name.
         @raise ParseError: Raised when the component type extends an udefined
         component type.
-        @raise ParseError: Raised when an unexpected nested component is found.
         """
         
         try:
@@ -141,8 +231,8 @@ class LEMSParser(Parser):
             raise ParseError('Component type must have a name')
 
         if 'extends' in node.attrib:
-            if node.attrib['extends'] in current_context.component_types:
-                extends = current_context.component_types[node.attrib['extends']]
+            if node.attrib['extends'] in self.current_context.component_types:
+                extends = self.current_context.component_types[node.attrib['extends']]
             else:
                 raise ParseError('Component type \'' + name + 
                                  '\' extends an undefined base type \'' + 
@@ -153,15 +243,9 @@ class LEMSParser(Parser):
         component_type = ComponentType(name, extends)
         self.current_context.add_component_type(component_type)
 
-        self.push_parametric(component_type)
-
-        for child in node:
-            if child.tag in self.valid_children['componenttype']:
-                self.tag_parse_table[child.tag](child)
-            else:
-                raise ParseError('Unexpected tag - <' + child.tag + '>')
-
-        self.pop_parametric()
+        self.push_component_type(component_type)
+        self.process_nested_tags(node)
+        self.pop_component_type()
 
     def parse_default_run(self, node):
         """
@@ -216,10 +300,13 @@ class LEMSParser(Parser):
         except:
             raise ParseError('Parameter must have a dimension')
 
-        parameter = Parameter(name, dimension)
+        if dimension not in self.model.dimensions:
+            raise ModelError('Undefined dimension ' + dimension)
+
+        parameter_type = ParameterType(name, self.model.dimensions[dimension])
         
         try:
-            self.current_parametric.add_parameter(parameter)
+            self.current_component_type.add_parameter_type(parameter_type)
         except:
             raise ParseError('Parameter definition is not permitted in this location')
 
@@ -254,19 +341,12 @@ class LEMSParser(Parser):
         
         @param node: Node containing the <LEMS> element
         @type node: xml.etree.Element
-
-        @raise ParseError: Raised when an unexpected XML child tag is found.
         """
         
         if node.tag != 'lems':
             raise ParseError('Not a LEMS file')
 
-        for child in node:
-            if child.tag in self.valid_children['lems']:
-                self.tag_parse_table[child.tag](child)
-            else:
-                # TODO: Check symbol table
-                raise ParseError('Unexpected tag - <' + child.tag + '>')
+        self.process_nested_tags(node)
             
     def parse_file(self, filename):
         """
