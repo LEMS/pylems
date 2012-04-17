@@ -95,8 +95,9 @@ class Model(Contextual):
                 for tn in self.context.component_types:
                     t = self.context.component_types[tn]
                     s += '  ' + t.name
-                    if t.extends != None:
-                        s += ' extends ' + t.extends
+                    print t.name,t.extends
+                    if t.extends:
+                        s += ' extends ' + t.extends.name
                     s += '\n'
 
                     if t.parameter_types:

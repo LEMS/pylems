@@ -110,6 +110,7 @@ class LEMSParser(Parser):
         self.tag_parse_table['componenttype'] = self.parse_component_type
         self.tag_parse_table['defaultrun'] = self.parse_default_run
         self.tag_parse_table['dimension'] = self.parse_dimension
+        self.tag_parse_table['fixed'] = self.parse_fixed
         self.tag_parse_table['unit'] = self.parse_unit
         self.tag_parse_table['parameter'] = self.parse_parameter
 
@@ -279,6 +280,29 @@ class LEMSParser(Parser):
         self.model.add_dimension(Dimension(name, dim[0], dim[1], dim[2],
                                            dim[3], dim[4], dim[4], dim[6]))
             
+    def parse_fixed(self, node):
+        """
+        Parse <Fixed>
+
+        @param node: Node containing the <Fixed> element
+        @type node: xml.etree.Element
+
+        @raise ParseError: Raised when
+        """
+        
+        try:
+            parameter = node.attrib['parameter']
+        except:
+            raise ParseError('Parameter to be fixed must be specified')
+
+        try:
+            value = node.attrib['value']
+        except:
+            raise ParseError('Value to be fixed must be specified')
+
+        
+        print parameter, value
+
     def parse_parameter(self, node):
         """
         Parse <Parameter>
