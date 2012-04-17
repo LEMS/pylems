@@ -7,9 +7,9 @@ Model storage
 """
 
 from pylems.base.errors import ModelError
-from pylems.model.context import Context
+from pylems.model.context import Contextual
 
-class Model:
+class Model(Contextual):
     """
     Store the model read from a LEMS file.
     """
@@ -79,14 +79,30 @@ class Model:
 
         s += 'Default run: ' + self.default_run + '\n'
         
-        s += 'Dimensions:' + '\n'
+        s += 'Dimensions:\n'
         if self.dimensions != None:
             for d in self.dimensions:
                 s += '  ' + d + '\n'
 
-        s += 'Units:' + '\n'
+        s += 'Units:\n'
         if self.units != None:
             for u in self.units:
                 s += '  ' + u + '\n'
+
+        if self.context:
+            if self.context.component_types:
+                s += 'Component types:\n'
+                for tn in self.context.component_types:
+                    t = self.context.component_types[tn]
+                    s += '  ' + t.name
+                    if t.extends != None:
+                        s += ' extends ' + t.extends
+                    s += '\n'
+
+                    if t.parameters:
+                        for pn in t.parameters:
+                            p = t.parameters[pn]
+                            s += '    ' + p.name + ': ' + p.dimension + '\n'
+
             
         return s

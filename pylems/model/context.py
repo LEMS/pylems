@@ -24,7 +24,7 @@ class Context:
     """ Dictionary of references to components defined in the model.
     @type: dict(string -> pylems.model.component.Component) """
 
-    def __init__(self, parent):
+    def __init__(self, parent = None):
         """
         Constructor
         """
@@ -79,3 +79,23 @@ class Contextual:
     """ Context object
     @type: pylems.model.context.Context """
 
+    def add_component_type(self, component_type):
+        """
+        Adds a component type to the list of defined component types in the current 
+        context.
+
+        @param component_type: Component type to be added
+        @type component_type: pylems.model.component.ComponentType
+        """
+
+        self.context.add_component_type(component_type)
+
+    def add_component(self, component):
+        """
+        Adds a component to the list of defined components in the current context.
+
+        @param component: Component to be added
+        @type component: pylems.model.component.Component
+        """
+
+        self.context.add_component(component)

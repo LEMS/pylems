@@ -12,6 +12,9 @@ from pylems.model.simple import Dimension,Unit
 from pylems.base.parser import Parser
 from pylems.model.model import Model
 from pylems.base.errors import ParseError
+from pylems.model.context import Context,Contextual
+from pylems.model.component import Component,ComponentType
+from pylems.model.parameter import Parameter
 
 def xmltolower(node):
     """ Converts the tag and attribute names in the given XML node and
@@ -42,9 +45,50 @@ class LEMSParser(Parser):
     @type: dict(string -> function) """
 
     valid_children = None
-    """ Dictionary mapping each tag to it's list of valid child tags """
+    """ Dictionary mapping each tag to it's list of valid child tags.
+    @type: dict(string -> string) """
 
-    context_stack = None
+    context_stack = []
+    """ Stack of contexts used for handling nested contexts.
+    @type: list(pylems.model.context.Context) """
+
+    current_context = None
+    """ Currently active (being parsed) context.
+    @type: pylems.model.context.Context """
+
+    parametric_stack = []
+    """ Stack of parametric objects used for handling nested component types.
+    @type: list(pylems.model.parameter.Parametric) """
+
+    current_parametric = None
+    """ Parametric object being parsed.
+    @type: pylems.model.parameter.Parametric """
+
+    def push_context(self, context):
+        self.context_stack = [context] + self.context_stack
+        self.current_context = context
+
+    def pop_context(self):
+        if len(self.context_stack) == 0:
+            raise ParseError('Context stack underflow')
+        self.context_stack = self.context_stack[1:]
+        if len(self.context_stack) == 0:
+            self.current_context = None
+        else:
+            self.current_context = self.context_stack[0]
+ 
+    def push_parametric(self, parametric):
+        self.parametric_stack = [parametric] + self.parametric_stack
+        self.current_parametric = parametric
+
+    def pop_parametric(self):
+        if len(self.parametric_stack) == 0:
+            raise ParseError('Parametric stack underflow')
+        self.parametric_stack = self.parametric_stack[1:]
+        if len(self.parametric_stack) == 0:
+            self.current_parametric = None
+        else:
+            self.current_parametric = self.parametric_stack[0]
 
     def init_parser(self):
         """
@@ -56,11 +100,12 @@ class LEMSParser(Parser):
         self.prev_token_lists = None
 
         self.valid_children = dict()
-        self.valid_children['lems'] = ['componenttype', 'defaultrun',
+        self.valid_children['lems'] = ['component', 'componenttype', 'defaultrun',
                                        'dimension', 'unit']
         self.valid_children['componenttype'] = ['parameter']
         
         self.tag_parse_table = dict()
+        self.tag_parse_table['component'] = self.parse_component
         self.tag_parse_table['componenttype'] = self.parse_component_type
         self.tag_parse_table['defaultrun'] = self.parse_default_run
         self.tag_parse_table['dimension'] = self.parse_dimension
@@ -83,6 +128,11 @@ class LEMSParser(Parser):
 
         @param node: Node containing the <ComponentType> element
         @type node: xml.etree.Element
+
+        @raise ParseError: Raised when the component type does not have a name.
+        @raise ParseError: Raised when the component type extends an udefined
+        component type.
+        @raise ParseError: Raised when an unexpected nested component is found.
         """
         
         try:
@@ -90,13 +140,28 @@ class LEMSParser(Parser):
         except:
             raise ParseError('Component type must have a name')
 
+        if 'extends' in node.attrib:
+            if node.attrib['extends'] in current_context.component_types:
+                extends = current_context.component_types[node.attrib['extends']]
+            else:
+                raise ParseError('Component type \'' + name + 
+                                 '\' extends an undefined base type \'' + 
+                                 node.attrib['extends'])
+        else:
+            extends = None
+
+        component_type = ComponentType(name, extends)
+        self.current_context.add_component_type(component_type)
+
+        self.push_parametric(component_type)
+
         for child in node:
             if child.tag in self.valid_children['componenttype']:
                 self.tag_parse_table[child.tag](child)
             else:
-                # TODO: Check symbol table
                 raise ParseError('Unexpected tag - <' + child.tag + '>')
-        print 'component type'
+
+        self.pop_parametric()
 
     def parse_default_run(self, node):
         """
@@ -136,9 +201,27 @@ class LEMSParser(Parser):
 
         @param node: Node containing the <Parameter> element
         @type node: xml.etree.Element
+
+        @raise ParseError: Raised when the parameter does not have a name.
+        @raise ParseError: Raised when the parameter does not have a dimension.
         """
         
-        print 'parameter'
+        try:
+            name = node.attrib['name']
+        except:
+            raise ParseError('Parameter must have a name')
+
+        try:
+            dimension = node.attrib['dimension']
+        except:
+            raise ParseError('Parameter must have a dimension')
+
+        parameter = Parameter(name, dimension)
+        
+        try:
+            self.current_parametric.add_parameter(parameter)
+        except:
+            raise ParseError('Parameter definition is not permitted in this location')
 
     def parse_unit(self, node):
         """
@@ -168,6 +251,11 @@ class LEMSParser(Parser):
     def parse_root(self, node):
         """
         Parse the <lems> (root) element of a LEMS file
+        
+        @param node: Node containing the <LEMS> element
+        @type node: xml.etree.Element
+
+        @raise ParseError: Raised when an unexpected XML child tag is found.
         """
         
         if node.tag != 'lems':
@@ -180,7 +268,6 @@ class LEMSParser(Parser):
                 # TODO: Check symbol table
                 raise ParseError('Unexpected tag - <' + child.tag + '>')
             
-
     def parse_file(self, filename):
         """
         Parse a LEMS file and generate a LEMS model
@@ -191,7 +278,17 @@ class LEMSParser(Parser):
 
         root = xml.parse(filename).getroot()
         xmltolower(root)
+
+        context = Context(self.current_context)
+        if self.model.context == None:
+            self.model.context = context
+
+        self.push_context(context)
+
         self.parse_root(root)
+
+        self.pop_context()
+
 
     def parse_string(self, str):
         pass

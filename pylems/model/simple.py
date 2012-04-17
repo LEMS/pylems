@@ -8,7 +8,7 @@ Types for basic LEMS objects (Dimensions, units, ...)
 
 class Dimension:
     """
-    Store dimensionality of a user-defined quantities in terms of the
+    Stores dimensionality of user-defined quantities in terms of the
     seven fundamental SI units
     """
 
@@ -74,7 +74,7 @@ class Dimension:
 
 class Unit:
     """
-    Store definition of unit symbols (eg, mV, ug) in terms of
+    Stores definition of unit symbols (eg, mV, ug) in terms of
     dimensions
     """
     
