@@ -103,7 +103,7 @@ class LEMSParser(Parser):
         self.valid_children = dict()
         self.valid_children['lems'] = ['component', 'componenttype', 
                                        'defaultrun', 'dimension', 'unit']
-        self.valid_children['componenttype'] = ['behavior', 'behaviour', 'child', 
+        self.valid_children['componenttype'] = ['behavior', 'behaviour', 'child', 'children',
                                                 'exposure', 'eventport', 
                                                 'fixed', 'parameter',
                                                 'requirement']
