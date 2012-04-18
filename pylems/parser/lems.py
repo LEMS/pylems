@@ -122,8 +122,8 @@ class LEMSParser(Parser):
         self.tag_parse_table['onevent'] = self.parse_on_event
         self.tag_parse_table['parameter'] = self.parse_parameter
         self.tag_parse_table['stateassignment'] = self.parse_state_assignment
-        self.tag_parse_table['statevariable'] = self.state_variable
-        self.tag_parse_table['timederivative'] = self.time_derivative
+        self.tag_parse_table['statevariable'] = self.parse_state_variable
+        self.tag_parse_table['timederivative'] = self.parse_time_derivative
         self.tag_parse_table['unit'] = self.parse_unit
 
 
