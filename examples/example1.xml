@@ -126,6 +126,7 @@
   </ComponentType>
   
 
+  <Dimension name="none"/>
 
   <ComponentType name="HHGate0">
     <Parameter name="power" dimension="none"/> 
