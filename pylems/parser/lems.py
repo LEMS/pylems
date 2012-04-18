@@ -103,10 +103,15 @@ class LEMSParser(Parser):
         self.valid_children = dict()
         self.valid_children['lems'] = ['component', 'componenttype', 
                                        'defaultrun', 'dimension', 'unit']
-        self.valid_children['componenttype'] = ['exposure', 'eventport', 
-                                                'fixed', 'parameter']
-        
+        self.valid_children['componenttype'] = ['behaviour', 'exposure', 
+                                                'eventport', 'fixed', 
+                                                'parameter']
+        self.valid_children['behaviour'] = ['onevent', 'statevariable', 
+                                            'timederivative']
+        self.valid_children['onevent'] = ['stateassignment']
+
         self.tag_parse_table = dict()
+        self.tag_parse_table['behaviour'] = self.parse_behaviour
         self.tag_parse_table['component'] = self.parse_component
         self.tag_parse_table['componenttype'] = self.parse_component_type
         self.tag_parse_table['defaultrun'] = self.parse_default_run
@@ -114,8 +119,15 @@ class LEMSParser(Parser):
         self.tag_parse_table['exposure'] = self.parse_exposure
         self.tag_parse_table['eventport'] = self.parse_event_port
         self.tag_parse_table['fixed'] = self.parse_fixed
-        self.tag_parse_table['unit'] = self.parse_unit
+        self.tag_parse_table['onevent'] = self.parse_on_event
         self.tag_parse_table['parameter'] = self.parse_parameter
+        self.tag_parse_table['stateassignment'] = self.parse_state_assignment
+        self.tag_parse_table['statevariable'] = self.state_variable
+        self.tag_parse_table['timederivative'] = self.time_derivative
+        self.tag_parse_table['unit'] = self.parse_unit
+
+
+
 
     def process_nested_tags(self, node):
         """
@@ -165,6 +177,16 @@ class LEMSParser(Parser):
         """
         
         return self.model
+
+    def parse_behaviour(self, node):
+        """
+        Parse <Behaviour>
+
+        @param node: Node containing the <Behaviour> element
+        @type node: xml.etree.Element
+        """
+
+        pass
 
     def parse_component_by_typename(self, node, typename):
         """
@@ -330,6 +352,16 @@ class LEMSParser(Parser):
 
         self.current_component_type.fix_parameter_type(parameter_name, value, self.model)
 
+    def parse_on_event(self, node):
+        """
+        Parse <OnEvent>
+
+        @param node: Node containing the <OnEvent> element
+        @type node: xml.etree.Element
+        """
+
+        pass
+
     def parse_parameter(self, node):
         """
         Parse <Parameter>
@@ -360,6 +392,36 @@ class LEMSParser(Parser):
             raise ParseError('Parameter definition is not permitted in this location')
 
         self.current_component_type.add_parameter_type(parameter_type)
+
+    def parse_state_assignment(self, node):
+        """
+        Parse <StateAssignment>
+
+        @param node: Node containing the <StateAssignment> element
+        @type node: xml.etree.Element
+        """
+
+        pass
+
+    def parse_state_variable(self, node):
+        """
+        Parse <StateVariable>
+
+        @param node: Node containing the <StateVariable> element
+        @type node: xml.etree.Element
+        """
+
+        pass
+
+    def parse_time_derivative(self, node):
+        """
+        Parse <TimeDerivative>
+
+        @param node: Node containing the <TimeDerivative> element
+        @type node: xml.etree.Element
+        """
+
+        pass
 
     def parse_unit(self, node):
         """
