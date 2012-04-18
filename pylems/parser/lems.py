@@ -24,6 +24,7 @@ def xmltolower(node):
 
     @param node: Node in an XML tree.
     @type node: xml.etree.Element """
+
     lattrib = dict()
     for key in node.attrib:
         lattrib[key] = node.attrib[key]
