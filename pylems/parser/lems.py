@@ -7,6 +7,7 @@ LEMS parser
 """
 
 from xml.etree import ElementTree as xml
+import os.path
 
 from pylems.model.simple import Dimension,Unit
 from pylems.base.parser import Parser
@@ -35,6 +36,10 @@ class LEMSParser(Parser):
     """
     Parser for LEMS files
     """
+
+    base_path = '.'
+    """ Base path for the file being parsed
+    @type: string """
 
     model = None
     """ Model built during parsing
@@ -101,7 +106,8 @@ class LEMSParser(Parser):
 
         self.valid_children = dict()
         self.valid_children['lems'] = ['component', 'componenttype', 
-                                       'defaultrun', 'dimension', 'unit']
+                                       'defaultrun', 'dimension', 'include',
+                                       'unit']
         self.valid_children['componenttype'] = ['behavior', 'behaviour', 'child', 'children',
                                                 'componentref',
                                                 'exposure', 'eventport', 
@@ -124,6 +130,7 @@ class LEMSParser(Parser):
         self.tag_parse_table['exposure'] = self.parse_exposure
         self.tag_parse_table['eventport'] = self.parse_event_port
         self.tag_parse_table['fixed'] = self.parse_fixed
+        self.tag_parse_table['include'] = self.parse_include
         self.tag_parse_table['onevent'] = self.parse_on_event
         self.tag_parse_table['parameter'] = self.parse_parameter
         self.tag_parse_table['requirement'] = self.parse_requirement
@@ -209,7 +216,7 @@ class LEMSParser(Parser):
 
     def parse_behaviour(self, node):
         """
-        Parse <Behaviour>
+        Parses <Behaviour>
 
         @param node: Node containing the <Behaviour> element
         @type node: xml.etree.Element
@@ -219,7 +226,7 @@ class LEMSParser(Parser):
 
     def parse_child(self, node):
         """
-        Parse <Child>
+        Parses <Child>
 
         @param node: Node containing the <Child> element
         @type node: xml.etree.Element
@@ -229,7 +236,7 @@ class LEMSParser(Parser):
 
     def parse_children(self, node):
         """
-        Parse <Children>
+        Parses <Children>
 
         @param node: Node containing the <Children> element
         @type node: xml.etree.Element
@@ -347,7 +354,7 @@ class LEMSParser(Parser):
 
     def parse_default_run(self, node):
         """
-        Parse <DefaultRun>
+        Parses <DefaultRun>
 
         @param node: Node containing the <DefaultRun> element
         @type node: xml.etree.Element
@@ -357,7 +364,7 @@ class LEMSParser(Parser):
     
     def parse_dimension(self, node):
         """
-        Parse <Dimension>
+        Parses <Dimension>
 
         @param node: Node containing the <Dimension> element
         @type node: xml.etree.Element
@@ -379,7 +386,7 @@ class LEMSParser(Parser):
             
     def parse_event_port(self, node):
         """
-        Parse <EventPort>
+        Parses <EventPort>
 
         @param node: Node containing the <EventPort> element
         @type node: xml.etree.Element
@@ -389,7 +396,7 @@ class LEMSParser(Parser):
 
     def parse_exposure(self, node):
         """
-        Parse <Exposure>
+        Parses <Exposure>
 
         @param node: Node containing the <Exposure> element
         @type node: xml.etree.Element
@@ -399,7 +406,7 @@ class LEMSParser(Parser):
 
     def parse_fixed(self, node):
         """
-        Parse <Fixed>
+        Parses <Fixed>
 
         @param node: Node containing the <Fixed> element
         @type node: xml.etree.Element
@@ -422,9 +429,27 @@ class LEMSParser(Parser):
 
         self.current_component_type.fix_parameter_type(parameter_name, value, self.model)
 
+    def parse_include(self, node):
+        """
+        Parses <Include>
+
+        @param node: Node containing the <Include> element
+        @type node: xml.etree.Element
+        """
+
+        if 'file' not in node.attrib:
+            raise ParseError('Include file must be specified.')
+
+        path = self.base_path + '/' + node.attrib['file']
+
+        root = xml.parse(path).getroot()
+        xmltolower(root)
+
+        self.parse_root(root)
+
     def parse_on_event(self, node):
         """
-        Parse <OnEvent>
+        Parses <OnEvent>
 
         @param node: Node containing the <OnEvent> element
         @type node: xml.etree.Element
@@ -434,7 +459,7 @@ class LEMSParser(Parser):
 
     def parse_parameter(self, node):
         """
-        Parse <Parameter>
+        Parses <Parameter>
 
         @param node: Node containing the <Parameter> element
         @type node: xml.etree.Element
@@ -465,7 +490,7 @@ class LEMSParser(Parser):
 
     def parse_requirement(self, node):
         """
-        Parse <Requirement>
+        Parses <Requirement>
 
         @param node: Node containing the <Requirement> element
         @type node: xml.etree.Element
@@ -475,7 +500,7 @@ class LEMSParser(Parser):
 
     def parse_state_assignment(self, node):
         """
-        Parse <StateAssignment>
+        Parses <StateAssignment>
 
         @param node: Node containing the <StateAssignment> element
         @type node: xml.etree.Element
@@ -485,7 +510,7 @@ class LEMSParser(Parser):
 
     def parse_state_variable(self, node):
         """
-        Parse <StateVariable>
+        Parses <StateVariable>
 
         @param node: Node containing the <StateVariable> element
         @type node: xml.etree.Element
@@ -495,7 +520,7 @@ class LEMSParser(Parser):
 
     def parse_time_derivative(self, node):
         """
-        Parse <TimeDerivative>
+        Parses <TimeDerivative>
 
         @param node: Node containing the <TimeDerivative> element
         @type node: xml.etree.Element
@@ -505,7 +530,7 @@ class LEMSParser(Parser):
 
     def parse_unit(self, node):
         """
-        Parse <Unit>
+        Parses <Unit>
 
         @param node: Node containing the <Unit> element
         @type node: xml.etree.Element
@@ -551,6 +576,10 @@ class LEMSParser(Parser):
 
         root = xml.parse(filename).getroot()
         xmltolower(root)
+        
+        self.base_path = os.path.dirname(filename)
+        if self.base_path == '':
+            self.base_path = '.'
 
         context = Context(self.current_context)
         if self.model.context == None:
