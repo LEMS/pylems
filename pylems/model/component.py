@@ -39,9 +39,14 @@ class ComponentType:
         self.name = name
         self.extends = extends
 
+        if extends:
+            if extends.parameter_types:
+                for ptn in extends.parameter_types:
+                    self.add_parameter_type(extends.parameter_types[ptn].copy())
+
     def add_parameter_type(self, parameter_type):
         """
-        Adds a parameter_type to the list of parameter types in this object.
+        Adds a parameter type to the list of parameter types in this object.
 
         @param parameter_type: Parametert type to be added
         @type parameter_type: pylems.model.parameter.ParameterType
@@ -57,6 +62,33 @@ class ComponentType:
             raise ModelError('Duplicate parameter_type type - ' + parameter_type.name)
 
         self.parameter_types[parameter_type.name] = parameter_type
+
+    def fix_parameter_type(self, parameter_name, value_string, model):
+        """
+        Fixes the value of a parameter type to the specified value.
+
+        @param parameter_name: Name of the parameter to be fixed.
+        @type parameter_name: string
+
+        @param value_string: Value to which the parameter needs to be fixed to. For 
+        example, "30mV" or "45 kg"
+        @type string
+
+        @param model: Model object storing the current model. (Needed to find the dimension for
+        the specified symbol)
+        @type model: pylems.model.model.Model
+
+        @attention: Having to pass the model in as a parameter is a temporary hack. This should
+        fixed at some point of time, once PyLems is able to run a few example files.
+
+        @raise ModelError: Raised when the parameter type does not exist in this 
+        component type.
+        """
+
+        if parameter_name in self.parameter_types:
+            self.parameter_types[parameter_name].fix_value(value_string, model)
+        else:
+            raise ModelError('Parameter type ' + value_string + ' not present in ' + self.name)
 
 class Component:
     """
@@ -89,15 +121,13 @@ class Component:
         self.id = id 
         self.component_type = component_type
 
-        ct = component_type
-        while ct:
-            if component_type.parameter_types != None:
-                self.parameters = dict()
-                for ptn in component_type.parameter_types:
-                    pt = component_type.parameter_types[ptn]
-                    p = Parameter(pt)
-                    self.parameters[ptn] = p
-            ct = ct.extends
+        if component_type.parameter_types != None:
+            for ptn in component_type.parameter_types:
+                pt = component_type.parameter_types[ptn]
+                p = Parameter(pt)
+                self.add_parameter(p)
+                if pt.fixed:
+                    p.set_value(pt.fixed_value)
 
     def add_parameter(self, parameter):
         """
@@ -113,7 +143,4 @@ class Component:
         if self.parameters == None:
             self.parameters = dict()
 
-        if parameter.name in self.parameters:
-            raise ModelError('Duplicate parameter type - ' + parameter.name)
-
-        self.parameters[parameter.name] = parameter
+        self.parameters[parameter.parameter_type.name] = parameter

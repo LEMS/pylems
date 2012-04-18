@@ -40,8 +40,10 @@
   
   
   <ComponentType name="iaf2" extends="iaf1">
-    <Fixed parameter="threshold" value="-45mV"/>
+    <Fixed parameter="threshold" value="-45mV" />
   </ComponentType>
+
+  <iaf2 id="dummycell" refractoryPeriod="2 ms" capacitance="1uF"/>
 
   <ComponentType name="iaf3" extends="iaf1">
     <Parameter name="leakConductance" dimension="conductance"/>

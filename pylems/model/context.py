@@ -65,10 +65,10 @@ class Context:
         if self.components == None:
             self.components = dict()
 
-        if component.name in self.components:
+        if component.id in self.components:
             raise ModelError('Duplicate component type - ' + component.id)
 
-        self.components[component.name] = component
+        self.components[component.id] = component
 
 class Contextual:
     """

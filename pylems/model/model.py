@@ -95,15 +95,28 @@ class Model(Contextual):
                 for tn in self.context.component_types:
                     t = self.context.component_types[tn]
                     s += '  ' + t.name
-                    print t.name,t.extends
                     if t.extends:
-                        s += ' extends ' + t.extends.name
+                        s += ' (extends ' + t.extends.name + ')'
                     s += '\n'
 
                     if t.parameter_types:
                         for pn in t.parameter_types:
                             p = t.parameter_types[pn]
-                            s += '    ' + p.name + ': ' + p.dimension.name + '\n'
+                            s += '    ' + p.name + ': ' + p.dimension.name
+                            if p.fixed:
+                                s += ' fixed to ' + str(p.fixed_value)
+                            s += '\n'
 
+            if self.context.components:
+                s += 'Components:\n'
+                for cn in self.context.components:
+                    c = self.context.components[cn]
+                    s += '  ' + c.id + ': ' + c.component_type.name + '\n'
+
+                    if c.parameters:
+                        for pn in c.parameters:
+                            p = c.parameters[pn]
+                            s += '    ' + pn + ': ' + p.parameter_type.name
+                            s += ' = ' + str(p.value) + '\n'
             
         return s

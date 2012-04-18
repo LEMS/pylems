@@ -193,6 +193,8 @@ class LEMSParser(Parser):
                 if param in component.parameters:
                     component.parameters[param].set_value_text(node.attrib[param], self.model)
 
+        self.current_context.add_component(component)
+
         for param in component.parameters:
             if component.parameters[param].value == None:
                 raise ModelError('Parameter ' + param + ' not initialized in component ' + id)
@@ -291,7 +293,7 @@ class LEMSParser(Parser):
         """
         
         try:
-            parameter = node.attrib['parameter']
+            parameter_name = node.attrib['parameter']
         except:
             raise ParseError('Parameter to be fixed must be specified')
 
@@ -300,8 +302,10 @@ class LEMSParser(Parser):
         except:
             raise ParseError('Value to be fixed must be specified')
 
-        
-        print parameter, value
+        if not self.current_component_type:
+            raise ParseError('Fixed parameter specification is not permitted in this location')
+
+        self.current_component_type.fix_parameter_type(parameter_name, value, self.model)
 
     def parse_parameter(self, node):
         """
@@ -328,11 +332,11 @@ class LEMSParser(Parser):
             raise ModelError('Undefined dimension ' + dimension)
 
         parameter_type = ParameterType(name, self.model.dimensions[dimension])
-        
-        try:
-            self.current_component_type.add_parameter_type(parameter_type)
-        except:
+
+        if not self.current_component_type:
             raise ParseError('Parameter definition is not permitted in this location')
+
+        self.current_component_type.add_parameter_type(parameter_type)
 
     def parse_unit(self, node):
         """
