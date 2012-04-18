@@ -103,14 +103,16 @@ class LEMSParser(Parser):
         self.valid_children = dict()
         self.valid_children['lems'] = ['component', 'componenttype', 
                                        'defaultrun', 'dimension', 'unit']
-        self.valid_children['componenttype'] = ['behaviour', 'exposure', 
-                                                'eventport', 'fixed', 
-                                                'parameter']
+        self.valid_children['componenttype'] = ['behavior', 'behaviour', 
+                                                'exposure', 'eventport', 
+                                                'fixed', 'parameter',
+                                                'requirement']
         self.valid_children['behaviour'] = ['onevent', 'statevariable', 
                                             'timederivative']
         self.valid_children['onevent'] = ['stateassignment']
 
         self.tag_parse_table = dict()
+        self.tag_parse_table['behavior'] = self.parse_behaviour
         self.tag_parse_table['behaviour'] = self.parse_behaviour
         self.tag_parse_table['component'] = self.parse_component
         self.tag_parse_table['componenttype'] = self.parse_component_type
@@ -121,6 +123,7 @@ class LEMSParser(Parser):
         self.tag_parse_table['fixed'] = self.parse_fixed
         self.tag_parse_table['onevent'] = self.parse_on_event
         self.tag_parse_table['parameter'] = self.parse_parameter
+        self.tag_parse_table['requirement'] = self.parse_requirement
         self.tag_parse_table['stateassignment'] = self.parse_state_assignment
         self.tag_parse_table['statevariable'] = self.parse_state_variable
         self.tag_parse_table['timederivative'] = self.parse_time_derivative
@@ -392,6 +395,16 @@ class LEMSParser(Parser):
             raise ParseError('Parameter definition is not permitted in this location')
 
         self.current_component_type.add_parameter_type(parameter_type)
+
+    def parse_requirement(self, node):
+        """
+        Parse <Requirement>
+
+        @param node: Node containing the <Requirement> element
+        @type node: xml.etree.Element
+        """
+
+        pass
 
     def parse_state_assignment(self, node):
         """
