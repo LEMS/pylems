@@ -155,7 +155,7 @@ class LEMSParser(Parser):
 
     def resolve_typename(self, typename):
         """ 
-        Resolve type name from the contex stack.
+        Resolves type name from the contex stack.
 
         @param typename: Name of the type to be resolved.
         @type typename: string
@@ -172,6 +172,28 @@ class LEMSParser(Parser):
                 
         if found:
             return stack[0].component_types[typename]
+        else:
+            return None
+
+    def resolve_component_name(self, component_name):
+        """ 
+        Resolves component name from the contex stack.
+
+        @param component_name: Name of the component to be resolved.
+        @type component_name: string
+
+        @return: Component corresponding to the name or None if undefined.
+        @rtype: pylems.model.component.Component
+        """
+
+        stack = self.context_stack
+        found = False
+        while stack != [] and (not found):
+            if component_name in stack[0].components:
+                found = True
+                
+        if found:
+            return stack[0].components[component_name]
         else:
             return None
 
@@ -234,11 +256,24 @@ class LEMSParser(Parser):
         except:
             raise ParseError('Component must have an id')
 
-        component_type = self.resolve_typename(typename)
-        if component_type == None:
-            raise ModelError('Undefined component type')
+        component_type = None
+        extends = None
 
-        component = Component(id, component_type)
+        if typename == None:
+            try:
+                extends_name = node.attrib['extends']
+            except:
+                raise ParseError('Component must have a type or must extend another component')
+            
+            extends = self.resolve_component_name(extends_name)
+            if extends == None:
+                raise ModelError('Component ' + extends_name + ' not found')
+        else:
+            component_type = self.resolve_typename(typename)
+            if component_type == None:
+                raise ModelError('Undefined component type')
+
+        component = Component(id, component_type, extends)
         
         for param in node.attrib:
             if param != 'id' and param != 'type':
@@ -257,16 +292,14 @@ class LEMSParser(Parser):
 
         @param node: Node containing the <ComponentType> element
         @type node: xml.etree.Element
-
-        @raise ParseError: Raised when the component does not have a type.
         """
         
-        try:
-            type = node.attrib['type']
-        except:
-            raise ParseError('Component must have a type')
+        if 'type' in node.attrib:
+            typename = node.attrib['type']
+        else:
+            typename = None
 
-        self.parse_component_by_typename(node, type)
+        self.parse_component_by_typename(node, typename)
 
     def parse_component_ref(self, node):
         """

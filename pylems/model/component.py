@@ -107,7 +107,7 @@ class Component:
     """ Dictionaty of parameters in this object.
     @type: dict(string -> pylems.model.parameter.Parameter) """
 
-    def __init__(self, id, component_type):
+    def __init__(self, id, component_type, extends = None):
         """
         Constructor
 
@@ -116,18 +116,34 @@ class Component:
 
         @param component_type: Type of component.
         @type component_type: pylems.model.component.ComponentType
+
+        @param extends: Component extended by this one.
+        @param extends: pylems.model.component.Component
+
+        @note: Atleast one of component_type or extends must be valid.
         """
+        
+        if component_type == None and extends == None:
+            raise ModelError('Component definition requires a component type or a base component')
 
         self.id = id 
-        self.component_type = component_type
+        
+        if component_type:
+            self.component_type = component_type
 
-        if component_type.parameter_types != None:
-            for ptn in component_type.parameter_types:
-                pt = component_type.parameter_types[ptn]
-                p = Parameter(pt)
-                self.add_parameter(p)
-                if pt.fixed:
-                    p.set_value(pt.fixed_value)
+            if component_type.parameter_types != None:
+                for ptn in component_type.parameter_types:
+                    pt = component_type.parameter_types[ptn]
+                    p = Parameter(pt)
+                    self.add_parameter(p)
+                    if pt.fixed:
+                        p.set_value(pt.fixed_value)
+        else:
+            self.component_type = extends.component_type
+
+            for pn in extends.parameters:
+                p = extends.parameters[pn]
+                self.add_parameter(p.copy())
 
     def add_parameter(self, parameter):
         """
