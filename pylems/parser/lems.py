@@ -23,7 +23,6 @@ def xmltolower(node):
 
     @param node: Node in an XML tree.
     @type node: xml.etree.Element """
-    node.tag = node.tag.lower()
     lattrib = dict()
     for key in node.attrib:
         lattrib[key] = node.attrib[key]
@@ -144,8 +143,10 @@ class LEMSParser(Parser):
         @raise ParseError: Raised when an unexpected nested tag is found.
         """
         for child in node:
-            if child.tag in self.valid_children[node.tag]:
-                self.tag_parse_table[child.tag](child)
+            print node.tag, child.tag
+            ctagl = child.tag.lower()
+            if ctagl in self.valid_children[node.tag.lower()]:
+                self.tag_parse_table[ctagl](child)
             elif child.tag in self.current_context.component_types:
                 self.parse_component_by_typename(child, child.tag)
             else:
@@ -491,7 +492,7 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
         
-        if node.tag != 'lems':
+        if node.tag.lower() != 'lems':
             raise ParseError('Not a LEMS file')
 
         self.process_nested_tags(node)
