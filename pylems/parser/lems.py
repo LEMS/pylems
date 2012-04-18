@@ -145,7 +145,6 @@ class LEMSParser(Parser):
         @raise ParseError: Raised when an unexpected nested tag is found.
         """
         for child in node:
-            print node.tag, child.tag
             ctagl = child.tag.lower()
             if ctagl in self.valid_children[node.tag.lower()]:
                 self.tag_parse_table[ctagl](child)
