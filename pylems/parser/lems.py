@@ -101,15 +101,18 @@ class LEMSParser(Parser):
         self.prev_token_lists = None
 
         self.valid_children = dict()
-        self.valid_children['lems'] = ['component', 'componenttype', 'defaultrun',
-                                       'dimension', 'unit']
-        self.valid_children['componenttype'] = ['fixed', 'parameter']
+        self.valid_children['lems'] = ['component', 'componenttype', 
+                                       'defaultrun', 'dimension', 'unit']
+        self.valid_children['componenttype'] = ['exposure', 'eventport', 
+                                                'fixed', 'parameter']
         
         self.tag_parse_table = dict()
         self.tag_parse_table['component'] = self.parse_component
         self.tag_parse_table['componenttype'] = self.parse_component_type
         self.tag_parse_table['defaultrun'] = self.parse_default_run
         self.tag_parse_table['dimension'] = self.parse_dimension
+        self.tag_parse_table['exposure'] = self.parse_exposure
+        self.tag_parse_table['eventport'] = self.parse_event_port
         self.tag_parse_table['fixed'] = self.parse_fixed
         self.tag_parse_table['unit'] = self.parse_unit
         self.tag_parse_table['parameter'] = self.parse_parameter
@@ -282,6 +285,26 @@ class LEMSParser(Parser):
         self.model.add_dimension(Dimension(name, dim[0], dim[1], dim[2],
                                            dim[3], dim[4], dim[4], dim[6]))
             
+    def parse_event_port(self, node):
+        """
+        Parse <EventPort>
+
+        @param node: Node containing the <EventPort> element
+        @type node: xml.etree.Element
+        """
+
+        pass
+
+    def parse_exposure(self, node):
+        """
+        Parse <Exposure>
+
+        @param node: Node containing the <Exposure> element
+        @type node: xml.etree.Element
+        """
+
+        pass
+
     def parse_fixed(self, node):
         """
         Parse <Fixed>
