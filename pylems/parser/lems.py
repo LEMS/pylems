@@ -103,6 +103,7 @@ class LEMSParser(Parser):
         self.valid_children['lems'] = ['component', 'componenttype', 
                                        'defaultrun', 'dimension', 'unit']
         self.valid_children['componenttype'] = ['behavior', 'behaviour', 'child', 'children',
+                                                'componentref',
                                                 'exposure', 'eventport', 
                                                 'fixed', 'parameter',
                                                 'requirement']
@@ -116,6 +117,7 @@ class LEMSParser(Parser):
         self.tag_parse_table['child'] = self.parse_child
         self.tag_parse_table['children'] = self.parse_children
         self.tag_parse_table['component'] = self.parse_component
+        self.tag_parse_table['componentref'] = self.parse_component_ref
         self.tag_parse_table['componenttype'] = self.parse_component_type
         self.tag_parse_table['defaultrun'] = self.parse_default_run
         self.tag_parse_table['dimension'] = self.parse_dimension
@@ -266,6 +268,16 @@ class LEMSParser(Parser):
             raise ParseError('Component must have a type')
 
         self.parse_component_by_typename(node, type)
+
+    def parse_component_ref(self, node):
+        """
+        Parses <ComponentRef>
+
+        @param node: Node containing the <ComponentTypeRef> element
+        @type node: xml.etree.Element
+        """
+        
+        pass
 
     def parse_component_type(self, node):
         """
