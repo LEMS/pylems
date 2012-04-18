@@ -115,6 +115,7 @@ class LEMSParser(Parser):
         self.tag_parse_table['behavior'] = self.parse_behaviour
         self.tag_parse_table['behaviour'] = self.parse_behaviour
         self.tag_parse_table['child'] = self.parse_child
+        self.tag_parse_table['children'] = self.parse_children
         self.tag_parse_table['component'] = self.parse_component
         self.tag_parse_table['componenttype'] = self.parse_component_type
         self.tag_parse_table['defaultrun'] = self.parse_default_run
@@ -197,6 +198,16 @@ class LEMSParser(Parser):
         Parse <Child>
 
         @param node: Node containing the <Child> element
+        @type node: xml.etree.Element
+        """
+
+        pass
+
+    def parse_children(self, node):
+        """
+        Parse <Children>
+
+        @param node: Node containing the <Children> element
         @type node: xml.etree.Element
         """
 
