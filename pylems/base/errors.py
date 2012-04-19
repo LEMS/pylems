@@ -6,33 +6,43 @@ LEMS exceptions
 @contact: gautham@textensor.com, gautham@lisphacker.org
 """
 
-class ParseError(Exception):
+class Error(Exception):
+    """
+    Exception to signal errors in PyLEMS
+    """
+    
+    def __init__(self, message):
+        """
+        Constructor
+
+        @param message: Error message.
+        @type message: string
+        """
+        
+        self.message = message
+        """ Error message
+        @type: string """
+
+    def __str__(self):
+        """
+        Returns the error message string.
+
+        @return: The error message
+        @rtype: string
+        """
+        
+        return self.message
+
+class ParseError(Error):
     """
     Exception to signal errors found during parsing
     """
 
-    message = ''
-    """ Error message
-    @type: string """
-    
-    def __init__(self, message):
-        self.message = message
+    pass
 
-    def __str__(self):
-        return self.message
-
-class ModelError(Exception):
+class ModelError(Error):
     """
     Exception to signal errors found during model generation
     """
 
-    message = ''
-    """ Error message
-    @type: string """
-    
-    def __init__(self, message):
-        self.message = message
-
-    def __str__(self):
-        return self.message
-
+    pass

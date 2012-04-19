@@ -1,39 +1,39 @@
 <Lems>
 
-<Dimension name="time" t="1"/>
+  <Dimension name="time" t="1"/>
 
-<ComponentType name="Display">
+  <ComponentType name="Display">
     <Parameter name="timeScale" Dimension="time"/>
     <Children name="lines" type="Line"/>
 
     <Text name="title"/>  <!-- attribute to hold title of window -->
 
     <Behavior>
-         <Show src="lines" scale="timeScale"/>
+      <Show src="lines" scale="timeScale"/>
     </Behavior>
-</ComponentType>
+  </ComponentType>
 
-<ComponentType name="Line">
+  <ComponentType name="Line">
     <Parameter name="scale" Dimension="*"/>
     <Text name="color"/>
     <Text name="save"/>
     <Path name="quantity"/>
     <Behavior>
-        <Record quantity="quantity" scale="scale" color="color"/>
+      <Record quantity="quantity" scale="scale" color="color"/>
     </Behavior>
-</ComponentType>
+  </ComponentType>
 
 
-<ComponentType name="Simulation">
+  <ComponentType name="Simulation">
     <Parameter name="length" dimension="time"/>
     <Parameter name="step" dimension="time"/>
     <ComponentRef name="target" type="Component"/>
     <Children name="displays" type="Display"/>
     <Behavior>
-        <StateVariable name="t" dimension="time"/>
-        <Run component="target" variable="t" increment="step" total="length"/>
-        <Show src="displays"/>
+      <StateVariable name="t" dimension="time"/>
+      <Run component="target" variable="t" increment="step" total="length"/>
+      <Show src="displays"/>
     </Behavior>
-</ComponentType>
+  </ComponentType>
 
 </Lems>

@@ -12,39 +12,6 @@ class Dimension:
     seven fundamental SI units
     """
 
-    name = ''
-    """ Name of the user-defined dimension
-    @type: string """
-
-    l = 0
-    """ Length (default unit - metre)
-    @type: int """
-
-    m = 0
-    """ Mass (default unit - kilogram)
-    @type: int
-    """
-
-    t = 0
-    """ Time (default unit - second)
-    @type: int """
-    
-    i = 0
-    """ Electric current (default unit - ampere)
-    @type: int """
-    
-    k = 0
-    """ Temperature (default unit - kelvin)
-    @type: int """
-    
-    c = 0
-    """ Luminous intensity (default unit - candela)
-    @type: int """
-    
-    n = 0
-    """ Quantity (default unit - mole)
-    @type: int """
-
     def __init__(self, name, *dims):
         """
         Constructor
@@ -59,6 +26,37 @@ class Dimension:
         """
         
         self.name = name
+        """ Name of the user-defined dimension
+        @type: string """
+
+        self.l = 0
+        """ Length (default unit - metre)
+        @type: int """
+        
+        self.m = 0
+        """ Mass (default unit - kilogram)
+        @type: int
+        """
+        
+        self.t = 0
+        """ Time (default unit - second)
+        @type: int """
+        
+        self.i = 0
+        """ Electric current (default unit - ampere)
+        @type: int """
+        
+        self.k = 0
+        """ Temperature (default unit - kelvin)
+        @type: int """
+        
+        self.c = 0
+        """ Luminous intensity (default unit - candela)
+        @type: int """
+    
+        self.n = 0
+        """ Quantity (default unit - mole)
+        @type: int """
 
         if len(dims) != 7:
             raise Error
@@ -78,19 +76,6 @@ class Unit:
     dimensions
     """
     
-    symbol = ''
-    """ Symbol used to define this unit
-    @type: string """
-
-    dimension = None
-    """ Dimension of this unit
-    @type: pylems.base.units.Dimension """
-
-    pow10 = 0
-    """ Scaling factor in terms of powers of 10 relative to
-    the default dimensions for this unit
-    @type: int """
-
     def __init__(self, symbol, dimension, pow10):
         """
         Constructor
@@ -107,5 +92,14 @@ class Unit:
         """
 
         self.symbol = symbol
+        """ Symbol used to define this unit
+        @type: string """
+
         self.dimension = dimension
+        """ Dimension of this unit
+        @type: pylems.base.units.Dimension """
+
         self.pow10 = pow10
+        """ Scaling factor in terms of powers of 10 relative to
+        the default dimensions for this unit
+        @type: int """

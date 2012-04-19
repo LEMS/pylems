@@ -13,18 +13,6 @@ class ComponentType:
     Stores the specification of a user-defined component type.
     """
     
-    name = None
-    """ Name of this component type.
-    @type: string """
-
-    extends = None
-    """ Base component type extended by this type.
-    @type: pylems.model.component.ComponentType """
-    
-    parameter_types = None
-    """ Dictionaty of parameter types in this object.
-    @type: dict(string -> pylems.model.parameter.ParameterType) """
-
     def __init__(self, name, extends = None):
         """
         Constructor
@@ -37,7 +25,16 @@ class ComponentType:
         """
 
         self.name = name
+        """ Name of this component type.
+        @type: string """
+
         self.extends = extends
+        """ Base component type extended by this type.
+        @type: pylems.model.component.ComponentType """
+
+        self.parameter_types = None
+        """ Dictionaty of parameter types in this object.
+        @type: dict(string -> pylems.model.parameter.ParameterType) """
 
         if extends:
             if extends.parameter_types:
@@ -51,15 +48,16 @@ class ComponentType:
         @param parameter_type: Parametert type to be added
         @type parameter_type: pylems.model.parameter.ParameterType
 
-        @raise ModelError: Raised when the parameter type is already defined in the 
-        current object.
+        @raise ModelError: Raised when the parameter type is already defined
+        in the current object.
         """
 
         if self.parameter_types == None:
             self.parameter_types = dict()
 
         if parameter_type.name in self.parameter_types:
-            raise ModelError('Duplicate parameter_type type - ' + parameter_type.name)
+            raise ModelError('Duplicate parameter_type type - ' +
+                             parameter_type.name)
 
         self.parameter_types[parameter_type.name] = parameter_type
 
@@ -70,16 +68,17 @@ class ComponentType:
         @param parameter_name: Name of the parameter to be fixed.
         @type parameter_name: string
 
-        @param value_string: Value to which the parameter needs to be fixed to. For 
-        example, "30mV" or "45 kg"
+        @param value_string: Value to which the parameter needs to be fixed to.
+        For example, "30mV" or "45 kg"
         @type string
 
-        @param model: Model object storing the current model. (Needed to find the dimension for
-        the specified symbol)
+        @param model: Model object storing the current model. (Needed to find
+        the dimension for the specified symbol)
         @type model: pylems.model.model.Model
 
-        @attention: Having to pass the model in as a parameter is a temporary hack. This should
-        fixed at some point of time, once PyLems is able to run a few example files.
+        @attention: Having to pass the model in as a parameter is a temporary
+        hack. This should fixed at some point of time, once PyLEMS is able to
+        run a few example files.
 
         @raise ModelError: Raised when the parameter type does not exist in this 
         component type.
@@ -88,24 +87,13 @@ class ComponentType:
         if parameter_name in self.parameter_types:
             self.parameter_types[parameter_name].fix_value(value_string, model)
         else:
-            raise ModelError('Parameter type ' + value_string + ' not present in ' + self.name)
+            raise ModelError('Parameter type ' + value_string +
+                             ' not present in ' + self.name)
 
 class Component:
     """
     Stores a single instance of a given component type.
     """
-
-    id = None
-    """ Globally unique name for this component.
-    @type: string """
-
-    component_type = None
-    """ Type of component.
-    @type: pylems.model.component.ComponentType """
-    
-    parameters = None
-    """ Dictionaty of parameters in this object.
-    @type: dict(string -> pylems.model.parameter.Parameter) """
 
     def __init__(self, id, component_type, extends = None):
         """
@@ -123,11 +111,22 @@ class Component:
         @note: Atleast one of component_type or extends must be valid.
         """
         
-        if component_type == None and extends == None:
-            raise ModelError('Component definition requires a component type or a base component')
-
         self.id = id 
+        """ Globally unique name for this component.
+        @type: string """
         
+        self.component_type = None
+        """ Type of component.
+        @type: pylems.model.component.ComponentType """
+            
+        self.parameters = None
+        """ Dictionaty of parameters in this object.
+        @type: dict(string -> pylems.model.parameter.Parameter) """
+
+        if component_type == None and extends == None:
+            raise ModelError('Component definition requires a component type ' +
+                             'or a base component')
+
         if component_type:
             self.component_type = component_type
 

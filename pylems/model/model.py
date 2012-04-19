@@ -14,21 +14,28 @@ class Model(Contextual):
     Store the model read from a LEMS file.
     """
 
-    default_run = ''
-    """ Name of the default simulation to run.
-    @type: string """
+    def __init__(self):
+        """
+        Constructor.
+        """
 
-    dimensions = None
-    """ Dictionary of references to dimensions defined in the model.
-    @type: dict(string -> pylems.model.simple.Dimension) """
+        super(Contextual, self).__init__()
+        
+        self.default_run = ''
+        """ Name of the default simulation to run.
+        @type: string """
 
-    units = None
-    """ Dictionary of references to units defined in the model.
-    @type: dict(string -> pylems.model.simple.Unit) """
+        self.dimensions = None
+        """ Dictionary of references to dimensions defined in the model.
+        @type: dict(string -> pylems.model.simple.Dimension) """
 
-    context = None
-    """ Root context
-    @type: pylems.model.context.Context """
+        self.units = None
+        """ Dictionary of references to units defined in the model.
+        @type: dict(string -> pylems.model.simple.Unit) """
+
+        self.context = None
+        """ Root context
+        @type: pylems.model.context.Context """
 
     def set_default_run(self, default_run):
         """

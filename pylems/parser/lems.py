@@ -109,10 +109,11 @@ class LEMSParser(Parser):
         self.valid_children['lems'] = ['component', 'componenttype', 
                                        'defaultrun', 'dimension', 'include',
                                        'unit']
-        self.valid_children['componenttype'] = ['behavior', 'behaviour', 'child', 'children',
+        self.valid_children['componenttype'] = ['behavior', 'behaviour',
+                                                'child', 'children',
                                                 'componentref',
                                                 'exposure', 'eventport', 
-                                                'fixed', 'parameter',
+                                                'fixed', 'link', 'parameter',
                                                 'requirement']
         self.valid_children['behaviour'] = ['onevent', 'statevariable', 
                                             'timederivative']
@@ -132,6 +133,7 @@ class LEMSParser(Parser):
         self.tag_parse_table['eventport'] = self.parse_event_port
         self.tag_parse_table['fixed'] = self.parse_fixed
         self.tag_parse_table['include'] = self.parse_include
+        self.tag_parse_table['link'] = self.parse_link
         self.tag_parse_table['onevent'] = self.parse_on_event
         self.tag_parse_table['parameter'] = self.parse_parameter
         self.tag_parse_table['requirement'] = self.parse_requirement
@@ -152,7 +154,10 @@ class LEMSParser(Parser):
 
         @raise ParseError: Raised when an unexpected nested tag is found.
         """
+
+        print 'NTAG - ', node.tag
         for child in node:
+            print 'CTAG - ', child.tag
             ctagl = child.tag.lower()
             if ctagl in self.valid_children[node.tag.lower()]:
                 self.tag_parse_table[ctagl](child)
@@ -168,7 +173,8 @@ class LEMSParser(Parser):
         @param typename: Name of the type to be resolved.
         @type typename: string
 
-        @return: Component type corresponding to the type name or None if undefined.
+        @return: Component type corresponding to the type name or None if
+        undefined.
         @rtype: pylems.model.component.ComponentType
         """
 
@@ -271,7 +277,8 @@ class LEMSParser(Parser):
             try:
                 extends_name = node.attrib['extends']
             except:
-                raise ParseError('Component must have a type or must extend another component')
+                raise ParseError('Component must have a type or must extend ' +
+                                 'another component')
             
             extends = self.resolve_component_name(extends_name)
             if extends == None:
@@ -286,13 +293,15 @@ class LEMSParser(Parser):
         for param in node.attrib:
             if param != 'id' and param != 'type':
                 if param in component.parameters:
-                    component.parameters[param].set_value_text(node.attrib[param], self.model)
+                    component.parameters[param].set_value_text(
+                        node.attrib[param], self.model)
 
         self.current_context.add_component(component)
 
         for param in component.parameters:
             if component.parameters[param].value == None:
-                raise ModelError('Parameter ' + param + ' not initialized in component ' + id)
+                raise ModelError('Parameter ' + param +
+                                 ' not initialized in component ' + id)
 
     def parse_component(self, node):
         """
@@ -338,7 +347,8 @@ class LEMSParser(Parser):
 
         if 'extends' in node.attrib:
             if node.attrib['extends'] in self.current_context.component_types:
-                extends = self.current_context.component_types[node.attrib['extends']]
+                extends = self.current_context.component_types[
+                    node.attrib['extends']]
             else:
                 raise ParseError('Component type \'' + name + 
                                  '\' extends an undefined base type \'' + 
@@ -426,9 +436,11 @@ class LEMSParser(Parser):
             raise ParseError('Value to be fixed must be specified')
 
         if not self.current_component_type:
-            raise ParseError('Fixed parameter specification is not permitted in this location')
+            raise ParseError('Fixed parameter specification is not ' +
+                             'permitted in this location')
 
-        self.current_component_type.fix_parameter_type(parameter_name, value, self.model)
+        self.current_component_type.fix_parameter_type(
+            parameter_name, value, self.model)
 
     def parse_include(self, node):
         """
@@ -447,6 +459,16 @@ class LEMSParser(Parser):
         xmltolower(root)
 
         self.parse_root(root)
+
+    def parse_link(self, node):
+        """
+        Parses <Link>
+
+        @param node: Node containing the <Link> element
+        @type node: xml.etree.Element
+        """
+
+        pass
 
     def parse_on_event(self, node):
         """
@@ -485,7 +507,8 @@ class LEMSParser(Parser):
         parameter_type = ParameterType(name, self.model.dimensions[dimension])
 
         if not self.current_component_type:
-            raise ParseError('Parameter definition is not permitted in this location')
+            raise ParseError('Parameter definition is not permitted in ' +
+                             'this location')
 
         self.current_component_type.add_parameter_type(parameter_type)
 

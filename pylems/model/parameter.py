@@ -14,22 +14,6 @@ class ParameterType:
     Stores a parameter type.
     """
 
-    name = None
-    """ Parameter name.
-    @type: string """
-
-    dimension = None
-    """ Dimension for this parameter.
-    @type: pylems.model.simple.Dimension """
-
-    fixed = False
-    """ Set to True if this parameter has a fixed value.
-    @type: Boolean """
-
-    fixed_value = None
-    """ Fixed value for this parameter.
-    @type: Number """
-
     def __init__(self, name, dimension):
         """
         Constructor
@@ -42,7 +26,21 @@ class ParameterType:
         """
 
         self.name = name
+        """ Parameter name.
+        @type: string """
+        
         self.dimension = dimension
+        """ Dimension for this parameter.
+        @type: pylems.model.simple.Dimension """
+        
+        self.fixed = False
+        """ Set to True if this parameter has a fixed value.
+        @type: Boolean """
+        
+        self.fixed_value = None
+        """ Fixed value for this parameter.
+        @type: Number """
+
 
     def copy(self):
         """
@@ -58,19 +56,23 @@ class ParameterType:
         """
         Fixes the value of this parameter type.
 
-        @param value_string: Fixed value for this parameter type. For example, "30mV" or "45 kg"
+        @param value_string: Fixed value for this parameter type.
+        For example, "30mV" or "45 kg"
         @type value_string: string
 
-        @param model: Model object storing the current model. (Needed to find the dimension for
-        the specified symbol)
+        @param model: Model object storing the current model. (Needed to find
+        the dimension for the specified symbol)
         @type model: pylems.model.model.Model
 
-        @attention: Having to pass the model in as a parameter is a temporary hack. This should
-        fixed at some point of time, once PyLems is able to run a few example files.
+        @attention: Having to pass the model in as a parameter is a temporary
+        hack. This should fixed at some point of time, once PyLems is able to
+        run a few example files.
         """
 
-        split_loc = min(map(lambda x: 100 if value_string.find(x) == -1 else value_string.find(x), 
-                  'abcdesghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'))
+        split_loc = min(map(lambda x: 100
+                            if value_string.find(x) == -1
+                            else value_string.find(x),
+        'abcdesghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'))
         
         self.fixed_value = int(value_string[0:split_loc])
         sym = value_string[split_loc:].strip()
@@ -90,14 +92,6 @@ class Parameter:
     Stores a parameter.
     """
 
-    parameter_type = None
-    """ Parameter type.
-    @type: pylems.model.paramater.ParameterType """
-
-    value = None
-    """ Value of this parameter.
-    @type: Number """
-
     def __init__(self, parameter_type, value = None):
         """
         Constructor
@@ -110,7 +104,12 @@ class Parameter:
         """
 
         self.parameter_type = parameter_type
+        """ Parameter type.
+        @type: pylems.model.paramater.ParameterType """
+
         self.value = value
+        """ Value of this parameter.
+        @type: Number """
 
     def set_value(self, value):
         """
@@ -129,19 +128,23 @@ class Parameter:
         """
         Sets the value of this parameter.
 
-        @param value_string: Value for this parameter. For example, "30mV" or "45 kg"
+        @param value_string: Value for this parameter. For example, "30mV" or
+        "45 kg"
         @type value_string: string
 
-        @param model: Model object storing the current model. (Needed to find the dimension for
-        the specified symbol)
+        @param model: Model object storing the current model. (Needed to find
+        the dimension for the specified symbol)
         @type model: pylems.model.model.Model
 
-        @attention: Having to pass the model in as a parameter is a temporary hack. This should
-        fixed at some point of time, once PyLems is able to run a few example files.
+        @attention: Having to pass the model in as a parameter is a temporary
+        hack. This should fixed at some point of time, once PyLems is able to
+        run a few example files.
         """
 
-        split_loc = min(map(lambda x: 100 if value_string.find(x) == -1 else value_string.find(x), 
-                  'abcdesghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'))
+        split_loc = min(map(lambda x: 100
+                            if value_string.find(x) == -1
+                            else value_string.find(x), 
+        'abcdesghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'))
         
         self.value = int(value_string[0:split_loc])
         sym = value_string[split_loc:].strip()
