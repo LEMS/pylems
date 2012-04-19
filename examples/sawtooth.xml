@@ -6,7 +6,6 @@
 
   <Unit symbol="V" dimension="voltage"/> 
   <Unit symbol="V_per_t" dimension="voltage_gradient"/> 
-  <Unit symbol="s" dimension="time"/> 
 
   <ComponentType name="SawtoothGenerator">
     <Parameter name="dV_per_dt" dimension="voltage_gradient"/>
@@ -26,6 +25,7 @@
 		     threshold="1 V"/>
 
   <Include file="SimpleSimulation.xml"/>
+  <Unit symbol="s" dimension="time"/> 
   
   <Simulation id="sawtooth" length="10s" step="0.1s" target="stgen">
     <Display id="d0" timeScale="10s" title="Sawtooth waveform">
