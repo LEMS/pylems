@@ -6,9 +6,10 @@ Context storage
 @contact: gautham@textensor.com, gautham@lisphacker.org
 """
 
+from pylems.base.base import PyLEMSBase
 from pylems.base.errors import ModelError
 
-class Context:
+class Context(PyLEMSBase):
     """
     Stores the current variable context.
     """
@@ -71,7 +72,7 @@ class Context:
 
         self.components[component.id] = component
 
-class Contextual:
+class Contextual(PyLEMSBase):
     """
     Base class for objects that need to store their own context.
     """

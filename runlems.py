@@ -25,4 +25,4 @@ except Exception as e:
     print e
     
 print '\n\nModel settings'
-print parser.get_model()
+#print parser.get_model()

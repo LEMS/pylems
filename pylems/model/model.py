@@ -19,7 +19,7 @@ class Model(Contextual):
         Constructor.
         """
 
-        super(Contextual, self).__init__()
+        super(Model, self).__init__()
         
         self.default_run = ''
         """ Name of the default simulation to run.

@@ -115,26 +115,36 @@ class LEMSParser(Parser):
                                                 'exposure', 'eventport', 
                                                 'fixed', 'link', 'parameter',
                                                 'requirement']
-        self.valid_children['behaviour'] = ['onevent', 'statevariable', 
-                                            'timederivative']
+        self.valid_children['behavior'] = ['build', 'derivedvariable',
+                                            'oncondition', 'onevent',
+                                            'onstart',
+                                            'statevariable', 'timederivative']
+        self.valid_children['behaviour'] = self.valid_children['behavior']
+        self.valid_children['oncondition'] = ['eventout', 'stateassignment']
         self.valid_children['onevent'] = ['stateassignment']
+        self.valid_children['onstart'] = ['stateassignment']
 
         self.tag_parse_table = dict()
         self.tag_parse_table['behavior'] = self.parse_behaviour
         self.tag_parse_table['behaviour'] = self.parse_behaviour
+        self.tag_parse_table['build'] = self.parse_build
         self.tag_parse_table['child'] = self.parse_child
         self.tag_parse_table['children'] = self.parse_children
         self.tag_parse_table['component'] = self.parse_component
         self.tag_parse_table['componentref'] = self.parse_component_ref
         self.tag_parse_table['componenttype'] = self.parse_component_type
         self.tag_parse_table['defaultrun'] = self.parse_default_run
+        self.tag_parse_table['derivedvariable'] = self.parse_derived_variable
         self.tag_parse_table['dimension'] = self.parse_dimension
-        self.tag_parse_table['exposure'] = self.parse_exposure
+        self.tag_parse_table['eventout'] = self.parse_event_out
         self.tag_parse_table['eventport'] = self.parse_event_port
+        self.tag_parse_table['exposure'] = self.parse_exposure
         self.tag_parse_table['fixed'] = self.parse_fixed
         self.tag_parse_table['include'] = self.parse_include
         self.tag_parse_table['link'] = self.parse_link
+        self.tag_parse_table['oncondition'] = self.parse_on_condition
         self.tag_parse_table['onevent'] = self.parse_on_event
+        self.tag_parse_table['onstart'] = self.parse_on_start
         self.tag_parse_table['parameter'] = self.parse_parameter
         self.tag_parse_table['requirement'] = self.parse_requirement
         self.tag_parse_table['stateassignment'] = self.parse_state_assignment
@@ -143,7 +153,7 @@ class LEMSParser(Parser):
         self.tag_parse_table['unit'] = self.parse_unit
 
 
-
+    prefix = ''
 
     def process_nested_tags(self, node):
         """
@@ -155,16 +165,21 @@ class LEMSParser(Parser):
         @raise ParseError: Raised when an unexpected nested tag is found.
         """
 
-        print 'NTAG - ', node.tag
+        self.prefix += '  '
+
+
         for child in node:
-            print 'CTAG - ', child.tag
+            print self.prefix, child.tag
             ctagl = child.tag.lower()
+            
             if ctagl in self.valid_children[node.tag.lower()]:
                 self.tag_parse_table[ctagl](child)
             elif child.tag in self.current_context.component_types:
                 self.parse_component_by_typename(child, child.tag)
             else:
                 raise ParseError('Unexpected tag - <' + child.tag + '>')
+
+        self.prefix = self.prefix[2:]
 
     def resolve_typename(self, typename):
         """ 
@@ -226,6 +241,18 @@ class LEMSParser(Parser):
         Parses <Behaviour>
 
         @param node: Node containing the <Behaviour> element
+        @type node: xml.etree.Element
+        """
+
+        self.process_nested_tags(node)
+        
+        pass
+
+    def parse_build(self, node):
+        """
+        Parses <Build>
+
+        @param node: Node containing the <Build> element
         @type node: xml.etree.Element
         """
 
@@ -373,6 +400,16 @@ class LEMSParser(Parser):
         
         self.model.set_default_run(node.attrib['component'])
     
+    def parse_derived_variable(self, node):
+        """
+        Parses <DerivedVariable>
+
+        @param node: Node containing the <DerivedVariable> element
+        @type node: xml.etree.Element
+        """
+
+        pass
+
     def parse_dimension(self, node):
         """
         Parses <Dimension>
@@ -395,6 +432,16 @@ class LEMSParser(Parser):
         self.model.add_dimension(Dimension(name, dim[0], dim[1], dim[2],
                                            dim[3], dim[4], dim[4], dim[6]))
             
+    def parse_event_out(self, node):
+        """
+        Parses <EventOut>
+
+        @param node: Node containing the <EventOut> element
+        @type node: xml.etree.Element
+        """
+
+        pass
+
     def parse_event_port(self, node):
         """
         Parses <EventPort>
@@ -470,6 +517,16 @@ class LEMSParser(Parser):
 
         pass
 
+    def parse_on_condition(self, node):
+        """
+        Parses <OnCondition>
+
+        @param node: Node containing the <OnCondition> element
+        @type node: xml.etree.Element
+        """
+
+        self.process_nested_tags(node)
+
     def parse_on_event(self, node):
         """
         Parses <OnEvent>
@@ -478,7 +535,17 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        pass
+        self.process_nested_tags(node)
+
+    def parse_on_start(self, node):
+        """
+        Parses <OnStart>
+
+        @param node: Node containing the <OnStart> element
+        @type node: xml.etree.Element
+        """
+
+        self.process_nested_tags(node)
 
     def parse_parameter(self, node):
         """

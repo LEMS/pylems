@@ -8,8 +8,9 @@ Parameter storage
 
 import re
 from pylems.base.errors import ModelError
+from pylems.base.base import PyLEMSBase
 
-class ParameterType:
+class ParameterType(PyLEMSBase):
     """
     Stores a parameter type.
     """
@@ -87,7 +88,7 @@ class ParameterType:
 
         self.fixed = True
 
-class Parameter:
+class Parameter(PyLEMSBase):
     """
     Stores a parameter.
     """

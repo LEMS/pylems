@@ -6,9 +6,10 @@ Types for component types and components
 @contact: gautham@textensor.com, gautham@lisphacker.org
 """
 
+from pylems.base.base import PyLEMSBase
 from pylems.model.parameter import ParameterType,Parameter
 
-class ComponentType:
+class ComponentType(PyLEMSBase):
     """
     Stores the specification of a user-defined component type.
     """
@@ -90,7 +91,7 @@ class ComponentType:
             raise ModelError('Parameter type ' + value_string +
                              ' not present in ' + self.name)
 
-class Component:
+class Component(PyLEMSBase):
     """
     Stores a single instance of a given component type.
     """
