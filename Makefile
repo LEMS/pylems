@@ -11,4 +11,4 @@ clean:
 
 test:
 	# ./runlems.py examples/example1.xml
-	./runlems.py examples/SimpleSimulation.xml
+	./runlems.py examples/sawtooth.xml

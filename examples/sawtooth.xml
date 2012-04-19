@@ -1,7 +1,6 @@
 <Lems>
   <DefaultRun component="sawtooth"/> 
 
-  <Dimension name="time" t="1"/>
   <Dimension name="voltage" m="1" l="2" t="-3" i="-1"/>
   <Dimension name="voltage_gradient" m="1" l="2" t="-4" i="-1"/>
 

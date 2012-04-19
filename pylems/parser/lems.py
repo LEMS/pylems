@@ -634,9 +634,13 @@ class LEMSParser(Parser):
         try:
             symbol = node.attrib['symbol']
             dim = node.attrib['dimension']
-            pow10 = int(node.attrib['powten'])
         except:
             raise ParseError('Invalid unit format')
+
+        if 'powten' in node.attrib:
+            pow10 = int(node.attrib['powten'])
+        else:
+            pow10 = 0
 
         if dim not in self.model.dimensions:
             raise ModelError('Reference to undefined dimension')
