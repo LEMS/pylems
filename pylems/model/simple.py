@@ -37,8 +37,7 @@ class Dimension(PyLEMSBase):
         
         self.m = 0
         """ Mass (default unit - kilogram)
-        @type: int
-        """
+        @type: int """
         
         self.t = 0
         """ Time (default unit - second)

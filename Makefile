@@ -10,4 +10,5 @@ clean:
 	rm -rf doc/epydoc/*
 
 test:
-	./runlems.py examples/example1.xml
+	# ./runlems.py examples/example1.xml
+	./runlems.py examples/SimpleSimulation.xml

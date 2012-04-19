@@ -23,7 +23,6 @@
     </Behavior>
   </ComponentType>
 
-
   <ComponentType name="Simulation">
     <Parameter name="length" dimension="time"/>
     <Parameter name="step" dimension="time"/>

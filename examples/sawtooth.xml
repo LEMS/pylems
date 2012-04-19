@@ -1,0 +1,36 @@
+<Lems>
+  <DefaultRun component="sawtooth"/> 
+
+  <Dimension name="time" t="1"/>
+  <Dimension name="voltage" m="1" l="2" t="-3" i="-1"/>
+  <Dimension name="voltage_gradient" m="1" l="2" t="-4" i="-1"/>
+
+  <Unit symbol="V" dimension="voltage"/> 
+  <Unit symbol="V_per_t" dimension="voltage_gradient"/> 
+  <Unit symbol="s" dimension="time"/> 
+
+  <ComponentType name="SawtoothGenerator">
+    <Parameter name="dV_per_dt" dimension="voltage_gradient"/>
+    <Parameter name="threshold" dimension="voltage"/>
+    <Exposure name="v" dimension="voltage"/>
+    <Behavior>
+      <StateVariable name="v" exposure="v" dimension="voltage"/>
+      <TimeDerivative variable="v" value="dV_per_dt"/>
+      <OnCondition test="v .gt. threshold">
+	<StateAssignment variable="v" value="0"/>
+      </OnCondition>
+    </Behavior>
+  </ComponentType>
+  
+  <SawtoothGenerator id="stgen" 
+		     dV_per_dt="1 V_per_t" 
+		     threshold="1 V"/>
+
+  <Include file="SimpleSimulation.xml"/>
+  
+  <Simulation id="sawtooth" length="10s" step="0.1s" target="stgen">
+    <Display id="d0" timeScale="10s" title="Sawtooth waveform">
+      <Line id="V" quantity="v" scale="1s" color="#ff0000"/>        
+    </Display>
+  </Simulation>
+</Lems>

@@ -167,7 +167,6 @@ class LEMSParser(Parser):
 
         self.prefix += '  '
 
-
         for child in node:
             print self.prefix, child.tag
             ctagl = child.tag.lower()
