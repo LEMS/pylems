@@ -114,19 +114,17 @@ class LEMSParser(Parser):
                                                 'componentref',
                                                 'exposure', 'eventport', 
                                                 'fixed', 'link', 'parameter',
-                                                'requirement']
+                                                'requirement', 'text']
         self.valid_children['behavior'] = ['build', 'derivedvariable',
-                                            'oncondition', 'onevent',
-                                            'onstart',
-                                            'statevariable', 'timederivative']
-        self.valid_children['behaviour'] = self.valid_children['behavior']
+                                           'oncondition', 'onevent',
+                                           'onstart', 'show',
+                                           'statevariable', 'timederivative']
         self.valid_children['oncondition'] = ['eventout', 'stateassignment']
         self.valid_children['onevent'] = ['stateassignment']
         self.valid_children['onstart'] = ['stateassignment']
 
         self.tag_parse_table = dict()
         self.tag_parse_table['behavior'] = self.parse_behaviour
-        self.tag_parse_table['behaviour'] = self.parse_behaviour
         self.tag_parse_table['build'] = self.parse_build
         self.tag_parse_table['child'] = self.parse_child
         self.tag_parse_table['children'] = self.parse_children
@@ -147,8 +145,10 @@ class LEMSParser(Parser):
         self.tag_parse_table['onstart'] = self.parse_on_start
         self.tag_parse_table['parameter'] = self.parse_parameter
         self.tag_parse_table['requirement'] = self.parse_requirement
+        self.tag_parse_table['show'] = self.parse_show
         self.tag_parse_table['stateassignment'] = self.parse_state_assignment
         self.tag_parse_table['statevariable'] = self.parse_state_variable
+        self.tag_parse_table['text'] = self.parse_text
         self.tag_parse_table['timederivative'] = self.parse_time_derivative
         self.tag_parse_table['unit'] = self.parse_unit
 
@@ -588,6 +588,16 @@ class LEMSParser(Parser):
 
         pass
 
+    def parse_show(self, node):
+        """
+        Parses <Show>
+
+        @param node: Node containing the <Show> element
+        @type node: xml.etree.Element
+        """
+
+        pass
+
     def parse_state_assignment(self, node):
         """
         Parses <StateAssignment>
@@ -613,6 +623,16 @@ class LEMSParser(Parser):
         Parses <TimeDerivative>
 
         @param node: Node containing the <TimeDerivative> element
+        @type node: xml.etree.Element
+        """
+
+        pass
+
+    def parse_text(self, node):
+        """
+        Parses <Text>
+
+        @param node: Node containing the <Text> element
         @type node: xml.etree.Element
         """
 
