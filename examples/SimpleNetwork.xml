@@ -3,8 +3,8 @@
     <Children name="populations" type="Population"/>
     <Children name="connectivities" type="EventConnectivity"/>
   </ComponentType>
-
-
+  
+  
   <ComponentType name="Population">
     <ComponentRef name="component" type="Component"/>
     <Parameter name="size" dimension="none"/>

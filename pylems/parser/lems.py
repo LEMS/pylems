@@ -168,7 +168,10 @@ class LEMSParser(Parser):
         self.prefix += '  '
 
         for child in node:
-            print self.prefix, child.tag
+            print self.prefix, child.tag,
+            print child.attrib['name'] if 'name' in child.attrib else '',
+            print child.attrib['id'] if 'id' in child.attrib else ''
+
             ctagl = child.tag.lower()
             
             if ctagl in self.valid_children[node.tag.lower()]:
