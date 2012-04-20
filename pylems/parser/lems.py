@@ -180,6 +180,10 @@ class LEMSParser(Parser):
 
             try:
                 self.tag_parse_table[ctagl](child)
+            except ParseError as e:
+                raise ParseError(e.message)
+            except ModelError as e:
+                raise ModelError(e.message)
             except:
                 self.parse_component_by_typename(child, child.tag)
 
@@ -295,15 +299,36 @@ class LEMSParser(Parser):
         @raise ParseError: Raised when the component does not have an id.
         """
 
-        if 'id' in node.attrib:
-            id = node.attrib['id']
-        else:
-            raise ParseError('Component must have an id')
-        
-        type = node.tag
+        if self.current_context.context_type == Context.GLOBAL:
+            # Global component instatiation
+            if 'id' in node.attrib:
+                id = node.attrib['id']
+            else:
+                raise ParseError('Component must have an id')
+            
+            type = node.tag
 
-        component = Component(id, self.current_context, type, None)
-        self.current_context.add_component(component)
+            component = Component(id, self.current_context, type, None)
+            self.current_context.add_component(component)
+        else:
+            # Child instantiation
+            if 'id' in node.attrib:
+                id = node.attrib['id']
+            else:
+                id = '__id_inherited__'
+                
+            if 'type' in node.attrib:
+                type = node.attrib['type']
+            else:
+                type = '__type_inherited__'
+
+            component = Component(id, self.current_context, type)
+            
+            for key in node.attrib:
+                if key != 'id' and key != 'type':
+                    param = Parameter(key, '__dimension_inherited__')
+                    param.set_value(node.attrib[key])
+                    component.add_parameter(param)
 
         self.push_context(component.context)
         self.process_nested_tags(node)
@@ -318,8 +343,8 @@ class LEMSParser(Parser):
         """
 
         if 'id' in node.attrib:
-            ids = node.attrib['id']
-        else:
+            id = node.attrib['id']
+        else:            
             raise ParseError('Component must have an id')
         
         if 'type' in node.attrib:
@@ -359,8 +384,6 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
 
         @raise ParseError: Raised when the component type does not have a name.
-        @raise ParseError: Raised when the component type extends an udefined
-        component type.
         """
         
         try:
@@ -461,9 +484,9 @@ class LEMSParser(Parser):
 
         @raise ParseError: Raised when
         """
-        
+
         try:
-            parameter_name = node.attrib['parameter']
+            parameter = node.attrib['parameter']
         except:
             raise ParseError('Parameter to be fixed must be specified')
 
@@ -472,12 +495,12 @@ class LEMSParser(Parser):
         except:
             raise ParseError('Value to be fixed must be specified')
 
-        if not self.current_component_type:
-            raise ParseError('Fixed parameter specification is not ' +
-                             'permitted in this location')
-
-        self.current_component_type.fix_parameter_type(
-            parameter_name, value, self.model)
+        print self.current_context.lookup_parameter(parameter)
+        
+        if self.current_context.lookup_parameter(parameter) == None:
+            self.current_context.add_parameter(Parameter(
+                parameter, '__dimension_inherited__'))
+        self.current_context.lookup_parameter(parameter).fix_value(value)
 
     def parse_include(self, node):
         """
@@ -667,19 +690,16 @@ class LEMSParser(Parser):
 
         try:
             symbol = node.attrib['symbol']
-            dim = node.attrib['dimension']
+            dimension = node.attrib['dimension']
         except:
-            raise ParseError('Invalid unit format')
+            raise ParseError('Unit must have a symbol and dimension.')
 
         if 'powten' in node.attrib:
             pow10 = int(node.attrib['powten'])
         else:
             pow10 = 0
 
-        if dim not in self.model.dimensions:
-            raise ModelError('Reference to undefined dimension')
-        
-        self.model.add_unit(Unit(symbol, self.model.dimensions[dim], pow10))
+        self.model.add_unit(Unit(symbol, dimension, pow10))
     
     def parse_root(self, node):
         """

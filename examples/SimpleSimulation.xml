@@ -1,7 +1,5 @@
 <Lems>
 
-  <Dimension name="time" t="1"/>
-
   <ComponentType name="Display">
     <Parameter name="timeScale" Dimension="time"/>
     <Children name="lines" type="Line"/>

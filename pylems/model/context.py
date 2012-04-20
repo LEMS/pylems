@@ -14,7 +14,16 @@ class Context(PyLEMSBase):
     Stores the current type and variable context.
     """
 
-    def __init__(self, parent = None):
+    GLOBAL = 0
+    """ Global context """
+    
+    COMPONENT_TYPE = 1
+    """ Component type context """
+    
+    COMPONENT = 2
+    """ Component context """
+
+    def __init__(self, parent = None, context_type = GLOBAL):
         """
         Constructor
         """
@@ -34,6 +43,11 @@ class Context(PyLEMSBase):
         self.parameters = None
         """ Dictionary of references to parameters defined in this context.
         @type: dict(string -> pylems.model.parameter.Parameter) """
+
+        self.context_type = context_type
+        """ Context type (Global, component type or component)
+        @type: enum(Context.GLOBAL, Context.COMPONENT_TYPE or
+        Context.COMPONENT_TYPE) """
 
     def add_component_type(self, component_type):
         """
@@ -98,16 +112,16 @@ class Context(PyLEMSBase):
 
     def lookup_parameter(self, parameter_name):
         """
-        Lookup a parameter in this context by name.
+        Lookup a parameter by name within this context.
 
         @param parameter_name: Name of the parameter.
-        @type: string
+        @type parameter_name: string
 
         @return: Corresponding Parameter object or None if not found.
         @rtype: pylems.model.parameter.Parameter
         """
 
-        if parameter_name in self.parameters:
+        if self.parameters != None and parameter_name in self.parameters:
             return self.parameters[parameter_name]
         else:
             return None
@@ -117,12 +131,12 @@ class Contextual(PyLEMSBase):
     Base class for objects that need to store their own context.
     """
 
-    def __init__(self, parent = None):
+    def __init__(self, parent = None, context_type = Context.GLOBAL):
         """
         Constructor.
         """
         
-        self.context = Context(parent)
+        self.context = Context(parent, context_type)
         """ Context object.
         @type: pylems.model.context.Context """
 
@@ -164,7 +178,7 @@ class Contextual(PyLEMSBase):
         Lookup a parameter in this context by name.
 
         @param parameter_name: Name of the parameter.
-        @type: string
+        @type parameter_name: string
 
         @return: Corresponding Parameter object or None if not found.
         @rtype: pylems.model.parameter.Parameter

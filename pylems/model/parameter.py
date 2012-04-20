@@ -63,35 +63,31 @@ class Parameter(PyLEMSBase):
 
         return Parameter(self.name, self.dimension, self.fixed, self.value)
 
-    def fix_value(self, value_string, model):
+    def fix_value(self, value):
         """
         Fixes the value of this parameter.
 
-        @param value_string: Fixed value for this parameter.
+        @param value: Fixed value for this parameter.
         For example, "30mV" or "45 kg"
-        @type value_string: string
+        @type value: string
 
-        @param model: Model object storing the current model. (Needed to find
-        the dimension for the specified symbol)
-        @type model: pylems.model.model.Model
-
-        @attention: Having to pass the model in as a parameter is a temporary
-        hack. This should fixed at some point of time, once PyLems is able to
-        run a few example files.
+        @raise ModelError: Raised ModelError if the parameter is already fixed.
         """
 
         if self.fixed:
             raise ModelError('Parameter already fixed.')
 
-        self.set_value_text(value_string, model)
+        self.set_value(value)
         self.fixed = True
 
     def set_value(self, value):
         """
         Sets the value of this parameter.
 
-        @param value: Value for this parameter.
-        @type value: Number
+        @param value: Value for this parameter. For example, "30mV" or "45 kg"
+        @type value: string
+
+        @raise ModelError: Raised ModelError if the parameter is already fixed.
         """
 
         if self.fixed:
@@ -99,40 +95,35 @@ class Parameter(PyLEMSBase):
 
         self.value = value
 
-    def set_value_text(self, value_string, model):
-        """
-        Sets the value of this parameter.
 
-        @param value_string: Value for this parameter. For example, "30mV" or
-        "45 kg"
-        @type value_string: string
+    ## def set_value_text(self, value_string, model):
+    ##     """
+    ##     Sets the value of this parameter.
 
-        @param model: Model object storing the current model. (Needed to find
-        the dimension for the specified symbol)
-        @type model: pylems.model.model.Model
+    ##     @param value_string: Value for this parameter. For example, "30mV" or
+    ##     "45 kg"
+    ##     @type value_string: string
 
-        @attention: Having to pass the model in as a parameter is a temporary
-        hack. This should fixed at some point of time, once PyLems is able to
-        run a few example files.
-        """
+    ##     @raise: Raised ModelError if the parameter is already fixed.
+    ##     """
 
-        if self.fixed:
-            raise ModelError('Parameter already fixed.')
+    ##     if self.fixed:
+    ##         raise ModelError('Parameter already fixed.')
         
-        split_loc = min(map(lambda x: 100
-                            if value_string.find(x) == -1
-                            else value_string.find(x), 
-        'abcdesghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'))
+    ##     split_loc = min(map(lambda x: 100
+    ##                         if value_string.find(x) == -1
+    ##                         else value_string.find(x), 
+    ##     'abcdesghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'))
         
-        self.value = int(value_string[0:split_loc])
-        sym = value_string[split_loc:].strip()
+    ##     self.value = int(value_string[0:split_loc])
+    ##     sym = value_string[split_loc:].strip()
 
-        if sym not in model.units:
-            raise ModelError('Invalid symbol ' + sym)
+    ##     if sym not in model.units:
+    ##         raise ModelError('Invalid symbol ' + sym)
 
-        dim1 = model.dimensions[model.units[sym].dimension]
-        dim2 = model.dimensions[self.dimension]
-        if dim1 != dim2:
-            raise ModelError('Dimension mismatch')
+    ##     dim1 = model.dimensions[model.units[sym].dimension]
+    ##     dim2 = model.dimensions[self.dimension]
+    ##     if dim1 != dim2:
+    ##         raise ModelError('Dimension mismatch')
 
-        self.value *= 10 ** model.units[sym].pow10
+    ##     self.value *= 10 ** model.units[sym].pow10

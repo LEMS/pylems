@@ -7,7 +7,7 @@ Types for component types and components
 """
 
 from pylems.base.errors  import ModelError
-from pylems.model.context import Contextual
+from pylems.model.context import Context,Contextual
 from pylems.model.parameter import Parameter
 
 class ComponentType(Contextual):
@@ -29,7 +29,7 @@ class ComponentType(Contextual):
         @type extends: string
         """
 
-        Contextual.__init__(self, context)
+        Contextual.__init__(self, context, Context.COMPONENT_TYPE)
 
         self.name = name
         """ Name of this component type.
@@ -93,7 +93,7 @@ class Component(Contextual):
         @note: Atleast one of component_type or extends must be valid.
         """
         
-        Contextual.__init__(self, context)
+        Contextual.__init__(self, context, Context.COMPONENT)
 
         self.id = id 
         """ Globally unique name for this component.

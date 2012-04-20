@@ -93,14 +93,14 @@ class Unit(PyLEMSBase):
         """
 
         self.symbol = symbol
-        """ Symbol used to define this unit
+        """ Symbol used to define this unit.
         @type: string """
 
         self.dimension = dimension
-        """ Dimension of this unit
-        @type: pylems.base.units.Dimension """
+        """ Dimension of this unit.
+        @type: string """
 
         self.pow10 = pow10
         """ Scaling factor in terms of powers of 10 relative to
-        the default dimensions for this unit
+        the default dimensions for this unit.
         @type: int """

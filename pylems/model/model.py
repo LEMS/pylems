@@ -21,8 +21,8 @@ class Model(Contextual):
 
         super(Model, self).__init__()
         
-        self.default_run = ''
-        """ Name of the default simulation to run.
+        self.default_run = []
+        """ Names of simulations to run.
         @type: string """
 
         self.dimensions = None
@@ -43,7 +43,7 @@ class Model(Contextual):
         
         @param default_run: Name of a simulation to run by default
         @type default_run: string """
-        self.default_run = default_run
+        self.default_run += [default_run]
 
     def add_dimension(self, dimension):
         """
@@ -90,7 +90,7 @@ class Model(Contextual):
                 t = context.component_types[tn]
                 s += prefix + '  ' + t.name
                 if t.extends:
-                    s += ' (extends ' + t.extends.name + ')'
+                    s += ' (extends ' + t.extends + ')'
                 s += '\n'
                 s += self.context2str(t.context, prefix)
 
@@ -98,7 +98,11 @@ class Model(Contextual):
             s += prefix + 'Components:\n'
             for cn in context.components:
                 c = context.components[cn]
-                s += prefix + '  ' + c.id + ': ' + c.component_type + '\n'
+                s += prefix + '  ' + c.id
+                if c.component_type:
+                    s += ': ' + c.component_type + '\n'
+                else:
+                    s+= ' (extends ' + c.extends + ')' + '\n'
                 s += self.context2str(c.context, prefix + '  ')
 
         
@@ -106,7 +110,9 @@ class Model(Contextual):
     def __str__(self):
         s = ''
 
-        s += 'Default run: ' + self.default_run + '\n'
+        s += 'Default run:\n'
+        for run in self.default_run:
+            s += '  ' + run + '\n'
         
         s += 'Dimensions:\n'
         if self.dimensions != None:
