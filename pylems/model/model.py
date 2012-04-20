@@ -81,6 +81,28 @@ class Model(Contextual):
         else:
             self.units[unit.symbol] = unit
 
+    def context2str(self, context, prefix):
+        s = ''
+        prefix = prefix + '  '
+        if context.component_types:
+            s += prefix + 'Component types:\n'
+            for tn in context.component_types:
+                t = context.component_types[tn]
+                s += prefix + '  ' + t.name
+                if t.extends:
+                    s += ' (extends ' + t.extends.name + ')'
+                s += '\n'
+                s += self.context2str(t.context, prefix)
+
+        if context.components:
+            s += prefix + 'Components:\n'
+            for cn in context.components:
+                c = context.components[cn]
+                s += prefix + '  ' + c.id + ': ' + c.component_type + '\n'
+                s += self.context2str(c.context, prefix + '  ')
+
+        
+        return s
     def __str__(self):
         s = ''
 
@@ -97,33 +119,7 @@ class Model(Contextual):
                 s += '  ' + u + '\n'
 
         if self.context:
-            if self.context.component_types:
-                s += 'Component types:\n'
-                for tn in self.context.component_types:
-                    t = self.context.component_types[tn]
-                    s += '  ' + t.name
-                    if t.extends:
-                        s += ' (extends ' + t.extends.name + ')'
-                    s += '\n'
-
-                    if t.parameter_types:
-                        for pn in t.parameter_types:
-                            p = t.parameter_types[pn]
-                            s += '    ' + p.name + ': ' + p.dimension.name
-                            if p.fixed:
-                                s += ' fixed to ' + str(p.fixed_value)
-                            s += '\n'
-
-            if self.context.components:
-                s += 'Components:\n'
-                for cn in self.context.components:
-                    c = self.context.components[cn]
-                    s += '  ' + c.id + ': ' + c.component_type.name + '\n'
-
-                    if c.parameters:
-                        for pn in c.parameters:
-                            p = c.parameters[pn]
-                            s += '    ' + pn + ': ' + p.parameter_type.name
-                            s += ' = ' + str(p.value) + '\n'
+            s += 'Global context:\n'
+            s += self.context2str(self.context, '')
             
         return s

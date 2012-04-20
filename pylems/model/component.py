@@ -6,24 +6,30 @@ Types for component types and components
 @contact: gautham@textensor.com, gautham@lisphacker.org
 """
 
-from pylems.base.base import PyLEMSBase
-from pylems.model.parameter import ParameterType,Parameter
+from pylems.base.errors  import ModelError
+from pylems.model.context import Contextual
+from pylems.model.parameter import Parameter
 
-class ComponentType(PyLEMSBase):
+class ComponentType(Contextual):
     """
     Stores the specification of a user-defined component type.
     """
     
-    def __init__(self, name, extends = None):
+    def __init__(self, name, context, extends = None):
         """
         Constructor
 
         @param name: Name of this component type.
         @type name: string
 
+        @param context: The context in which to create this component type.
+        @type context: pylems.model.context.Context
+
         @param extends: Base component type extended by this type.
-        @type extends: pylems.model.component.ComponentType
+        @type extends: string
         """
+
+        Contextual.__init__(self, context)
 
         self.name = name
         """ Name of this component type.
@@ -31,40 +37,11 @@ class ComponentType(PyLEMSBase):
 
         self.extends = extends
         """ Base component type extended by this type.
-        @type: pylems.model.component.ComponentType """
+        @type: string """
 
-        self.parameter_types = None
-        """ Dictionaty of parameter types in this object.
-        @type: dict(string -> pylems.model.parameter.ParameterType) """
-
-        if extends:
-            if extends.parameter_types:
-                for ptn in extends.parameter_types:
-                    self.add_parameter_type(extends.parameter_types[ptn].copy())
-
-    def add_parameter_type(self, parameter_type):
+    def fix_parameter(self, parameter_name, value_string, model):
         """
-        Adds a parameter type to the list of parameter types in this object.
-
-        @param parameter_type: Parametert type to be added
-        @type parameter_type: pylems.model.parameter.ParameterType
-
-        @raise ModelError: Raised when the parameter type is already defined
-        in the current object.
-        """
-
-        if self.parameter_types == None:
-            self.parameter_types = dict()
-
-        if parameter_type.name in self.parameter_types:
-            raise ModelError('Duplicate parameter_type type - ' +
-                             parameter_type.name)
-
-        self.parameter_types[parameter_type.name] = parameter_type
-
-    def fix_parameter_type(self, parameter_name, value_string, model):
-        """
-        Fixes the value of a parameter type to the specified value.
+        Fixes the value of a parameter to the specified value.
 
         @param parameter_name: Name of the parameter to be fixed.
         @type parameter_name: string
@@ -81,82 +58,55 @@ class ComponentType(PyLEMSBase):
         hack. This should fixed at some point of time, once PyLEMS is able to
         run a few example files.
 
-        @raise ModelError: Raised when the parameter type does not exist in this 
+        @raise ModelError: Raised when the parameter does not exist in this 
         component type.
         """
 
-        if parameter_name in self.parameter_types:
-            self.parameter_types[parameter_name].fix_value(value_string, model)
-        else:
-            raise ModelError('Parameter type ' + value_string +
+        parameter = self.lookup_parameter(parameter_name)
+        if parameter == None:
+            raise ModelError('Parameter ' + value_string +
                              ' not present in ' + self.name)
 
-class Component(PyLEMSBase):
+        parameter.fix_value(value_string, model)
+
+class Component(Contextual):
     """
     Stores a single instance of a given component type.
     """
 
-    def __init__(self, id, component_type, extends = None):
+    def __init__(self, id, context, component_type, extends = None):
         """
         Constructor
 
         @param id: Id/name for this component.
         @type id: string
 
+        @param context: The context in which to create this component.
+        @type context: pylems.model.context.Context
+
         @param component_type: Type of component.
-        @type component_type: pylems.model.component.ComponentType
+        @type component_type: string
 
         @param extends: Component extended by this one.
-        @param extends: pylems.model.component.Component
+        @param extends: string
 
         @note: Atleast one of component_type or extends must be valid.
         """
         
+        Contextual.__init__(self, context)
+
         self.id = id 
         """ Globally unique name for this component.
         @type: string """
         
-        self.component_type = None
+        self.component_type = component_type
         """ Type of component.
-        @type: pylems.model.component.ComponentType """
+        @type: string """
             
-        self.parameters = None
-        """ Dictionaty of parameters in this object.
-        @type: dict(string -> pylems.model.parameter.Parameter) """
-
         if component_type == None and extends == None:
             raise ModelError('Component definition requires a component type ' +
                              'or a base component')
 
-        if component_type:
-            self.component_type = component_type
-
-            if component_type.parameter_types != None:
-                for ptn in component_type.parameter_types:
-                    pt = component_type.parameter_types[ptn]
-                    p = Parameter(pt)
-                    self.add_parameter(p)
-                    if pt.fixed:
-                        p.set_value(pt.fixed_value)
-        else:
-            self.component_type = extends.component_type
-
-            for pn in extends.parameters:
-                p = extends.parameters[pn]
-                self.add_parameter(p.copy())
-
-    def add_parameter(self, parameter):
-        """
-        Adds a parameter to the list of parameters in this object.
-
-        @param parameter: Parameter to be added
-        @type parameter: pylems.model.parameter.Parameter
-
-        @raise ModelError: Raised when the parameter is already defined in the 
-        current object.
-        """
-
-        if self.parameters == None:
-            self.parameters = dict()
-
-        self.parameters[parameter.parameter_type.name] = parameter
+        self.extends = extends
+        """ Name of component extended by this component..
+        @type: string """

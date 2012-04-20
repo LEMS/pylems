@@ -10,20 +10,26 @@ import re
 from pylems.base.errors import ModelError
 from pylems.base.base import PyLEMSBase
 
-class ParameterType(PyLEMSBase):
+class Parameter(PyLEMSBase):
     """
-    Stores a parameter type.
+    Stores a parameter.
     """
 
-    def __init__(self, name, dimension):
+    def __init__(self, name, dimension, fixed = False, value = None):
         """
         Constructor
 
-        @param name: Name of this parameter type
+        @param name: Name of this parameter.
         @type name: string
 
-        @param dimension: Dimension of this parameter type
-        @type dimension: pylems.model.simple.Dimension
+        @param dimension: Dimension of this parameter.
+        @type dimension: string
+
+        @param fixed: Is this parameter fixed?
+        @type fixed: Boolean
+
+        @param value: Value of this parameter.
+        @type value: Number
         """
 
         self.name = name
@@ -32,32 +38,36 @@ class ParameterType(PyLEMSBase):
         
         self.dimension = dimension
         """ Dimension for this parameter.
-        @type: pylems.model.simple.Dimension """
+        @type: string """
         
-        self.fixed = False
+        self.fixed = fixed
         """ Set to True if this parameter has a fixed value.
         @type: Boolean """
-        
-        self.fixed_value = None
-        """ Fixed value for this parameter.
+
+        if fixed and value == None:
+            raise ModelError('A numeric value must be provided to fix' +
+                             'this parameter')
+            
+        self.value = value
+        """ Value for this parameter.
         @type: Number """
 
 
     def copy(self):
         """
-        Makes a copy of this parameter type.
+        Makes a copy of this parameter.
 
-        @return: A copy of this parameter type.
-        @rtype: pylems.model.parameter.ParameterType
+        @return: A copy of this parameter.
+        @rtype: pylems.model.parameter.Parameter
         """
 
-        return ParameterType(self.name, self.dimension)
+        return Parameter(self.name, self.dimension, self.fixed, self.value)
 
     def fix_value(self, value_string, model):
         """
-        Fixes the value of this parameter type.
+        Fixes the value of this parameter.
 
-        @param value_string: Fixed value for this parameter type.
+        @param value_string: Fixed value for this parameter.
         For example, "30mV" or "45 kg"
         @type value_string: string
 
@@ -70,47 +80,11 @@ class ParameterType(PyLEMSBase):
         run a few example files.
         """
 
-        split_loc = min(map(lambda x: 100
-                            if value_string.find(x) == -1
-                            else value_string.find(x),
-        'abcdesghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'))
-        
-        self.fixed_value = int(value_string[0:split_loc])
-        sym = value_string[split_loc:].strip()
+        if self.fixed:
+            raise ModelError('Parameter already fixed.')
 
-        if sym not in model.units:
-            raise ModelError('Invalid symbol ' + sym)
-
-        if model.units[sym].dimension.name != self.dimension.name:
-            raise ModelError('Dimension mismatch')
-
-        self.fixed_value *= 10 ** model.units[sym].pow10
-
+        self.set_value_text(value_string, model)
         self.fixed = True
-
-class Parameter(PyLEMSBase):
-    """
-    Stores a parameter.
-    """
-
-    def __init__(self, parameter_type, value = None):
-        """
-        Constructor
-
-        @param parameter_type: Type for this parameter.
-        @type parameter_type: pylems.model.parameter.ParameterType
-
-        @param value: Value for this parameter
-        @type value: Number
-        """
-
-        self.parameter_type = parameter_type
-        """ Parameter type.
-        @type: pylems.model.paramater.ParameterType """
-
-        self.value = value
-        """ Value of this parameter.
-        @type: Number """
 
     def set_value(self, value):
         """
@@ -120,10 +94,10 @@ class Parameter(PyLEMSBase):
         @type value: Number
         """
 
-        if self.parameter_type.fixed:
-            self.value = self.parameter_type.fixed_value
-        else:
-            self.value = value
+        if self.fixed:
+            raise ModelError('Parameter already fixed.')
+
+        self.value = value
 
     def set_value_text(self, value_string, model):
         """
@@ -142,6 +116,9 @@ class Parameter(PyLEMSBase):
         run a few example files.
         """
 
+        if self.fixed:
+            raise ModelError('Parameter already fixed.')
+        
         split_loc = min(map(lambda x: 100
                             if value_string.find(x) == -1
                             else value_string.find(x), 
@@ -153,18 +130,9 @@ class Parameter(PyLEMSBase):
         if sym not in model.units:
             raise ModelError('Invalid symbol ' + sym)
 
-        if model.units[sym].dimension.name != self.parameter_type.dimension.name:
+        dim1 = model.dimensions[model.units[sym].dimension]
+        dim2 = model.dimensions[self.dimension]
+        if dim1 != dim2:
             raise ModelError('Dimension mismatch')
 
         self.value *= 10 ** model.units[sym].pow10
-
-    def copy(self):
-        """
-        Makes a copy of this parameter.
-
-        @return: A copy of this parameter type.
-        @rtype: pylems.model.parameter.ParameterType
-        """
-
-        return Parameter(self.parameter_type, self.value)
-

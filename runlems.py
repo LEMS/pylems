@@ -15,7 +15,8 @@ parser = LEMSParser()
 parser.init_parser()
 
 try:
-    parser.parse_file(model_file)
+    #parser.parse_file(model_file)
+    pass
 except ParseError as e:
     print e
 except ModelError as e:
@@ -23,6 +24,7 @@ except ModelError as e:
 except Exception as e:
     print type(e)
     print e
-    
+
+parser.parse_file(model_file)
 print '\n\nModel settings'
-#print parser.get_model()
+print parser.get_model()
