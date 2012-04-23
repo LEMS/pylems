@@ -710,9 +710,27 @@ class LEMSParser(Parser):
 
         @param node: Node containing the <TimeDerivative> element
         @type node: xml.etree.Element
+
+        @raise ParseError: Raised when the time derivative is not
+        being defined in the context of a component type.
         """
 
-        pass
+        if self.current_context.context_type != Context.COMPONENT_TYPE:
+            raise ParseError('Time derivatives can only be defined in ' +
+                             'a component type')
+
+        if 'variable' in node.attrib:
+            name = node.attrib['variable']
+        else:
+            raise ParseError('The state variable being differentiated wrt time' +
+                             ' must be specified')
+
+        if 'value' in node.attrib:
+            value = node.attrib['value']
+        else:
+            raise ParseError('The time derivative expression must be provided')
+
+        self.current_context.add_time_derivative(name, value)
 
     def parse_text(self, node):
         """

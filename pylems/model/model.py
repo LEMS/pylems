@@ -83,6 +83,32 @@ class Model(Contextual):
 
     tab = '  '
 
+    def behavior2str(self, behavior, prefix):
+        s = prefix
+        if behavior.name != '':
+            s += name
+        else:
+            s += '*'
+        s += '\n'
+
+        if behavior.state_variables:
+            s += prefix + Model.tab + 'State variables:\n'
+            for svn in behavior.state_variables:
+                sv = behavior.state_variables[svn]
+                s += prefix + Model.tab*2 + sv.name
+                if sv.exposure:
+                    s += ' (exposed as ' + sv.exposure + ')'
+                s += ': ' + sv.dimension + '\n'
+
+        if behavior.time_derivatives:
+            s += prefix + Model.tab + 'Time derivatives:\n'
+            for tdn in behavior.time_derivatives:
+                td = behavior.time_derivatives[tdn]
+                s += prefix + Model.tab*2 + td.name + ' = ' + td.value + '\n'
+
+
+        return s
+
     def context2str(self, context, prefix):
         s = ''
         prefix = prefix + Model.tab
@@ -116,20 +142,7 @@ class Model(Contextual):
             s += prefix + 'Behavior profiles:\n'
             for name in context.behavior_profiles:
                 behavior = context.behavior_profiles[name]
-                s += prefix + Model.tab
-                if name != '':
-                    s += name
-                else:
-                    s += '*'
-                s += '\n'
-
-                if behavior.state_variables:
-                    for svn in behavior.state_variables:
-                        sv = behavior.state_variables[svn]
-                        s += prefix + Model.tab*2 + sv.name
-                        if sv.exposure:
-                            s += ' (exposed as ' + sv.exposure + ')'
-                        s += ': ' + sv.dimension + '\n'
+                s += self.behavior2str(behavior, prefix + Model.tab*2)
 
         return s
     
