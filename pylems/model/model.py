@@ -111,7 +111,25 @@ class Model(Contextual):
             s += prefix + 'Exposures:\n'
             for name in context.exposures:
                 s += prefix + Model.tab + name + '\n'
-            
+
+        if context.behavior_profiles:
+            s += prefix + 'Behavior profiles:\n'
+            for name in context.behavior_profiles:
+                behavior = context.behavior_profiles[name]
+                s += prefix + Model.tab
+                if name != '':
+                    s += name
+                else:
+                    s += '*'
+                s += '\n'
+
+                if behavior.state_variables:
+                    for svn in behavior.state_variables:
+                        sv = behavior.state_variables[svn]
+                        s += prefix + Model.tab*2 + sv.name
+                        if sv.exposure:
+                            s += ' (exposed as ' + sv.exposure + ')'
+                        s += ': ' + sv.dimension + '\n'
 
         return s
     

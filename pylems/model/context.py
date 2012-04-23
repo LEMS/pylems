@@ -50,8 +50,12 @@ class Context(PyLEMSBase):
         @type: enum(Context.GLOBAL, Context.COMPONENT_TYPE or
         Context.COMPONENT_TYPE) """
 
-        self.behavior = None
-        """ Stores the behavior of the current object.
+        self.behavior_profiles = None
+        """ Stores the various behavior profiles of the current object.
+        @type: dict(string -> pylems.model.behavior.Behavior) """
+
+        self.selected_behavior_profile = None
+        """ Name of the selected brhavior profile.
         @type: pylems.model.behavior.Behavior """
 
         self.exposures = None
@@ -135,6 +139,39 @@ class Context(PyLEMSBase):
         else:
             return None
 
+    def add_behavior_profile(self, name):
+        """
+        Adds a behavior profile to the current context.
+
+        @param name: Name of the behavior profile.
+        @type name: string
+        """
+        
+        if self.behavior_profiles != None and name in self.behavior_profiles:
+            raise ModelError('Duplicate behavior profile \'' + name + '\'')
+
+        if self.behavior_profiles == None:
+            self.behavior_profiles = dict()
+
+        self.behavior_profiles[name] = Behavior(name)
+        self.select_behavior_profile(name)
+
+    def select_behavior_profile(self, name):
+        """
+        Selects a behavior profile by name.
+
+        @param name: Name of the behavior profile.
+        @type name: string
+
+        @raise ModelError: Raised when the specified behavior profile is
+        undefined in the current context.
+        """
+
+        if self.behavior_profiles == None or name not in self.behavior_profiles:
+            raise ModelError('Unknown behavior profile')
+
+        self.selected_behavior_profile = self.behavior_profiles[name]
+        
     def add_state_variable(self, name, exposure, dimension):
         """
         Adds a state variable to the behavior current object.
@@ -156,10 +193,12 @@ class Context(PyLEMSBase):
             raise ModelError('State variables can only be defined in ' +
                              'a component type')
         
-        if self.behavior == None:
-            self.behavior = Behavior()
-
-        self.behavior.add_state_variable(name, exposure, dimension)
+        if self.selected_behavior_profile == None:
+            raise ModelError('State variable definition must be within a ' +
+                             'behavior profile')
+        
+        self.selected_behavior_profile.add_state_variable(name, exposure,
+                                                          dimension)
 
     def add_exposure(self, name):
         """

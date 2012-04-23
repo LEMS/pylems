@@ -124,7 +124,7 @@ class LEMSParser(Parser):
         self.valid_children['onstart'] = ['stateassignment']
 
         self.tag_parse_table = dict()
-        self.tag_parse_table['behavior'] = self.parse_behaviour
+        self.tag_parse_table['behavior'] = self.parse_behavior
         self.tag_parse_table['build'] = self.parse_build
         self.tag_parse_table['child'] = self.parse_child
         self.tag_parse_table['children'] = self.parse_children
@@ -251,14 +251,24 @@ class LEMSParser(Parser):
         
         return self.model
 
-    def parse_behaviour(self, node):
+    def parse_behavior(self, node):
         """
-        Parses <Behaviour>
+        Parses <Behavior>
 
         @param node: Node containing the <Behaviour> element
         @type node: xml.etree.Element
         """
 
+        if self.current_context.context_type != Context.COMPONENT_TYPE:
+            raise ParseError('Behavior must be defined inside a component type')
+
+        if 'name' in node.attrib:
+            name = node.attrib['name']
+        else:
+            name = ''
+
+        self.current_context.add_behavior_profile(name)
+        
         self.process_nested_tags(node)
         
         pass
@@ -668,10 +678,32 @@ class LEMSParser(Parser):
 
         @param node: Node containing the <StateVariable> element
         @type node: xml.etree.Element
+
+        @raise ParseError: Raised when the state variable is not
+        being defined in the context of a component type.
         """
 
-        pass
+        if self.current_context.context_type != Context.COMPONENT_TYPE:
+            raise ParseError('State variables can only be defined in ' +
+                             'a component type')
 
+        if 'name' in node.attrib:
+            name = node.attrib['name']
+        else:
+            raise ParseError('A state variable must have a name')
+
+        if 'exposure' in node.attrib:
+            exposure = node.attrib['exposure']
+        else:
+            exposure = None
+
+        if 'dimension' in node.attrib:
+            dimension = node.attrib['dimension']
+        else:
+            raise ParseError('A state variable must have a dimension')
+
+        self.current_context.add_state_variable(name, exposure, dimension)
+            
     def parse_time_derivative(self, node):
         """
         Parses <TimeDerivative>
