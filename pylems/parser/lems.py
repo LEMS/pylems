@@ -180,7 +180,6 @@ class LEMSParser(Parser):
 
         self.prefix += '  '
 
-
         for child in node:
             print self.prefix, child.tag,
             print child.attrib['name'] if 'name' in child.attrib else '',
@@ -188,13 +187,9 @@ class LEMSParser(Parser):
 
             ctagl = child.tag.lower()
 
-            try:
+            if ctagl in self.tag_parse_table:
                 self.tag_parse_table[ctagl](child)
-            except ParseError as e:
-                raise ParseError(e.message)
-            except ModelError as e:
-                raise ModelError(e.message)
-            except:
+            else:
                 self.parse_component_by_typename(child, child.tag)
 
         self.prefix = self.prefix[2:]
@@ -328,7 +323,6 @@ class LEMSParser(Parser):
                 id = node.attrib['id']
             else:
                 id = '__id_inherited__' + str(self.id_counter.next())
-            print id
 
             type = node.tag
             ## if 'type' in node.attrib:
@@ -486,9 +480,17 @@ class LEMSParser(Parser):
 
         @param node: Node containing the <Exposure> element
         @type node: xml.etree.Element
+
+        @raise ParseError: Raised when the exposure name is not
+        being defined in the context of a component type.
         """
 
-        pass
+        if self.current_context.context_type != Context.COMPONENT_TYPE:
+            raise ParseError('Exposure names can only be defined in ' +
+                             'a component type')
+        
+        if 'name' in node.attrib:
+            self.current_context.add_exposure(node.attrib['name'])
 
     def parse_fixed(self, node):
         """

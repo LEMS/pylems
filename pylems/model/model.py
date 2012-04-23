@@ -81,48 +81,56 @@ class Model(Contextual):
         else:
             self.units[unit.symbol] = unit
 
+    tab = '  '
+
     def context2str(self, context, prefix):
         s = ''
-        prefix = prefix + '  '
+        prefix = prefix + Model.tab
         if context.component_types:
             s += prefix + 'Component types:\n'
             for tn in context.component_types:
                 t = context.component_types[tn]
-                s += prefix + '  ' + t.name
+                s += prefix + Model.tab + t.name
                 if t.extends:
                     s += ' (extends ' + t.extends + ')'
                 s += '\n'
-                s += self.context2str(t.context, prefix)
+                s += self.context2str(t.context, prefix + Model.tab)
 
         if context.components:
             s += prefix + 'Components:\n'
             for cn in context.components:
                 c = context.components[cn]
-                s += prefix + '  ' + c.id
+                s += prefix + Model.tab + c.id
                 if c.component_type:
                     s += ': ' + c.component_type + '\n'
                 else:
                     s+= ' (extends ' + c.extends + ')' + '\n'
-                s += self.context2str(c.context, prefix + '  ')
+                s += self.context2str(c.context, prefix + Model.tab)
 
-        
+        if context.exposures:
+            s += prefix + 'Exposures:\n'
+            for name in context.exposures:
+                s += prefix + Model.tab + name + '\n'
+            
+
         return s
+    
     def __str__(self):
         s = ''
 
         s += 'Default run:\n'
         for run in self.default_run:
-            s += '  ' + run + '\n'
+            s += Model.tab + run + '\n'
         
         s += 'Dimensions:\n'
         if self.dimensions != None:
             for d in self.dimensions:
-                s += '  ' + d + '\n'
+                s += Model.tab + d + '\n'
 
         s += 'Units:\n'
         if self.units != None:
             for u in self.units:
-                s += '  ' + u + '\n'
+                s += Model.tab + u + '\n'
 
         if self.context:
             s += 'Global context:\n'

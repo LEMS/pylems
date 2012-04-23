@@ -8,6 +8,7 @@ Context storage
 
 from pylems.base.base import PyLEMSBase
 from pylems.base.errors import ModelError
+from pylems.model.behavior import Behavior
 
 class Context(PyLEMSBase):
     """
@@ -48,6 +49,14 @@ class Context(PyLEMSBase):
         """ Context type (Global, component type or component)
         @type: enum(Context.GLOBAL, Context.COMPONENT_TYPE or
         Context.COMPONENT_TYPE) """
+
+        self.behavior = None
+        """ Stores the behavior of the current object.
+        @type: pylems.model.behavior.Behavior """
+
+        self.exposures = None
+        """ List of names of exposed variables.
+        @type: list(string) """
 
     def add_component_type(self, component_type):
         """
@@ -112,7 +121,7 @@ class Context(PyLEMSBase):
 
     def lookup_parameter(self, parameter_name):
         """
-        Lookup a parameter by name within this context.
+        Looks up a parameter by name within this context.
 
         @param parameter_name: Name of the parameter.
         @type parameter_name: string
@@ -125,6 +134,58 @@ class Context(PyLEMSBase):
             return self.parameters[parameter_name]
         else:
             return None
+
+    def add_state_variable(self, name, exposure, dimension):
+        """
+        Adds a state variable to the behavior current object.
+
+        @param name: Name of the state variable.
+        @type name: string
+
+        @param exposure: Exposed name of the state variable.
+        @type exposure: string
+
+        @param dimension: Dimension ofthe state variable.
+        @type dimension: string
+
+        @raise ModelError: Raised when the state variable is not
+        being defined in the context of a component type.
+        """
+
+        if self.context_type != Context.COMPONENT_TYPE:
+            raise ModelError('State variables can only be defined in ' +
+                             'a component type')
+        
+        if self.behavior == None:
+            self.behavior = Behavior()
+
+        self.behavior.add_state_variable(name, exposure, dimension)
+
+    def add_exposure(self, name):
+        """
+        Adds a state variable exposure to the current context.
+
+        @param name: Name of the state variable being exposed.
+        @type name: string
+
+        @raise ModelError: Raised when the exposure name already exists
+        in the current context.
+
+        @raise ModelError: Raised when the exposure name is not
+        being defined in the context of a component type.
+        """
+        if self.context_type != Context.COMPONENT_TYPE:
+            raise ModelError('Exposure names can only be defined in ' +
+                             'a component type')
+        
+        if self.exposures != None and name in self.exposures:
+            raise ModelError('Duplicate exposure name')
+
+        if self.exposures == None:
+            self.exposures = []
+
+        self.exposures += name
+        
 
 class Contextual(PyLEMSBase):
     """
