@@ -12,7 +12,7 @@ from pylems.base.errors import ParseError,ModelError
 from pylems.parser.expr import ExprParser
 
 #p = ExprParser('1-(95+.3)*v/(60+40)')
-p = ExprParser('1+2*3-4')
+p = ExprParser('1+2*(3-5)-4')
 print p.parse()
 
 sys.exit(0)
