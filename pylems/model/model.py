@@ -102,9 +102,9 @@ class Model(Contextual):
 
         if behavior.time_derivatives:
             s += prefix + Model.tab + 'Time derivatives:\n'
-            for tdn in behavior.time_derivatives:
-                td = behavior.time_derivatives[tdn]
-                s += prefix + Model.tab*2 + td.name + ' = ' + td.value + '\n'
+            for tdv in behavior.time_derivatives:
+                td = behavior.time_derivatives[tdv]
+                s += prefix + Model.tab*2 + td.variable + ' = ' + td.value + '\n'
 
 
         return s

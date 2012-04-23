@@ -26,6 +26,7 @@
 
   <Include file="SimpleSimulation.xml"/>
   <Unit symbol="s" dimension="time"/> 
+  <Dimension name="time" t="1"/>
   
   <Simulation id="sawtooth" length="10s" step="0.1s" target="stgen">
     <Display id="d0" timeScale="10s" title="Sawtooth waveform">
