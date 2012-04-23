@@ -155,6 +155,16 @@ class LEMSParser(Parser):
         self.tag_parse_table['timederivative'] = self.parse_time_derivative
         self.tag_parse_table['unit'] = self.parse_unit
 
+        def counter():
+            count = 1
+            while True:
+                yield count
+                count = count + 1
+                
+        self.id_counter = counter()
+        """ Counter genertor for generating unique ids.
+        @type: int """
+        
 
     prefix = ''
 
@@ -188,6 +198,8 @@ class LEMSParser(Parser):
                 self.parse_component_by_typename(child, child.tag)
 
         self.prefix = self.prefix[2:]
+
+
 
     def resolve_typename(self, typename):
         """ 
@@ -315,12 +327,14 @@ class LEMSParser(Parser):
             if 'id' in node.attrib:
                 id = node.attrib['id']
             else:
-                id = '__id_inherited__'
-                
-            if 'type' in node.attrib:
-                type = node.attrib['type']
-            else:
-                type = '__type_inherited__'
+                id = '__id_inherited__' + str(self.id_counter.next())
+            print id
+
+            type = node.tag
+            ## if 'type' in node.attrib:
+            ##     type = node.attrib['type']
+            ## else:
+            ##     type = '__type_inherited__'
 
             component = Component(id, self.current_context, type)
             
@@ -329,6 +343,7 @@ class LEMSParser(Parser):
                     param = Parameter(key, '__dimension_inherited__')
                     param.set_value(node.attrib[key])
                     component.add_parameter(param)
+            self.current_context.add_component(component)
 
         self.push_context(component.context)
         self.process_nested_tags(node)
