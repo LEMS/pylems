@@ -377,6 +377,8 @@ class LEMSParser(Parser):
             else:
                 raise ParseError('Component must have a type or must extend ' +
                                  'another component')
+        else:
+            extends = None
 
         component = Component(id, self.current_context, type, extends)
         self.current_context.add_component(component)

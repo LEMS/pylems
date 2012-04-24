@@ -104,7 +104,8 @@ class Model(Contextual):
             s += prefix + Model.tab + 'Time derivatives:\n'
             for tdv in behavior.time_derivatives:
                 td = behavior.time_derivatives[tdv]
-                s += prefix + Model.tab*2 + td.variable + ' = ' + td.value + '\n'
+                s += prefix + Model.tab*2 + td.variable + ' = ' + td.value\
+                     + ' | ' + str(td.expression_tree) + '\n'
 
 
         return s

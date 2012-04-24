@@ -33,6 +33,13 @@ class Error(Exception):
         
         return self.message
 
+class StackError(Error):
+    """
+    Exception to signal errors in the PyLEMS Stack class.
+    """
+
+    pass
+
 class ParseError(Error):
     """
     Exception to signal errors found during parsing
