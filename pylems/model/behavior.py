@@ -70,6 +70,77 @@ class TimeDerivative(PyLEMSBase):
         """ Parse tree for the time derivative expression.
         @type: pylems.parser.expr.ExprNode """
 
+class EventHandler(PyLEMSBase):
+    """
+    Base class for event an handler.
+    """
+
+    ON_START = 1
+    ON_ENTRY = 2
+    ON_EVENT = 3
+    ON_CONDITION = 4
+
+    def __init__(self):
+        self.actions = None
+        "List of actions to be performed on the occurence of the event."
+
+    def add_action(self, action):
+        """
+        Adds an action to the list of actions.
+
+        @param action: Action to be performed.
+        @type action: pylems.model.behavior.Action
+        """
+
+        if self.actions == None:
+            self.actions = []
+
+        self.actions += [action]
+
+    def check_for_event(self):
+        """
+        Check for the event. If this function returns true, the corresponding
+        event actions will be executed.
+
+        @return: Check if the event has occurred.
+        @rtype: Boolean
+
+        @note: This function must be overridden. Maybe when building the
+        simulator?
+        """
+
+        return False
+    
+class OnStart(EventHandler):
+    pass
+    
+class OnEntry(EventHandler):
+    pass
+    
+class OnEvent(EventHandler):
+    pass
+    
+class OnCondition(EventHandler):
+    """
+    Event handler for a condition check.
+    """
+
+    def __init__(self, test):
+        """
+        Constructor.
+
+        @param test: Test expression.
+        @type test: string
+        """
+
+        self.test = test
+        """ Test expression.
+        @type: string """
+
+        self.expression_tree = ExprParser(test).parse()
+        """ Parse tree for the test expression.
+        @type: pylems.parser.expr.ExprNode """
+        
 class Action(PyLEMSBase):
     """
     Base class for an event action.
@@ -275,7 +346,7 @@ class Behavior(PyLEMSBase):
         """
 
         if self.default_regime == None:
-            self.default_regime = Regime()
+            self.default_regime = Regime('')
 
         self.default_regime.add_state_variable(name, exposure, dimension)
 
@@ -292,6 +363,6 @@ class Behavior(PyLEMSBase):
         """
 
         if self.default_regime == None:
-            self.default_regime = Regime()
+            self.default_regime = Regime('')
 
         self.default_regime.add_time_derivative(variable, value)

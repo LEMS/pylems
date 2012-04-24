@@ -83,6 +83,26 @@ class Model(Contextual):
 
     tab = '  '
 
+    def regime2str(self, regime, prefix):
+        s = ''
+        if regime.state_variables:
+            s += prefix + Model.tab + 'State variables:\n'
+            for svn in regime.state_variables:
+                sv = regime.state_variables[svn]
+                s += prefix + Model.tab*2 + sv.name
+                if sv.exposure:
+                    s += ' (exposed as ' + sv.exposure + ')'
+                s += ': ' + sv.dimension + '\n'
+
+        if regime.time_derivatives:
+            s += prefix + Model.tab + 'Time derivatives:\n'
+            for tdv in regime.time_derivatives:
+                td = regime.time_derivatives[tdv]
+                s += prefix + Model.tab*2 + td.variable + ' = ' + td.value\
+                     + ' | ' + str(td.expression_tree) + '\n'
+
+        return s
+    
     def behavior2str(self, behavior, prefix):
         s = prefix
         if behavior.name != '':
@@ -91,21 +111,10 @@ class Model(Contextual):
             s += '*'
         s += '\n'
 
-        if behavior.state_variables:
-            s += prefix + Model.tab + 'State variables:\n'
-            for svn in behavior.state_variables:
-                sv = behavior.state_variables[svn]
-                s += prefix + Model.tab*2 + sv.name
-                if sv.exposure:
-                    s += ' (exposed as ' + sv.exposure + ')'
-                s += ': ' + sv.dimension + '\n'
-
-        if behavior.time_derivatives:
-            s += prefix + Model.tab + 'Time derivatives:\n'
-            for tdv in behavior.time_derivatives:
-                td = behavior.time_derivatives[tdv]
-                s += prefix + Model.tab*2 + td.variable + ' = ' + td.value\
-                     + ' | ' + str(td.expression_tree) + '\n'
+        if behavior.default_regime:
+            s += prefix + Model.tab + 'Default regime:\n'
+            s += self.regime2str(behavior.default_regime,
+                                 prefix + Model.tab)
 
 
         return s
