@@ -77,6 +77,7 @@ class Action(PyLEMSBase):
     
     STATE_ASSIGNMENT = 1
     EVENT_OUT = 2
+    TRANSITION = 3
 
     def __init__(self, type):
         self.type = type
@@ -122,28 +123,38 @@ class OnStart(Event):
 class OnCondition(Event):
     pass
 
-class Behavior(PyLEMSBase):
+class Regime(PyLEMSBase):
     """
-    Stores the behavior characteristics for an object.
+    Store a behavior regime for a component type.
     """
 
-    def __init__(self, name):
+    def __init__(self, name, initial = False):
         """
         Constructor.
+
+        @param name: Name of the behavior regime.
+        @type name: string
+
+        @param initial: Is this the initial regime? Default: False
+        @type initial: Boolean
         """
         
         self.name = name
-        """ Name of this behavior profile.
+        """ Name of this ehavior regime.
         @type: string """
 
+        self.initial = initial
+        """ Is this an initial regime?
+        @type: Boolean """
+
         self.state_variables = None
-        """ Dictionary of state variables defined in this behavior profile.
+        """ Dictionary of state variables defined in this behavior regime.
         @type: dict(string -> pylems.model.behavior.StateVariable) """
     
         self.time_derivatives = None
-        """ Dictionary of time derivatives defined in this behavior profile.
+        """ Dictionary of time derivatives defined in this behavior regime.
         @type: dict(string -> pylems.model.behavior.TimeDerivative) """
-    
+
     def add_state_variable(self, name, exposure, dimension):
         """
         Adds a state variable to the behavior current object.
@@ -158,7 +169,7 @@ class Behavior(PyLEMSBase):
         @type dimension: string
 
         @raise ModelError: Raised when the state variable is already
-        defined in this behavior profile.
+        defined in this behavior regime.
         """
 
         if self.state_variables != None and name in self.state_variables:
@@ -181,7 +192,7 @@ class Behavior(PyLEMSBase):
         @type value: string
 
         @raise ModelError: Raised when the time derivative for this state
-        variable is already defined in this behavior profile.
+        variable is already defined in this behavior regime.
         """
 
         if self.time_derivatives != None and variable in self.time_derivatives:
@@ -191,3 +202,96 @@ class Behavior(PyLEMSBase):
             self.time_derivatives = dict()
 
         self.time_derivatives[variable] = TimeDerivative(variable, value)
+    
+class Behavior(PyLEMSBase):
+    """
+    Stores the behavior characteristics for a component type.
+    """
+
+    def __init__(self, name):
+        """
+        Constructor.
+        """
+        
+        self.name = name
+        """ Name of this behavior profile.
+        @type: string """
+
+        self.default_regime = None
+        """ Default behavior regime for this behavior profile. This regime
+        is used to store behavior object not defined within a named regime.
+        @type: pylems.model.behavior.Regime """
+
+        self.current_regime = None
+        """ Currently active behavior regime for this behavior profile.
+        @type: pylems.model.behavior.Regime """
+
+        self.regimes = None
+        """ Dictionary of regimes in this behavior profile.
+        @type: dict(string -> pylems.model.behavior.Regime) """
+
+    def add_regime(self, name, initial = False):
+        """
+        Adds a behavior regime to the list of regimes in this behavior
+        profile.
+
+        @param name: Name of the behavior regime.
+        @type name: string
+
+        @param initial: Is this the initial regime? Default: False
+        @type initial: Boolean
+        """
+        
+        if self.regimes != None and name in self.regimes:
+            raise ModelError('Duplicate regime ' + name)
+
+        if self.regimes == None:
+            self.regimes = dict()
+
+        if initial:
+            for rn in self.regimes:
+                if self.regimes[rn].initial:
+                    raise('Cannot define two initial regimes in the same' +
+                          ' behavior profile')
+            
+        regime = Regime(name, initial)
+        if initial:
+            self.current_regime = regime
+        
+        self.regimes[name] = regime
+
+    def add_state_variable(self, name, exposure, dimension):
+        """
+        Adds a state variable to the behavior current object.
+
+        @param name: Name of the state variable.
+        @type name: string
+
+        @param exposure: Exposed name of the state variable.
+        @type exposure: string
+
+        @param dimension: Dimension ofthe state variable.
+        @type dimension: string
+        """
+
+        if self.default_regime == None:
+            self.default_regime = Regime()
+
+        self.default_regime.add_state_variable(name, exposure, dimension)
+
+    def add_time_derivative(self, variable, value):
+        """
+        Adds a state variable to the behavior current object.
+
+        @param variable: Name of the state variable whose time derivative
+        is being specified.
+        @type variable: string
+
+        @param value: Time derivative expression.
+        @type value: string
+        """
+
+        if self.default_regime == None:
+            self.default_regime = Regime()
+
+        self.default_regime.add_time_derivative(variable, value)
