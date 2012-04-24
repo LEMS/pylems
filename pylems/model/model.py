@@ -106,6 +106,12 @@ class Model(Contextual):
             for eh in regime.event_handlers:
                 td = regime.time_derivatives[tdv]
                 s += prefix + Model.tab*2 + str(eh) + '\n'
+                if eh.actions:
+                    s += prefix + Model.tab*3 + 'Actions:\n'
+                    for a in eh.actions:
+                        s += prefix + Model.tab*4 + str(a) + '\n'
+                        
+                    
 
         return s
     

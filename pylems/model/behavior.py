@@ -206,6 +206,12 @@ class StateAssignment(Action):
         """ Parse tree for the assignment expression.
         @type: pylems.parser.expr.ExprNode """
 
+    def __str__(self):
+        """ Generates a string representation of this state assigment """
+
+        return self.variable + ' <- ' + self.value + ' | ' + \
+               str(self.expression_tree)
+
 class Regime(PyLEMSBase):
     """
     Store a behavior regime for a component type.
