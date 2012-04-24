@@ -11,30 +11,89 @@ from pylems.base.errors import ParseError
 from pylems.base.util import Stack
 
 class ExprNode(PyLEMSBase):
+    """
+    Base class for a node in the expression parse tree.
+    """
+    
     OP = 1
     VALUE = 2
 
     def __init__(self, type):
+        """
+        Constructor.
+
+        @param type: Node type
+        @type type: enum(ExprNode.OP, ExprNode.VALUE)
+        """
+        
         self.type = type
+        """ Node type.
+        @type: enum(ExprNode.OP, ExprNode.VALUE) """
         
 class ValueNode(ExprNode):
+    """
+    Value node in an expression parse tree. This will always be a leaf node.
+    """
+    
     def __init__(self, value):
-        ExprNode.__init__(self, ExprNode.VALUE)
+        """
+        Constructor.
         
+        @param value: Value to be stored in this node.
+        @type value: string
+        """
+        
+        ExprNode.__init__(self, ExprNode.VALUE)
         self.value = value
-
+        """ Value to be stored in this node.
+        @type: string """
+        
     def __str__(self):
+        """
+        Generates a string representation of this node.
+        """
+        
         return self.value
         
 class OpNode(ExprNode):
+    """
+    Operation node in an expression parse tree. This will always be a non-leaf
+    node.
+    """
+    
     def __init__(self, op, left, right):
+        """
+        Constructor.
+        
+        @param op: Operation to be stored in this node.
+        @type op: string
+
+        @param left: Left operand.
+        @type left: pylems.parser.expr.ExprNode
+
+        @param right: Right operand.
+        @type right: pylems.parser.expr.ExprNode
+        """
+        
         ExprNode.__init__(self, ExprNode.OP)
         
         self.op = op
+        """ Operation stored in this node.
+        @type: string """
+
         self.left = left
+        """ Left operand.
+        @type: pylems.parser.expr.ExprNode """
+
         self.right = right
+        """ Right operand.
+        @type: pylems.parser.expr.ExprNode """
 
     def __str__(self):
+        """
+        Generates a string representation of this node.
+        """
+        
         return '(' + self.op + ' ' + str(self.left) + ' ' + str(self.right) +')'
     
 class ExprParser(PyLEMSBase):
