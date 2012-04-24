@@ -110,8 +110,6 @@ class Model(Contextual):
                     s += prefix + Model.tab*3 + 'Actions:\n'
                     for a in eh.actions:
                         s += prefix + Model.tab*4 + str(a) + '\n'
-                        
-                    
 
         return s
     
@@ -154,6 +152,18 @@ class Model(Contextual):
                 else:
                     s+= ' (extends ' + c.extends + ')' + '\n'
                 s += self.context2str(c.context, prefix + Model.tab)
+
+        if context.parameters:
+            s += prefix + 'Parameters:\n'
+            for pn in context.parameters:
+                p = context.parameters[pn]
+                s += prefix + Model.tab + p.name
+                s += ': ' + p.dimension
+                if p.value:
+                    s += ': ' + str(p.value)
+                    if p.fixed:
+                        s += ' (fixed)'
+                s += '\n'
 
         if context.exposures:
             s += prefix + 'Exposures:\n'
