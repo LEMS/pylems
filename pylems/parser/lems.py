@@ -16,6 +16,7 @@ from pylems.base.errors import ParseError,ModelError
 from pylems.model.context import Context,Contextual
 from pylems.model.component import Component,ComponentType
 from pylems.model.parameter import Parameter
+from pylems.model.behavior import Behavior,Regime,OnCondition,StateAssignment
 
 def xmltolower(node):
     """ Converts the tag and attribute names in the given XML node and
@@ -69,6 +70,14 @@ class LEMSParser(Parser):
     current_component_type = None
     """ Component type object being parsed.
     @type: pylems.model.parameter.ComponentType """
+
+    current_regime = None
+    """ Current behavior regime being parsed.
+    @type: pylems.model.behavior.Regime """
+
+    current_event_handler = None
+    """ Current event_handler being parsed.
+    @type: pylems.model.behavior.EventHandler """
 
     def push_context(self, context):
         self.context_stack = [context] + self.context_stack
@@ -269,9 +278,13 @@ class LEMSParser(Parser):
 
         self.current_context.add_behavior_profile(name)
         
+        old_regime = self.current_regime
+        self.current_regime = self.current_context.selected_behavior_profile.\
+                              default_regime
+        
         self.process_nested_tags(node)
         
-        pass
+        self.current_regime = old_regime
 
     def parse_build(self, node):
         """
@@ -567,8 +580,24 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        self.process_nested_tags(node)
+        if self.current_regime == None:
+            raise ParseError('<OnCondition must be defined inside a ' +
+                             'behavior profile or regime')
 
+        if 'test' in node.attrib:
+            test = node.attrib['test']
+        else:
+            raise ParseError('Test expression not provided for <OnCondition>')
+
+        event_handler = OnCondition(test)
+        
+        self.current_event_handler = event_handler
+        self.current_regime.add_event_handler(event_handler)
+        
+        self.process_nested_tags(node)
+        
+        self.current_event_handler = None
+        
     def parse_on_event(self, node):
         """
         Parses <OnEvent>
@@ -672,8 +701,27 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        pass
+        if self.current_event_handler == None:
+            raise ParseError('<StateAssignment> must be defined inside an ' +
+                             'event handler in a behavior profile or regime')
 
+        if 'variable' in node.attrib:
+            variable = node.attrib['variable']
+        else:
+            raise ParseError('\'variable\' attribute not provided for ' +
+                             '<StateAssignment>')
+
+        if 'value' in node.attrib:
+            value = node.attrib['value']
+        else:
+            raise ParseError('\'value\' attribute not provided for ' +
+                             '<StateAssignment>')
+
+        action = StateAssignment(variable, value)
+
+        self.current_event_handler.add_action(action)
+        
+        
     def parse_state_variable(self, node):
         """
         Parses <StateVariable>
@@ -685,9 +733,9 @@ class LEMSParser(Parser):
         being defined in the context of a component type.
         """
 
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            raise ParseError('State variables can only be defined in ' +
-                             'a component type')
+        if self.current_regime == None:
+            raise ParseError('<StateVariable> must be defined inside a ' +
+                             'behavior profile or regime')
 
         if 'name' in node.attrib:
             name = node.attrib['name']
@@ -704,7 +752,7 @@ class LEMSParser(Parser):
         else:
             raise ParseError('A state variable must have a dimension')
 
-        self.current_context.add_state_variable(name, exposure, dimension)
+        self.current_regime.add_state_variable(name, exposure, dimension)
             
     def parse_time_derivative(self, node):
         """
@@ -716,6 +764,10 @@ class LEMSParser(Parser):
         @raise ParseError: Raised when the time derivative is not
         being defined in the context of a component type.
         """
+
+        if self.current_regime == None:
+            raise ParseError('<TimeDerivative> must be defined inside a ' +
+                             'behavior profile or regime')
 
         if self.current_context.context_type != Context.COMPONENT_TYPE:
             raise ParseError('Time derivatives can only be defined in ' +
@@ -732,7 +784,7 @@ class LEMSParser(Parser):
         else:
             raise ParseError('The time derivative expression must be provided')
 
-        self.current_context.add_time_derivative(name, value)
+        self.current_regime.add_time_derivative(name, value)
 
     def parse_text(self, node):
         """

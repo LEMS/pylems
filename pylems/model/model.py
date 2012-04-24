@@ -101,6 +101,12 @@ class Model(Contextual):
                 s += prefix + Model.tab*2 + td.variable + ' = ' + td.value\
                      + ' | ' + str(td.expression_tree) + '\n'
 
+        if regime.event_handlers:
+            s += prefix + Model.tab + 'Event Handlers:\n'
+            for eh in regime.event_handlers:
+                td = regime.time_derivatives[tdv]
+                s += prefix + Model.tab*2 + str(eh) + '\n'
+
         return s
     
     def behavior2str(self, behavior, prefix):

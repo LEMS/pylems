@@ -11,9 +11,10 @@ from pylems.base.errors import ParseError,ModelError
 
 from pylems.parser.expr import ExprParser
 
-## print ExprParser('1').parse()
-## print ExprParser('1 + 2').parse()
-## sys.exit(0)
+#print ExprParser('1').parse()
+#print ExprParser('1 + 2').parse()
+print ExprParser('v .gt. threshold').parse()
+sys.exit(0)
 
 model_file = sys.argv[1]
 

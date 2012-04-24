@@ -103,12 +103,22 @@ class ExprParser(PyLEMSBase):
     
     op_priority = {
         '$':-5,
+        
         '+':1,
         '-':1,
         '*':2,
         '/':2,
         '^':3,
-        '(':4}
+
+        '.and.':1,
+        '.or.':1,
+        '.gt.':2,
+        '.ge.':2,
+        '.lt.':2,
+        '.le.':2,
+        '.eq.':2,
+        '.ne.':2}
+    
     """ Dictionary mapping operators to their priorities.
     @type: dict(string -> Integer) """
     
@@ -139,7 +149,7 @@ class ExprParser(PyLEMSBase):
         @rtype: Boolean
         """
         
-        return str in ['+', '-', '*', '/', '^']
+        return str in self.op_priority
     
     def is_sym(self, str):
         """
@@ -174,10 +184,15 @@ class ExprParser(PyLEMSBase):
                 while i < len(ps) and ps[i].isalnum():
                     s += ps[i]
                     i += 1
-            elif ps[i].isdigit() or ps[i] == '.':
-                while i < len(ps) and (ps[i].isdigit() or ps[i] == '.'):
-                    s += ps[i]
-                    i += 1
+            elif ps[i] == '.':
+                if ps[i+1].isdigit():
+                    while i < len(ps) and (ps[i].isdigit() or ps[i] == '.'):
+                        s += ps[i]
+                        i += 1
+                else:
+                    while i < len(ps) and (ps[i] == '.' or ps[i].isalnum()):
+                        s += ps[i]
+                        i += 1
             else:
                 s += ps[i]
                 i += 1

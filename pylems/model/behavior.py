@@ -80,7 +80,20 @@ class EventHandler(PyLEMSBase):
     ON_EVENT = 3
     ON_CONDITION = 4
 
-    def __init__(self):
+    def __init__(self, type):
+        """
+        Constructor.
+
+        @param type: Type of event.
+        @type type: enum(EventHandler.ONSTART, EventHandler.ON_ENTRY,
+        EventHandler.ON_EVENT and EventHandler.ON_CONDITION)
+        """
+        
+        self.type = type
+        """ Type of event.
+        @type: enum(EventHandler.ONSTART, EventHandler.ON_ENTRY,
+        EventHandler.ON_EVENT and EventHandler.ON_CONDITION) """
+
         self.actions = None
         "List of actions to be performed on the occurence of the event."
 
@@ -133,6 +146,8 @@ class OnCondition(EventHandler):
         @type test: string
         """
 
+        EventHandler.__init__(self, EventHandler.ON_CONDITION)
+
         self.test = test
         """ Test expression.
         @type: string """
@@ -140,6 +155,12 @@ class OnCondition(EventHandler):
         self.expression_tree = ExprParser(test).parse()
         """ Parse tree for the test expression.
         @type: pylems.parser.expr.ExprNode """
+
+    def __str__(self):
+        """ Generates a string representation of this condition."""
+        
+        return 'OnCondition: ' + self.test + ' | ' +\
+               str(self.expression_tree)
         
 class Action(PyLEMSBase):
     """
@@ -171,7 +192,7 @@ class StateAssignment(Action):
         @type value: string
         """
 
-        Action.__init__(self. Action.STATE_ASSIGNMENT)
+        Action.__init__(self, Action.STATE_ASSIGNMENT)
 
         self.variable = variable
         """ State variable whose assignment expression is stored in this object.
@@ -184,15 +205,6 @@ class StateAssignment(Action):
         self.expression_tree = ExprParser(value).parse()
         """ Parse tree for the assignment expression.
         @type: pylems.parser.expr.ExprNode """
-
-class Event(PyLEMSBase):
-    pass
-
-class OnStart(Event):
-    pass
-
-class OnCondition(Event):
-    pass
 
 class Regime(PyLEMSBase):
     """
@@ -225,6 +237,10 @@ class Regime(PyLEMSBase):
         self.time_derivatives = None
         """ Dictionary of time derivatives defined in this behavior regime.
         @type: dict(string -> pylems.model.behavior.TimeDerivative) """
+
+        self.event_handlers = None
+        """ List of event handlers defined in this behavior regime.
+        @type: list(EventHandler) """
 
     def add_state_variable(self, name, exposure, dimension):
         """
@@ -274,6 +290,19 @@ class Regime(PyLEMSBase):
 
         self.time_derivatives[variable] = TimeDerivative(variable, value)
     
+    def add_event_handler(self, event_handler):
+        """
+        Adds a state variable to the behavior current object.
+
+        @param event_handler: Event handler object.
+        @type variable: pylems.model.behavior.EventHandler
+        """
+
+        if self.event_handlers == None:
+            self.event_handlers = []
+
+        self.event_handlers += [event_handler]
+    
 class Behavior(PyLEMSBase):
     """
     Stores the behavior characteristics for a component type.
@@ -288,7 +317,7 @@ class Behavior(PyLEMSBase):
         """ Name of this behavior profile.
         @type: string """
 
-        self.default_regime = None
+        self.default_regime = Regime('')
         """ Default behavior regime for this behavior profile. This regime
         is used to store behavior object not defined within a named regime.
         @type: pylems.model.behavior.Regime """
@@ -330,39 +359,3 @@ class Behavior(PyLEMSBase):
             self.current_regime = regime
         
         self.regimes[name] = regime
-
-    def add_state_variable(self, name, exposure, dimension):
-        """
-        Adds a state variable to the behavior current object.
-
-        @param name: Name of the state variable.
-        @type name: string
-
-        @param exposure: Exposed name of the state variable.
-        @type exposure: string
-
-        @param dimension: Dimension ofthe state variable.
-        @type dimension: string
-        """
-
-        if self.default_regime == None:
-            self.default_regime = Regime('')
-
-        self.default_regime.add_state_variable(name, exposure, dimension)
-
-    def add_time_derivative(self, variable, value):
-        """
-        Adds a state variable to the behavior current object.
-
-        @param variable: Name of the state variable whose time derivative
-        is being specified.
-        @type variable: string
-
-        @param value: Time derivative expression.
-        @type value: string
-        """
-
-        if self.default_regime == None:
-            self.default_regime = Regime('')
-
-        self.default_regime.add_time_derivative(variable, value)
