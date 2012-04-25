@@ -172,7 +172,7 @@ class ExprParser(PyLEMSBase):
         
         self.token_list = []
         ps = self.parse_string.strip()
-        print ps
+
         i = 0
         while i < len(ps):
             s = ''
@@ -220,14 +220,10 @@ class ExprParser(PyLEMSBase):
 
         exit_loop = False
 
-        print self.token_list
-
         while self.token_list and not exit_loop:
             token = self.token_list[0]
             self.token_list = self.token_list[1:]
             
-            print '%%%', token, op_stack, val_stack, str(node_stack)
-
             if token == '(':
                 node_stack.push(self.parse_token_list_rec())
                 val_stack.push('$')
@@ -236,8 +232,6 @@ class ExprParser(PyLEMSBase):
                     rval = val_stack.pop()
                     lval = val_stack.pop()
                     op = op_stack.pop()
-
-                    print '###', lval, op, rval
 
                     if lval == '$':
                         left = node_stack.pop()
@@ -250,36 +244,13 @@ class ExprParser(PyLEMSBase):
                         right = ValueNode(rval)
                 
                     node_stack.push(OpNode(op, left, right))
-                    print '###', node_stack
                     val_stack.push('$')
                     
                 op_stack.push(token)
             elif token == ')':
-                #right = ValueNode(val_stack.top())
                 exit_loop = True
             else:
                 val_stack.push(token)
-
-            
-        ## while op_stack.top() != '$':
-        ##     rval = val_stack.pop()
-        ##     if rval == '$':
-        ##         right = node_stack.pop()
-        ##     else:
-        ##         right = ValueNode(rval)
-                
-        ##     lval = val_stack.pop()
-        ##     if lval == '$':
-        ##         left = node_stack.pop()
-        ##     else:
-        ##         left = ValueNode(lval)
-
-        ##     op = op_stack.pop()
-            
-        ##     node_stack.push(OpNode(op, left, right))
-        ##     val_stack.push('$')
-
-        ## return node_stack.top()
                 
         rval = val_stack.pop()
         if rval == '$':

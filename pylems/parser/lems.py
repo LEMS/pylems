@@ -491,7 +491,7 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
         
-        self.model.set_default_run(node.attrib['component'])
+        self.model.add_default_run(node.attrib['component'])
     
     def parse_derived_variable(self, node):
         """
@@ -583,8 +583,6 @@ class LEMSParser(Parser):
         except:
             raise ParseError('Value to be fixed must be specified')
 
-        print self.current_context.lookup_parameter(parameter)
-        
         if self.current_context.lookup_parameter(parameter) == None:
             self.current_context.add_parameter(Parameter(
                 parameter, '__dimension_inherited__'))

@@ -1,5 +1,5 @@
 """
-Simulation generator.
+Simulation builder.
 
 @author: Gautham Ganapathy
 @organization: Textensor (http://textensor.com)
@@ -8,7 +8,7 @@ Simulation generator.
 
 from pylems.base.base import PyLEMSBase
 
-class Simulation(PyLEMSBase):
+class SimulationBuilder(PyLEMSBase):
     """
     Simulation class.
     """
@@ -27,5 +27,8 @@ class Simulation(PyLEMSBase):
         """
         Build the simulation components from the model.
         """
+
+        for component_name in self.model.default_runs:
+            self.process_default_run()
 
         pass

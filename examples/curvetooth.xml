@@ -1,5 +1,5 @@
 <Lems>
-  <DefaultRun component="sawtooth"/> 
+  <DefaultRun component="curvetooth"/> 
 
   <Dimension name="voltage" m="1" l="2" t="-3" i="-1"/>
   <Dimension name="voltage_gradient" m="1" l="2" t="-4" i="-1"/>
@@ -30,7 +30,7 @@
   <Dimension name="time" t="1"/>
 
   
-  <Simulation id="sawtooth" length="10s" step="0.1s" target="ctgen">
+  <Simulation id="curvetooth" length="10s" step="0.1s" target="ctgen">
     <Display id="d0" timeScale="10s" title="Curvetooth waveform">
       <Line id="V" quantity="v" scale="1s" color="#ff0000"/>        
     </Display>

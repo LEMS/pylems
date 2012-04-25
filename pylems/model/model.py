@@ -21,7 +21,7 @@ class Model(Contextual):
 
         super(Model, self).__init__()
         
-        self.default_run = []
+        self.default_runs = []
         """ Names of simulations to run.
         @type: string """
 
@@ -37,13 +37,14 @@ class Model(Contextual):
         """ Root context
         @type: pylems.model.context.Context """
 
-    def set_default_run(self, default_run):
+    def add_default_run(self, default_run):
         """
-        Set the name of the default simulation to run.
+        Add the name of the component to run to the list of components to
+        run by default.
         
         @param default_run: Name of a simulation to run by default
         @type default_run: string """
-        self.default_run += [default_run]
+        self.default_runs += [default_run]
 
     def add_dimension(self, dimension):
         """
@@ -200,7 +201,7 @@ class Model(Contextual):
         s = ''
 
         s += 'Default run:\n'
-        for run in self.default_run:
+        for run in self.default_runs:
             s += Model.tab + run + '\n'
         
         s += 'Dimensions:\n'
