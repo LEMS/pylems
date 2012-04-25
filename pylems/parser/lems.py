@@ -187,12 +187,12 @@ class LEMSParser(Parser):
         @raise ParseError: Raised when an unexpected nested tag is found.
         """
 
-        self.prefix += '  '
+        #self.prefix += '  '
 
         for child in node:
-            print self.prefix, child.tag,
-            print child.attrib['name'] if 'name' in child.attrib else '',
-            print child.attrib['id'] if 'id' in child.attrib else ''
+            #print self.prefix, child.tag,
+            #print child.attrib['name'] if 'name' in child.attrib else '',
+            #print child.attrib['id'] if 'id' in child.attrib else ''
 
             ctagl = child.tag.lower()
 
@@ -201,9 +201,7 @@ class LEMSParser(Parser):
             else:
                 self.parse_component_by_typename(child, child.tag)
 
-        self.prefix = self.prefix[2:]
-
-
+        #self.prefix = self.prefix[2:]
 
     def resolve_typename(self, typename):
         """ 
