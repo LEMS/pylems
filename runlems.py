@@ -8,7 +8,7 @@
 import sys
 from pylems.base.errors import ParseError,ModelError
 from pylems.parser.lems import LEMSParser
-from pylems.sim.sim import Simulation
+from pylems.sim.build import SimulationBuilder
 
 from pylems.parser.expr import ExprParser
 
@@ -23,4 +23,4 @@ parser = LEMSParser()
 parser.init_parser()
 parser.parse_file(model_file)
 model = parser.get_model()
-Simulation(model).build()
+SimulationBuilder(model).build()

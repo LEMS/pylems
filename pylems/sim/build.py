@@ -7,6 +7,7 @@ Simulation builder.
 """
 
 from pylems.base.base import PyLEMSBase
+from pylems.base.errors import SimBuildError
 
 class SimulationBuilder(PyLEMSBase):
     """
@@ -29,6 +30,11 @@ class SimulationBuilder(PyLEMSBase):
         """
 
         for component_name in self.model.default_runs:
-            self.process_default_run()
+            if component_name not in self.model.context.components:
+                raise SimBuildError('Unable to find component \'{0}\' to run'\
+                                    .format(component_name))
+            component = self.model.context.components[component_name]
+            self.build_runnable_component(component)
 
+    def build_runnable_component(self, component):
         pass

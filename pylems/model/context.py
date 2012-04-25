@@ -255,66 +255,6 @@ class Context(PyLEMSBase):
 
         self.selected_behavior_profile = self.behavior_profiles[name]
         
-    ## def add_state_variable(self, name, exposure, dimension):
-    ##     """
-    ##     Adds a state variable to the behavior current object.
-
-    ##     @param name: Name of the state variable.
-    ##     @type name: string
-
-    ##     @param exposure: Exposed name of the state variable.
-    ##     @type exposure: string
-
-    ##     @param dimension: Dimension ofthe state variable.
-    ##     @type dimension: string
-
-    ##     @raise ModelError: Raised when the state variable is not
-    ##     being defined in the context of a component type.
-
-    ##     @raise ModelError: Raised when the state variable is not
-    ##     being defined in a behavior profile.
-    ##     """
-
-    ##     if self.context_type != Context.COMPONENT_TYPE:
-    ##         raise ModelError('State variables can only be defined in ' +
-    ##                          'a component type')
-        
-    ##     if self.selected_behavior_profile == None:
-    ##         raise ModelError('State variable definition must be within a ' +
-    ##                          'behavior profile')
-        
-    ##     regime = self.selected_behavior_profile.default_regime
-    ##     regime.add_state_variable(name, exposure, dimension)
-
-    ## def add_time_derivative(self, variable, value):
-    ##     """
-    ##     Adds a time derivative to the behavior current object.
-
-    ##     @param variable: Name of the state variable whose time derivative
-    ##     is being specified.
-    ##     @type variable: string
-
-    ##     @param value: Time derivative expression.
-    ##     @type value: string
-
-    ##     @raise ModelError: Raised when the time derivative is not
-    ##     being defined in the context of a component type.
-
-    ##     @raise ModelError: Raised when the time derivative is not
-    ##     being defined in a behavior profile.
-    ##     """
-
-    ##     if self.context_type != Context.COMPONENT_TYPE:
-    ##         raise ModelError('Time derivatives can only be defined in ' +
-    ##                          'a component type')
-        
-    ##     if self.selected_behavior_profile == None:
-    ##         raise ModelError('Time derivative definition must be within a ' +
-    ##                          'behavior profile')
-        
-    ##     regime = self.selected_behavior_profile.default_regime
-    ##     regime.add_time_derivative(variable, value)
-
     def add_exposure(self, name):
         """
         Adds a state variable exposure to the current context.

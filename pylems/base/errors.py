@@ -1,5 +1,5 @@
 """
-LEMS exceptions
+LEMS exceptions.
 
 @author: Gautham Ganapathy
 @organization: Textensor (http://textensor.com)
@@ -8,7 +8,7 @@ LEMS exceptions
 
 class Error(Exception):
     """
-    Exception to signal errors in PyLEMS
+    Exception to signal errors in PyLEMS.
     """
     
     def __init__(self, message):
@@ -42,14 +42,21 @@ class StackError(Error):
 
 class ParseError(Error):
     """
-    Exception to signal errors found during parsing
+    Exception to signal errors found during parsing.
     """
 
     pass
 
 class ModelError(Error):
     """
-    Exception to signal errors found during model generation
+    Exception to signal errors found during model generation.
+    """
+
+    pass
+
+class SimBuildError(Error):
+    """
+    Exception to signal errors found while building simulation.
     """
 
     pass
