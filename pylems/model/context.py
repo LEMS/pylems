@@ -34,13 +34,27 @@ class Context(PyLEMSBase):
         @type: pylems.model.context.Context """
 
         self.component_types = None
-        """ Dictionary of references to component types defined in this conext.
+        """ Dictionary of component types defined in this conext.
         @type: dict(string -> pylems.model.component.ComponentType) """
 
         self.components = None
-        """ Dictionary of references to components defined in this context.
+        """ Dictionary of components defined in this context.
         @type: dict(string -> pylems.model.component.Component) """
 
+        self.component_refs = None
+        """ Dictionary of component references defined in this context.
+        @type: dict(string -> string) """
+
+        self.child_defs = None
+        """ Dictionary of single-instance child objects defined in this
+        context.
+        @type: dict(string -> string) """
+        
+        self.children_defs = None
+        """ Dictionary of multi-instance child objects defined in this
+        context.
+        @type: dict(string -> string) """
+        
         self.parameters = None
         """ Dictionary of references to parameters defined in this context.
         @type: dict(string -> pylems.model.parameter.Parameter) """
@@ -102,6 +116,75 @@ class Context(PyLEMSBase):
             raise ModelError('Duplicate component type - ' + component.id)
 
         self.components[component.id] = component
+
+    def add_component_ref(self, name, type):
+        """
+        Adds a component reference to the list of defined component
+        references in the current context.
+
+        @param name: Name of the component reference.
+        @type name: string
+
+        @param type: Type of the component reference.
+        @type type: string
+
+        @raise ModelError: Raised when the component reference is already
+        defined in the current context.
+        """
+
+        if self.component_refs != None and name in self.component_refs:
+            raise ModelError('Duplicate component reference ' + name)
+        
+        if self.component_refs == None:
+            self.component_refs = dict()
+
+        self.component_refs[name] = type
+
+    def add_child(self, name, type):
+        """
+        Adds a child object definition to the list of single-instance child
+        object definitions in the current context.
+
+        @param name: Name of the child object.
+        @type name: string
+
+        @param type: Type of the child object.
+        @type type: string
+
+        @raise ModelError: Raised when the definition is already in the
+        current context.
+        """
+
+        if self.child_defs != None and name in self.child_defs:
+            raise ModelError('Duplicate child definition ' + name)
+        
+        if self.child_defs == None:
+            self.child_defs = dict()
+
+        self.child_defs[name] = type
+
+    def add_children(self, name, type):
+        """
+        Adds a child object definition to the list of multi-instance child
+        object definitions in the current context.
+
+        @param name: Name of the child object.
+        @type name: string
+
+        @param type: Type of the child object.
+        @type type: string
+
+        @raise ModelError: Raised when the definition is already in the
+        current context.
+        """
+
+        if self.children_defs != None and name in self.children_defs:
+            raise ModelError('Duplicate children definition ' + name)
+        
+        if self.children_defs == None:
+            self.children_defs = dict()
+
+        self.children_defs[name] = type
 
     def add_parameter(self, parameter):
         """

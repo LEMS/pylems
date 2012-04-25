@@ -303,8 +303,24 @@ class LEMSParser(Parser):
         @param node: Node containing the <Child> element
         @type node: xml.etree.Element
         """
+        
+        if self.current_context.context_type != Context.COMPONENT_TYPE:
+            raise ParseError('Child definitions can only be made in ' +
+                             'a component type')
+        
+        if 'name' in node.attrib:
+            name = node.attrib['name']
+        else:
+            raise ParseError('<Child> must specify a name for the ' +
+                             'reference.')
 
-        pass
+        if 'type' in node.attrib:
+            type = node.attrib['type']
+        else:
+            raise ParseError('<Child> must specify a type for the ' +
+                             'reference.')
+            
+        self.current_context.add_child(name, type)
 
     def parse_children(self, node):
         """
@@ -313,8 +329,24 @@ class LEMSParser(Parser):
         @param node: Node containing the <Children> element
         @type node: xml.etree.Element
         """
+        
+        if self.current_context.context_type != Context.COMPONENT_TYPE:
+            raise ParseError('Children definitions can only be made in ' +
+                             'a component type')
+        
+        if 'name' in node.attrib:
+            name = node.attrib['name']
+        else:
+            raise ParseError('<Children> must specify a name for the ' +
+                             'reference.')
 
-        pass
+        if 'type' in node.attrib:
+            type = node.attrib['type']
+        else:
+            raise ParseError('<Children> must specify a type for the ' +
+                             'reference.')
+            
+        self.current_context.add_children(name, type)
 
     def parse_component_by_typename(self, node, type):
         """
@@ -408,8 +440,24 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
         
-        pass
+        if self.current_context.context_type != Context.COMPONENT_TYPE:
+            raise ParseError('Component references can only be defined in ' +
+                             'a component type')
+        
+        if 'name' in node.attrib:
+            name = node.attrib['name']
+        else:
+            raise ParseError('<ComponentRef> must specify a name for the ' +
+                             'reference.')
 
+        if 'type' in node.attrib:
+            type = node.attrib['type']
+        else:
+            raise ParseError('<ComponentRef> must specify a type for the ' +
+                             'reference.')
+            
+        self.current_context.add_component_ref(name, type)
+        
     def parse_component_type(self, node):
         """
         Parses <ComponentType>

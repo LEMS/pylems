@@ -153,6 +153,24 @@ class Model(Contextual):
                     s+= ' (extends ' + c.extends + ')' + '\n'
                 s += self.context2str(c.context, prefix + Model.tab)
 
+        if context.component_refs:
+            s += prefix + 'Component references:\n'
+            for cref in context.component_refs:
+                t = context.component_refs[cref]
+                s += prefix + Model.tab + cref + ': ' + t + '\n'
+
+        if context.child_defs:
+            s += prefix + 'Child definitions:\n'
+            for cref in context.child_defs:
+                t = context.child_defs[cref]
+                s += prefix + Model.tab + cref + ': ' + t + '\n'
+
+        if context.children_defs:
+            s += prefix + 'Children definitions:\n'
+            for cref in context.children_defs:
+                t = context.children_defs[cref]
+                s += prefix + Model.tab + cref + ': ' + t + '\n'
+
         if context.parameters:
             s += prefix + 'Parameters:\n'
             for pn in context.parameters:
