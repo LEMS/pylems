@@ -34,7 +34,7 @@ class Model(Contextual):
         @type: dict(string -> pylems.model.simple.Unit) """
 
         self.context = None
-        """ Root context
+        """ Global (root) context.
         @type: pylems.model.context.Context """
 
     def add_default_run(self, default_run):
@@ -82,6 +82,15 @@ class Model(Contextual):
         else:
             self.units[unit.symbol] = unit
 
+    def resolve_names_to_objects(self):
+        """
+        Resolve all name references in the model to actual objects.
+        """
+
+        self.context.resolve_names_to_objects()
+
+    #####################################################################33
+
     tab = '  '
 
     def regime2str(self, regime, prefix):
@@ -111,6 +120,12 @@ class Model(Contextual):
                     s += prefix + Model.tab*3 + 'Actions:\n'
                     for a in eh.actions:
                         s += prefix + Model.tab*4 + str(a) + '\n'
+
+        if regime.runs:
+            s += prefix + Model.tab + 'Runs:\n'
+            for r in regime.runs:
+                run = regime.runs[r]
+                s += prefix + Model.tab*2 + run.component + '\n'
 
         return s
     

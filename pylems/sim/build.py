@@ -37,4 +37,10 @@ class SimulationBuilder(PyLEMSBase):
             self.build_runnable_component(component)
 
     def build_runnable_component(self, component):
-        pass
+        type_name = component.component_type
+        if type_name not in self.model.context.component_types:
+            
+                raise SimBuildError('Unable to find component type \'{0}\''\
+                                    .format(type_name))
+        component_type = self.model.context.component_types[type_name]
+        

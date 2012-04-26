@@ -70,6 +70,62 @@ class TimeDerivative(PyLEMSBase):
         """ Parse tree for the time derivative expression.
         @type: pylems.parser.expr.ExprNode """
 
+class Run(PyLEMSBase):
+    """
+    Stores the description of an object to be run according to an independent
+    variable (usually time).
+    """
+
+    def __init__(self, component, variable, increment, total):
+        """
+        Constructor.
+
+        @param component: Name of the target component to be run according to
+        the specification given for an independent state variable.
+        @type component: string
+        
+        @param variable: The name of an independent state variable according to
+        which the target component will be run.
+        @type variable: string
+
+        @param increment: Increment of the state variable on each step.
+        @type increment: string
+
+        @param total: Final value of the state variable.
+        @type total: string
+        """
+        
+        self.component = component
+        """ Name of the target component to be run according to the
+        specification given for an independent state variable.
+        @type: string """
+        
+        self.variable = variable
+        """ The name of an independent state variable according to which the
+        target component will be run.
+        @type: string """
+        
+        self.increment = increment
+        """ Increment of the state variable on each step.
+        @type: string """
+        
+        self.total = total
+        """ Final value of the state variable.
+        @type: string """
+        
+
+class Record(PyLEMSBase):
+    def __init__(self, quantity, scale, color, save):
+        self.quantity = quantity
+        self.scale = scalte
+        self.color = color
+        self.save = save
+
+class Show(PyLEMSBase):
+    def __init__(self, scale, src):
+        self.scale = scale
+        self.src = src
+    
 class EventHandler(PyLEMSBase):
     """
     Base class for event an handler.
@@ -248,6 +304,10 @@ class Regime(PyLEMSBase):
         """ List of event handlers defined in this behavior regime.
         @type: list(EventHandler) """
 
+        self.runs = None
+        """ Dictionary of runs in this behavior profile.
+        @type: dict(string -> pylems.model.behavior.Run) """
+
     def add_state_variable(self, name, exposure, dimension):
         """
         Adds a state variable to the behavior current object.
@@ -301,14 +361,42 @@ class Regime(PyLEMSBase):
         Adds a state variable to the behavior current object.
 
         @param event_handler: Event handler object.
-        @type variable: pylems.model.behavior.EventHandler
+        @type event_handler: pylems.model.behavior.EventHandler
         """
 
         if self.event_handlers == None:
             self.event_handlers = []
 
         self.event_handlers += [event_handler]
-    
+
+    def add_run(self, component, variable, increment, total):
+        """
+        Adds a runnable target component definition to the list of runnable
+        components stored in this context.
+
+        @param component: Name of the target component to be run.
+        @type component: string
+
+        @param variable: Name of an indendent state variable used to control
+        the target component (usually time).
+        @type variable: string
+
+        @param increment: Value by which the control variable is to be
+        incremented in each step.
+        @type increment: string
+
+        @param total: End value for the control variable.
+        @type total: string
+        """
+
+        if self.runs != None and component in self.runs:
+            raise ModelError('Duplicate run for ' + component)
+
+        if self.runs == None:
+            self.runs = dict()
+
+        self.runs[component] = Run(component, variable, increment, total)
+
 class Behavior(PyLEMSBase):
     """
     Stores the behavior characteristics for a component type.

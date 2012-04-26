@@ -725,8 +725,34 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        pass
- 
+        if self.current_regime == None:
+            raise ParseError('<StateVariable> must be defined inside a ' +
+                             'behavior profile or regime')
+
+        if 'component' in node.attrib:
+            component = node.attrib['component']
+        else:
+            raise ParseError('<Run> must specify a target component')
+
+        if 'variable' in node.attrib:
+            variable = node.attrib['variable']
+        else:
+            raise ParseError('<Run> must specify a state variable')
+
+        if 'increment' in node.attrib:
+            increment = node.attrib['increment']
+        else:
+            raise ParseError('<Run> must specify an increment for the ' +
+                             'state variable')
+
+        if 'total' in node.attrib:
+            total = node.attrib['total']
+        else:
+            raise ParseError('<Run> must specify a final value for the ' +
+                             'state variable')
+
+        self.current_regime.add_run(component, variable, increment, total)
+            
     def parse_show(self, node):
         """
         Parses <Show>
