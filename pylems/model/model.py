@@ -82,13 +82,6 @@ class Model(Contextual):
         else:
             self.units[unit.symbol] = unit
 
-    def resolve_names_to_objects(self):
-        """
-        Resolve all name references in the model to actual objects.
-        """
-
-        self.context.resolve_names_to_objects()
-
     #####################################################################33
 
     tab = '  '

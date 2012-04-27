@@ -33,29 +33,29 @@ class Context(PyLEMSBase):
         """ Reference to parent context.
         @type: pylems.model.context.Context """
 
-        self.component_types = None
+        self.component_types = dict()
         """ Dictionary of component types defined in this conext.
         @type: dict(string -> pylems.model.component.ComponentType) """
 
-        self.components = None
+        self.components = dict()
         """ Dictionary of components defined in this context.
         @type: dict(string -> pylems.model.component.Component) """
 
-        self.component_refs = None
+        self.component_refs = dict()
         """ Dictionary of component references defined in this context.
         @type: dict(string -> string) """
 
-        self.child_defs = None
+        self.child_defs = dict()
         """ Dictionary of single-instance child objects defined in this
         context.
         @type: dict(string -> string) """
         
-        self.children_defs = None
+        self.children_defs = dict()
         """ Dictionary of multi-instance child objects defined in this
         context.
         @type: dict(string -> string) """
         
-        self.parameters = None
+        self.parameters = dict()
         """ Dictionary of references to parameters defined in this context.
         @type: dict(string -> pylems.model.parameter.Parameter) """
 
@@ -64,7 +64,7 @@ class Context(PyLEMSBase):
         @type: enum(Context.GLOBAL, Context.COMPONENT_TYPE or
         Context.COMPONENT_TYPE) """
 
-        self.behavior_profiles = None
+        self.behavior_profiles = dict()
         """ Stores the various behavior profiles of the current object.
         @type: dict(string -> pylems.model.behavior.Behavior) """
 
@@ -72,7 +72,7 @@ class Context(PyLEMSBase):
         """ Name of the selected brhavior profile.
         @type: pylems.model.behavior.Behavior """
 
-        self.exposures = None
+        self.exposures = []
         """ List of names of exposed variables.
         @type: list(string) """
 
@@ -87,9 +87,6 @@ class Context(PyLEMSBase):
         @raise ModelError: Raised when the component type is already defined
         in the current context.
         """
-
-        if self.component_types == None:
-            self.component_types = dict()
 
         if component_type.name in self.component_types:
             raise ModelError('Duplicate component type - ' +
@@ -108,9 +105,6 @@ class Context(PyLEMSBase):
         @raise ModelError: Raised when the component is already defined in the 
         current context.
         """
-
-        if self.components == None:
-            self.components = dict()
 
         if component.id in self.components:
             raise ModelError('Duplicate component type - ' + component.id)
@@ -132,12 +126,9 @@ class Context(PyLEMSBase):
         defined in the current context.
         """
 
-        if self.component_refs != None and name in self.component_refs:
+        if name in self.component_refs:
             raise ModelError('Duplicate component reference ' + name)
         
-        if self.component_refs == None:
-            self.component_refs = dict()
-
         self.component_refs[name] = type
 
     def add_child(self, name, type):
@@ -155,12 +146,9 @@ class Context(PyLEMSBase):
         current context.
         """
 
-        if self.child_defs != None and name in self.child_defs:
+        if name in self.child_defs:
             raise ModelError('Duplicate child definition ' + name)
         
-        if self.child_defs == None:
-            self.child_defs = dict()
-
         self.child_defs[name] = type
 
     def add_children(self, name, type):
@@ -178,12 +166,9 @@ class Context(PyLEMSBase):
         current context.
         """
 
-        if self.children_defs != None and name in self.children_defs:
+        if name in self.children_defs:
             raise ModelError('Duplicate children definition ' + name)
         
-        if self.children_defs == None:
-            self.children_defs = dict()
-
         self.children_defs[name] = type
 
     def add_parameter(self, parameter):
@@ -197,9 +182,6 @@ class Context(PyLEMSBase):
         @raise ModelError: Raised when the parameter is already defined in the 
         current context.
         """
-
-        if self.parameters == None:
-            self.parameters = dict()
 
         if parameter.name in self.parameters:
             raise ModelError('Duplicate parameter type - ' + parameter.name)
@@ -217,7 +199,7 @@ class Context(PyLEMSBase):
         @rtype: pylems.model.parameter.Parameter
         """
 
-        if self.parameters != None and parameter_name in self.parameters:
+        if parameter_name in self.parameters:
             return self.parameters[parameter_name]
         else:
             return None
@@ -230,11 +212,8 @@ class Context(PyLEMSBase):
         @type name: string
         """
         
-        if self.behavior_profiles != None and name in self.behavior_profiles:
+        if name in self.behavior_profiles:
             raise ModelError('Duplicate behavior profile \'' + name + '\'')
-
-        if self.behavior_profiles == None:
-            self.behavior_profiles = dict()
 
         self.behavior_profiles[name] = Behavior(name)
         self.select_behavior_profile(name)
@@ -250,7 +229,7 @@ class Context(PyLEMSBase):
         undefined in the current context.
         """
 
-        if self.behavior_profiles == None or name not in self.behavior_profiles:
+        if name not in self.behavior_profiles:
             raise ModelError('Unknown behavior profile')
 
         self.selected_behavior_profile = self.behavior_profiles[name]
@@ -272,7 +251,7 @@ class Context(PyLEMSBase):
             raise ModelError('Exposure names can only be defined in ' +
                              'a component type')
         
-        if self.exposures != None and name in self.exposures:
+        if name in self.exposures:
             raise ModelError('Duplicate exposure name')
 
         if self.exposures == None:

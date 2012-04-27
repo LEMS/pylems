@@ -23,7 +23,8 @@ parser = LEMSParser()
 parser.init_parser()
 parser.parse_file(model_file)
 model = parser.get_model()
+
 print model
-print 'Resolving...'
-model.resolve_names_to_objects()
-print model
+
+sim = SimulationBuilder(model).build()
+
