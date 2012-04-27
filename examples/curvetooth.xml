@@ -8,6 +8,22 @@
   <Unit symbol="V" dimension="voltage"/> 
   <Unit symbol="V_per_t" dimension="voltage_gradient"/> 
 
+  <ComponentType name="CT1">
+    <Parameter name="a" dimension="voltage"/>
+    <Parameter name="b" dimension="voltage_gradient"/>
+  </ComponentType>
+
+  <ComponentType name="CT2" extends="CT1">
+    <Parameter name="c" dimension="voltage"/>
+  </ComponentType>
+
+  <ComponentType name="CT3" extends="CT2">
+    <Fixed parameter="c" value="1V"/>
+  </ComponentType>
+
+  <CT1 id="ct11"/>
+    
+
   <ComponentType name="CurvetoothGenerator">
     <Parameter name="k" dimension="none"/>
     <Parameter name="threshold" dimension="voltage"/>

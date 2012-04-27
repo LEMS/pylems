@@ -22,9 +22,12 @@ model_file = sys.argv[1]
 parser = LEMSParser()
 parser.init_parser()
 parser.parse_file(model_file)
-model = parser.get_model()
 
+model = parser.get_model()
+print model
+print 'Resolving model'
+model.resolve_model()
 print model
 
-sim = SimulationBuilder(model).build()
+#sim = SimulationBuilder(model).build()
 

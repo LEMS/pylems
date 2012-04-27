@@ -13,3 +13,6 @@ clean:
 test:
 	# ./runlems.py examples/example1.xml
 	./runlems.py examples/curvetooth.xml
+
+example1:
+	./runlems.py examples/example1.xml

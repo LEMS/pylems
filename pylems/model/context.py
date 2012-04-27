@@ -259,7 +259,45 @@ class Context(PyLEMSBase):
 
         self.exposures += name
         
+    def lookup_component_type(self, name):
+        """
+        Searches the current context and parent contexts for a component type
+        with the given name.
 
+        @param name: Name of the component type.
+        @type name: string
+
+        @return: Resolved component type object, or None on failure.
+        @rtype: pylems.model.component.ComponentType
+        """
+
+        if name in self.component_types:
+            return self.component_types[name]
+        elif self.parent:
+            return self.parent.lookup_component_type(name)
+        else:
+            return None
+
+    def lookup_component(self, name):
+        """
+        Searches the current context and parent contexts for a component
+        with the given name.
+
+        @param name: Name of the component.
+        @type name: string
+
+        @return: Resolved component object, or None on failure.
+        @rtype: pylems.model.component.Component
+        """
+
+        if name in self.components:
+            return self.components[name]
+        elif self.parent:
+            return self.parent.lookup_component(name)
+        else:
+            return None
+
+    
 class Contextual(PyLEMSBase):
     """
     Base class for objects that need to store their own context.

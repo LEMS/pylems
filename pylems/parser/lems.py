@@ -28,7 +28,7 @@ def xmltolower(node):
 
     lattrib = dict()
     for key in node.attrib:
-        lattrib[key] = node.attrib[key]
+        #lattrib[key] = node.attrib[key]
         lattrib[key.lower()] = node.attrib[key]
     node.attrib = lattrib
     for child in node:
@@ -64,7 +64,8 @@ class LEMSParser(Parser):
     @type: pylems.model.context.Context """
 
     component_type_stack = []
-    """ Stack of component type objects used for handling nested component types.
+    """ Stack of component type objects used for handling nested
+    component types.
     @type: list(pylems.model.parameter.ComponentType) """
 
     current_component_type = None
@@ -78,6 +79,10 @@ class LEMSParser(Parser):
     current_event_handler = None
     """ Current event_handler being parsed.
     @type: pylems.model.behavior.EventHandler """
+
+    xml_node_stack = []
+    """ XML node stack.
+    @type: list(xml.etree.Element) """
 
     def push_context(self, context):
         self.context_stack = [context] + self.context_stack
@@ -93,7 +98,8 @@ class LEMSParser(Parser):
             self.current_context = self.context_stack[0]
  
     def push_component_type(self, component_type):
-        self.component_type_stack = [component_type] + self.component_type_stack
+        self.component_type_stack = [component_type] + \
+                                    self.component_type_stack
         self.current_component_type = component_type
 
     def pop_component_type(self):
@@ -123,10 +129,12 @@ class LEMSParser(Parser):
                                                 'componentref',
                                                 'exposure', 'eventport', 
                                                 'fixed', 'link', 'parameter',
-                                                'path', 'requirement', 'text']
+                                                'path', 'requirement',
+                                                'text']
         self.valid_children['behavior'] = ['build', 'derivedvariable',
                                            'oncondition', 'onevent',
-                                           'onstart', 'record', 'run', 'show',
+                                           'onstart', 'record',
+                                           'run', 'show',
                                            'statevariable', 'timederivative']
         self.valid_children['oncondition'] = ['eventout', 'stateassignment']
         self.valid_children['onevent'] = ['stateassignment']
@@ -194,6 +202,8 @@ class LEMSParser(Parser):
             #print child.attrib['name'] if 'name' in child.attrib else '',
             #print child.attrib['id'] if 'id' in child.attrib else ''
 
+            self.xml_node_stack = [node] + self.xml_node_stack
+
             ctagl = child.tag.lower()
 
             if ctagl in self.tag_parse_table:
@@ -201,6 +211,8 @@ class LEMSParser(Parser):
             else:
                 self.parse_component_by_typename(child, child.tag)
 
+            self.xml_node_stack = self.xml_node_stack[1:]
+            
         #self.prefix = self.prefix[2:]
 
     def resolve_typename(self, typename):
@@ -267,7 +279,8 @@ class LEMSParser(Parser):
         """
 
         if self.current_context.context_type != Context.COMPONENT_TYPE:
-            raise ParseError('Behavior must be defined inside a component type')
+            raise ParseError('Behavior must be defined inside a ' +
+                             'component type')
 
         if 'name' in node.attrib:
             name = node.attrib['name']
@@ -418,8 +431,8 @@ class LEMSParser(Parser):
             if 'extends' in node.attrib:
                 extends = node.attrib['extends']
             else:
-                raise ParseError('Component must have a type or must extend ' +
-                                 'another component')
+                raise ParseError('Component must have a type or must ' +
+                                 'extend another component')
         else:
             extends = None
 
@@ -463,7 +476,8 @@ class LEMSParser(Parser):
         @param node: Node containing the <ComponentType> element
         @type node: xml.etree.Element
 
-        @raise ParseError: Raised when the component type does not have a name.
+        @raise ParseError: Raised when the component type does not have a
+        name.
         """
         
         try:
@@ -510,8 +524,8 @@ class LEMSParser(Parser):
         @param node: Node containing the <Dimension> element
         @type node: xml.etree.Element
 
-        @raise ParseError: When the name is not a string or if the dimension is
-        not a signed integer.
+        @raise ParseError: When the name is not a string or if the
+        dimension is not a signed integer.
         """
         
         dim = list()
@@ -670,7 +684,8 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
 
         @raise ParseError: Raised when the parameter does not have a name.
-        @raise ParseError: Raised when the parameter does not have a dimension.
+        @raise ParseError: Raised when the parameter does not have a
+        dimension.
         """
         
         try:
@@ -803,6 +818,9 @@ class LEMSParser(Parser):
         being defined in the context of a component type.
         """
 
+        #for node in self.xml_node_stack:
+        #    print node.tag
+            
         if self.current_regime == None:
             raise ParseError('<StateVariable> must be defined inside a ' +
                              'behavior profile or regime')
@@ -846,13 +864,14 @@ class LEMSParser(Parser):
         if 'variable' in node.attrib:
             name = node.attrib['variable']
         else:
-            raise ParseError('The state variable being differentiated wrt time' +
-                             ' must be specified')
+            raise ParseError('The state variable being differentiated wrt ' +
+                             'time must be specified')
 
         if 'value' in node.attrib:
             value = node.attrib['value']
         else:
-            raise ParseError('The time derivative expression must be provided')
+            raise ParseError('The time derivative expression must be ' +
+                             'provided')
 
         self.current_regime.add_time_derivative(name, value)
 
@@ -903,7 +922,9 @@ class LEMSParser(Parser):
         if node.tag.lower() != 'lems':
             raise ParseError('Not a LEMS file')
 
+        self.xml_node_stack = [node] + self.xml_node_stack
         self.process_nested_tags(node)
+        self.xml_node_stack = self.xml_node_stack[1:]
             
     def parse_file(self, filename):
         """

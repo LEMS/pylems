@@ -8,6 +8,7 @@ Model storage
 
 from pylems.base.errors import ModelError
 from pylems.model.context import Contextual
+from pylems.model.parameter import Parameter
 
 class Model(Contextual):
     """
@@ -82,12 +83,122 @@ class Model(Contextual):
         else:
             self.units[unit.symbol] = unit
 
-    def resolve_context(self, model):
-        pass
-    
-    def resolve_model(self):
-        pass
+    def resolve_extended_component_type(self, context, component_type):
+        base_type = context.lookup_component_type(component_type.extends)
+        if base_type == None:
+            raise ModelError('Base type {0} not found for component type {1}'.
+                             format(component_type.extends,
+                                    component_type.name))
+        if base_type.extends:
+            self.resolve_extended_component_type(context, base_type)
 
+        this_context = component_type.context
+        base_context = base_type.context
+
+        for pn in base_context.parameters:
+            if pn in this_context.parameters:
+                pt = this_context.parameters[pn]
+
+                if pt.dimension == '__dimension_inherited__':
+                    pb = base_context.parameters[pn]
+                    this_context.parameters[pn] = Parameter(pt.name,
+                                                            pb.dimension,
+                                                            pt.fixed,
+                                                            pt.value)
+                else:
+                    raise ModelError(('Parameter {0} in {1} is redefined ' +
+                                     'in {2}').format(pn, base_type.name,
+                                                      component_type.name))
+            else:
+                this_context.parameters[pn] = base_context.parameters[pn].\
+                                              copy()
+
+        component_type.extends = None
+
+    def resolve_extended_component(self, context, component):
+        """
+        @note: Consider changing Component.id to Component.name and merging
+        this method with resolve_extended_component_type.
+        """
+        base = context.lookup_component(component.extends)
+        if base == None:
+            raise ModelError('Base component {0} not found for component {1}'.
+                             format(component.extends,
+                                    component.id))
+        if base.extends:
+            self.resolve_extended_component(context, base)
+
+        this_context = component.context
+        base_context = base.context
+
+        for pn in base_context.parameters:
+            if pn in this_context.parameters:
+                pt = this_context.parameters[pn]
+
+                if pt.dimension == '__dimension_inherited__':
+                    pb = base_context.parameters[pn]
+                    this_context.parameters[pn] = Parameter(pt.name,
+                                                            pb.dimension,
+                                                            pt.fixed,
+                                                            pt.value)
+                else:
+                    raise ModelError(('Parameter {0} in {1} is redefined ' +
+                                     'in {2}').format(pn, base_type.name,
+                                                      component_type.name))
+            else:
+                this_context.parameters[pn] = base_context.parameters[pn].\
+                                              copy()
+
+        component.extends = None
+
+    def resolve_component_from_type(self, context, component):
+        component_type = context.lookup_component_type(
+            component.component_type)
+        if component_type == None:
+            raise ModelError('Type {0} not found for component {1}'.
+                             format(component.component_type, component.id))
+
+        this_context = component.context
+        type_context = component_type.context
+        
+        for pn in type_context.parameters:
+            pt = type_context.parameters[pn]
+            if pn in this_context.parameters:
+                pc = this_context.parameters[pn]
+                if pc.dimension == '__dimension_inherited__':
+                    if pt.fixed:
+                        np = Parameter(pn, pt.dimension, pt.fixed, pt.value)
+                    else:
+                        np = Parameter(pn, pt.dimension, pc.fixed, pc.value)
+                    this_context.parameters[pn] = np
+        
+    def resolve_context(self, context):
+        # Resolve component-types
+        for ctn in context.component_types:
+            component_type = context.component_types[ctn]
+            self.resolve_context(component_type.context)
+            if component_type.extends:
+                self.resolve_extended_component_type(context, component_type)
+            
+        # Resolve components
+        for cid in context.components:
+            component = context.components[cid]
+            self.resolve_context(component.context)
+            self.resolve_component_from_type(context, component)
+            if component.extends:
+                self.resolve_extended_component(context, component)
+
+    def resolve_model(self):
+        # Verify dimensions for units
+        for symbol in self.units:
+            dimension = self.units[symbol].dimension
+            if dimension not in self.dimensions:
+                raise ModelError('Dimension {0} not defined for unit {1}'\
+                                 .format(dimension, symbol))
+
+        # Resolve global context
+        self.resolve_context(self.context)
+    
     #####################################################################33
 
     tab = '  '
