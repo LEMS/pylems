@@ -82,6 +82,12 @@ class Model(Contextual):
         else:
             self.units[unit.symbol] = unit
 
+    def resolve_context(self, model):
+        pass
+    
+    def resolve_model(self):
+        pass
+
     #####################################################################33
 
     tab = '  '

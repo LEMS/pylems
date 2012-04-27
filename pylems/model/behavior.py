@@ -292,19 +292,19 @@ class Regime(PyLEMSBase):
         """ Is this an initial regime?
         @type: Boolean """
 
-        self.state_variables = None
+        self.state_variables = {}
         """ Dictionary of state variables defined in this behavior regime.
         @type: dict(string -> pylems.model.behavior.StateVariable) """
     
-        self.time_derivatives = None
+        self.time_derivatives = {}
         """ Dictionary of time derivatives defined in this behavior regime.
         @type: dict(string -> pylems.model.behavior.TimeDerivative) """
 
-        self.event_handlers = None
+        self.event_handlers = []
         """ List of event handlers defined in this behavior regime.
         @type: list(EventHandler) """
 
-        self.runs = None
+        self.runs = {}
         """ Dictionary of runs in this behavior profile.
         @type: dict(string -> pylems.model.behavior.Run) """
 
@@ -325,11 +325,8 @@ class Regime(PyLEMSBase):
         defined in this behavior regime.
         """
 
-        if self.state_variables != None and name in self.state_variables:
+        if name in self.state_variables:
             raise ModelError('Duplicate state variable ' + name)
-
-        if self.state_variables == None:
-            self.state_variables = dict()
 
         self.state_variables[name] = StateVariable(name, exposure, dimension)
 
@@ -348,11 +345,8 @@ class Regime(PyLEMSBase):
         variable is already defined in this behavior regime.
         """
 
-        if self.time_derivatives != None and variable in self.time_derivatives:
+        if variable in self.time_derivatives:
             raise ModelError('Duplicate time derivative for ' + variable)
-
-        if self.time_derivatives == None:
-            self.time_derivatives = dict()
 
         self.time_derivatives[variable] = TimeDerivative(variable, value)
     
@@ -363,9 +357,6 @@ class Regime(PyLEMSBase):
         @param event_handler: Event handler object.
         @type event_handler: pylems.model.behavior.EventHandler
         """
-
-        if self.event_handlers == None:
-            self.event_handlers = []
 
         self.event_handlers += [event_handler]
 
@@ -389,11 +380,8 @@ class Regime(PyLEMSBase):
         @type total: string
         """
 
-        if self.runs != None and component in self.runs:
+        if component in self.runs:
             raise ModelError('Duplicate run for ' + component)
-
-        if self.runs == None:
-            self.runs = dict()
 
         self.runs[component] = Run(component, variable, increment, total)
 
@@ -420,7 +408,7 @@ class Behavior(PyLEMSBase):
         """ Currently active behavior regime for this behavior profile.
         @type: pylems.model.behavior.Regime """
 
-        self.regimes = None
+        self.regimes = dict()
         """ Dictionary of regimes in this behavior profile.
         @type: dict(string -> pylems.model.behavior.Regime) """
 
@@ -436,11 +424,8 @@ class Behavior(PyLEMSBase):
         @type initial: Boolean
         """
         
-        if self.regimes != None and name in self.regimes:
+        if name in self.regimes:
             raise ModelError('Duplicate regime ' + name)
-
-        if self.regimes == None:
-            self.regimes = dict()
 
         if initial:
             for rn in self.regimes:

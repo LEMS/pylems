@@ -33,29 +33,29 @@ class Context(PyLEMSBase):
         """ Reference to parent context.
         @type: pylems.model.context.Context """
 
-        self.component_types = dict()
+        self.component_types = {}
         """ Dictionary of component types defined in this conext.
         @type: dict(string -> pylems.model.component.ComponentType) """
 
-        self.components = dict()
+        self.components = {}
         """ Dictionary of components defined in this context.
         @type: dict(string -> pylems.model.component.Component) """
 
-        self.component_refs = dict()
+        self.component_refs = {}
         """ Dictionary of component references defined in this context.
         @type: dict(string -> string) """
 
-        self.child_defs = dict()
+        self.child_defs = {}
         """ Dictionary of single-instance child objects defined in this
         context.
         @type: dict(string -> string) """
         
-        self.children_defs = dict()
+        self.children_defs = {}
         """ Dictionary of multi-instance child objects defined in this
         context.
         @type: dict(string -> string) """
         
-        self.parameters = dict()
+        self.parameters = {}
         """ Dictionary of references to parameters defined in this context.
         @type: dict(string -> pylems.model.parameter.Parameter) """
 
@@ -64,7 +64,7 @@ class Context(PyLEMSBase):
         @type: enum(Context.GLOBAL, Context.COMPONENT_TYPE or
         Context.COMPONENT_TYPE) """
 
-        self.behavior_profiles = dict()
+        self.behavior_profiles = {}
         """ Stores the various behavior profiles of the current object.
         @type: dict(string -> pylems.model.behavior.Behavior) """
 
