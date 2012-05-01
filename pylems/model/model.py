@@ -160,17 +160,20 @@ class Model(Contextual):
 
         this_context = component.context
         type_context = component_type.context
-        
+
         for pn in type_context.parameters:
             pt = type_context.parameters[pn]
             if pn in this_context.parameters:
                 pc = this_context.parameters[pn]
+                
                 if pc.dimension == '__dimension_inherited__':
                     if pt.fixed:
                         np = Parameter(pn, pt.dimension, pt.fixed, pt.value)
                     else:
                         np = Parameter(pn, pt.dimension, pc.fixed, pc.value)
                     this_context.parameters[pn] = np
+            else:
+                this_context.parameters[pn] = pt.copy()
         
     def resolve_context(self, context):
         # Resolve component-types
