@@ -90,9 +90,10 @@ class Model(Contextual):
             raise ModelError('Parameter ' + parameter.name +
                              ' not initialized')
 
-        print parameter.value
         number = float(re.split('[a-zA-z]+', parameter.value)[0].strip())
         sym = re.split('[^a-zA-z]+', parameter.value)[1].strip()
+
+        print number, sym
 
         if sym == '':
             parameter.numeric_value = number
@@ -106,8 +107,8 @@ class Model(Contextual):
                         raise ModelError('Unit symbol ' + sym + ' cannot ' +
                                          'be used for dimension ' +
                                          parameter.dimension)
-                    print parameter.name, parameter.dimension, unit.dimension
-                    parameter.numeric_value = number * (10 ^ unit.pow10)
+                print parameter.name, parameter.dimension, unit.dimension
+                parameter.numeric_value = number * (10 ^ unit.pow10)
             else:
                 raise ModelError('Unknown unit symbol ' + sym)
 

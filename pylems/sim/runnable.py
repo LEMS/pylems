@@ -8,6 +8,8 @@ Base class for runnable components.
 
 from pylems.base.base import PyLEMSBase
 
+import ast
+
 class Reflective(object):
     @classmethod
     def add_method(cls, method_name, parameter_list, statements):
@@ -28,9 +30,22 @@ class Reflective(object):
         setattr(cls, method_name, __generated_function__)
         del __generated_function__
 
+    def add_instance_variable(self, variable, initial_value):
+        code_string = 'self.{0} = {1}'.format(variable, initial_value)
+        exec compile(ast.parse(code_string), '<unknown>', 'exec')
+        
+    
 class Incremental(Reflective):
     def build(self, component, model):
-        pass
+        context = component.context
+        
+        for pn in context.parameters:
+            p = context.parameters[pn]
+            self.add_instance_variable(p.name, p.numeric_value)
+
+        print help(self)
+        print self.__dict__
+            
     
 class Runnable(Incremental):
     def __init__(self):

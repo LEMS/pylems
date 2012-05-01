@@ -8,6 +8,7 @@
   <Unit symbol="V" dimension="voltage"/> 
   <Unit symbol="V_per_t" dimension="voltage_gradient"/> 
 
+  <!--
   <ComponentType name="CT1">
     <Parameter name="a" dimension="voltage"/>
     <Parameter name="b" dimension="voltage_gradient"/>
@@ -22,6 +23,7 @@
   </ComponentType>
 
   <CT1 id="ct11" a="1" b="2" c="3"/>
+  -->
     
 
   <ComponentType name="CurvetoothGenerator">
