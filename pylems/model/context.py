@@ -76,6 +76,14 @@ class Context(PyLEMSBase):
         """ List of names of exposed variables.
         @type: list(string) """
 
+        self.texts = {}
+        """ Dictionary of text parameters.
+        @type: dict(string -> string) """
+        
+        self.paths = {}
+        """ Dictionary of path parameters.
+        @type: dict(string -> string) """
+
     def add_component_type(self, component_type):
         """
         Adds a component type to the list of defined component types in the
@@ -254,10 +262,53 @@ class Context(PyLEMSBase):
         if name in self.exposures:
             raise ModelError('Duplicate exposure name')
 
-        if self.exposures == None:
-            self.exposures = []
+        self.exposures += [name]
+        
+    def add_text_var(self, name, value = None):
+        """
+        Adds a text variable to the current context.
 
-        self.exposures += name
+        @param name: Name of the text variable.
+        @type name: string
+
+        @param value: Value of the text variable.
+        @type value: string
+
+        @raise ModelError: Raised when the text variable already exists
+        in the current context.
+        """
+        
+        if self.context_type != Context.COMPONENT_TYPE:
+            raise ModelError('Text variables can only be defined in ' +
+                             'a component type')
+        
+        if name in self.texts:
+            raise ModelError('Duplicate text variable')
+
+        self.texts[name] = value
+        
+    def add_path_var(self, name, value = None):
+        """
+        Adds a path variable to the current context.
+
+        @param name: Name of the path variable.
+        @type name: string
+
+        @param value: Value of the path variable.
+        @type value: string
+
+        @raise ModelError: Raised when the path variable already exists
+        in the current context.
+        """
+        
+        if self.context_type != Context.COMPONENT_TYPE:
+            raise ModelError('Path variables can only be defined in ' +
+                             'a component type')
+        
+        if name in self.paths:
+            raise ModelError('Duplicate path variable')
+
+        self.paths[name] = value
         
     def lookup_component_type(self, name):
         """

@@ -710,7 +710,21 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        pass
+        if self.current_context.context_type != Context.COMPONENT_TYPE:
+            raise ParseError('Path variables can only be defined in ' +
+                             'a component type')
+
+        if 'name' in node.attrib:
+            name = node.attrib['name']
+        else:
+            raise ParseError('A name must be provided for <Path>')
+
+        if 'value' in node.attrib:
+            value = node.attrib['value']
+        else:
+            value = None
+
+        self.current_context.add_path_var(name, value)
 
     def parse_record(self, node):
         """
@@ -842,6 +856,30 @@ class LEMSParser(Parser):
 
         self.current_regime.add_state_variable(name, exposure, dimension)
             
+    def parse_text(self, node):
+        """
+        Parses <Text>
+
+        @param node: Node containing the <Text> element
+        @type node: xml.etree.Element
+        """
+
+        if self.current_context.context_type != Context.COMPONENT_TYPE:
+            raise ParseError('Text variables can only be defined in ' +
+                             'a component type')
+
+        if 'name' in node.attrib:
+            name = node.attrib['name']
+        else:
+            raise ParseError('A name must be provided for <Text>')
+
+        if 'value' in node.attrib:
+            value = node.attrib['value']
+        else:
+            value = None
+
+        self.current_context.add_text_var(name, value)
+
     def parse_time_derivative(self, node):
         """
         Parses <TimeDerivative>
@@ -874,16 +912,6 @@ class LEMSParser(Parser):
                              'provided')
 
         self.current_regime.add_time_derivative(name, value)
-
-    def parse_text(self, node):
-        """
-        Parses <Text>
-
-        @param node: Node containing the <Text> element
-        @type node: xml.etree.Element
-        """
-
-        pass
 
     def parse_unit(self, node):
         """

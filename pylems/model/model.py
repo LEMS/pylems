@@ -107,7 +107,6 @@ class Model(Contextual):
                         raise ModelError('Unit symbol ' + sym + ' cannot ' +
                                          'be used for dimension ' +
                                          parameter.dimension)
-                print parameter.name, parameter.dimension, unit.dimension
                 parameter.numeric_value = number * (10 ^ unit.pow10)
             else:
                 raise ModelError('Unknown unit symbol ' + sym)
@@ -211,6 +210,21 @@ class Model(Contextual):
 
             self.resolve_parameter_value(this_context.parameters[pn])
 
+        for pn in this_context.parameters:
+            pc = this_context.parameters[pn]
+            if pc.dimension == '__dimension_inherited__':
+                if pn in type_context.texts:
+                    pc.dimension = '__text__'
+                    this_context.texts[pn] = type_context.texts[pn]
+                elif pn in type_context.paths:
+                    pc.dimension = '__path__'
+                    this_context.paths[pn] = type_context.paths[pn]
+                elif pn in type_context.component_refs:
+                    pc.dimension = '__component_ref__'
+                    cf = type_context.component_refs[pn]
+                    this_context.component_refs[pn] = cf
+                                                    
+
     def resolve_context(self, context):
         # Resolve component-types
         for ctn in context.component_types:
@@ -229,9 +243,9 @@ class Model(Contextual):
             for pn in component.context.parameters:
                 p = component.context.parameters[pn]
                 if p.dimension == '__dimension_inherited__':
-                    #raise ModelError(('The dimension for parameter {0} in '
-                    #                 'component {1} could not be resolved').\
-                    #                 format(pn, component.id))
+                    raise ModelError(('The dimension for parameter {0} in '
+                                      'component {1} could not be resolved').\
+                                     format(pn, component.id))
                     pass
                                      
 
@@ -362,6 +376,26 @@ class Model(Contextual):
             s += prefix + 'Exposures:\n'
             for name in context.exposures:
                 s += prefix + Model.tab + name + '\n'
+
+        if context.texts:
+            s += prefix + 'Text variables:\n'
+            for name in context.texts:
+                value = context.texts[name]
+                s += prefix + Model.tab + name
+                if value:
+                    s += ': ' + value + '\n'
+                else:
+                    s += '\n'
+
+        if context.paths:
+            s += prefix + 'Path variables:\n'
+            for name in context.paths:
+                value = context.paths[name]
+                s += prefix + Model.tab + name
+                if value:
+                    s += ': ' + value + '\n'
+                else:
+                    s += '\n'
 
         if context.behavior_profiles:
             s += prefix + 'Behavior profiles:\n'
