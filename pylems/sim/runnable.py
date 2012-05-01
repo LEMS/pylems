@@ -28,14 +28,11 @@ class Reflective(object):
         setattr(cls, method_name, __generated_function__)
         del __generated_function__
 
-class Runnable(Reflective):
-    def __init__(self):
-        self.variables = dict()
-        self.time_derivatives = dict()
-
-    def add_parameter(self, parameter_name, initial_value, time_derivative):
-        self.variables[parameter_name] = initial_value
-        self.time_derivatives[parameter_name] = time_derivative
-
+class Incremental(Reflective):
     def build(self, component, model):
         pass
+    
+class Runnable(Incremental):
+    def __init__(self):
+        Incremental.__init__(self)
+

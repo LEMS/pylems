@@ -372,6 +372,7 @@ class LEMSParser(Parser):
         @raise ParseError: Raised when the component does not have an id.
         """
 
+        print node.tag
         if self.current_context.context_type == Context.GLOBAL:
             # Global component instatiation
             if 'id' in node.attrib:
@@ -382,7 +383,6 @@ class LEMSParser(Parser):
             type = node.tag
 
             component = Component(id, self.current_context, type, None)
-            self.current_context.add_component(component)
         else:
             # Child instantiation
             if 'id' in node.attrib:
@@ -397,13 +397,14 @@ class LEMSParser(Parser):
             ##     type = '__type_inherited__'
 
             component = Component(id, self.current_context, type)
+
+        self.current_context.add_component(component)
             
-            for key in node.attrib:
-                if key != 'id' and key != 'type':
-                    param = Parameter(key, '__dimension_inherited__')
-                    param.set_value(node.attrib[key])
-                    component.add_parameter(param)
-            self.current_context.add_component(component)
+        for key in node.attrib:
+            if key != 'id' and key != 'type':
+                param = Parameter(key, '__dimension_inherited__')
+                param.set_value(node.attrib[key])
+                component.add_parameter(param)
 
         self.push_context(component.context)
         self.process_nested_tags(node)

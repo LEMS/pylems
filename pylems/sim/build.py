@@ -35,15 +35,6 @@ class SimulationBuilder(PyLEMSBase):
                 raise SimBuildError('Unable to find component \'{0}\' to run'\
                                     .format(component_name))
             component = self.model.context.components[component_name]
-            self.build_runnable_component(component)
 
-    def build_runnable_component(self, component):
-        type_name = component.component_type
-        if type_name not in self.model.context.component_types:
-                raise SimBuildError('Unable to find component type \'{0}\''\
-                                    .format(type_name))
-        component_type = self.model.context.component_types[type_name]
-        
-        runnable = Runnable()
-        context = component_type.context
-
+            runnable = Runnable()
+            runnable.build(component, self.model)
