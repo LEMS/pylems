@@ -10,6 +10,8 @@ from pylems.base.errors import ModelError
 from pylems.model.context import Contextual
 from pylems.model.parameter import Parameter
 
+import re
+
 class Model(Contextual):
     """
     Store the model read from a LEMS file.
@@ -82,6 +84,32 @@ class Model(Contextual):
             raise ModelError('Duplicate unit - ' + unit.symbol)
         else:
             self.units[unit.symbol] = unit
+
+    def resolve_parameter_value(self, parameter):
+        if parameter.value == None:
+            raise ModelError('Parameter ' + parameter.name +
+                             ' not initialized')
+
+        print parameter.value
+        number = float(re.split('[a-zA-z]+', parameter.value)[0].strip())
+        sym = re.split('[^a-zA-z]+', parameter.value)[1].strip()
+
+        if sym == '':
+            parameter.numeric_value = number
+        else:
+            if sym in self.units:
+                unit = self.units[sym]
+                if parameter.dimension != unit.dimension:
+                    if parameter.dimension == '*':
+                        parameter.dimension = unit.dimension
+                    else:
+                        raise ModelError('Unit symbol ' + sym + ' cannot ' +
+                                         'be used for dimension ' +
+                                         parameter.dimension)
+                    print parameter.name, parameter.dimension, unit.dimension
+                    parameter.numeric_value = number * (10 ^ unit.pow10)
+            else:
+                raise ModelError('Unknown unit symbol ' + sym)
 
     def resolve_extended_component_type(self, context, component_type):
         base_type = context.lookup_component_type(component_type.extends)
@@ -165,16 +193,23 @@ class Model(Contextual):
             pt = type_context.parameters[pn]
             if pn in this_context.parameters:
                 pc = this_context.parameters[pn]
-                
+
+                if pc.value:
+                    value = pc.value
+                else:
+                    value = pt.value
+                    
                 if pc.dimension == '__dimension_inherited__':
                     if pt.fixed:
-                        np = Parameter(pn, pt.dimension, pt.fixed, pt.value)
+                        np = Parameter(pn, pt.dimension, pt.fixed, value)
                     else:
-                        np = Parameter(pn, pt.dimension, pc.fixed, pc.value)
+                        np = Parameter(pn, pt.dimension, pc.fixed, value)
                     this_context.parameters[pn] = np
             else:
                 this_context.parameters[pn] = pt.copy()
-        
+
+            self.resolve_parameter_value(this_context.parameters[pn])
+
     def resolve_context(self, context):
         # Resolve component-types
         for ctn in context.component_types:
@@ -190,6 +225,14 @@ class Model(Contextual):
             self.resolve_component_from_type(context, component)
             if component.extends:
                 self.resolve_extended_component(context, component)
+            for pn in component.context.parameters:
+                p = component.context.parameters[pn]
+                if p.dimension == '__dimension_inherited__':
+                    #raise ModelError(('The dimension for parameter {0} in '
+                    #                 'component {1} could not be resolved').\
+                    #                 format(pn, component.id))
+                    pass
+                                     
 
     def resolve_model(self):
         # Verify dimensions for units
@@ -310,6 +353,8 @@ class Model(Contextual):
                     s += ': ' + str(p.value)
                     if p.fixed:
                         s += ' (fixed)'
+                if p.numeric_value:
+                    s += ' - ' + str(p.numeric_value)
                 s += '\n'
 
         if context.exposures:

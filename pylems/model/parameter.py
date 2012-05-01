@@ -15,7 +15,8 @@ class Parameter(PyLEMSBase):
     Stores a parameter.
     """
 
-    def __init__(self, name, dimension, fixed = False, value = None):
+    def __init__(self, name, dimension, fixed = False, value = None,
+                 numeric_value = None):
         """
         Constructor
 
@@ -29,7 +30,8 @@ class Parameter(PyLEMSBase):
         @type fixed: Boolean
 
         @param value: Value of this parameter.
-        @type value: Number
+        @type value: string
+
         """
 
         self.name = name
@@ -50,6 +52,10 @@ class Parameter(PyLEMSBase):
             
         self.value = value
         """ Value for this parameter.
+        @type: string """
+
+        self.numeric_value = numeric_value
+        """ Numeric value of this parameter in terms of standard units.
         @type: Number """
 
 

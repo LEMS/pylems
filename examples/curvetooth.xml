@@ -21,7 +21,7 @@
     <Fixed parameter="c" value="1V"/>
   </ComponentType>
 
-  <CT1 id="ct11"/>
+  <CT1 id="ct11" a="1" b="2" c="3"/>
     
 
   <ComponentType name="CurvetoothGenerator">

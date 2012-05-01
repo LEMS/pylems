@@ -28,8 +28,8 @@ def xmltolower(node):
 
     lattrib = dict()
     for key in node.attrib:
-        #lattrib[key] = node.attrib[key]
-        lattrib[key.lower()] = node.attrib[key]
+        lattrib[key] = node.attrib[key]
+        #lattrib[key.lower()] = node.attrib[key]
     node.attrib = lattrib
     for child in node:
         xmltolower(child)
@@ -372,7 +372,6 @@ class LEMSParser(Parser):
         @raise ParseError: Raised when the component does not have an id.
         """
 
-        print node.tag
         if self.current_context.context_type == Context.GLOBAL:
             # Global component instatiation
             if 'id' in node.attrib:
