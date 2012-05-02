@@ -87,7 +87,6 @@ class SimulationBuilder(PyLEMSBase):
             time_step_code += ['self.{0} += dt * ({1})'.format(td.variable,
                                self.build_expression_from_tree(\
                                    td.expression_tree))]
-            time_step_code += ['print self.{0}'.format(td.variable)]
         runnable.add_method('update_state_variables', ['self', 'dt'],
                             time_step_code)
 
