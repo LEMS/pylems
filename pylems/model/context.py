@@ -196,22 +196,6 @@ class Context(PyLEMSBase):
 
         self.parameters[parameter.name] = parameter
 
-    def lookup_parameter(self, parameter_name):
-        """
-        Looks up a parameter by name within this context.
-
-        @param parameter_name: Name of the parameter.
-        @type parameter_name: string
-
-        @return: Corresponding Parameter object or None if not found.
-        @rtype: pylems.model.parameter.Parameter
-        """
-
-        if parameter_name in self.parameters:
-            return self.parameters[parameter_name]
-        else:
-            return None
-
     def add_behavior_profile(self, name):
         """
         Adds a behavior profile to the current context.
@@ -365,6 +349,22 @@ class Context(PyLEMSBase):
             return self.lookup_component(cname)
         elif self.parent:
             return self.parent.lookup_component_ref(name)
+        else:
+            return None
+
+    def lookup_parameter(self, parameter_name):
+        """
+        Looks up a parameter by name within this context.
+
+        @param parameter_name: Name of the parameter.
+        @type parameter_name: string
+
+        @return: Corresponding Parameter object or None if not found.
+        @rtype: pylems.model.parameter.Parameter
+        """
+
+        if parameter_name in self.parameters:
+            return self.parameters[parameter_name]
         else:
             return None
 

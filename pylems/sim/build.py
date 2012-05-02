@@ -27,13 +27,14 @@ class SimulationBuilder(PyLEMSBase):
         """
         
         self.model = model
+        self.sim = None
 
     def build(self):
         """
         Build the simulation components from the model.
         """
 
-        sim = Simulation()
+        self.sim = Simulation()
 
         for component_id in self.model.default_runs:
             if component_id not in self.model.context.components:
@@ -42,9 +43,8 @@ class SimulationBuilder(PyLEMSBase):
             component = self.model.context.components[component_id]
 
             runnable = self.build_runnable(component)
-            sim.add_runnable(component_id, runnable)
             
-        return sim
+        return self.sim
 
     def build_runnable(self, component):
         runnable = Runnable()
@@ -71,7 +71,11 @@ class SimulationBuilder(PyLEMSBase):
             self.add_runnable_behavior(component, runnable,
                                        context.selected_behavior_profile)
 
+        self.sim.add_runnable(component.id, runnable)
+        print 'Completed building ' + component.id
+
     def add_runnable_behavior(self, component, runnable, behavior_profile):
+        context = component.context
         regime = behavior_profile.default_regime
 
         for svn in regime.state_variables:
@@ -100,12 +104,20 @@ class SimulationBuilder(PyLEMSBase):
 
         for rn in regime.runs:
             run = regime.runs[rn]
-            print run.component
-            print component.context.component_refs
-            print component.context.components
-            c = component.context.lookup_component_ref(run.component)
-            print c
-            print c.id
+            c = context.lookup_component_ref(run.component)
+            if c != None and c.id in self.sim.runnables:
+                target = self.sim.runnables[c.id]
+                time_step = context.lookup_parameter(run.increment)
+                time_total = context.lookup_parameter(run.total)
+                if time_step != None and time_total != None:
+                    target.configure_time(time_step.numeric_value,
+                                          time_total.numeric_value)
+                else:
+                    raise SimBuildError(('Invalid time specifications in '
+                                         '<Run>'))
+            else:
+                raise SimBuildError(('Invalid component reference {0} in '
+                                     '<Run>').format(c.id))
 
     def convert_op(self, op):
         if op == '.gt.':

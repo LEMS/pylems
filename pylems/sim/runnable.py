@@ -49,6 +49,10 @@ class Runnable(Reflective):
         self.time_completed = 0
         self.time_total = 0
 
+    def configure_time(self, time_step, time_total):
+        self.time_step = time_step
+        self.time_total = time_total
+        
     def reset_time(self):
         self.time_completed = 0
         

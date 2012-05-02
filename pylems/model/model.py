@@ -107,7 +107,7 @@ class Model(Contextual):
                         raise ModelError('Unit symbol ' + sym + ' cannot ' +
                                          'be used for dimension ' +
                                          parameter.dimension)
-                parameter.numeric_value = number * (10 ^ unit.pow10)
+                parameter.numeric_value = number * (10 ** unit.pow10)
             else:
                 raise ModelError('Unknown unit symbol ' + sym)
 
