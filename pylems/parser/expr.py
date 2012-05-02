@@ -174,14 +174,19 @@ class ExprParser(PyLEMSBase):
         ps = self.parse_string.strip()
 
         i = 0
+        
+        while i < len(ps) and ps[i].isspace():
+            i += 1
+
         while i < len(ps):
             s = ''
 
-            while ps[i].isspace():
-                i += 1
-
             if ps[i].isalpha():
                 while i < len(ps) and ps[i].isalnum():
+                    s += ps[i]
+                    i += 1
+            elif ps[i].isdigit():
+                while i < len(ps) and (ps[i].isdigit() or ps[i] == '.'):
                     s += ps[i]
                     i += 1
             elif ps[i] == '.':
@@ -190,15 +195,19 @@ class ExprParser(PyLEMSBase):
                         s += ps[i]
                         i += 1
                 else:
-                    while i < len(ps) and (ps[i] == '.' or ps[i].isalnum()):
+                    while i < len(ps) and (ps[i].isalpha() or ps[i] == '.'):
                         s += ps[i]
                         i += 1
             else:
                 s += ps[i]
                 i += 1
 
+            print s
             self.token_list += [s]
 
+            while i < len(ps) and ps[i].isspace():
+                i += 1
+                
     def parse_token_list_rec(self):
         """
         Parses a tokenized arithmetic expression into a parse tree. It calls
@@ -228,7 +237,8 @@ class ExprParser(PyLEMSBase):
                 node_stack.push(self.parse_token_list_rec())
                 val_stack.push('$')
             elif self.is_op(token):
-                if self.op_priority[op_stack.top()] >= self.op_priority[token]:
+                if self.op_priority[op_stack.top()] >= \
+                       self.op_priority[token]:
                     rval = val_stack.pop()
                     lval = val_stack.pop()
                     op = op_stack.pop()
@@ -279,6 +289,7 @@ class ExprParser(PyLEMSBase):
         """
         
         self.tokenize()
+        print self.token_list
         return self.parse_token_list_rec()
 
     def __str__(self):

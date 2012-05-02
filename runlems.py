@@ -15,6 +15,7 @@ from pylems.parser.expr import ExprParser
 #print ExprParser('1').parse()
 #print ExprParser('1 + 2').parse()
 #print ExprParser('v .gt. threshold').parse()
+#print ExprParser('1-95*v/100').parse()
 #sys.exit(0)
 
 model_file = sys.argv[1]
