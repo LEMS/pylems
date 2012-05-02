@@ -251,7 +251,8 @@ class StateAssignment(Action):
         Action.__init__(self, Action.STATE_ASSIGNMENT)
 
         self.variable = variable
-        """ State variable whose assignment expression is stored in this object.
+        """ State variable whose assignment expression is stored in this
+        object.
         @type: string """
 
         self.value = value

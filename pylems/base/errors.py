@@ -60,3 +60,10 @@ class SimBuildError(Error):
     """
 
     pass
+
+class SimError(Error):
+    """
+    Exception to signal errors found while running simulation.
+    """
+
+    pass
