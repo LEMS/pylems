@@ -43,6 +43,8 @@ class SimulationBuilder(PyLEMSBase):
 
             runnable = self.build_runnable(component)
             sim.add_runnable(runnable)
+            
+        return sim
 
     def build_runnable(self, component):
         runnable = Runnable()
@@ -66,10 +68,10 @@ class SimulationBuilder(PyLEMSBase):
                     self.build_runnable(ref)
 
         if context.selected_behavior_profile:
-            self.add_runnable_behavior(runnable,
+            self.add_runnable_behavior(component, runnable,
                                        context.selected_behavior_profile)
 
-    def add_runnable_behavior(self, runnable, behavior_profile):
+    def add_runnable_behavior(self, component, runnable, behavior_profile):
         regime = behavior_profile.default_regime
 
         for svn in regime.state_variables:
@@ -110,7 +112,7 @@ class SimulationBuilder(PyLEMSBase):
         elif op == '.eq.':
             return '=='
         elif op == '.ne.':
-            return '!e'
+            return '!='
         else:
             return op
         

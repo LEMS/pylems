@@ -300,7 +300,9 @@ class Model(Contextual):
             s += prefix + Model.tab + 'Runs:\n'
             for r in regime.runs:
                 run = regime.runs[r]
-                s += prefix + Model.tab*2 + run.component + '\n'
+                s += prefix + Model.tab*2 + run.component + ': ' + \
+                     run.variable + ' ' + run.increment + ' ' + run.total + \
+                     '\n'
 
         return s
     

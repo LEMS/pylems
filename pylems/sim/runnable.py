@@ -47,12 +47,25 @@ class Runnable(Reflective):
     def __init__(self):
         Reflective.__init__(self)
 
+        self.time_step = 0
+        self.time_completed = 0
+        self.time_total = 0
+
+    def reset_time(self):
+        self.time_completed = 0
+        
     def time_step(self, dt):
         self.update_state_variables()
         self.update_shadow_variables()
 
         self.run_postprocessing_event_handlers()
         self.update_shadow_variables()
+
+        self.time_completed += self.time_step
+        if self.time_completed >= self.time_total:
+            return 0
+        else:
+            return self.time_step
 
     def update_shadow_variables(self):
         for var in self.instance_variables:
