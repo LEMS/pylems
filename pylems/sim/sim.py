@@ -60,3 +60,19 @@ class Simulation(PyLEMSBase):
             if next_time > current_time:
                 heapq.heappush(run_queue, (next_time, runnable))
 
+            if run_queue == []:
+                break
+            
+            (time, runnable) = heapq.heappop(run_queue)
+            while time == current_time:
+                next_time = current_time + runnable.single_step(\
+                    runnable.time_step)
+                if next_time > current_time:
+                    heapq.heappush(run_queue, (next_time, runnable))
+                    
+                if run_queue == []:
+                    break
+                (time, runnable) = heapq.heappop(run_queue)
+
+            if time > current_time:
+                heapq.heappush(run_queue, (time, runnable))
