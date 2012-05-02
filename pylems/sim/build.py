@@ -32,6 +32,9 @@ class SimulationBuilder(PyLEMSBase):
     def build(self):
         """
         Build the simulation components from the model.
+
+        @return: A runnable simulation object
+        @rtype: pylems.sim.sim.Simulation
         """
 
         self.sim = Simulation()
@@ -47,6 +50,14 @@ class SimulationBuilder(PyLEMSBase):
         return self.sim
 
     def build_runnable(self, component):
+        """
+        Build a runnable component from a component specification and add
+        it to the simulation.
+
+        @param component: Component specification
+        @type component: pylems.model.component.Component
+        """
+        
         runnable = Runnable()
         context = component.context
 
@@ -70,6 +81,21 @@ class SimulationBuilder(PyLEMSBase):
         self.sim.add_runnable(component.id, runnable)
 
     def add_runnable_behavior(self, component, runnable, behavior_profile):
+        """
+        Add behavior to a runnable component based on the behavior
+        specifications in the component model.
+
+        @param component: Component model containing behavior specifications.
+        @type component: pylems.model.component.Component
+
+        @param runnable: Runnable component to which behavior is to be added.
+        @type runnable: pylems.sim.runnable.Runnable
+
+        @param behavior_profile: The behavior profile to be used to generate
+        behavior code in the runnable component.
+        @type behavior_profile: pylems.model.behavior.Behavior
+        """
+        
         context = component.context
         regime = behavior_profile.default_regime
 

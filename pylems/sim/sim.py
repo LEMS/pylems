@@ -23,7 +23,7 @@ class Simulation(PyLEMSBase):
         
         self.runnables = {}
         """ Dictionary of runnable components in this simulation.
-        @type dict(string -> pylems.sim.runnable.Runnable) """
+        @type: dict(string -> pylems.sim.runnable.Runnable) """
 
     def add_runnable(self, id, runnable):
         """
