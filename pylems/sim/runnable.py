@@ -34,20 +34,6 @@ class Reflective(object):
         code_string = 'self.{0} = {1}'.format(variable, initial_value)
         exec compile(ast.parse(code_string), '<unknown>', 'exec')
         
-    
-class Incremental(Reflective):
-    def build(self, component, model):
-        context = component.context
-        
-        for pn in context.parameters:
-            p = context.parameters[pn]
-            self.add_instance_variable(p.name, p.numeric_value)
-
-        print help(self)
-        print self.__dict__
-            
-    
-class Runnable(Incremental):
+class Runnable(Reflective):
     def __init__(self):
-        Incremental.__init__(self)
-
+        pass
