@@ -9,6 +9,8 @@ Simulation.
 from pylems.base.base import PyLEMSBase
 from pylems.base.errors import SimError
 
+import heapq
+
 class Simulation(PyLEMSBase):
     """
     Simulation class.
@@ -41,6 +43,20 @@ class Simulation(PyLEMSBase):
         self.runnables[id] = runnable
 
     def run(self):
+        current_time = 0
+
+        run_queue = []
         for id in self.runnables:
             runnable = self.runnables[id]
-            print runnable.time_step, runnable.time_total
+            next_time = current_time + runnable.single_step(\
+                runnable.time_step)
+            if next_time > current_time:
+                heapq.heappush(run_queue, (next_time, runnable))
+
+        while run_queue:
+            (current_time, runnable) = heapq.heappop(run_queue)
+            next_time = current_time + runnable.single_step(\
+                runnable.time_step)
+            if next_time > current_time:
+                heapq.heappush(run_queue, (next_time, runnable))
+

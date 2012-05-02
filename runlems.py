@@ -27,8 +27,10 @@ parser.parse_file(model_file)
 model = parser.get_model()
 print 'Resolving model'
 model.resolve_model()
-print model
+#print model
 
 print 'Building simulation'
 sim = SimulationBuilder(model).build()
 
+print 'Running simulation'
+sim.run()

@@ -202,7 +202,6 @@ class ExprParser(PyLEMSBase):
                 s += ps[i]
                 i += 1
 
-            print s
             self.token_list += [s]
 
             while i < len(ps) and ps[i].isspace():
@@ -289,7 +288,6 @@ class ExprParser(PyLEMSBase):
         """
         
         self.tokenize()
-        print self.token_list
         return self.parse_token_list_rec()
 
     def __str__(self):

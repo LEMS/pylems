@@ -50,14 +50,10 @@ class SimulationBuilder(PyLEMSBase):
         runnable = Runnable()
         context = component.context
 
-        print 'Building ' + component.id
-        
         for pn in context.parameters:
             p = context.parameters[pn]
             if p.numeric_value:
                 runnable.add_instance_variable(p.name, p.numeric_value)
-                runnable.add_instance_variable(p.name + '_shadow',
-                                               p.numeric_value)
             else:
                 if p.dimension == '__component_ref__':
                     ref = context.parent.lookup_component(p.value)
@@ -72,7 +68,6 @@ class SimulationBuilder(PyLEMSBase):
                                        context.selected_behavior_profile)
 
         self.sim.add_runnable(component.id, runnable)
-        print 'Completed building ' + component.id
 
     def add_runnable_behavior(self, component, runnable, behavior_profile):
         context = component.context
@@ -81,7 +76,6 @@ class SimulationBuilder(PyLEMSBase):
         for svn in regime.state_variables:
             sv = regime.state_variables[svn]
             runnable.add_instance_variable(sv.name, 0)
-            runnable.add_instance_variable(sv.name + '_shadow', 0)
 
         time_step_code = []
         for tdn in regime.time_derivatives:
@@ -93,6 +87,7 @@ class SimulationBuilder(PyLEMSBase):
             time_step_code += ['self.{0} += dt * ({1})'.format(td.variable,
                                self.build_expression_from_tree(\
                                    td.expression_tree))]
+            time_step_code += ['print self.{0}'.format(td.variable)]
         runnable.add_method('update_state_variables', ['self', 'dt'],
                             time_step_code)
 

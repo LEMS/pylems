@@ -40,15 +40,15 @@
   </ComponentType>
   
   <CurvetoothGenerator id="ctgen" 
-		     k="1"
-		     threshold="1 V"/>
+		       k="1"
+		       threshold="1 V"/>
 
   <Include file="SimpleSimulation.xml"/>
   <Unit symbol="s" dimension="time"/> 
   <Dimension name="time" t="1"/>
 
   
-  <Simulation id="curvetooth" length="10s" step="0.1s" target="ctgen">
+  <Simulation id="curvetooth" length="1000s" step="0.01s" target="ctgen">
     <Display id="d0" timeScale="10s" title="Curvetooth waveform">
       <Line id="V" quantity="v" scale="1s" color="#ff0000"/>        
     </Display>

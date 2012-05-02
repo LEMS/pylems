@@ -14,8 +14,8 @@ class Reflective(object):
     def __init__(self):
         self.instance_variables = []
         
-    @classmethod
-    def add_method(cls, method_name, parameter_list, statements):
+    #@classmethod
+    def add_method(self, method_name, parameter_list, statements):
         code_string = 'def __generated_function__'
         if parameter_list == []:
             code_string += '():\n'
@@ -31,15 +31,21 @@ class Reflective(object):
             for statement in statements:
                 code_string += '    ' + statement + '\n'
 
+        print code_string
+        
         exec compile(ast.parse(code_string), '<unknown>', 'exec')
-        setattr(cls, method_name, __generated_function__)
+        
+        #setattr(cls, method_name, __generated_function__)
+        self.__dict__[method_name] = __generated_function__
         del __generated_function__
 
     def add_instance_variable(self, variable, initial_value):
         self.instance_variables += [variable]
     
-        code_string = 'self.{0} = {1}'.format(variable, initial_value)
+        code_string = 'self.{0} = {1}\nself.{0}_shadow = {1}'.format(\
+            variable, initial_value)
         exec compile(ast.parse(code_string), '<unknown>', 'exec')
+        
         
 class Runnable(Reflective):
     def __init__(self):
@@ -56,11 +62,11 @@ class Runnable(Reflective):
     def reset_time(self):
         self.time_completed = 0
         
-    def time_step(self, dt):
-        self.update_state_variables()
+    def single_step(self, dt):
+        self.update_state_variables(self, dt)
         self.update_shadow_variables()
 
-        self.run_postprocessing_event_handlers()
+        self.run_postprocessing_event_handlers(self)
         self.update_shadow_variables()
 
         self.time_completed += self.time_step
@@ -72,3 +78,4 @@ class Runnable(Reflective):
     def update_shadow_variables(self):
         for var in self.instance_variables:
             self.__dict__[var + '_shadow'] = self.__dict__[var]
+        pass

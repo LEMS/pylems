@@ -93,8 +93,6 @@ class Model(Contextual):
         number = float(re.split('[a-zA-z]+', parameter.value)[0].strip())
         sym = re.split('[^a-zA-z]+', parameter.value)[1].strip()
 
-        print number, sym
-
         if sym == '':
             parameter.numeric_value = number
         else:
