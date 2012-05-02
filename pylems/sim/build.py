@@ -35,14 +35,14 @@ class SimulationBuilder(PyLEMSBase):
 
         sim = Simulation()
 
-        for component_name in self.model.default_runs:
-            if component_name not in self.model.context.components:
+        for component_id in self.model.default_runs:
+            if component_id not in self.model.context.components:
                 raise SimBuildError('Unable to find component \'{0}\' to run'\
-                                    .format(component_name))
-            component = self.model.context.components[component_name]
+                                    .format(component_id))
+            component = self.model.context.components[component_id]
 
             runnable = self.build_runnable(component)
-            sim.add_runnable(runnable)
+            sim.add_runnable(component_id, runnable)
             
         return sim
 
@@ -94,11 +94,18 @@ class SimulationBuilder(PyLEMSBase):
 
         event_handler_code = []
         for eh in regime.event_handlers:
-            print self.build_event_handler(eh)
             event_handler_code += self.build_event_handler(eh)
-
         runnable.add_method('run_postprocessing_event_handlers', ['self'],
                             event_handler_code)
+
+        for rn in regime.runs:
+            run = regime.runs[rn]
+            print run.component
+            print component.context.component_refs
+            print component.context.components
+            c = component.context.lookup_component_ref(run.component)
+            print c
+            print c.id
 
     def convert_op(self, op):
         if op == '.gt.':

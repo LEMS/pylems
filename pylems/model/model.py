@@ -222,7 +222,7 @@ class Model(Contextual):
                 elif pn in type_context.component_refs:
                     pc.dimension = '__component_ref__'
                     cf = type_context.component_refs[pn]
-                    this_context.component_refs[pn] = cf
+                    this_context.component_refs[pn] = pc.value
 
         this_context.behavior_profiles = type_context.behavior_profiles
         bpn = type_context.selected_behavior_profile

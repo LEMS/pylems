@@ -348,6 +348,26 @@ class Context(PyLEMSBase):
         else:
             return None
 
+    def lookup_component_ref(self, name):
+        """
+        Searches the current context and parent contexts for a component
+        with the given name.
+
+        @param name: Name of the component.
+        @type name: string
+
+        @return: Resolved component object, or None on failure.
+        @rtype: pylems.model.component.Component
+        """
+
+        if name in self.component_refs:
+            cname = self.component_refs[name]
+            return self.lookup_component(cname)
+        elif self.parent:
+            return self.parent.lookup_component_ref(name)
+        else:
+            return None
+
     
 class Contextual(PyLEMSBase):
     """
