@@ -115,6 +115,10 @@ class Run(PyLEMSBase):
         
 
 class Record(PyLEMSBase):
+    """
+    Stores the parameters of a <Record> statement.
+    """
+    
     def __init__(self, quantity, scale, color, save):
         self.quantity = quantity
         self.scale = scalte
@@ -122,6 +126,10 @@ class Record(PyLEMSBase):
         self.save = save
 
 class Show(PyLEMSBase):
+    """
+    Stores the parameters of a <Show> statement.
+    """
+    
     def __init__(self, scale, src):
         self.scale = scale
         self.src = src
@@ -181,12 +189,21 @@ class EventHandler(PyLEMSBase):
         return False
     
 class OnStart(EventHandler):
+    """
+    Stores the parameters of an <OnStart> statement.
+    """
     pass
     
 class OnEntry(EventHandler):
+    """
+    Stores the parameters of an <OnEntry> statement.
+    """
     pass
     
 class OnEvent(EventHandler):
+    """
+    Stores the parameters of an <OnEvent> statement.
+    """
     pass
     
 class OnCondition(EventHandler):

@@ -90,7 +90,7 @@ class Model(Contextual):
         Resolves the numeric value of a parameter based on the given value
         in terms of the symbols and dimensions defined in the model.
 
-        @param paramater: Parameter object to be resolved.
+        @param parameter: Parameter object to be resolved.
         @type parameter: pylems.model.parameter.Parameter
 
         @raise ModelError: Raised when the value of the parameter is not set.
