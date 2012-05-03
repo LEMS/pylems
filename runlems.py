@@ -20,17 +20,27 @@ from pylems.parser.expr import ExprParser
 
 model_file = sys.argv[1]
 
-parser = LEMSParser()
-parser.init_parser()
-parser.parse_file(model_file)
+try:
+    print 'Parsing model file'
+    parser = LEMSParser()
+    parser.init_parser()
+    parser.parse_file(model_file)
+    model = parser.get_model()
+    
+    print 'Resolving model'
+    model.resolve_model()
+    #print model
 
-model = parser.get_model()
-print 'Resolving model'
-model.resolve_model()
-#print model
+    print 'Building simulation'
+    sim = SimulationBuilder(model).build()
 
-print 'Building simulation'
-sim = SimulationBuilder(model).build()
-
-print 'Running simulation'
-sim.run()
+    print 'Running simulation'
+    sim.run()
+except ParseError as e:
+    print 'Caught ParseError - ' + str(e)
+except ModelError as e:
+    print 'Caught ModelError - ' + str(e)
+except SimBuildError as e:
+    print 'Caught SimBuildError - ' + str(e)
+except SimError as e:
+    print 'Caught SimError - ' + str(e)

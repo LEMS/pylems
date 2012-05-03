@@ -3,6 +3,7 @@ all:	lems-code lems-doc
 JAVALEMS = ../LEMS/lems
 TIME = /usr/bin/time -f '%e s'
 MODELFILE = examples/curvetooth.xml
+BENCHFILE = examples/curvetooth_long.xml
 
 lems-code:
 
@@ -24,14 +25,14 @@ example1:
 
 bench:
 	@echo "Java"
-	@${TIME} ${JAVALEMS} ${MODELFILE} -nogui > /dev/null
+	@${TIME} ${JAVALEMS} ${BENCHFILE} -nogui > /dev/null
 
-	@echo "CPython (no optimizations)"
-	@${TIME} python runlems.py ${MODELFILE} > /dev/null
+	@echo "CPython 2 (no optimizations)"
+	@${TIME} python runlems.py ${BENCHFILE} > /dev/null
 
-	@echo "CPython (with optimizations)"
-	@${TIME} python -O runlems.py ${MODELFILE} > /dev/null
+	@echo "CPython 2 (with optimizations)"
+	@${TIME} python -O runlems.py ${BENCHFILE} > /dev/null
 
 	@echo "PyPy"
-	@${TIME} pypy runlems.py ${MODELFILE} > /dev/null
+	@${TIME} pypy runlems.py ${BENCHFILE} > /dev/null
 

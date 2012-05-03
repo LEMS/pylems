@@ -86,9 +86,24 @@ class Model(Contextual):
             self.units[unit.symbol] = unit
 
     def resolve_parameter_value(self, parameter):
+        """
+        Resolves the numeric value of a parameter based on the given value
+        in terms of the symbols and dimensions defined in the model.
+
+        @param paramater: Parameter object to be resolved.
+        @type parameter: pylems.model.parameter.Parameter
+
+        @raise ModelError: Raised when the value of the parameter is not set.
+
+        @raise ModelError: Raised when the unit symbol does not match the
+        parameter's dimension.
+
+        @raise ModelError: Raised when the unit symbol is undefined.
+        """
+        
         if parameter.value == None:
-            raise ModelError('Parameter ' + parameter.name +
-                             ' not initialized')
+            raise ModelError('Parameter {0} not initialized'.format(\
+                parameter.name))
 
         number = float(re.split('[a-zA-z]+', parameter.value)[0].strip())
         sym = re.split('[^a-zA-z]+', parameter.value)[1].strip()
@@ -102,14 +117,31 @@ class Model(Contextual):
                     if parameter.dimension == '*':
                         parameter.dimension = unit.dimension
                     else:
-                        raise ModelError('Unit symbol ' + sym + ' cannot ' +
-                                         'be used for dimension ' +
-                                         parameter.dimension)
+                        raise ModelError(('Unit symbol {0} cannot '
+                                         'be used for dimension {1}').format(\
+                                             sym, parameter.dimension))
                 parameter.numeric_value = number * (10 ** unit.pow10)
             else:
-                raise ModelError('Unknown unit symbol ' + sym)
+                raise ModelError('Unknown unit symbol {0}'.format(sym))
 
     def resolve_extended_component_type(self, context, component_type):
+        """
+        Resolves the specified component type's parameters from it's base
+        component type.
+
+        @param context: Context object containing the component type.
+        @type context: pylems.model.context.Context
+
+        @param component_type: Component type to be resolved.
+        @type component_type: pylems.model.component.ComponentType
+
+        @raise ModelError: Raised when the base component type cannot be
+        resolved.
+
+        @raise ModelError: Raised when a parameter in the base component type
+        is redefined in this component type.
+        """
+        
         base_type = context.lookup_component_type(component_type.extends)
         if base_type == None:
             raise ModelError('Base type {0} not found for component type {1}'.
@@ -143,9 +175,25 @@ class Model(Contextual):
 
     def resolve_extended_component(self, context, component):
         """
+        Resolves the specified component's parameters from it's base
+        component.
+
+        @param context: Context object containing the component.
+        @type context: pylems.model.context.Context
+
+        @param component: Component to be resolved.
+        @type component: pylems.model.component.Component
+
+        @raise ModelError: Raised when the base component cannot be
+        resolved.
+
+        @raise ModelError: Raised when a parameter in the base component
+        is redefined in this component type.
+
         @note: Consider changing Component.id to Component.name and merging
         this method with resolve_extended_component_type.
         """
+        
         base = context.lookup_component(component.extends)
         if base == None:
             raise ModelError('Base component {0} not found for component {1}'.
