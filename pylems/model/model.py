@@ -226,6 +226,19 @@ class Model(Contextual):
         component.extends = None
 
     def resolve_component_from_type(self, context, component):
+        """
+        Resolves the specified component's parameters from component type.
+
+        @param context: Context object containing the component.
+        @type context: pylems.model.context.Context
+
+        @param component: Component to be resolved.
+        @type component: pylems.model.component.Component
+
+        @raise ModelError: Raised when the component type cannot be
+        resolved.
+        """
+        
         component_type = context.lookup_component_type(
             component.component_type)
         if component_type == None:
@@ -276,6 +289,16 @@ class Model(Contextual):
                                                     
 
     def resolve_context(self, context):
+        """
+        Resolves name references in the given context to actual objects.
+
+        @param context: Context to be resolved.
+        @type context: pylems.model.context.Context
+
+        @raise ModelError: Raised when the dimension for a parameter cannot
+        be resolved.
+        """
+        
         # Resolve component-types
         for ctn in context.component_types:
             component_type = context.component_types[ctn]
@@ -300,6 +323,13 @@ class Model(Contextual):
                                      
 
     def resolve_model(self):
+        """
+        Resolves name references in the model to actual objects.
+
+        @raise ModelError: Raised when the dimension for a given unit cannot
+        be resolved.
+        """
+        
         # Verify dimensions for units
         for symbol in self.units:
             dimension = self.units[symbol].dimension
