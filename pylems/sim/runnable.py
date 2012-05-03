@@ -7,7 +7,7 @@ Base class for runnable components.
 """
 
 from pylems.base.base import PyLEMSBase
-
+from pylems.base.util import Stack
 import ast
 
 class Reflective(object):
@@ -53,6 +53,10 @@ class Runnable(Reflective):
         self.time_completed = 0
         self.time_total = 0
 
+        self.plastic = True
+
+        self.state_stack = Stack()
+
     def configure_time(self, time_step, time_total):
         self.time_step = time_step
         self.time_total = time_total
@@ -73,7 +77,21 @@ class Runnable(Reflective):
         else:
             return self.time_step
 
+    def push_state(self):
+        vars = []
+        for varname in self.instance_variables:
+            vars += [self.__dict__[varname],
+                     self.__dict__[varname + '_shadow']]
+        self.state_stack.push(vars)
+
+    def pop_state(self):
+        vars = self.state_stack.pop()
+        for varname in self.instance_variables:
+            self.__dict_[varname] = vars[0]
+            self.__dict_[varname + '_shadow'] = vars[1]
+            vars = vars[2:]
+
     def update_shadow_variables(self):
-        for var in self.instance_variables:
-            self.__dict__[var + '_shadow'] = self.__dict__[var]
-        pass
+        if self.plastic:
+            for var in self.instance_variables:
+                self.__dict__[var + '_shadow'] = self.__dict__[var]

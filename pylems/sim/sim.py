@@ -43,6 +43,10 @@ class Simulation(PyLEMSBase):
         self.runnables[id] = runnable
 
     def run(self):
+        """
+        Runs the simulation.
+        """
+        
         current_time = 0
 
         run_queue = []
@@ -76,3 +80,11 @@ class Simulation(PyLEMSBase):
 
             if time > current_time:
                 heapq.heappush(run_queue, (time, runnable))
+
+    def push_state(self):
+        for id in self.runnables:
+            self.runnables[id].push_state()
+
+    def pop_state(self):
+        for id in self.runnables:
+            self.runnables[id].pop_state()
