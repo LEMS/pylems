@@ -56,6 +56,9 @@ class SimulationBuilder(PyLEMSBase):
 
         @param component: Component specification
         @type component: pylems.model.component.Component
+
+        @raise SimBuildError: Raised when a componen reference cannot be
+        resolved.
         """
         
         runnable = Runnable()
@@ -94,6 +97,15 @@ class SimulationBuilder(PyLEMSBase):
         @param behavior_profile: The behavior profile to be used to generate
         behavior code in the runnable component.
         @type behavior_profile: pylems.model.behavior.Behavior
+
+        @raise SimBuildError: Raised when a time derivative expression refers
+        to an undefined variable.
+
+        @raise SimBuildError: Raised when there are invalid time
+        specifications for the <Run> statement.
+
+        @raise SimBuildError: Raised when the component reference for <Run>
+        cannot be resolved.
         """
         
         context = component.context
@@ -140,6 +152,16 @@ class SimulationBuilder(PyLEMSBase):
                                      '<Run>').format(c.id))
 
     def convert_op(self, op):
+        """
+        Converts NeuroML arithmetic/logical operators to python equivalents.
+
+        @param op: NeuroML operator
+        @type op: string
+
+        @return: Python operator
+        @rtype: string
+        """
+        
         if op == '.gt.':
             return '>'
         elif op == '.ge.':
@@ -156,6 +178,17 @@ class SimulationBuilder(PyLEMSBase):
             return op
         
     def build_expression_from_tree(self, tree_node):
+        """
+        Recursively builds a Python expression from a parsed expression tree.
+
+        @param tree_node: Root node for the tree from which the expression
+        is to be built.
+        @type tree_node: pylems.parser.expr.ExprNode
+
+        @return: Generated Python expression.
+        @rtype: string
+        """
+        
         if tree_node.type == ExprNode.VALUE:
             if tree_node.value[0].isalpha():
                 return 'self.{0}_shadow'.format(tree_node.value)
@@ -168,12 +201,32 @@ class SimulationBuilder(PyLEMSBase):
                 self.build_expression_from_tree(tree_node.right))
 
     def build_event_handler(self, event_handler):
+        """
+        Build event handler code.
+
+        @param event_handler: Event handler object
+        @type event_handler: pylems.model.behavior.EventHandler
+
+        @return: Generated event handler code.
+        @rtype: list(string)
+        """
+        
         if event_handler.type == EventHandler.ON_CONDITION:
             return self.build_on_condition(event_handler)
         else:
             return []
 
     def build_on_condition(self, on_condition):
+        """
+        Build OnCondition event handler code.
+
+        @param on_condition: OnCondition event handler object
+        @type on_condition: pylems.model.behavior.OnCondition
+
+        @return: Generated OnCondition code
+        @rtype: list(string)
+        """
+        
         on_condition_code = []
 
         on_condition_code += ['if {0}:'.format(\
@@ -185,12 +238,32 @@ class SimulationBuilder(PyLEMSBase):
         return on_condition_code
             
     def build_action(self, action):
+        """
+        Build event handler action code.
+
+        @param action: Event handler action object
+        @type action: pylems.model.behavior.Action
+
+        @return: Generated action code
+        @rtype: string
+        """
+        
         if action.type == Action.STATE_ASSIGNMENT:
             return self.build_state_assignment(action)
         else:
             return ''
 
     def build_state_assignment(self, state_assignment):
+        """
+        Build state assignment code.
+
+        @param state_assignment: State assignment object
+        @type state_assignment: pylems.model.behavior.StateAssignment
+
+        @return: Generated state assignment code
+        @rtype: string
+        """
+        
         return 'self.{0} = {1}'.format(\
             state_assignment.variable,
             self.build_expression_from_tree(state_assignment.expression_tree))

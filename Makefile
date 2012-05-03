@@ -1,5 +1,6 @@
 all:	lems-code lems-doc
 
+JAVALEMS = ../LEMS/lems
 TIME = /usr/bin/time -f '%e s'
 MODELFILE = examples/curvetooth.xml
 
@@ -23,7 +24,7 @@ example1:
 
 bench:
 	@echo "Java"
-	@${TIME} ../LEMS/lems-nogui ${MODELFILE} > /dev/null
+	@${TIME} ${JAVALEMS} ${MODELFILE} -nogui > /dev/null
 
 	@echo "CPython (no optimizations)"
 	@${TIME} python runlems.py ${MODELFILE} > /dev/null
