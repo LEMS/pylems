@@ -88,3 +88,11 @@ class Simulation(PyLEMSBase):
     def pop_state(self):
         for id in self.runnables:
             self.runnables[id].pop_state()
+
+    def enable_plasticity(self):
+        for id in self.runnables:
+            self.runnables[id].plastic = True
+
+    def disable_plasticity(self):
+        for id in self.runnables:
+            self.runnables[id].plastic = False
