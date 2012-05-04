@@ -25,6 +25,10 @@ class Simulation(PyLEMSBase):
         """ Dictionary of runnable components in this simulation.
         @type: dict(string -> pylems.sim.runnable.Runnable) """
 
+        self.run_queue = []
+        """ Priority of pairs of (time-to-next run, runnable)
+        @type: list((Integer, pylems.sim.runnable.Runnable)) """
+
     def add_runnable(self, id, runnable):
         """
         Adds a runnable component to the list of runnable components in
@@ -42,44 +46,48 @@ class Simulation(PyLEMSBase):
         
         self.runnables[id] = runnable
 
+    def init_run(self):
+        self.current_time = 0
+        for id in self.runnables:
+            heapq.heappush(self.run_queue, (0, self.runnables[id]))
+        
+    def step(self):
+        current_time = self.current_time
+
+        if self.run_queue == []:
+            return False
+
+        (current_time, runnable) = heapq.heappop(self.run_queue)
+        time = current_time
+        while time == current_time:
+            next_time = current_time + runnable.single_step(\
+                runnable.time_step)
+
+            if next_time > current_time:
+                heapq.heappush(self.run_queue, (next_time, runnable))
+                        
+            if self.run_queue == []:
+                break
+            (time, runnable) = heapq.heappop(self.run_queue)
+
+            if time > current_time:
+                heapq.heappush(self.run_queue, (time, runnable))
+
+        self.current_time = current_time
+
+        if self.run_queue == []:
+            return False
+        else:
+            return True
+
     def run(self):
         """
         Runs the simulation.
         """
-        
-        current_time = 0
 
-        run_queue = []
-        for id in self.runnables:
-            runnable = self.runnables[id]
-            next_time = current_time + runnable.single_step(\
-                runnable.time_step)
-            if next_time > current_time:
-                heapq.heappush(run_queue, (next_time, runnable))
-
-        while run_queue:
-            (current_time, runnable) = heapq.heappop(run_queue)
-            next_time = current_time + runnable.single_step(\
-                runnable.time_step)
-            if next_time > current_time:
-                heapq.heappush(run_queue, (next_time, runnable))
-
-            if run_queue == []:
-                break
-            
-            (time, runnable) = heapq.heappop(run_queue)
-            while time == current_time:
-                next_time = current_time + runnable.single_step(\
-                    runnable.time_step)
-                if next_time > current_time:
-                    heapq.heappush(run_queue, (next_time, runnable))
-                    
-                if run_queue == []:
-                    break
-                (time, runnable) = heapq.heappop(run_queue)
-
-            if time > current_time:
-                heapq.heappush(run_queue, (time, runnable))
+        self.init_run()
+        while self.step():
+            pass
 
     def push_state(self):
         for id in self.runnables:

@@ -24,10 +24,14 @@ class Context(PyLEMSBase):
     COMPONENT = 2
     """ Component context """
 
-    def __init__(self, parent = None, context_type = GLOBAL):
+    def __init__(self, name, parent = None, context_type = GLOBAL):
         """
         Constructor
         """
+
+        self.name = name
+        """ Name identifying this context.
+        @type: string """
 
         self.parent = parent
         """ Reference to parent context.
@@ -374,12 +378,12 @@ class Contextual(PyLEMSBase):
     Base class for objects that need to store their own context.
     """
 
-    def __init__(self, parent = None, context_type = Context.GLOBAL):
+    def __init__(self, name, parent = None, context_type = Context.GLOBAL):
         """
         Constructor.
         """
         
-        self.context = Context(parent, context_type)
+        self.context = Context(name, parent, context_type)
         """ Context object.
         @type: pylems.model.context.Context """
 

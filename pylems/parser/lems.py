@@ -969,7 +969,7 @@ class LEMSParser(Parser):
         if self.base_path == '':
             self.base_path = '.'
 
-        context = Context(self.current_context)
+        context = Context('__root_context__', self.current_context)
         if self.model.context == None:
             self.model.context = context
 

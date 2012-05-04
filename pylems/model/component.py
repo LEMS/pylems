@@ -29,7 +29,7 @@ class ComponentType(Contextual):
         @type extends: string
         """
 
-        Contextual.__init__(self, context, Context.COMPONENT_TYPE)
+        Contextual.__init__(self, name, context, Context.COMPONENT_TYPE)
 
         self.name = name
         """ Name of this component type.
@@ -93,7 +93,7 @@ class Component(Contextual):
         @note: Atleast one of component_type or extends must be valid.
         """
         
-        Contextual.__init__(self, context, Context.COMPONENT)
+        Contextual.__init__(self, id, context, Context.COMPONENT)
 
         self.id = id 
         """ Globally unique name for this component.

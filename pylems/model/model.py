@@ -22,7 +22,7 @@ class Model(Contextual):
         Constructor.
         """
 
-        super(Model, self).__init__()
+        super(Model, self).__init__('__model__')
         
         self.default_runs = []
         """ Names of simulations to run.

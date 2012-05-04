@@ -6,7 +6,7 @@
 """
 
 import sys
-from pylems.base.errors import ParseError,ModelError
+from pylems.base.errors import ParseError,ModelError,SimBuildError,SimError
 from pylems.parser.lems import LEMSParser
 from pylems.sim.build import SimulationBuilder
 
