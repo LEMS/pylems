@@ -286,8 +286,58 @@ class Model(Contextual):
         this_context.behavior_profiles = type_context.behavior_profiles
         bpn = type_context.selected_behavior_profile
         this_context.selected_behavior_profile = bpn
-                                                    
 
+    def resolve_regime(self, context, regime):
+        """
+        Resolves name references in the given behavior regime to actual
+        objects.
+
+        @param context: Current context.
+        @type context: pylems.model.context.Context
+
+        @param regime: Behavior regime to be resolved.
+        @type regime: pylems.model.behavior.Behavior
+        """
+
+        # Resolve record statements
+        for idx in regime.records:
+            record = regime.records[idx]
+
+            if record.quantity in context.parameters and \
+               record.scale in context.parameters and \
+               record.color in context.parameters:
+                qp = context.parameters[record.quantity]
+                sp = context.parameters[record.scale]
+                cp = context.parameters[record.color]
+
+                if qp.dimension != '__path__':
+                    raise ModelError('<Record>: The quantity to be recorded'
+                                     'must be a path')
+                if cp.dimension != '__text__':
+                    raise ModelError('<Record>: The color to be used must be '
+                                     'a reference to a text variable')
+                record.quantity = qp.value
+                record.scale = sp.value
+                record.color = cp.value
+                record.numeric_scale = sp.numeric_value
+
+    def resolve_behavior_profile(self, context, behavior):
+        """
+        Resolves name references in the given behavior profile to actual
+        objects.
+
+        @param context: Current context.
+        @type context: pylems.model.context.Context
+
+        @param behavior: Behavior profile to be resolved.
+        @type behavior: pylems.model.behavior.Behavior
+        """
+
+        self.resolve_regime(context, behavior.default_regime)
+        
+        for rn in behavior.regimes:
+            self.resolve_regime(context, regime)
+            
     def resolve_context(self, context):
         """
         Resolves name references in the given context to actual objects.
@@ -319,8 +369,11 @@ class Model(Contextual):
                     raise ModelError(('The dimension for parameter {0} in '
                                       'component {1} could not be resolved').\
                                      format(pn, component.id))
-                    pass
-                                     
+
+            # Resolve behavior
+            for bpn in component.context.behavior_profiles:
+                bp = component.context.behavior_profiles[bpn]
+                self.resolve_behavior_profile(component.context, bp)
 
     def resolve_model(self):
         """
@@ -384,8 +437,11 @@ class Model(Contextual):
             s += prefix + Model.tab + 'Recorded variables:\n'
             for rn in regime.records:
                 rec = regime.records[rn]
-                s += prefix + Model.tab*2 + rec.quantity + ': ' + \
-                     rec.scale + ', ' + rec.color + '\n'
+                s += prefix + Model.tab*2 + rec.quantity + ': '
+                s += rec.scale
+                if rec.numeric_scale:
+                    s += ' (' + str(rec.numeric_scale) + ')'
+                s += ', ' + rec.color + '\n'
                 
         if regime.shows:
             s += prefix + Model.tab + 'Shows:\n'

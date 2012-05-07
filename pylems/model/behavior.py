@@ -123,6 +123,8 @@ class Record(PyLEMSBase):
         self.quantity = quantity
         self.scale = scale
         self.color = color
+
+        self.numeric_scale = None
         
 class Show(PyLEMSBase):
     """
