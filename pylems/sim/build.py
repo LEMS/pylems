@@ -46,6 +46,7 @@ class SimulationBuilder(PyLEMSBase):
             component = self.model.context.components[component_id]
 
             runnable = self.build_runnable(component)
+            self.sim.add_runnable(component.id, runnable)
             
         return self.sim
 
@@ -57,7 +58,7 @@ class SimulationBuilder(PyLEMSBase):
         @param component: Component specification
         @type component: pylems.model.component.Component
 
-        @raise SimBuildError: Raised when a componen reference cannot be
+        @raise SimBuildError: Raised when a component reference cannot be
         resolved.
         """
         
@@ -75,13 +76,16 @@ class SimulationBuilder(PyLEMSBase):
                         raise SimBuildError(('Unable to resolve component '
                                              'reference {0}').\
                                             format(component_name))
-                    self.build_runnable(ref)
+                    self.sim.add_runnable(ref.id, self.build_runnable(ref))
 
+        for cn in context.components:
+            child = context.components[cn]
+        
         if context.selected_behavior_profile:
             self.add_runnable_behavior(component, runnable,
                                        context.selected_behavior_profile)
 
-        self.sim.add_runnable(component.id, runnable)
+        return runnable
 
     def add_runnable_behavior(self, component, runnable, behavior_profile):
         """
