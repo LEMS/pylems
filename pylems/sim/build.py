@@ -28,6 +28,8 @@ class SimulationBuilder(PyLEMSBase):
         
         self.model = model
         self.sim = None
+        self.current_record_target = None
+
 
     def build(self):
         """
@@ -64,6 +66,7 @@ class SimulationBuilder(PyLEMSBase):
         
         runnable = Runnable()
         context = component.context
+        record_target_backup = self.current_record_target
 
         for pn in context.parameters:
             p = context.parameters[pn]
@@ -78,13 +81,16 @@ class SimulationBuilder(PyLEMSBase):
                                             format(component_name))
                     self.sim.add_runnable(ref.id, self.build_runnable(ref))
 
-        for cn in context.components:
-            child = context.components[cn]
-        
         if context.selected_behavior_profile:
             self.add_runnable_behavior(component, runnable,
                                        context.selected_behavior_profile)
 
+        for cn in context.components:
+            child = context.components[cn]
+            runnable.add_child(child.id, self.build_runnable(child))
+
+        self.current_record_target = record_target_backup
+        
         return runnable
 
     def add_runnable_behavior(self, component, runnable, behavior_profile):
@@ -143,6 +149,7 @@ class SimulationBuilder(PyLEMSBase):
             c = context.lookup_component_ref(run.component)
             if c != None and c.id in self.sim.runnables:
                 target = self.sim.runnables[c.id]
+                self.current_record_target = target
                 time_step = context.lookup_parameter(run.increment)
                 time_total = context.lookup_parameter(run.total)
                 if time_step != None and time_total != None:
@@ -155,6 +162,14 @@ class SimulationBuilder(PyLEMSBase):
                 raise SimBuildError(('Invalid component reference {0} in '
                                      '<Run>').format(c.id))
 
+        for rn in regime.records:
+            rec = regime.records[rn]
+            print rn, rec.quantity
+            if self.current_record_target == None:
+                raise SimBuildError('No target available for '
+                                    'recording variables')
+            self.current_record_target.add_variable_recorder(rec.quantity)
+            
     def convert_op(self, op):
         """
         Converts NeuroML arithmetic/logical operators to python equivalents.

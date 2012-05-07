@@ -39,6 +39,16 @@ try:
 
     print 'Running simulation'
     sim.run()
+
+    print 'Dumping recorded values'
+    for rn in sim.runnables:
+        runnable = sim.runnables[rn]
+        if runnable.recorded_variables:
+            for variable in runnable.recorded_variables:
+                values = runnable.recorded_variables[variable]
+                for value in values:
+                    print value
+                    
 except ParseError as e:
     print 'Caught ParseError - ' + str(e)
 except ModelError as e:

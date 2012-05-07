@@ -59,8 +59,13 @@ class Runnable(Reflective):
 
         self.children = {}
 
+        self.recorded_variables = {}
+
     def add_child(self, id, runnable):
         self.children[id] = runnable
+
+    def add_variable_recorder(self, variable):
+        self.recorded_variables[variable] = []
 
     def configure_time(self, time_step, time_total):
         self.time_step = time_step
@@ -79,6 +84,8 @@ class Runnable(Reflective):
         self.run_postprocessing_event_handlers(self)
         self.update_shadow_variables()
 
+        self.record_variables()
+
         for cid in self.children:
             self.children[cid].single_step(dt)
 
@@ -88,6 +95,10 @@ class Runnable(Reflective):
         else:
             return self.time_step
 
+    def record_variables(self):
+        for variable in self.recorded_variables:
+            self.recorded_variables[variable] += [self.__dict__[variable]]
+            
     def push_state(self):
         vars = []
         for varname in self.instance_variables:
