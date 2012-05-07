@@ -97,7 +97,8 @@ class Runnable(Reflective):
 
     def record_variables(self):
         for variable in self.recorded_variables:
-            self.recorded_variables[variable] += [self.__dict__[variable]]
+            self.recorded_variables[variable] += [(self.time_step,
+                                                   self.__dict__[variable])]
             
     def push_state(self):
         vars = []

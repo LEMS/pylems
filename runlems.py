@@ -40,7 +40,7 @@ try:
     print 'Running simulation'
     sim.run()
 
-    print 'Dumping recorded values'
+    print 'Plotting graphs'
     for rn in sim.runnables:
         runnable = sim.runnables[rn]
         if runnable.recorded_variables:
@@ -48,7 +48,9 @@ try:
                 values = runnable.recorded_variables[variable]
                 for value in values:
                     print value
-                    
+
+    wait()
+
 except ParseError as e:
     print 'Caught ParseError - ' + str(e)
 except ModelError as e:
@@ -57,3 +59,17 @@ except SimBuildError as e:
     print 'Caught SimBuildError - ' + str(e)
 except SimError as e:
     print 'Caught SimError - ' + str(e)
+
+
+import Gnuplot
+import numpy
+
+def wait(str=None, prompt='Press return to show results...\n'):
+    if str is not None:
+        print str
+    raw_input(prompt)
+
+def plot(x, y):
+    g = Gnuplot.Gnuplot()
+    g.plot(Gnuplot.Data(x,y, inline=0))
+
