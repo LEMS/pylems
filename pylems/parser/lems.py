@@ -181,7 +181,6 @@ class LEMSParser(Parser):
         self.id_counter = counter()
         """ Counter genertor for generating unique ids.
         @type: int """
-        
 
     prefix = ''
 
@@ -734,7 +733,26 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        pass
+        if self.current_regime == None:
+            raise ParseError('<Record> must be only be used inside a ' +
+                             'behavior profile or regime')
+
+        if 'quantity' in node.attrib:
+            quantity = node.attrib['quantity']
+        else:
+            raise ParseError('\'quantity\' attribute required for <Text>')
+
+        if 'scale' in node.attrib:
+            scale = node.attrib['scale']
+        else:
+            raise ParseError('\'scale\' attribute required for <Text>')
+
+        if 'color' in node.attrib:
+            color  = node.attrib['color']
+        else:
+            raise ParseError('\'color\' attribute required for <Text>')
+
+        self.current_regime.add_record(quantity, scale, color)
 
     def parse_requirement(self, node):
         """

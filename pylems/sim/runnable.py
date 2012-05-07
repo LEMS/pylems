@@ -57,13 +57,15 @@ class Runnable(Reflective):
 
         self.state_stack = Stack()
 
+        self.record = {}
+
     def configure_time(self, time_step, time_total):
         self.time_step = time_step
         self.time_total = time_total
         
     def reset_time(self):
         self.time_completed = 0
-        
+
     def single_step(self, dt):
         self.update_state_variables(self, dt)
         self.update_shadow_variables()

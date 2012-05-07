@@ -84,8 +84,8 @@ class Run(PyLEMSBase):
         the specification given for an independent state variable.
         @type component: string
         
-        @param variable: The name of an independent state variable according to
-        which the target component will be run.
+        @param variable: The name of an independent state variable according
+        to which the target component will be run.
         @type variable: string
 
         @param increment: Increment of the state variable on each step.
@@ -119,20 +119,19 @@ class Record(PyLEMSBase):
     Stores the parameters of a <Record> statement.
     """
     
-    def __init__(self, quantity, scale, color, save):
+    def __init__(self, quantity, scale, color):
         self.quantity = quantity
-        self.scale = scalte
+        self.scale = scale
         self.color = color
-        self.save = save
-
+        
 class Show(PyLEMSBase):
     """
     Stores the parameters of a <Show> statement.
     """
     
-    def __init__(self, scale, src):
-        self.scale = scale
+    def __init__(self, src, scale):
         self.src = src
+        self.scale = scale
     
 class EventHandler(PyLEMSBase):
     """
@@ -323,8 +322,16 @@ class Regime(PyLEMSBase):
         @type: list(EventHandler) """
 
         self.runs = {}
-        """ Dictionary of runs in this behavior profile.
+        """ Dictionary of runs in this behavior regime.
         @type: dict(string -> pylems.model.behavior.Run) """
+        
+        self.records = {}
+        """ Dictionary of recorded variables in this behavior regime.
+        @type: dict(string -> pylems.model.behavior.Record """
+
+        self.shows = {}
+        """ Dictionary of recorded variables in this behavior regime.
+        @type: dict(string -> pylems.model.behavior.Record """
 
     def add_state_variable(self, name, exposure, dimension):
         """
@@ -403,6 +410,44 @@ class Regime(PyLEMSBase):
 
         self.runs[component] = Run(component, variable, increment, total)
 
+    def add_record(self, quantity, scale, color):
+        """
+        Adds a record objects to the list of record objects in this behavior
+        regime.
+
+        @param quantity: Path to the quantity to be recorded
+        @type quantity: string
+
+        @param scale: Scale of the quantity to be recorded
+        @type scale: string
+
+        @param color: Color of the quantity to be recorded as a 24-bit hex
+        RGB value (#RRGGBB)
+        @type color: string
+        """
+        
+        if quantity in self.records:
+            raise ModelError('Duplicate record {0}'.format(quantity))
+        
+        self.records[quantity] = Record(quantity, scale, color)
+
+    def add_show(self, src, scale):
+        """
+        Adds a record objects to the list of record objects in this behavior
+        regime.
+
+        @param src: Path to the element(s) that defines what should be shown
+        @type src: string
+
+        @param scale: Scale of the quantity to be recorded
+        @type scale: string
+        """
+        
+        if src in self.shows:
+            raise ModelError('Duplicate show {0}'.format(quantity))
+        
+        self.shows[src] = Record(src, scale)
+
 class Behavior(PyLEMSBase):
     """
     Stores the behavior characteristics for a component type.
@@ -426,7 +471,7 @@ class Behavior(PyLEMSBase):
         """ Currently active behavior regime for this behavior profile.
         @type: pylems.model.behavior.Regime """
 
-        self.regimes = dict()
+        self.regimes = {}
         """ Dictionary of regimes in this behavior profile.
         @type: dict(string -> pylems.model.behavior.Regime) """
 

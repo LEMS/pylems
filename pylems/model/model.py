@@ -380,6 +380,19 @@ class Model(Contextual):
                      run.variable + ' ' + run.increment + ' ' + run.total + \
                      '\n'
 
+        if regime.records:
+            s += prefix + Model.tab + 'Recorded variables:\n'
+            for rn in regime.records:
+                rec = regime.records[rn]
+                s += prefix + Model.tab*2 + rec.quantity + ': ' + \
+                     rec.scale + ', ' + rec.color + '\n'
+                
+        if regime.shows:
+            s += prefix + Model.tab + 'Shows:\n'
+            for sn in regime.shows:
+                sh = regime.shows[sn]
+                s += prefix + Model.tab*2 + rec.src + '\n'
+                
         return s
     
     def behavior2str(self, behavior, prefix):
@@ -394,7 +407,6 @@ class Model(Contextual):
             s += prefix + Model.tab + 'Default regime:\n'
             s += self.regime2str(behavior.default_regime,
                                  prefix + Model.tab)
-
 
         return s
 

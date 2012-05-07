@@ -10,7 +10,7 @@ from pylems.base.errors import ParseError,ModelError,SimBuildError,SimError
 from pylems.parser.lems import LEMSParser
 from pylems.sim.build import SimulationBuilder
 
-from pylems.parser.expr import ExprParser
+#from pylems.parser.expr import ExprParser
 
 #print ExprParser('1').parse()
 #print ExprParser('1 + 2').parse()
@@ -18,6 +18,9 @@ from pylems.parser.expr import ExprParser
 #print ExprParser('1-95*v/100').parse()
 #sys.exit(0)
 
+if len(sys.argv) == 1:
+    print 'Usage: runlems <model-file>'
+    
 model_file = sys.argv[1]
 
 try:
@@ -29,7 +32,7 @@ try:
     
     print 'Resolving model'
     model.resolve_model()
-    #print model
+    print model
 
     print 'Building simulation'
     sim = SimulationBuilder(model).build()
