@@ -31,7 +31,6 @@ class Reflective(object):
             for statement in statements:
                 code_string += '    ' + statement + '\n'
 
-        print code_string
         exec compile(ast.parse(code_string), '<unknown>', 'exec')
         
         #setattr(cls, method_name, __generated_function__)

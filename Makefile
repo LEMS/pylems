@@ -3,7 +3,7 @@ all:	lems-code lems-doc
 JAVALEMS = ../LEMS/lems
 TIME = /usr/bin/time -f '%e s'
 MODELFILE = examples/sawtooth.xml
-BENCHFILE = examples/curvetooth_long.xml
+BENCHFILE = examples/sawtooth_bench.xml
 
 lems-code:
 
@@ -28,11 +28,11 @@ bench:
 	@${TIME} ${JAVALEMS} ${BENCHFILE} -nogui > /dev/null
 
 	@echo "CPython 2 (no optimizations)"
-	@${TIME} python runlems.py ${BENCHFILE} > /dev/null
+	@${TIME} python runlems.py -nogui ${BENCHFILE} > /dev/null
 
 	@echo "CPython 2 (with optimizations)"
-	@${TIME} python -O runlems.py ${BENCHFILE} > /dev/null
+	@${TIME} python -O runlems.py -nogui ${BENCHFILE} > /dev/null
 
 	@echo "PyPy"
-	@${TIME} pypy runlems.py ${BENCHFILE} > /dev/null
+	@${TIME} pypy runlems.py -nogui ${BENCHFILE} > /dev/null
 
