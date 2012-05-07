@@ -2,7 +2,7 @@ all:	lems-code lems-doc
 
 JAVALEMS = ../LEMS/lems
 TIME = /usr/bin/time -f '%e s'
-MODELFILE = examples/curvetooth.xml
+MODELFILE = examples/sawtooth.xml
 BENCHFILE = examples/curvetooth_long.xml
 
 lems-code:

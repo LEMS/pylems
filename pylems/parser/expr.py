@@ -182,7 +182,7 @@ class ExprParser(PyLEMSBase):
             s = ''
 
             if ps[i].isalpha():
-                while i < len(ps) and ps[i].isalnum():
+                while i < len(ps) and (ps[i].isalnum() or ps[i] == '_'):
                     s += ps[i]
                     i += 1
             elif ps[i].isdigit():

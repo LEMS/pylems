@@ -31,6 +31,7 @@ class Reflective(object):
             for statement in statements:
                 code_string += '    ' + statement + '\n'
 
+        print code_string
         exec compile(ast.parse(code_string), '<unknown>', 'exec')
         
         #setattr(cls, method_name, __generated_function__)
@@ -97,7 +98,7 @@ class Runnable(Reflective):
 
     def record_variables(self):
         for variable in self.recorded_variables:
-            self.recorded_variables[variable] += [(self.time_step,
+            self.recorded_variables[variable] += [(self.time_completed,
                                                    self.__dict__[variable])]
             
     def push_state(self):
