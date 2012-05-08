@@ -37,6 +37,7 @@ try:
     model = parser.get_model()
     
     print 'Resolving model'
+    print model
     model.resolve_model()
     print model
     sys.exit(0)
