@@ -16,7 +16,8 @@ from pylems.base.errors import ParseError,ModelError
 from pylems.model.context import Context,Contextual
 from pylems.model.component import Component,ComponentType
 from pylems.model.parameter import Parameter
-from pylems.model.behavior import Behavior,Regime,OnCondition,StateAssignment
+from pylems.model.behavior import *
+#Behavior,Regime,OnCondition,OnEvent,StateAssignment
 
 def xmltolower(node):
     """ Converts the tag and attribute names in the given XML node and
@@ -130,13 +131,15 @@ class LEMSParser(Parser):
                                                 'path', 'requirement',
                                                 'text']
         self.valid_children['behavior'] = ['build', 'derivedvariable',
-                                           'oncondition', 'onevent',
+                                           'oncondition', 'onentry',
+                                           'onevent',
                                            'onstart', 'record',
                                            'run', 'show',
                                            'statevariable', 'timederivative']
         self.valid_children['oncondition'] = ['eventout', 'stateassignment']
-        self.valid_children['onevent'] = ['stateassignment']
-        self.valid_children['onstart'] = ['stateassignment']
+        self.valid_children['onentry'] = ['eventout', 'stateassignment']
+        self.valid_children['onevent'] = ['eventout', 'stateassignment']
+        self.valid_children['onstart'] = ['eventout', 'stateassignment']
 
         self.tag_parse_table = dict()
         self.tag_parse_table['behavior'] = self.parse_behavior
@@ -664,15 +667,36 @@ class LEMSParser(Parser):
         """
 
         if self.current_regime == None:
-            self.raise_error('<OnCondition must be defined inside a ' +
+            self.raise_error('<OnCondition> must be defined inside a ' +
                              'behavior profile or regime')
 
         if 'test' in node.lattrib:
             test = node.lattrib['test']
         else:
-            self.raise_error('Test expression not provided for <OnCondition>')
+            self.raise_error('Test expression required for <OnCondition>')
 
         event_handler = OnCondition(test)
+        
+        self.current_event_handler = event_handler
+        self.current_regime.add_event_handler(event_handler)
+        
+        self.process_nested_tags(node)
+        
+        self.current_event_handler = None
+        
+    def parse_on_entry(self, node):
+        """
+        Parses <OnEntry>
+
+        @param node: Node containing the <OnEntry> element
+        @type node: xml.etree.Element
+        """
+
+        if self.current_regime == None:
+            self.raise_error('<OnEvent> must be defined inside a ' +
+                             'behavior profile or regime')
+
+        event_handler = OnEntry()
         
         self.current_event_handler = event_handler
         self.current_regime.add_event_handler(event_handler)
@@ -689,8 +713,24 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        self.process_nested_tags(node)
+        if self.current_regime == None:
+            self.raise_error('<OnEvent> must be defined inside a ' +
+                             'behavior profile or regime')
 
+        if 'port' in node.lattrib:
+            port = node.lattrib['port']
+        else:
+            self.raise_error('Port name required for <OnCondition>')
+
+        event_handler = OnEvent(port)
+        
+        self.current_event_handler = event_handler
+        self.current_regime.add_event_handler(event_handler)
+        
+        self.process_nested_tags(node)
+        
+        self.current_event_handler = None
+        
     def parse_on_start(self, node):
         """
         Parses <OnStart>
@@ -699,8 +739,19 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        self.process_nested_tags(node)
+        if self.current_regime == None:
+            self.raise_error('<OnEvent> must be defined inside a ' +
+                             'behavior profile or regime')
 
+        event_handler = OnStart()
+        
+        self.current_event_handler = event_handler
+        self.current_regime.add_event_handler(event_handler)
+        
+        self.process_nested_tags(node)
+        
+        self.current_event_handler = None
+        
     def parse_parameter(self, node):
         """
         Parses <Parameter>

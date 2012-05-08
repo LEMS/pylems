@@ -193,19 +193,59 @@ class OnStart(EventHandler):
     """
     Stores the parameters of an <OnStart> statement.
     """
-    pass
-    
+
+    def __init__(self):
+        """
+        Constructor.
+        """
+
+        EventHandler.__init__(self, EventHandler.ON_START)
+
+    def __str__(self):
+        """ Generates a string representation of this condition."""
+        
+        return 'OnStart'
+        
 class OnEntry(EventHandler):
     """
     Stores the parameters of an <OnEntry> statement.
     """
-    pass
-    
+
+    def __init__(self):
+        """
+        Constructor.
+        """
+
+        EventHandler.__init__(self, EventHandler.ON_ENTRY)
+
+    def __str__(self):
+        """ Generates a string representation of this condition."""
+        
+        return 'OnEntry'
+        
 class OnEvent(EventHandler):
     """
     Stores the parameters of an <OnEvent> statement.
     """
-    pass
+
+    def __init__(self, port):
+        """
+        Constructor.
+
+        @param port: The name of the event port to listen on.
+        @type port: string
+        """
+
+        EventHandler.__init__(self, EventHandler.ON_EVENT)
+        
+        self.port = port
+        """ The name of the event port to listen on.
+        @type: string """
+
+    def __str__(self):
+        """ Generates a string representation of this condition."""
+        
+        return 'OnEvent: ' + self.port
     
 class OnCondition(EventHandler):
     """
@@ -246,6 +286,13 @@ class Action(PyLEMSBase):
     TRANSITION = 3
 
     def __init__(self, type):
+        """
+        Constructor.
+
+        @param type: Type of action.
+        @type type: enum(Action.STATEASSIGNMENT, Action.EVENT_OUT)
+        """
+        
         self.type = type
         """ Type of action.
         @type: enum(Action.STATEASSIGNMENT, Action.EVENT_OUT) """
