@@ -26,11 +26,9 @@ def xmltolower(node):
     @param node: Node in an XML tree.
     @type node: xml.etree.Element """
 
-    lattrib = dict()
+    node.lattrib = dict()
     for key in node.attrib:
-        lattrib[key] = node.attrib[key]
-        #lattrib[key.lower()] = node.attrib[key]
-    node.attrib = lattrib
+        node.lattrib[key.lower()] = node.attrib[key]
     for child in node:
         xmltolower(child)
 
@@ -90,7 +88,7 @@ class LEMSParser(Parser):
 
     def pop_context(self):
         if len(self.context_stack) == 0:
-            raise ParseError('Context stack underflow')
+            self.raise_error('Context stack underflow')
         self.context_stack = self.context_stack[1:]
         if len(self.context_stack) == 0:
             self.current_context = None
@@ -104,7 +102,7 @@ class LEMSParser(Parser):
 
     def pop_component_type(self):
         if len(self.component_type_stack) == 0:
-            raise ParseError('Component_Type stack underflow')
+            self.raise_error('Component_Type stack underflow')
         self.component_type_stack = self.component_type_stack[1:]
         if len(self.component_type_stack) == 0:
             self.current_component_type = None
@@ -191,7 +189,7 @@ class LEMSParser(Parser):
         @param node: Current node being parsed.
         @type node: xml.etree.Element
 
-        @raise ParseError: Raised when an unexpected nested tag is found.
+        @self.raise_error: Raised when an unexpected nested tag is found.
         """
 
         #self.prefix += '  '
@@ -201,7 +199,7 @@ class LEMSParser(Parser):
             #print child.attrib['name'] if 'name' in child.attrib else '',
             #print child.attrib['id'] if 'id' in child.attrib else ''
 
-            self.xml_node_stack = [node] + self.xml_node_stack
+            self.xml_node_stack = [child] + self.xml_node_stack
 
             ctagl = child.tag.lower()
 
@@ -259,6 +257,34 @@ class LEMSParser(Parser):
         else:
             return None
 
+    def raise_error(self, message):
+        s = 'Parser error in '
+
+        self.xml_node_stack.reverse()
+        if len(self.xml_node_stack) > 1:
+            node = self.xml_node_stack[0]
+            s += '<{0}'.format(node.tag)
+            if 'name' in node.lattrib:
+                s += ' name=\"{0}\"'.format(node.lattrib['name'])
+            if 'id' in node.lattrib:
+                s += ' id=\"{0}\"'.format(node.lattrib['id'])
+            s += '>'
+
+        for node in self.xml_node_stack[1:]:
+            s += '.<{0}'.format(node.tag)
+            if 'name' in node.lattrib:
+                s += ' name=\"{0}\"'.format(node.lattrib['name'])
+            if 'id' in node.lattrib:
+                s += ' id=\"{0}\"'.format(node.lattrib['id'])
+            s += '>'
+
+        s += ':\n  ' + message
+
+        raise ParseError(s)
+    
+        self.xml_node_stack.reverse()
+        
+        
     def get_model(self):
         """
         Returns the generated model.
@@ -278,11 +304,11 @@ class LEMSParser(Parser):
         """
 
         if self.current_context.context_type != Context.COMPONENT_TYPE:
-            raise ParseError('Behavior must be defined inside a ' +
+            self.raise_error('Behavior must be defined inside a ' +
                              'component type')
 
-        if 'name' in node.attrib:
-            name = node.attrib['name']
+        if 'name' in node.lattrib:
+            name = node.lattrib['name']
         else:
             name = ''
 
@@ -315,19 +341,19 @@ class LEMSParser(Parser):
         """
         
         if self.current_context.context_type != Context.COMPONENT_TYPE:
-            raise ParseError('Child definitions can only be made in ' +
+            self.raise_error('Child definitions can only be made in ' +
                              'a component type')
         
-        if 'name' in node.attrib:
-            name = node.attrib['name']
+        if 'name' in node.lattrib:
+            name = node.lattrib['name']
         else:
-            raise ParseError('<Child> must specify a name for the ' +
+            self.raise_error('<Child> must specify a name for the ' +
                              'reference.')
 
-        if 'type' in node.attrib:
-            type = node.attrib['type']
+        if 'type' in node.lattrib:
+            type = node.lattrib['type']
         else:
-            raise ParseError('<Child> must specify a type for the ' +
+            self.raise_error('<Child> must specify a type for the ' +
                              'reference.')
             
         self.current_context.add_child(name, type)
@@ -341,19 +367,19 @@ class LEMSParser(Parser):
         """
         
         if self.current_context.context_type != Context.COMPONENT_TYPE:
-            raise ParseError('Children definitions can only be made in ' +
+            self.raise_error('Children definitions can only be made in ' +
                              'a component type')
         
-        if 'name' in node.attrib:
-            name = node.attrib['name']
+        if 'name' in node.lattrib:
+            name = node.lattrib['name']
         else:
-            raise ParseError('<Children> must specify a name for the ' +
+            self.raise_error('<Children> must specify a name for the ' +
                              'reference.')
 
-        if 'type' in node.attrib:
-            type = node.attrib['type']
+        if 'type' in node.lattrib:
+            type = node.lattrib['type']
         else:
-            raise ParseError('<Children> must specify a type for the ' +
+            self.raise_error('<Children> must specify a type for the ' +
                              'reference.')
             
         self.current_context.add_children(name, type)
@@ -368,23 +394,23 @@ class LEMSParser(Parser):
         @param type: Type of this component.
         @type type: string
 
-        @raise ParseError: Raised when the component does not have an id.
+        @self.raise_error: Raised when the component does not have an id.
         """
 
         if self.current_context.context_type == Context.GLOBAL:
             # Global component instatiation
-            if 'id' in node.attrib:
-                id = node.attrib['id']
+            if 'id' in node.lattrib:
+                id = node.lattrib['id']
             else:
-                raise ParseError('Component must have an id')
+                self.raise_error('Component must have an id')
             
             type = node.tag
 
             component = Component(id, self.current_context, type, None)
         else:
             # Child instantiation
-            if 'id' in node.attrib:
-                id = node.attrib['id']
+            if 'id' in node.lattrib:
+                id = node.lattrib['id']
             else:
                 id = '__id_inherited__' + str(self.id_counter.next())
 
@@ -416,21 +442,21 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if 'id' in node.attrib:
-            id = node.attrib['id']
+        if 'id' in node.lattrib:
+            id = node.lattrib['id']
         else:            
-            raise ParseError('Component must have an id')
+            self.raise_error('Component must have an id')
         
-        if 'type' in node.attrib:
-            type = node.attrib['type']
+        if 'type' in node.lattrib:
+            type = node.lattrib['type']
         else:
             type = None
 
         if type == None:
-            if 'extends' in node.attrib:
-                extends = node.attrib['extends']
+            if 'extends' in node.lattrib:
+                extends = node.lattrib['extends']
             else:
-                raise ParseError('Component must have a type or must ' +
+                self.raise_error('Component must have a type or must ' +
                                  'extend another component')
         else:
             extends = None
@@ -451,19 +477,19 @@ class LEMSParser(Parser):
         """
         
         if self.current_context.context_type != Context.COMPONENT_TYPE:
-            raise ParseError('Component references can only be defined in ' +
+            self.raise_error('Component references can only be defined in ' +
                              'a component type')
         
-        if 'name' in node.attrib:
-            name = node.attrib['name']
+        if 'name' in node.lattrib:
+            name = node.lattrib['name']
         else:
-            raise ParseError('<ComponentRef> must specify a name for the ' +
+            self.raise_error('<ComponentRef> must specify a name for the ' +
                              'reference.')
 
-        if 'type' in node.attrib:
-            type = node.attrib['type']
+        if 'type' in node.lattrib:
+            type = node.lattrib['type']
         else:
-            raise ParseError('<ComponentRef> must specify a type for the ' +
+            self.raise_error('<ComponentRef> must specify a type for the ' +
                              'reference.')
             
         self.current_context.add_component_ref(name, type)
@@ -475,17 +501,17 @@ class LEMSParser(Parser):
         @param node: Node containing the <ComponentType> element
         @type node: xml.etree.Element
 
-        @raise ParseError: Raised when the component type does not have a
+        @self.raise_error: Raised when the component type does not have a
         name.
         """
         
         try:
-            name = node.attrib['name']
+            name = node.lattrib['name']
         except:
-            raise ParseError('Component type must have a name')
+            self.raise_error('Component type must have a name')
 
-        if 'extends' in node.attrib:
-            extends = node.attrib['extends']
+        if 'extends' in node.lattrib:
+            extends = node.lattrib['extends']
         else:
             extends = None
 
@@ -504,7 +530,7 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
         
-        self.model.add_default_run(node.attrib['component'])
+        self.model.add_default_run(node.lattrib['component'])
     
     def parse_derived_variable(self, node):
         """
@@ -523,17 +549,17 @@ class LEMSParser(Parser):
         @param node: Node containing the <Dimension> element
         @type node: xml.etree.Element
 
-        @raise ParseError: When the name is not a string or if the
+        @self.raise_error: When the name is not a string or if the
         dimension is not a signed integer.
         """
         
         dim = list()
         try:
-            name = node.attrib['name']
+            name = node.lattrib['name']
             for d in ['l', 'm', 't', 'i', 'k', 'c', 'n']:
-                dim.append(int(node.attrib.get(d, 0)))
+                dim.append(int(node.lattrib.get(d, 0)))
         except:
-            raise ParseError('Invalid dimensionality format')
+            self.raise_error('Invalid dimensionality format')
 
         self.model.add_dimension(Dimension(name, dim[0], dim[1], dim[2],
                                            dim[3], dim[4], dim[4], dim[6]))
@@ -565,16 +591,16 @@ class LEMSParser(Parser):
         @param node: Node containing the <Exposure> element
         @type node: xml.etree.Element
 
-        @raise ParseError: Raised when the exposure name is not
+        @self.raise_error: Raised when the exposure name is not
         being defined in the context of a component type.
         """
 
         if self.current_context.context_type != Context.COMPONENT_TYPE:
-            raise ParseError('Exposure names can only be defined in ' +
+            self.raise_error('Exposure names can only be defined in ' +
                              'a component type')
         
-        if 'name' in node.attrib:
-            self.current_context.add_exposure(node.attrib['name'])
+        if 'name' in node.lattrib:
+            self.current_context.add_exposure(node.lattrib['name'])
 
     def parse_fixed(self, node):
         """
@@ -583,18 +609,18 @@ class LEMSParser(Parser):
         @param node: Node containing the <Fixed> element
         @type node: xml.etree.Element
 
-        @raise ParseError: Raised when
+        @self.raise_error: Raised when
         """
 
         try:
-            parameter = node.attrib['parameter']
+            parameter = node.lattrib['parameter']
         except:
-            raise ParseError('Parameter to be fixed must be specified')
+            self.raise_error('Parameter to be fixed must be specified')
 
         try:
-            value = node.attrib['value']
+            value = node.lattrib['value']
         except:
-            raise ParseError('Value to be fixed must be specified')
+            self.raise_error('Value to be fixed must be specified')
 
         if self.current_context.lookup_parameter(parameter) == None:
             self.current_context.add_parameter(Parameter(
@@ -609,10 +635,10 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if 'file' not in node.attrib:
-            raise ParseError('Include file must be specified.')
+        if 'file' not in node.lattrib:
+            self.raise_error('Include file must be specified.')
 
-        path = self.base_path + '/' + node.attrib['file']
+        path = self.base_path + '/' + node.lattrib['file']
 
         root = xml.parse(path).getroot()
         xmltolower(root)
@@ -638,13 +664,13 @@ class LEMSParser(Parser):
         """
 
         if self.current_regime == None:
-            raise ParseError('<OnCondition must be defined inside a ' +
+            self.raise_error('<OnCondition must be defined inside a ' +
                              'behavior profile or regime')
 
-        if 'test' in node.attrib:
-            test = node.attrib['test']
+        if 'test' in node.lattrib:
+            test = node.lattrib['test']
         else:
-            raise ParseError('Test expression not provided for <OnCondition>')
+            self.raise_error('Test expression not provided for <OnCondition>')
 
         event_handler = OnCondition(test)
         
@@ -682,20 +708,20 @@ class LEMSParser(Parser):
         @param node: Node containing the <Parameter> element
         @type node: xml.etree.Element
 
-        @raise ParseError: Raised when the parameter does not have a name.
-        @raise ParseError: Raised when the parameter does not have a
+        @self.raise_error: Raised when the parameter does not have a name.
+        @self.raise_error: Raised when the parameter does not have a
         dimension.
         """
         
         try:
-            name = node.attrib['name']
+            name = node.lattrib['name']
         except:
-            raise ParseError('Parameter must have a name')
+            self.raise_error('Parameter must have a name')
 
         try:
-            dimension = node.attrib['dimension']
+            dimension = node.lattrib['dimension']
         except:
-            raise ParseError('Parameter must have a dimension')
+            self.raise_error('Parameter must have a dimension')
 
         parameter = Parameter(name, dimension)
 
@@ -710,16 +736,16 @@ class LEMSParser(Parser):
         """
 
         if self.current_context.context_type != Context.COMPONENT_TYPE:
-            raise ParseError('Path variables can only be defined in ' +
+            self.raise_error('Path variables can only be defined in ' +
                              'a component type')
 
-        if 'name' in node.attrib:
-            name = node.attrib['name']
+        if 'name' in node.lattrib:
+            name = node.lattrib['name']
         else:
-            raise ParseError('A name must be provided for <Path>')
+            self.raise_error('A name must be provided for <Path>')
 
-        if 'value' in node.attrib:
-            value = node.attrib['value']
+        if 'value' in node.lattrib:
+            value = node.lattrib['value']
         else:
             value = None
 
@@ -734,23 +760,23 @@ class LEMSParser(Parser):
         """
 
         if self.current_regime == None:
-            raise ParseError('<Record> must be only be used inside a ' +
+            self.raise_error('<Record> must be only be used inside a ' +
                              'behavior profile or regime')
 
-        if 'quantity' in node.attrib:
-            quantity = node.attrib['quantity']
+        if 'quantity' in node.lattrib:
+            quantity = node.lattrib['quantity']
         else:
-            raise ParseError('\'quantity\' attribute required for <Text>')
+            self.raise_error('\'quantity\' attribute required for <Text>')
 
-        if 'scale' in node.attrib:
-            scale = node.attrib['scale']
+        if 'scale' in node.lattrib:
+            scale = node.lattrib['scale']
         else:
-            raise ParseError('\'scale\' attribute required for <Text>')
+            self.raise_error('\'scale\' attribute required for <Text>')
 
-        if 'color' in node.attrib:
-            color  = node.attrib['color']
+        if 'color' in node.lattrib:
+            color  = node.lattrib['color']
         else:
-            raise ParseError('\'color\' attribute required for <Text>')
+            self.raise_error('\'color\' attribute required for <Text>')
 
         self.current_regime.add_record(quantity, scale, color)
 
@@ -773,29 +799,29 @@ class LEMSParser(Parser):
         """
 
         if self.current_regime == None:
-            raise ParseError('<StateVariable> must be defined inside a ' +
+            self.raise_error('<StateVariable> must be defined inside a ' +
                              'behavior profile or regime')
 
-        if 'component' in node.attrib:
-            component = node.attrib['component']
+        if 'component' in node.lattrib:
+            component = node.lattrib['component']
         else:
-            raise ParseError('<Run> must specify a target component')
+            self.raise_error('<Run> must specify a target component')
 
-        if 'variable' in node.attrib:
-            variable = node.attrib['variable']
+        if 'variable' in node.lattrib:
+            variable = node.lattrib['variable']
         else:
-            raise ParseError('<Run> must specify a state variable')
+            self.raise_error('<Run> must specify a state variable')
 
-        if 'increment' in node.attrib:
-            increment = node.attrib['increment']
+        if 'increment' in node.lattrib:
+            increment = node.lattrib['increment']
         else:
-            raise ParseError('<Run> must specify an increment for the ' +
+            self.raise_error('<Run> must specify an increment for the ' +
                              'state variable')
 
-        if 'total' in node.attrib:
-            total = node.attrib['total']
+        if 'total' in node.lattrib:
+            total = node.lattrib['total']
         else:
-            raise ParseError('<Run> must specify a final value for the ' +
+            self.raise_error('<Run> must specify a final value for the ' +
                              'state variable')
 
         self.current_regime.add_run(component, variable, increment, total)
@@ -819,19 +845,19 @@ class LEMSParser(Parser):
         """
 
         if self.current_event_handler == None:
-            raise ParseError('<StateAssignment> must be defined inside an ' +
+            self.raise_error('<StateAssignment> must be defined inside an ' +
                              'event handler in a behavior profile or regime')
 
-        if 'variable' in node.attrib:
-            variable = node.attrib['variable']
+        if 'variable' in node.lattrib:
+            variable = node.lattrib['variable']
         else:
-            raise ParseError('\'variable\' attribute not provided for ' +
+            self.raise_error('\'variable\' attribute not provided for ' +
                              '<StateAssignment>')
 
-        if 'value' in node.attrib:
-            value = node.attrib['value']
+        if 'value' in node.lattrib:
+            value = node.lattrib['value']
         else:
-            raise ParseError('\'value\' attribute not provided for ' +
+            self.raise_error('\'value\' attribute not provided for ' +
                              '<StateAssignment>')
 
         action = StateAssignment(variable, value)
@@ -846,7 +872,7 @@ class LEMSParser(Parser):
         @param node: Node containing the <StateVariable> element
         @type node: xml.etree.Element
 
-        @raise ParseError: Raised when the state variable is not
+        @self.raise_error: Raised when the state variable is not
         being defined in the context of a component type.
         """
 
@@ -854,23 +880,23 @@ class LEMSParser(Parser):
         #    print node.tag
             
         if self.current_regime == None:
-            raise ParseError('<StateVariable> must be defined inside a ' +
+            self.raise_error('<StateVariable> must be defined inside a ' +
                              'behavior profile or regime')
 
-        if 'name' in node.attrib:
-            name = node.attrib['name']
+        if 'name' in node.lattrib:
+            name = node.lattrib['name']
         else:
-            raise ParseError('A state variable must have a name')
+            self.raise_error('A state variable must have a name')
 
-        if 'exposure' in node.attrib:
-            exposure = node.attrib['exposure']
+        if 'exposure' in node.lattrib:
+            exposure = node.lattrib['exposure']
         else:
             exposure = None
 
-        if 'dimension' in node.attrib:
-            dimension = node.attrib['dimension']
+        if 'dimension' in node.lattrib:
+            dimension = node.lattrib['dimension']
         else:
-            raise ParseError('A state variable must have a dimension')
+            self.raise_error('A state variable must have a dimension')
 
         self.current_regime.add_state_variable(name, exposure, dimension)
             
@@ -883,16 +909,16 @@ class LEMSParser(Parser):
         """
 
         if self.current_context.context_type != Context.COMPONENT_TYPE:
-            raise ParseError('Text variables can only be defined in ' +
+            self.raise_error('Text variables can only be defined in ' +
                              'a component type')
 
-        if 'name' in node.attrib:
-            name = node.attrib['name']
+        if 'name' in node.lattrib:
+            name = node.lattrib['name']
         else:
-            raise ParseError('A name must be provided for <Text>')
+            self.raise_error('A name must be provided for <Text>')
 
-        if 'value' in node.attrib:
-            value = node.attrib['value']
+        if 'value' in node.lattrib:
+            value = node.lattrib['value']
         else:
             value = None
 
@@ -905,28 +931,28 @@ class LEMSParser(Parser):
         @param node: Node containing the <TimeDerivative> element
         @type node: xml.etree.Element
 
-        @raise ParseError: Raised when the time derivative is not
+        @self.raise_error: Raised when the time derivative is not
         being defined in the context of a component type.
         """
 
         if self.current_regime == None:
-            raise ParseError('<TimeDerivative> must be defined inside a ' +
+            self.raise_error('<TimeDerivative> must be defined inside a ' +
                              'behavior profile or regime')
 
         if self.current_context.context_type != Context.COMPONENT_TYPE:
-            raise ParseError('Time derivatives can only be defined in ' +
+            self.raise_error('Time derivatives can only be defined in ' +
                              'a component type')
 
-        if 'variable' in node.attrib:
-            name = node.attrib['variable']
+        if 'variable' in node.lattrib:
+            name = node.lattrib['variable']
         else:
-            raise ParseError('The state variable being differentiated wrt ' +
+            self.raise_error('The state variable being differentiated wrt ' +
                              'time must be specified')
 
-        if 'value' in node.attrib:
-            value = node.attrib['value']
+        if 'value' in node.lattrib:
+            value = node.lattrib['value']
         else:
-            raise ParseError('The time derivative expression must be ' +
+            self.raise_error('The time derivative expression must be ' +
                              'provided')
 
         self.current_regime.add_time_derivative(name, value)
@@ -938,20 +964,20 @@ class LEMSParser(Parser):
         @param node: Node containing the <Unit> element
         @type node: xml.etree.Element
 
-        @raise ParseError: When the name is not a string or the unit
+        @self.raise_error: When the name is not a string or the unit
         specfications are incorrect.
 
         @raise ModelError: When the unit refers to an undefined dimension.
         """
 
         try:
-            symbol = node.attrib['symbol']
-            dimension = node.attrib['dimension']
+            symbol = node.lattrib['symbol']
+            dimension = node.lattrib['dimension']
         except:
-            raise ParseError('Unit must have a symbol and dimension.')
+            self.raise_error('Unit must have a symbol and dimension.')
 
-        if 'powten' in node.attrib:
-            pow10 = int(node.attrib['powten'])
+        if 'powten' in node.lattrib:
+            pow10 = int(node.lattrib['powten'])
         else:
             pow10 = 0
 
@@ -966,7 +992,7 @@ class LEMSParser(Parser):
         """
         
         if node.tag.lower() != 'lems':
-            raise ParseError('Not a LEMS file')
+            self.raise_error('Not a LEMS file')
 
         self.xml_node_stack = [node] + self.xml_node_stack
         self.process_nested_tags(node)
