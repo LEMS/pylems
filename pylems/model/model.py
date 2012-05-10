@@ -248,10 +248,17 @@ class Model(Contextual):
         @raise ModelError: Raised when the component type cannot be
         resolved.
         """
-        
-        component_type = context.lookup_component_type(
-            component.component_type)
+
+        if component.id.find('__id_inherited__') == 0:
+            print component.id, component.component_type
+            print context.name, context.parent.name
+            raise Exception()
+        else:
+            component_type = context.lookup_component_type(
+                component.component_type)
+            
         if component_type == None:
+            print component.id, component.component_type
             self.raise_error('Type {0} not found for component {1}'.
                              format(component.component_type, component.id),
                              context)

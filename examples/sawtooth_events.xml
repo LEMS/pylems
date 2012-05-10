@@ -1,0 +1,61 @@
+<Lems>
+  <DefaultRun component="sawtooth"/>
+ 
+  <Dimension name="voltage" m="1" l="2" t="-3" i="-1"/>
+
+  <Unit symbol="V" dimension="voltage"/> 
+
+  <ComponentType name="SpikeGenerator">
+    <Parameter name="period" dimension="time"/>
+    <EventPort name="spike-out" direction="out"/>
+    <Exposure name="tsince" dimension="time"/>
+    <Behavior>
+      <StateVariable name="tsince" exposure="tsince" dimension="time"/>
+      <TimeDerivative variable="tsince" value="1"/>
+      <OnCondition test="tsince .gt. period">
+	<StateAssignment variable="tsince" value="0"/>
+	<EventOut port="spike-out"/>
+      </OnCondition>
+    </Behavior>
+  </ComponentType>
+
+  <SpikeGenerator id="spikegen" period=10>
+
+  <ComponentType name="SawtoothGenerator">
+    <Parameter name="threshold" dimension="voltage"/>
+    <EventPort name="spike-in" direction="in"/>
+    <Exposure name="v" dimension="voltage"/>
+    <Behavior>
+      <StateVariable name="v" exposure="v" dimension="voltage"/>
+      <TimeDerivative variable="v" value="1"/>
+      <!--<TimeDerivative variable="v" value="1-95*v/100"/>-->
+      <OnEvent port="spike-in">
+	<StateAssignment variable="v" value="0"/>
+      </OnEvent>
+    </Behavior>
+  </ComponentType>
+  
+  <SawtoothGenerator id="stgen" 
+		     threshold="1 V"/>
+  
+  <Include file="SimpleSimulation.xml"/>
+  <Unit symbol="s" dimension="time"/> 
+  <Dimension name="time" t="1"/>
+
+  <ComponentType name="SpikeConnector">
+    <ComponentRef name="spikein" type="Component"/>
+    <ComponentRef name="spikeout" type="Component"/>
+
+    <Behaviour>
+      <EventConnection from="spikein" to="spikeout"/>
+    </Behaviour>
+  </ComponentType>
+
+  <SpikeConnector id="spikeconn1" spikein="spikegen" spikeout="stgen">
+    
+  <Simulation id="sawtooth" length="10s" step="0.1s" target="spikeconn1">
+    <Display id="d0" timeScale="10s" title="Sawtooth waveform">
+      <Line id="V" quantity="spikeout/v" scale="1s" color="#ff0000"/>        
+    </Display>
+  </Simulation>
+</Lems>
