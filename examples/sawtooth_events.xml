@@ -46,7 +46,7 @@
     
     <Behavior>
       <Build>
-	<EventConnection from="Sp1" to="St1"/>
+	<EventConnection from="Sp1" to="St1" srcport='spike-out' dstport='spike-in'/>
       </Build>
     </Behavior>
   </ComponentType>

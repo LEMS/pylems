@@ -88,6 +88,14 @@ class Context(PyLEMSBase):
         """ Dictionary of path parameters.
         @type: dict(string -> string) """
 
+        self.event_in_ports = []
+        """ List of incoming event port names.
+        @type: list(string) """
+
+        self.event_out_ports = []
+        """ List of outgoing event port names.
+        @type: list(string) """
+
     def add_component_type(self, component_type):
         """
         Adds a component type to the list of defined component types in the
@@ -297,6 +305,26 @@ class Context(PyLEMSBase):
             raise ModelError('Duplicate path variable')
 
         self.paths[name] = value
+
+    def add_event_port(self, name, direction):
+        """
+        Adds an event port to the list of event ports handled by this
+        component or component type.
+
+        @param name: Name of the event port.
+        @type name: string
+
+        @param direction: Event direction ('in' or 'out').
+        @type direction: string
+
+        @raise ModelError: Raised when the definition is already in the
+        current context.
+        """
+
+        if direction == 'in':
+            self.event_in_ports += 'name'
+        else:
+            self.event_out_ports += 'name'
         
     def lookup_component_type(self, name):
         """

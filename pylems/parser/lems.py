@@ -588,7 +588,28 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        pass
+        if self.current_context.context_type != Context.COMPONENT_TYPE:
+            self.raise_error('Event ports can only be defined in ' +
+                             'a component type')
+        
+        if 'name' in node.lattrib:
+            name = node.lattrib['name']
+        else:
+            self.raise_error(('<EventPort> must specify a name for the '
+                              'event port'))
+
+        if 'direction' in node.lattrib:
+            direction = node.lattrib['direction']
+        else:
+            self.raise_error(('<EventPort> must specify a direction for the '
+                              'event port'))
+
+        direction = direction.lower()
+        if direction != 'in' and direction != 'out':
+            self.raise_error(('Event port direction must be \'in\' '
+                              'or \'out\''))
+        
+        self.current_context.add_event_port(name, direction)
 
     def parse_exposure(self, node):
         """
