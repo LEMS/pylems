@@ -2,8 +2,10 @@
   <DefaultRun component="sawtooth"/>
  
   <Dimension name="voltage" m="1" l="2" t="-3" i="-1"/>
+  <Dimension name="voltage_gradient" m="1" l="2" t="-4" i="-1"/>
 
   <Unit symbol="V" dimension="voltage"/> 
+  <Unit symbol="V_per_t" dimension="voltage_gradient"/> 
 
   <ComponentType name="SpikeGenerator">
     <Parameter name="period" dimension="time"/>
@@ -18,44 +20,46 @@
       </OnCondition>
     </Behavior>
   </ComponentType>
-
-  <SpikeGenerator id="spikegen" period=10>
-
+  
   <ComponentType name="SawtoothGenerator">
+    <Parameter name="dV_per_dt" dimension="voltage_gradient"/>
     <Parameter name="threshold" dimension="voltage"/>
     <EventPort name="spike-in" direction="in"/>
     <Exposure name="v" dimension="voltage"/>
     <Behavior>
       <StateVariable name="v" exposure="v" dimension="voltage"/>
-      <TimeDerivative variable="v" value="1"/>
+      <TimeDerivative variable="v" value="dV_per_dt"/>
       <!--<TimeDerivative variable="v" value="1-95*v/100"/>-->
       <OnEvent port="spike-in">
 	<StateAssignment variable="v" value="0"/>
       </OnEvent>
     </Behavior>
   </ComponentType>
-  
-  <SawtoothGenerator id="stgen" 
-		     threshold="1 V"/>
-  
+
   <Include file="SimpleSimulation.xml"/>
   <Unit symbol="s" dimension="time"/> 
   <Dimension name="time" t="1"/>
 
   <ComponentType name="SpikeConnector">
-    <ComponentRef name="spikein" type="Component"/>
-    <ComponentRef name="spikeout" type="Component"/>
-
-    <Behaviour>
-      <EventConnection from="spikein" to="spikeout"/>
-    </Behaviour>
-  </ComponentType>
-
-  <SpikeConnector id="spikeconn1" spikein="spikegen" spikeout="stgen">
+    <Child name="Sp1" type="SpikeGenerator"/>
+    <Child name="St1" type="SawtoothGenerator"/>
     
+    <Behavior>
+      <Build>
+	<EventConnection from="Sp1" to="St1"/>
+      </Build>
+    </Behavior>
+  </ComponentType>
+  
+  <SpikeConnector id="spikeconn1">
+    <Sp1 period="10s"/>
+    <St1 threshold="1 V"
+	 dV_per_dt="0.1 V_per_t"/>
+  </SpikeConnector>
+  
   <Simulation id="sawtooth" length="10s" step="0.1s" target="spikeconn1">
     <Display id="d0" timeScale="10s" title="Sawtooth waveform">
-      <Line id="V" quantity="spikeout/v" scale="1s" color="#ff0000"/>        
+      <Line id="V" quantity="St1/v" scale="1s" color="#ff0000"/>        
     </Display>
   </Simulation>
 </Lems>
