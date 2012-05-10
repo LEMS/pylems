@@ -52,7 +52,7 @@ class SimulationBuilder(PyLEMSBase):
             
         return self.sim
 
-    def build_runnable(self, component):
+    def build_runnable(self, component, parent = None):
         """
         Build a runnable component from a component specification and add
         it to the simulation.
@@ -60,11 +60,15 @@ class SimulationBuilder(PyLEMSBase):
         @param component: Component specification
         @type component: pylems.model.component.Component
 
+        @param parent: Parent runnable component.
+        @type parent: pylems.sim.runnable.Runnable
+
         @raise SimBuildError: Raised when a component reference cannot be
         resolved.
         """
         
-        runnable = Runnable()
+        runnable = Runnable(component.id, parent)
+        
         context = component.context
         record_target_backup = self.current_record_target
 
@@ -87,7 +91,7 @@ class SimulationBuilder(PyLEMSBase):
 
         for cn in context.components:
             child = context.components[cn]
-            runnable.add_child(child.id, self.build_runnable(child))
+            runnable.add_child(child.id, self.build_runnable(child, runnable))
 
         self.current_record_target = record_target_backup
         
@@ -138,11 +142,17 @@ class SimulationBuilder(PyLEMSBase):
         runnable.add_method('update_state_variables', ['self', 'dt'],
                             time_step_code)
 
-        event_handler_code = []
+        pre_event_handler_code = []
+        post_event_handler_code = []
         for eh in regime.event_handlers:
-            event_handler_code += self.build_event_handler(eh)
+            if eh.type == EventHandler.ON_CONDITION:
+                post_event_handler_code += self.build_event_handler(eh)
+            else:
+                pre_event_handler_code += self.build_event_handler(eh)
+        runnable.add_method('run_preprocessing_event_handlers', ['self'],
+                            pre_event_handler_code)
         runnable.add_method('run_postprocessing_event_handlers', ['self'],
-                            event_handler_code)
+                            post_event_handler_code)
 
         for rn in regime.runs:
             run = regime.runs[rn]

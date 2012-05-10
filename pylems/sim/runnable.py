@@ -13,6 +13,7 @@ import ast
 class Reflective(object):
     def __init__(self):
         self.instance_variables = []
+        self.derived_variables = []
         
     #@classmethod
     def add_method(self, method_name, parameter_list, statements):
@@ -38,17 +39,27 @@ class Reflective(object):
         del __generated_function__
 
     def add_instance_variable(self, variable, initial_value):
-        self.instance_variables += [variable]
+        self.instance_variables.append(variable)
     
         code_string = 'self.{0} = {1}\nself.{0}_shadow = {1}'.format(\
             variable, initial_value)
         exec compile(ast.parse(code_string), '<unknown>', 'exec')
         
+    def add_derived_variable(self, variable, initial_value):
+        self.derived_variables.append(variable)
+    
+        code_string = 'self.{0} = 0'.format(\
+            variable)
+        exec compile(ast.parse(code_string), '<unknown>', 'exec')
+        
         
 class Runnable(Reflective):
-    def __init__(self):
+    def __init__(self, id, parent = None):
         Reflective.__init__(self)
 
+        self.id = id
+        self.parent = parent
+        
         self.time_step = 0
         self.time_completed = 0
         self.time_total = 0
@@ -78,13 +89,14 @@ class Runnable(Reflective):
             self.children[cid].reset_time()
 
     def single_step(self, dt):
+        print 'Single stepping {0}'.format(self.id)
         self.update_state_variables(self, dt)
         self.update_shadow_variables()
 
         self.run_postprocessing_event_handlers(self)
         self.update_shadow_variables()
 
-        self.record_variables()
+        #self.record_variables()
 
         for cid in self.children:
             self.children[cid].single_step(dt)

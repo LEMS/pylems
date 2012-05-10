@@ -40,13 +40,13 @@ try:
     print model
     model.resolve_model()
     print model
-    sys.exit(0)
 
     print 'Building simulation'
     sim = SimulationBuilder(model).build()
-
+    
     print 'Running simulation'
     sim.run()
+    sys.exit(0)
 
     if not nogui:
         import matplotlib.pyplot as plt
