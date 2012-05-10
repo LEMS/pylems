@@ -63,7 +63,8 @@ class Model(Contextual):
             self.dimensions = dict()
 
         if dimension.name in self.dimensions:
-            raise ModelError('Duplicate dimension - ' + dimension.name)
+            self.raise_error('Duplicate dimension - ' + dimension.name,
+                             self.context)
         else:
             self.dimensions[dimension.name] = dimension
         
@@ -81,17 +82,20 @@ class Model(Contextual):
             self.units = dict()
 
         if unit.symbol in self.units:
-            raise ModelError('Duplicate unit - ' + unit.symbol)
+            self.raise_error('Duplicate unit - ' + unit.symbol, self.context)
         else:
             self.units[unit.symbol] = unit
 
-    def resolve_parameter_value(self, parameter):
+    def resolve_parameter_value(self, parameter, context):
         """
         Resolves the numeric value of a parameter based on the given value
         in terms of the symbols and dimensions defined in the model.
 
         @param parameter: Parameter object to be resolved.
         @type parameter: pylems.model.parameter.Parameter
+
+        @param context: Context containing the parameter
+        @type context: pylems.model.context.Context
 
         @raise ModelError: Raised when the value of the parameter is not set.
 
@@ -102,8 +106,8 @@ class Model(Contextual):
         """
         
         if parameter.value == None:
-            raise ModelError('Parameter {0} not initialized'.format(\
-                parameter.name))
+            self.raise_error('Parameter {0} not initialized'.format(\
+                parameter.name), context)
 
         number = float(re.split('[a-zA-z]+', parameter.value)[0].strip())
         sym = re.split('[^a-zA-z]+', parameter.value)[1].strip()
@@ -117,12 +121,14 @@ class Model(Contextual):
                     if parameter.dimension == '*':
                         parameter.dimension = unit.dimension
                     else:
-                        raise ModelError(('Unit symbol {0} cannot '
+                        self.raise_error(('Unit symbol {0} cannot '
                                          'be used for dimension {1}').format(\
-                                             sym, parameter.dimension))
+                                             sym, parameter.dimension),
+                                         context)
                 parameter.numeric_value = number * (10 ** unit.pow10)
             else:
-                raise ModelError('Unknown unit symbol {0}'.format(sym))
+                self.raise_error('Unknown unit symbol {0}'.format(sym),
+                                 context)
 
     def resolve_extended_component_type(self, context, component_type):
         """
@@ -144,9 +150,10 @@ class Model(Contextual):
         
         base_type = context.lookup_component_type(component_type.extends)
         if base_type == None:
-            raise ModelError('Base type {0} not found for component type {1}'.
+            self.raise_error('Base type {0} not found for component type {1}'.
                              format(component_type.extends,
-                                    component_type.name))
+                                    component_type.name),
+                             context)
         if base_type.extends:
             self.resolve_extended_component_type(context, base_type)
 
@@ -164,9 +171,10 @@ class Model(Contextual):
                                                             pt.fixed,
                                                             pt.value)
                 else:
-                    raise ModelError(('Parameter {0} in {1} is redefined ' +
+                    self.raise_error(('Parameter {0} in {1} is redefined ' +
                                      'in {2}').format(pn, base_type.name,
-                                                      component_type.name))
+                                                      component_type.name),
+                                     context)
             else:
                 this_context.parameters[pn] = base_context.parameters[pn].\
                                               copy()
@@ -196,9 +204,10 @@ class Model(Contextual):
         
         base = context.lookup_component(component.extends)
         if base == None:
-            raise ModelError('Base component {0} not found for component {1}'.
+            self.raise_error('Base component {0} not found for component {1}'.
                              format(component.extends,
-                                    component.id))
+                                    component.id),
+                             context)
         if base.extends:
             self.resolve_extended_component(context, base)
 
@@ -216,9 +225,10 @@ class Model(Contextual):
                                                             pt.fixed,
                                                             pt.value)
                 else:
-                    raise ModelError(('Parameter {0} in {1} is redefined ' +
+                    self.raise_error(('Parameter {0} in {1} is redefined '
                                      'in {2}').format(pn, base_type.name,
-                                                      component_type.name))
+                                                      component_type.name),
+                                     context)
             else:
                 this_context.parameters[pn] = base_context.parameters[pn].\
                                               copy()
@@ -242,8 +252,9 @@ class Model(Contextual):
         component_type = context.lookup_component_type(
             component.component_type)
         if component_type == None:
-            raise ModelError('Type {0} not found for component {1}'.
-                             format(component.component_type, component.id))
+            self.raise_error('Type {0} not found for component {1}'.
+                             format(component.component_type, component.id),
+                             context)
 
         this_context = component.context
         type_context = component_type.context
@@ -267,7 +278,8 @@ class Model(Contextual):
             else:
                 this_context.parameters[pn] = pt.copy()
 
-            self.resolve_parameter_value(this_context.parameters[pn])
+            self.resolve_parameter_value(this_context.parameters[pn],
+                                         this_context)
 
         for pn in this_context.parameters:
             pc = this_context.parameters[pn]
@@ -311,11 +323,13 @@ class Model(Contextual):
                 cp = context.parameters[record.color]
 
                 if qp.dimension != '__path__':
-                    raise ModelError('<Record>: The quantity to be recorded'
-                                     'must be a path')
+                    self.raise_error('<Record>: The quantity to be recorded'
+                                     'must be a path',
+                                     context)
                 if cp.dimension != '__text__':
-                    raise ModelError('<Record>: The color to be used must be '
-                                     'a reference to a text variable')
+                    self.raise_error('<Record>: The color to be used must be '
+                                     'a reference to a text variable',
+                                     context)
                 record.quantity = qp.value
                 record.scale = sp.value
                 record.color = cp.value
@@ -366,9 +380,10 @@ class Model(Contextual):
             for pn in component.context.parameters:
                 p = component.context.parameters[pn]
                 if p.dimension == '__dimension_inherited__':
-                    raise ModelError(('The dimension for parameter {0} in '
+                    self.raise_error(('The dimension for parameter {0} in '
                                       'component {1} could not be resolved').\
-                                     format(pn, component.id))
+                                     format(pn, component.id),
+                                     component.context)
 
             # Resolve behavior
             for bpn in component.context.behavior_profiles:
@@ -387,11 +402,27 @@ class Model(Contextual):
         for symbol in self.units:
             dimension = self.units[symbol].dimension
             if dimension not in self.dimensions:
-                raise ModelError('Dimension {0} not defined for unit {1}'\
-                                 .format(dimension, symbol))
+                self.raise_error('Dimension {0} not defined for unit {1}'\
+                                 .format(dimension, symbol),
+                                 self.context)
 
         # Resolve global context
         self.resolve_context(self.context)
+
+    def raise_error(self, message, context):
+        s = 'Model error in lems'
+
+        context_name_stack = []
+        while context != None:
+            context_name_stack.insert(0, context.name)
+            context = context.parent
+
+        for context_name in context_name_stack:
+            s += '.' + context_name
+            
+        s += ':\n  ' + message
+
+        raise ModelError(s)
     
     #####################################################################33
 

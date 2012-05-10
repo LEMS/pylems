@@ -192,7 +192,7 @@ class LEMSParser(Parser):
         @param node: Current node being parsed.
         @type node: xml.etree.Element
 
-        @self.raise_error: Raised when an unexpected nested tag is found.
+        @raise ParseError: Raised when an unexpected nested tag is found.
         """
 
         #self.prefix += '  '
@@ -397,7 +397,7 @@ class LEMSParser(Parser):
         @param type: Type of this component.
         @type type: string
 
-        @self.raise_error: Raised when the component does not have an id.
+        @raise ParseError: Raised when the component does not have an id.
         """
 
         if self.current_context.context_type == Context.GLOBAL:
@@ -428,7 +428,7 @@ class LEMSParser(Parser):
         self.current_context.add_component(component)
             
         for key in node.attrib:
-            if key != 'id' and key != 'type':
+            if key.lower() != 'id' and key.lower() != 'type':
                 param = Parameter(key, '__dimension_inherited__')
                 param.set_value(node.attrib[key])
                 component.add_parameter(param)
@@ -467,6 +467,12 @@ class LEMSParser(Parser):
         component = Component(id, self.current_context, type, extends)
         self.current_context.add_component(component)
 
+        for key in node.attrib:
+            if key.lower() != 'id' and key.lower() != 'type':
+                param = Parameter(key, '__dimension_inherited__')
+                param.set_value(node.attrib[key])
+                component.add_parameter(param)
+                
         self.push_context(component.context)
         self.process_nested_tags(node)
         self.pop_context()
@@ -504,7 +510,7 @@ class LEMSParser(Parser):
         @param node: Node containing the <ComponentType> element
         @type node: xml.etree.Element
 
-        @self.raise_error: Raised when the component type does not have a
+        @raise ParseError: Raised when the component type does not have a
         name.
         """
         
@@ -552,7 +558,7 @@ class LEMSParser(Parser):
         @param node: Node containing the <Dimension> element
         @type node: xml.etree.Element
 
-        @self.raise_error: When the name is not a string or if the
+        @raise ParseError: When the name is not a string or if the
         dimension is not a signed integer.
         """
         
@@ -594,7 +600,7 @@ class LEMSParser(Parser):
         @param node: Node containing the <Exposure> element
         @type node: xml.etree.Element
 
-        @self.raise_error: Raised when the exposure name is not
+        @raise ParseError: Raised when the exposure name is not
         being defined in the context of a component type.
         """
 
@@ -612,7 +618,7 @@ class LEMSParser(Parser):
         @param node: Node containing the <Fixed> element
         @type node: xml.etree.Element
 
-        @self.raise_error: Raised when
+        @raise ParseError: Raised when
         """
 
         try:
@@ -759,8 +765,8 @@ class LEMSParser(Parser):
         @param node: Node containing the <Parameter> element
         @type node: xml.etree.Element
 
-        @self.raise_error: Raised when the parameter does not have a name.
-        @self.raise_error: Raised when the parameter does not have a
+        @raise ParseError: Raised when the parameter does not have a name.
+        @raise ParseError: Raised when the parameter does not have a
         dimension.
         """
         
@@ -923,7 +929,7 @@ class LEMSParser(Parser):
         @param node: Node containing the <StateVariable> element
         @type node: xml.etree.Element
 
-        @self.raise_error: Raised when the state variable is not
+        @raise ParseError: Raised when the state variable is not
         being defined in the context of a component type.
         """
 
@@ -982,7 +988,7 @@ class LEMSParser(Parser):
         @param node: Node containing the <TimeDerivative> element
         @type node: xml.etree.Element
 
-        @self.raise_error: Raised when the time derivative is not
+        @raise ParseError: Raised when the time derivative is not
         being defined in the context of a component type.
         """
 
@@ -1015,7 +1021,7 @@ class LEMSParser(Parser):
         @param node: Node containing the <Unit> element
         @type node: xml.etree.Element
 
-        @self.raise_error: When the name is not a string or the unit
+        @raise ParseError: When the name is not a string or the unit
         specfications are incorrect.
 
         @raise ModelError: When the unit refers to an undefined dimension.
