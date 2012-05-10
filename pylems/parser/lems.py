@@ -412,16 +412,13 @@ class LEMSParser(Parser):
             component = Component(id, self.current_context, type, None)
         else:
             # Child instantiation
+
             if 'id' in node.lattrib:
                 id = node.lattrib['id']
+                type = node.tag
             else:
-                id = '__id_inherited__' + str(self.id_counter.next())
-
-            type = node.tag
-            ## if 'type' in node.attrib:
-            ##     type = node.attrib['type']
-            ## else:
-            ##     type = '__type_inherited__'
+                id = node.tag
+                type = '__type_inherited__'
 
             component = Component(id, self.current_context, type)
 

@@ -249,62 +249,74 @@ class Model(Contextual):
         resolved.
         """
 
-        if component.id.find('__id_inherited__') == 0:
-            print component.id, component.component_type
-            print context.name, context.parent.name
-            raise Exception()
+        if component.component_type.find('__type_inherited__') == 0:
+            parent = context.lookup_component(context.name)
+            if parent == None:
+                self.raise_error('Unable to resolve component \'{0}\''.\
+                                 format(context.name))
+            parent_type = context.lookup_component_type(parent.component_type)
+            if parent_type == None:
+                self.raise_error('Unable to resolve component type \'{0}\''.\
+                                 format(parent.component_type))
+            component.component_type = parent_type.context.lookup_child(\
+                component.id)
+            if component.component_type == None:
+                self.raise_error('Unable to resolve type for child \'{0}\''.\
+                                 format(component.id))
+            self.resolve_component_from_type(context, component)
         else:
             component_type = context.lookup_component_type(
                 component.component_type)
             
-        if component_type == None:
-            print component.id, component.component_type
-            self.raise_error('Type {0} not found for component {1}'.
-                             format(component.component_type, component.id),
-                             context)
+            if component_type == None:
+                print component.id, component.component_type
+                self.raise_error('Type {0} not found for component {1}'.
+                                 format(component.component_type,
+                                        component.id),
+                                 context)
 
-        this_context = component.context
-        type_context = component_type.context
+            this_context = component.context
+            type_context = component_type.context
 
-        for pn in type_context.parameters:
-            pt = type_context.parameters[pn]
-            if pn in this_context.parameters:
-                pc = this_context.parameters[pn]
+            for pn in type_context.parameters:
+                pt = type_context.parameters[pn]
+                if pn in this_context.parameters:
+                    pc = this_context.parameters[pn]
 
-                if pc.value:
-                    value = pc.value
-                else:
-                    value = pt.value
-                    
-                if pc.dimension == '__dimension_inherited__':
-                    if pt.fixed:
-                        np = Parameter(pn, pt.dimension, pt.fixed, value)
+                    if pc.value:
+                        value = pc.value
                     else:
-                        np = Parameter(pn, pt.dimension, pc.fixed, value)
-                    this_context.parameters[pn] = np
-            else:
-                this_context.parameters[pn] = pt.copy()
+                        value = pt.value
+                    
+                    if pc.dimension == '__dimension_inherited__':
+                        if pt.fixed:
+                            np = Parameter(pn, pt.dimension, pt.fixed, value)
+                        else:
+                            np = Parameter(pn, pt.dimension, pc.fixed, value)
+                        this_context.parameters[pn] = np
+                else:
+                    this_context.parameters[pn] = pt.copy()
 
-            self.resolve_parameter_value(this_context.parameters[pn],
-                                         this_context)
+                self.resolve_parameter_value(this_context.parameters[pn],
+                                             this_context)
 
-        for pn in this_context.parameters:
-            pc = this_context.parameters[pn]
-            if pc.dimension == '__dimension_inherited__':
-                if pn in type_context.texts:
-                    pc.dimension = '__text__'
-                    this_context.texts[pn] = type_context.texts[pn]
-                elif pn in type_context.paths:
-                    pc.dimension = '__path__'
-                    this_context.paths[pn] = type_context.paths[pn]
-                elif pn in type_context.component_refs:
-                    pc.dimension = '__component_ref__'
-                    cf = type_context.component_refs[pn]
-                    this_context.component_refs[pn] = pc.value
+            for pn in this_context.parameters:
+                pc = this_context.parameters[pn]
+                if pc.dimension == '__dimension_inherited__':
+                    if pn in type_context.texts:
+                        pc.dimension = '__text__'
+                        this_context.texts[pn] = type_context.texts[pn]
+                    elif pn in type_context.paths:
+                        pc.dimension = '__path__'
+                        this_context.paths[pn] = type_context.paths[pn]
+                    elif pn in type_context.component_refs:
+                        pc.dimension = '__component_ref__'
+                        cf = type_context.component_refs[pn]
+                        this_context.component_refs[pn] = pc.value
 
-        this_context.behavior_profiles = type_context.behavior_profiles
-        bpn = type_context.selected_behavior_profile
-        this_context.selected_behavior_profile = bpn
+            this_context.behavior_profiles = type_context.behavior_profiles
+            bpn = type_context.selected_behavior_profile
+            this_context.selected_behavior_profile = bpn
 
     def resolve_regime(self, context, regime):
         """

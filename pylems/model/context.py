@@ -356,6 +356,26 @@ class Context(PyLEMSBase):
         else:
             return None
 
+    def lookup_child(self, name):
+        """
+        Searches the current context and parent contexts for a child
+        with the given name.
+
+        @param name: Name of the component.
+        @type name: string
+
+        @return: Component type for the child, or None on failure.
+        @rtype: string
+        """
+
+        if name in self.child_defs:
+            return self.child_defs[name]
+        elif self.parent:
+            return self.parent.lookup_child(name)
+        else:
+            return None
+
+
     def lookup_parameter(self, parameter_name):
         """
         Looks up a parameter by name within this context.
