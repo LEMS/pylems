@@ -80,15 +80,19 @@ class Runnable(Reflective):
         self.children[id] = runnable
 
     def add_event_in_port(self, port):
-        print self.id, port, 'in'
         if port not in self.event_in_counters:
             self.event_in_counters[port] = 0
-            
+
+    def inc_event_in(self, port):
+        self.event_in_counters[port] += 1
+        
     def add_event_out_port(self, port):
-        print self.id, port, 'out'
         if port not in self.event_out_callbacks:
             self.event_out_callbacks[port] = []
 
+    def register_event_out_link(self, port, runnable, remote_port):
+        self.event_out_callbacks[port].append((runnable, remote_port))
+        
     def register_event_out_callback(self, port, callback):
         if port in self.event_out_callbacks:
             self.event_out_callbacks[port].append(callback)
@@ -112,7 +116,11 @@ class Runnable(Reflective):
             self.children[cid].reset_time()
 
     def single_step(self, dt):
-        print 'Single stepping {0}'.format(self.id)
+        #print 'Single stepping {0}'.format(self.id)
+        
+        self.run_preprocessing_event_handlers(self)
+        self.update_shadow_variables()
+
         self.update_state_variables(self, dt)
         self.update_shadow_variables()
 
@@ -123,6 +131,9 @@ class Runnable(Reflective):
 
         for cid in self.children:
             self.children[cid].single_step(dt)
+
+        if 'v' in self.__dict__:
+            print self.v
 
         self.time_completed += self.time_step
         if self.time_completed >= self.time_total:

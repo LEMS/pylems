@@ -37,9 +37,9 @@ try:
     model = parser.get_model()
     
     print 'Resolving model'
-    print model
+    #print model
     model.resolve_model()
-    print model
+    #print model
 
     print 'Building simulation'
     sim = SimulationBuilder(model).build()

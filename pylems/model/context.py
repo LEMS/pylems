@@ -74,7 +74,7 @@ class Context(PyLEMSBase):
         @type: dict(string -> pylems.model.behavior.Behavior) """
 
         self.selected_behavior_profile = None
-        """ Name of the selected brhavior profile.
+        """ Name of the selected behavior profile.
         @type: pylems.model.behavior.Behavior """
 
         self.exposures = []

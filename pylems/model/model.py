@@ -323,6 +323,8 @@ class Model(Contextual):
             for port in type_context.event_out_ports:
                 this_context.event_out_ports.append(port)
 
+            this_context.structure = type_context.structure
+
     def resolve_regime(self, context, regime):
         """
         Resolves name references in the given behavior regime to actual

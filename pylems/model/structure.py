@@ -49,4 +49,3 @@ class Structure(PyLEMSBase):
 
         self.event_connections.append((from_component, from_port,
                                        to_component, to_port))
-

@@ -68,7 +68,7 @@ class SimulationBuilder(PyLEMSBase):
         """
         
         runnable = Runnable(component.id, parent)
-        
+
         context = component.context
         record_target_backup = self.current_record_target
 
@@ -90,8 +90,6 @@ class SimulationBuilder(PyLEMSBase):
         for port in context.event_out_ports:
             runnable.add_event_out_port(port)
 
-        self.build_structure(component, runnable, structure)
-
         if context.selected_behavior_profile:
             self.add_runnable_behavior(component, runnable,
                                        context.selected_behavior_profile)
@@ -107,16 +105,57 @@ class SimulationBuilder(PyLEMSBase):
             child = context.components[cn]
             runnable.add_child(child.id, self.build_runnable(child, runnable))
 
+        self.build_structure(component, runnable, context.structure)
+
         self.current_record_target = record_target_backup
-        
+
         return runnable
 
-    def build_structure(selfr, component, runnable, structure):
-        pass
+    def build_structure(self, component, runnable, structure):
+        """
+        Adds structure to a runnable component based on the structure
+        specifications in the component model.
+
+        @param component: Component model containing structure specifications.
+        @type component: pylems.model.component.Component
+
+        @param runnable: Runnable component to which structure is to be added.
+        @type runnable: pylems.sim.runnable.Runnable
+
+        @param structure: The structure object to be used to add
+        structure code in the runnable component.
+        @type structure: pylems.model.structure.Structure
+        """
+
+        for (from_component, from_port,
+             to_component, to_port) in structure.event_connections:
+            self.add_event_connection(runnable, from_component, from_port,
+                                      to_component, to_port)
+
+    def add_event_connection(self, runnable,
+                             from_component, from_port,
+                             to_component, to_port):
+        if from_component in runnable.children:
+            from_ = runnable.children[from_component]
+        else:
+            raise SimBuildError('Unable to find component \'{0}\' '
+                                'under \'{1}\''.format(\
+                                    from_component, runnable.id))
+
+        if to_component in runnable.children:
+            to = runnable.children[to_component]
+        else:
+            raise SimBuildError('Unable to find component \'{0}\' '
+                                'under \'{1}\''.format(\
+                                    to_component, runnable.id))
+
+        from_.register_event_out_callback(\
+            from_port, lambda: to.inc_event_in(to_port))
+            
 
     def add_runnable_behavior(self, component, runnable, behavior_profile):
         """
-        Add behavior to a runnable component based on the behavior
+        Adds behavior to a runnable component based on the behavior
         specifications in the component model.
 
         @param component: Component model containing behavior specifications.
@@ -307,8 +346,6 @@ class SimulationBuilder(PyLEMSBase):
         on_event_code += ['self.event_in_counters[\'{0}\'] = 0'.\
                           format(on_event.port),]
 
-        for code in on_event_code:
-            print code
         return on_event_code
             
     def build_action(self, action):
@@ -358,5 +395,4 @@ class SimulationBuilder(PyLEMSBase):
         event_out_code = 'for c in self.event_out_callbacks[\'{0}\']: c()'.\
                          format(event_out.port)
         
-        print event_out_code
         return event_out_code

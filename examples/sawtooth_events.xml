@@ -50,7 +50,7 @@
   </ComponentType>
   
   <SpikeConnector id="spikeconn1">
-    <Sp1 period="10s"/>
+    <Sp1 period="1s"/>
     <St1 threshold="1 V"
 	 dV_per_dt="0.1 V_per_t"/>
   </SpikeConnector>

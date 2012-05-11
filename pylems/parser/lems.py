@@ -654,7 +654,6 @@ class LEMSParser(Parser):
             self.raise_error(('Event port direction must be \'in\' '
                               'or \'out\''))
 
-        print 'EventPort ', name, direction
         self.current_context.add_event_port(name, direction)
 
     def parse_exposure(self, node):
@@ -1035,7 +1034,7 @@ class LEMSParser(Parser):
 
         old_structure = self.current_structure
         self.current_structure = self.current_context.structure
-        
+
         self.process_nested_tags(node)
         
         self.current_structure = old_structure
