@@ -79,6 +79,10 @@ class LEMSParser(Parser):
     """ Current event_handler being parsed.
     @type: pylems.model.behavior.EventHandler """
 
+    current_structure = None
+    """ Current structure being parsed.
+    @type: pylems.model.structure.Structure """
+
     xml_node_stack = []
     """ XML node stack.
     @type: list(xml.etree.Element) """
@@ -144,7 +148,7 @@ class LEMSParser(Parser):
 
         self.tag_parse_table = dict()
         self.tag_parse_table['behavior'] = self.parse_behavior
-        self.tag_parse_table['build'] = self.parse_build
+        #self.tag_parse_table['build'] = self.parse_build
         self.tag_parse_table['child'] = self.parse_child
         self.tag_parse_table['children'] = self.parse_children
         self.tag_parse_table['component'] = self.parse_component
@@ -153,6 +157,7 @@ class LEMSParser(Parser):
         self.tag_parse_table['defaultrun'] = self.parse_default_run
         self.tag_parse_table['derivedvariable'] = self.parse_derived_variable
         self.tag_parse_table['dimension'] = self.parse_dimension
+        self.tag_parse_table['eventconnection'] = self.parse_event_connection
         self.tag_parse_table['eventout'] = self.parse_event_out
         self.tag_parse_table['eventport'] = self.parse_event_port
         self.tag_parse_table['exposure'] = self.parse_exposure
@@ -170,6 +175,7 @@ class LEMSParser(Parser):
         self.tag_parse_table['show'] = self.parse_show
         self.tag_parse_table['stateassignment'] = self.parse_state_assignment
         self.tag_parse_table['statevariable'] = self.parse_state_variable
+        self.tag_parse_table['structure'] = self.parse_structure
         self.tag_parse_table['text'] = self.parse_text
         self.tag_parse_table['timederivative'] = self.parse_time_derivative
         self.tag_parse_table['unit'] = self.parse_unit
@@ -326,15 +332,15 @@ class LEMSParser(Parser):
         
         self.current_regime = old_regime
 
-    def parse_build(self, node):
-        """
-        Parses <Build>
+    ## def parse_build(self, node):
+    ##     """
+    ##     Parses <Build>
 
-        @param node: Node containing the <Build> element
-        @type node: xml.etree.Element
-        """
+    ##     @param node: Node containing the <Build> element
+    ##     @type node: xml.etree.Element
+    ##     """
 
-        pass
+    ##     pass
 
     def parse_child(self, node):
         """
@@ -592,6 +598,32 @@ class LEMSParser(Parser):
         action = EventOut(port)
 
         self.current_event_handler.add_action(action)
+        
+    def parse_event_connection(self, node):
+        """
+        Parses <EventConnection>
+
+        @param node: Node containing the <EventConnection> element
+        @type node: xml.etree.Element
+        """
+
+        if self.current_structure == None:
+            self.raise_error('<EventConnection> must be defined inside a ' +
+                             'structure definition')
+
+        if 'from' in node.lattrib:
+            from_ = node.lattrib['from']
+        else:
+            self.raise_error('\'from\' attribute not provided for ' +
+                             '<EventConnection>')
+
+        if 'to' in node.lattrib:
+            to = node.lattrib['to']
+        else:
+            self.raise_error('\'to\' attribute not provided for ' +
+                             '<EventConnection>')
+
+        self.current_structure.add_event_connection(from_, to)
         
     def parse_event_port(self, node):
         """
@@ -989,6 +1021,25 @@ class LEMSParser(Parser):
 
         self.current_regime.add_state_variable(name, exposure, dimension)
             
+    def parse_structure(self, node):
+        """
+        Parses <Structure>
+
+        @param node: Node containing the <Structure> element
+        @type node: xml.etree.Element
+        """
+
+        if self.current_context.context_type != Context.COMPONENT_TYPE:
+            self.raise_error('Structure must be defined inside a ' +
+                             'component type')
+
+        old_structure = self.current_structure
+        self.current_structure = self.current_context.structure
+        
+        self.process_nested_tags(node)
+        
+        self.current_structure = old_structure
+
     def parse_text(self, node):
         """
         Parses <Text>

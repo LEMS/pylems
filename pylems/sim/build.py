@@ -90,10 +90,19 @@ class SimulationBuilder(PyLEMSBase):
         for port in context.event_out_ports:
             runnable.add_event_out_port(port)
 
+        self.build_structure(component, runnable, structure)
+
         if context.selected_behavior_profile:
             self.add_runnable_behavior(component, runnable,
                                        context.selected_behavior_profile)
-
+        else:
+            runnable.add_method('update_state_variables', ['self', 'dt'],
+                                [])
+            runnable.add_method('run_preprocessing_event_handlers', ['self'],
+                                [])
+            runnable.add_method('run_postprocessing_event_handlers', ['self'],
+                                [])
+            
         for cn in context.components:
             child = context.components[cn]
             runnable.add_child(child.id, self.build_runnable(child, runnable))
@@ -101,6 +110,9 @@ class SimulationBuilder(PyLEMSBase):
         self.current_record_target = record_target_backup
         
         return runnable
+
+    def build_structure(selfr, component, runnable, structure):
+        pass
 
     def add_runnable_behavior(self, component, runnable, behavior_profile):
         """

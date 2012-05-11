@@ -9,6 +9,7 @@ Context storage
 from pylems.base.base import PyLEMSBase
 from pylems.base.errors import ModelError
 from pylems.model.behavior import Behavior
+from pylems.model.structure import Structure
 
 class Context(PyLEMSBase):
     """
@@ -95,6 +96,11 @@ class Context(PyLEMSBase):
         self.event_out_ports = []
         """ List of outgoing event port names.
         @type: list(string) """
+
+        self.structure = Structure()
+        """ Structure object detailing structural aspects of this component.
+        @type: pylems.model.structure.Structure """
+        
 
     def add_component_type(self, component_type):
         """

@@ -46,7 +46,7 @@ class Reflective(object):
             variable, initial_value)
         exec compile(ast.parse(code_string), '<unknown>', 'exec')
         
-    def add_derived_variable(self, variable, initial_value):
+    def add_derived_variable(self, variable):
         self.derived_variables.append(variable)
     
         code_string = 'self.{0} = 0'.format(\
