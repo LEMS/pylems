@@ -322,9 +322,9 @@ class Context(PyLEMSBase):
         """
 
         if direction == 'in':
-            self.event_in_ports += 'name'
+            self.event_in_ports.append(name)
         else:
-            self.event_out_ports += 'name'
+            self.event_out_ports.append(name)
         
     def lookup_component_type(self, name):
         """

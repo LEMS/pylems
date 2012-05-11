@@ -44,11 +44,9 @@
     <Child name="Sp1" type="SpikeGenerator"/>
     <Child name="St1" type="SawtoothGenerator"/>
     
-    <Behavior>
-      <Build>
-	<EventConnection from="Sp1" to="St1" srcport='spike-out' dstport='spike-in'/>
-      </Build>
-    </Behavior>
+    <Structure>
+      <EventConnection from="Sp1:spike-out" to="St1:spike-in"/>
+    </Structure>
   </ComponentType>
   
   <SpikeConnector id="spikeconn1">

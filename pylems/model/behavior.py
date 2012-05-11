@@ -1,5 +1,5 @@
 """
-Behavior storage
+Component behavior storage.
 
 @author: Gautham Ganapathy
 @organization: Textensor (http://textensor.com)
@@ -333,6 +333,30 @@ class StateAssignment(Action):
 
         return self.variable + ' <- ' + self.value + ' | ' + \
                str(self.expression_tree)
+
+class EventOut(Action):
+    """
+    Stores a state assignment expression.
+    """
+
+    def __init__(self, port):
+        """
+        Constructor.
+
+        @param port: Name of a port
+        @type port: string
+        """
+
+        Action.__init__(self, Action.EVENT_OUT)
+
+        self.port = port
+        """ Name of the port to which the event needs to be sent.
+        @type: string """
+
+    def __str__(self):
+        """ Generates a string representation of this state assigment """
+
+        return 'Event -> ' + self.port
 
 class Regime(PyLEMSBase):
     """

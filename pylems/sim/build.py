@@ -85,6 +85,11 @@ class SimulationBuilder(PyLEMSBase):
                                             format(component_name))
                     self.sim.add_runnable(ref.id, self.build_runnable(ref))
 
+        for port in context.event_in_ports:
+            runnable.add_event_in_port(port)
+        for port in context.event_out_ports:
+            runnable.add_event_out_port(port)
+
         if context.selected_behavior_profile:
             self.add_runnable_behavior(component, runnable,
                                        context.selected_behavior_profile)
@@ -242,6 +247,8 @@ class SimulationBuilder(PyLEMSBase):
         
         if event_handler.type == EventHandler.ON_CONDITION:
             return self.build_on_condition(event_handler)
+        elif event_handler.type == EventHandler.ON_EVENT:
+            return self.build_on_event(event_handler)
         else:
             return []
 
@@ -266,6 +273,32 @@ class SimulationBuilder(PyLEMSBase):
 
         return on_condition_code
             
+    def build_on_event(self, on_event):
+        """
+        Build OnEvent event handler code.
+
+        @param on_event: OnEvent event handler object
+        @type on_event: pylems.model.behavior.OnEvent
+
+        @return: Generated OnEvent code
+        @rtype: list(string)
+        """
+        
+        on_event_code = []
+
+        on_event_code += ['count = self.event_in_counters[\'{0}\']'.\
+                          format(on_event.port),
+                          'while count > 0:',
+                          '    count -= 1']
+        for action in on_event.actions:
+            on_event_code += ['    ' + self.build_action(action)]
+        on_event_code += ['self.event_in_counters[\'{0}\'] = 0'.\
+                          format(on_event.port),]
+
+        for code in on_event_code:
+            print code
+        return on_event_code
+            
     def build_action(self, action):
         """
         Build event handler action code.
@@ -279,6 +312,8 @@ class SimulationBuilder(PyLEMSBase):
         
         if action.type == Action.STATE_ASSIGNMENT:
             return self.build_state_assignment(action)
+        if action.type == Action.EVENT_OUT:
+            return self.build_event_out(action)
         else:
             return ''
 
@@ -296,3 +331,20 @@ class SimulationBuilder(PyLEMSBase):
         return 'self.{0} = {1}'.format(\
             state_assignment.variable,
             self.build_expression_from_tree(state_assignment.expression_tree))
+
+    def build_event_out(self, event_out):
+        """
+        Build event out code.
+
+        @param event_out: event out object
+        @type event_out: pylems.model.behavior.StateAssignment
+
+        @return: Generated event out code
+        @rtype: string
+        """
+
+        event_out_code = 'for c in self.event_out_callbacks[\'{0}\']: c()'.\
+                         format(event_out.port)
+        
+        print event_out_code
+        return event_out_code

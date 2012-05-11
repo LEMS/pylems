@@ -8,6 +8,7 @@ Base class for runnable components.
 
 from pylems.base.base import PyLEMSBase
 from pylems.base.util import Stack
+from pylems.base.errors import SimBuildError
 import ast
 
 class Reflective(object):
@@ -72,8 +73,30 @@ class Runnable(Reflective):
 
         self.recorded_variables = {}
 
+        self.event_out_callbacks = {}
+        self.event_in_counters = {}
+
     def add_child(self, id, runnable):
         self.children[id] = runnable
+
+    def add_event_in_port(self, port):
+        print self.id, port, 'in'
+        if port not in self.event_in_counters:
+            self.event_in_counters[port] = 0
+            
+    def add_event_out_port(self, port):
+        print self.id, port, 'out'
+        if port not in self.event_out_callbacks:
+            self.event_out_callbacks[port] = []
+
+    def register_event_out_callback(self, port, callback):
+        if port in self.event_out_callbacks:
+            self.event_out_callbacks[port].append(callback)
+        else:
+            raise SimBuildError('No event out port \'{0}\' in '
+                                'component \'{1}\''.format(port, self.name))
+                                    
+            
 
     def add_variable_recorder(self, variable):
         self.recorded_variables[variable] = []

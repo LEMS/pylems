@@ -129,8 +129,8 @@ class LEMSParser(Parser):
                                                 'exposure', 'eventport', 
                                                 'fixed', 'link', 'parameter',
                                                 'path', 'requirement',
-                                                'text']
-        self.valid_children['behavior'] = ['build', 'derivedvariable',
+                                                'structure', 'text']
+        self.valid_children['behavior'] = ['derivedvariable',
                                            'oncondition', 'onentry',
                                            'onevent',
                                            'onstart', 'record',
@@ -140,6 +140,7 @@ class LEMSParser(Parser):
         self.valid_children['onentry'] = ['eventout', 'stateassignment']
         self.valid_children['onevent'] = ['eventout', 'stateassignment']
         self.valid_children['onstart'] = ['eventout', 'stateassignment']
+        self.valid_children['structure'] = ['eventconnection']
 
         self.tag_parse_table = dict()
         self.tag_parse_table['behavior'] = self.parse_behavior
@@ -578,8 +579,20 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        pass
+        if self.current_event_handler == None:
+            self.raise_error('<EventOut> must be defined inside an ' +
+                             'event handler in a behavior profile or regime')
 
+        if 'port' in node.lattrib:
+            port = node.lattrib['port']
+        else:
+            self.raise_error('\'port\' attribute not provided for ' +
+                             '<StateAssignment>')
+
+        action = EventOut(port)
+
+        self.current_event_handler.add_action(action)
+        
     def parse_event_port(self, node):
         """
         Parses <EventPort>
@@ -608,7 +621,8 @@ class LEMSParser(Parser):
         if direction != 'in' and direction != 'out':
             self.raise_error(('Event port direction must be \'in\' '
                               'or \'out\''))
-        
+
+        print 'EventPort ', name, direction
         self.current_context.add_event_port(name, direction)
 
     def parse_exposure(self, node):

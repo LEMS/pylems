@@ -318,6 +318,11 @@ class Model(Contextual):
             bpn = type_context.selected_behavior_profile
             this_context.selected_behavior_profile = bpn
 
+            for port in type_context.event_in_ports:
+                this_context.event_in_ports.append(port)
+            for port in type_context.event_out_ports:
+                this_context.event_out_ports.append(port)
+
     def resolve_regime(self, context, regime):
         """
         Resolves name references in the given behavior regime to actual
@@ -601,6 +606,16 @@ class Model(Contextual):
             for name in context.behavior_profiles:
                 behavior = context.behavior_profiles[name]
                 s += self.behavior2str(behavior, prefix + Model.tab*2)
+
+        if context.event_in_ports:
+            s += prefix + 'Event in ports:\n'
+            for port in context.event_in_ports:
+                s += prefix + Model.tab + port + '\n'
+
+        if context.event_out_ports:
+            s += prefix + 'Event out ports:\n'
+            for port in context.event_in_ports:
+                s += prefix + Model.tab + port + '\n'
 
         return s
     
