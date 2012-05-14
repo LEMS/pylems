@@ -233,6 +233,7 @@ class Model(Contextual):
                 this_context.parameters[pn] = base_context.parameters[pn].\
                                               copy()
 
+        component.component_type = base.component_type
         component.extends = None
 
     def resolve_component_from_type(self, context, component):
@@ -249,7 +250,7 @@ class Model(Contextual):
         resolved.
         """
 
-        if component.component_type.find('__type_inherited__') == 0:
+        if False and component.component_type.find('__type_inherited__') == 0:
             raise Exception('eee')
             parent = context.lookup_component(context.name)
             if parent == None:
@@ -394,9 +395,9 @@ class Model(Contextual):
         """
 
         self.resolve_context(component.context)
-        self.resolve_component_from_type(context, component)
         if component.extends:
             self.resolve_extended_component(context, component)
+        self.resolve_component_from_type(context, component)
         for pn in component.context.parameters:
             p = component.context.parameters[pn]
             if p.dimension == '__dimension_inherited__':

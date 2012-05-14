@@ -452,7 +452,7 @@ class LEMSParser(Parser):
             self.current_context.add_child(component)
             
         for key in node.attrib:
-            if key.lower() != 'id' and key.lower() != 'type':
+            if key.lower() not in ['extends', 'id', 'type']:
                 param = Parameter(key, '__dimension_inherited__')
                 param.set_value(node.attrib[key])
                 component.add_parameter(param)
@@ -492,7 +492,7 @@ class LEMSParser(Parser):
         self.current_context.add_component(component)
 
         for key in node.attrib:
-            if key.lower() != 'id' and key.lower() != 'type':
+            if key.lower() not in ['extends', 'id', 'type']:
                 param = Parameter(key, '__dimension_inherited__')
                 param.set_value(node.attrib[key])
                 component.add_parameter(param)
