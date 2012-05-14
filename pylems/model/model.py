@@ -250,6 +250,7 @@ class Model(Contextual):
         """
 
         if component.component_type.find('__type_inherited__') == 0:
+            raise Exception('eee')
             parent = context.lookup_component(context.name)
             if parent == None:
                 self.raise_error('Unable to resolve component \'{0}\''.\
@@ -381,6 +382,69 @@ class Model(Contextual):
         for rn in behavior.regimes:
             self.resolve_regime(context, regime)
             
+    def resolve_component(self, context, component):
+        """
+        Resolves the specified component.
+
+        @param context: Context object containing the component.
+        @type context: pylems.model.context.Context
+
+        @param component: Component to be resolved.
+        @type component: pylems.model.component.Component
+        """
+
+        self.resolve_context(component.context)
+        self.resolve_component_from_type(context, component)
+        if component.extends:
+            self.resolve_extended_component(context, component)
+        for pn in component.context.parameters:
+            p = component.context.parameters[pn]
+            if p.dimension == '__dimension_inherited__':
+                self.raise_error(('The dimension for parameter {0} in '
+                                  'component {1} could not be resolved').\
+                                 format(pn, component.id),
+                                 component.context)
+
+        # Resolve behavior
+        for bpn in component.context.behavior_profiles:
+            bp = component.context.behavior_profiles[bpn]
+            self.resolve_behavior_profile(component.context, bp)
+
+    def resolve_child(self, context, child):
+        """
+        Resolves the specified child component.
+
+        @param context: Context object containing the component.
+        @type context: pylems.model.context.Context
+
+        @param child: Child component to be resolved.
+        @type child: pylems.model.component.Component
+        """
+
+        parent = context.lookup_component(context.name)
+        if parent == None:
+            self.raise_error('Unable to resolve component \'{0}\''.\
+                             format(context.name))
+        parent_type = context.lookup_component_type(parent.component_type)
+        if parent_type == None:
+            self.raise_error('Unable to resolve component type \'{0}\''.\
+                             format(parent.component_type))
+
+        ptctx = parent_type.context
+
+        if child.id in ptctx.child_defs:
+            if child.component_type == '__type_inherited__':
+                child.component_type = ptctx.child_defs[child.id]
+            else:
+                raise Exception('asdasd')
+            context.add_component(child)
+        else:
+            for cdn in ptctx.children_defs:
+                cdt = ptctx.children_defs[cdn]
+                if child.component_type == cdt:
+                    context.add_component(child)
+                    break
+
     def resolve_context(self, context):
         """
         Resolves name references in the given context to actual objects.
@@ -399,25 +463,15 @@ class Model(Contextual):
             if component_type.extends:
                 self.resolve_extended_component_type(context, component_type)
             
+        # Resolve children
+        if context.children:
+            for child in context.children:
+                self.resolve_child(context, child)
+
         # Resolve components
         for cid in context.components:
             component = context.components[cid]
-            self.resolve_context(component.context)
-            self.resolve_component_from_type(context, component)
-            if component.extends:
-                self.resolve_extended_component(context, component)
-            for pn in component.context.parameters:
-                p = component.context.parameters[pn]
-                if p.dimension == '__dimension_inherited__':
-                    self.raise_error(('The dimension for parameter {0} in '
-                                      'component {1} could not be resolved').\
-                                     format(pn, component.id),
-                                     component.context)
-
-            # Resolve behavior
-            for bpn in component.context.behavior_profiles:
-                bp = component.context.behavior_profiles[bpn]
-                self.resolve_behavior_profile(component.context, bp)
+            self.resolve_component(context, component)
 
     def resolve_model(self):
         """
@@ -566,6 +620,12 @@ class Model(Contextual):
             for cref in context.children_defs:
                 t = context.children_defs[cref]
                 s += prefix + Model.tab + cref + ': ' + t + '\n'
+
+        if context.children:
+            s += prefix + 'Children:\n'
+            for child in context.children:
+                s += prefix + Model.tab + child.id + ': ' + \
+                     child.component_type + '\n'
 
         if context.parameters:
             s += prefix + 'Parameters:\n'

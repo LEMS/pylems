@@ -51,14 +51,18 @@ class Context(PyLEMSBase):
         @type: dict(string -> string) """
 
         self.child_defs = {}
-        """ Dictionary of single-instance child objects defined in this
+        """ Dictionary of single-instance child object definitions in this
         context.
         @type: dict(string -> string) """
         
         self.children_defs = {}
-        """ Dictionary of multi-instance child objects defined in this
+        """ Dictionary of multi-instance child objects definitions in this
         context.
         @type: dict(string -> string) """
+        
+        self.children = []
+        """ List of child objects defined in this context.
+        @type: list(pylems.model.component.Component) """
         
         self.parameters = {}
         """ Dictionary of references to parameters defined in this context.
@@ -133,18 +137,10 @@ class Context(PyLEMSBase):
         current context.
         """
 
-        if self.context_type == Context.GLOBAL:
-            if component.id in self.components:
-                raise ModelError('Duplicate component - ' + component.id)
-            self.components[component.id] = component
-        elif self.context_type == Context.COMPONENT:
-            print component.id
-            print component.component_type
-        else:
-            print component.id
-            print component.component_type            
-            raise ModelError('Component definitions not permitted in \
-                    a component type definition')
+        if component.id in self.components:
+            raise ModelError('Duplicate component - ' + component.id)
+
+        self.components[component.id] = component
 
     def add_component_ref(self, name, type):
         """
@@ -166,7 +162,26 @@ class Context(PyLEMSBase):
         
         self.component_refs[name] = type
 
-    def add_child(self, name, type):
+    def add_child(self, child):
+        """
+        Adds a child object to the list of child objects in the
+        current context.
+
+        @param child: Child object.
+        @type name: pylems.model.component.Component
+
+        @raise ModelError: Raised when a child is instantiated inside a
+        component type.
+        """
+
+        if self.context_type == Context.COMPONENT_TYPE:
+            raise ModelError('Component definitions not permitted in \
+                    a component type definition')
+        
+        self.children.append(child)
+
+
+    def add_child_def(self, name, type):
         """
         Adds a child object definition to the list of single-instance child
         object definitions in the current context.
@@ -186,7 +201,7 @@ class Context(PyLEMSBase):
         
         self.child_defs[name] = type
 
-    def add_children(self, name, type):
+    def add_children_def(self, name, type):
         """
         Adds a child object definition to the list of multi-instance child
         object definitions in the current context.

@@ -144,12 +144,16 @@ class LEMSParser(Parser):
         self.valid_children['onentry'] = ['eventout', 'stateassignment']
         self.valid_children['onevent'] = ['eventout', 'stateassignment']
         self.valid_children['onstart'] = ['eventout', 'stateassignment']
-        self.valid_children['structure'] = ['eventconnection']
+        self.valid_children['structure'] = ['childinstance',
+                                            'eventconnection',
+                                            'foreach',
+                                            'multiinstantiate']
 
         self.tag_parse_table = dict()
         self.tag_parse_table['behavior'] = self.parse_behavior
         #self.tag_parse_table['build'] = self.parse_build
         self.tag_parse_table['child'] = self.parse_child
+        self.tag_parse_table['childinstance'] = self.parse_child_instance
         self.tag_parse_table['children'] = self.parse_children
         self.tag_parse_table['component'] = self.parse_component
         self.tag_parse_table['componentref'] = self.parse_component_ref
@@ -162,8 +166,11 @@ class LEMSParser(Parser):
         self.tag_parse_table['eventport'] = self.parse_event_port
         self.tag_parse_table['exposure'] = self.parse_exposure
         self.tag_parse_table['fixed'] = self.parse_fixed
+        self.tag_parse_table['foreach'] = self.parse_foreach
         self.tag_parse_table['include'] = self.parse_include
         self.tag_parse_table['link'] = self.parse_link
+        self.tag_parse_table['multiinstantiate'] = \
+                                                 self.parse_multi_instantiate
         self.tag_parse_table['oncondition'] = self.parse_on_condition
         self.tag_parse_table['onevent'] = self.parse_on_event
         self.tag_parse_table['onstart'] = self.parse_on_start
@@ -366,8 +373,18 @@ class LEMSParser(Parser):
             self.raise_error('<Child> must specify a type for the ' +
                              'reference.')
             
-        self.current_context.add_child(name, type)
+        self.current_context.add_child_def(name, type)
 
+    def parse_child_instance(self, node):
+        """
+        Parses <ChildInstance>
+
+        @param node: Node containing the <ChildInstance> element
+        @type node: xml.etree.Element
+        """
+        
+        pass
+    
     def parse_children(self, node):
         """
         Parses <Children>
@@ -392,7 +409,7 @@ class LEMSParser(Parser):
             self.raise_error('<Children> must specify a type for the ' +
                              'reference.')
             
-        self.current_context.add_children(name, type)
+        self.current_context.add_children_def(name, type)
 
     def parse_component_by_typename(self, node, type):
         """
@@ -417,6 +434,9 @@ class LEMSParser(Parser):
             type = node.tag
 
             component = Component(id, self.current_context, type, None)
+
+            self.current_context.add_component(component)
+            
         else:
             # Child instantiation
 
@@ -429,7 +449,7 @@ class LEMSParser(Parser):
 
             component = Component(id, self.current_context, type)
 
-        self.current_context.add_component(component)
+            self.current_context.add_child(component)
             
         for key in node.attrib:
             if key.lower() != 'id' and key.lower() != 'type':
@@ -699,6 +719,16 @@ class LEMSParser(Parser):
                 parameter, '__dimension_inherited__'))
         self.current_context.lookup_parameter(parameter).fix_value(value)
 
+    def parse_foreach(self, node):
+        """
+        Parses <ForEach>
+
+        @param node: Node containing the <ForEach> element
+        @type node: xml.etree.Element
+        """
+
+        pass
+    
     def parse_include(self, node):
         """
         Parses <Include>
@@ -720,13 +750,23 @@ class LEMSParser(Parser):
     def parse_link(self, node):
         """
         Parses <Link>
-
+l
         @param node: Node containing the <Link> element
         @type node: xml.etree.Element
         """
 
         pass
 
+    def parse_multi_instantiate(self, node):
+        """
+        Parses <MultiInstantiate>
+
+        @param node: Node containing the <MultiInstantiate> element
+        @type node: xml.etree.Element
+        """
+        
+        pass
+    
     def parse_on_condition(self, node):
         """
         Parses <OnCondition>
