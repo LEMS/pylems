@@ -1,7 +1,7 @@
 all:	lems-code lems-doc
 
 JAVALEMS = ../LEMS/lems
-TIME = /usr/bin/time -f '%e s'
+TIME = /usr/bin/time -f '%E s'
 #MODELFILE = examples/sawtooth.xml
 #MODELFILE = examples/example1.xml
 MODELFILE = examples/sawtooth_events.xml

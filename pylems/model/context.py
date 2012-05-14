@@ -134,7 +134,7 @@ class Context(PyLEMSBase):
         """
 
         if component.id in self.components:
-            raise ModelError('Duplicate component type - ' + component.id)
+            raise ModelError('Duplicate component - ' + component.id)
 
         self.components[component.id] = component
 
