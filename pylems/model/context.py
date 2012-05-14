@@ -133,10 +133,18 @@ class Context(PyLEMSBase):
         current context.
         """
 
-        if component.id in self.components:
-            raise ModelError('Duplicate component - ' + component.id)
-
-        self.components[component.id] = component
+        if self.context_type == Context.GLOBAL:
+            if component.id in self.components:
+                raise ModelError('Duplicate component - ' + component.id)
+            self.components[component.id] = component
+        elif self.context_type == Context.COMPONENT:
+            print component.id
+            print component.component_type
+        else:
+            print component.id
+            print component.component_type            
+            raise ModelError('Component definitions not permitted in \
+                    a component type definition')
 
     def add_component_ref(self, name, type):
         """
