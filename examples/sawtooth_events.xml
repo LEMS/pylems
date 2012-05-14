@@ -29,10 +29,21 @@
     <Behavior>
       <StateVariable name="v" exposure="v" dimension="voltage"/>
       <TimeDerivative variable="v" value="dV_per_dt"/>
-      <!--<TimeDerivative variable="v" value="1-95*v/100"/>-->
       <OnEvent port="spike-in">
 	<StateAssignment variable="v" value="0"/>
       </OnEvent>
+    </Behavior>
+  </ComponentType>
+
+  <ComponentType name="CurvetoothGenerator">
+    <Parameter name="threshold" dimension="voltage"/>
+    <Exposure name="v" dimension="voltage"/>
+    <Behavior>
+      <StateVariable name="v" exposure="v" dimension="voltage"/>
+      <TimeDerivative variable="v" value="1-95*v/100"/>
+      <OnCondition test="v .gt. threshold">
+	<StateAssignment variable="v" value="0"/>
+      </OnCondition>
     </Behavior>
   </ComponentType>
 
@@ -43,6 +54,7 @@
   <ComponentType name="SpikeConnector">
     <Child name="Sp1" type="SpikeGenerator"/>
     <Child name="St1" type="SawtoothGenerator"/>
+    <Child name="Ct1" type="CurvetoothGenerator"/>
     
     <Structure>
       <EventConnection from="Sp1:spike-out" to="St1:spike-in"/>
@@ -53,11 +65,13 @@
     <Sp1 period="1s"/>
     <St1 threshold="1 V"
 	 dV_per_dt="0.1 V_per_t"/>
+    <Ct1 threshold="1 V"/>
   </SpikeConnector>
   
   <Simulation id="sawtooth" length="10s" step="0.1s" target="spikeconn1">
     <Display id="d0" timeScale="10s" title="Sawtooth waveform">
-      <Line id="V" quantity="St1/v" scale="1s" color="#ff0000"/>        
+      <Line id="V_st1" quantity="St1/v" scale="1s" color="#ff0000"/>        
+      <Line id="V_ct1" quantity="Ct1/v" scale="1s" color="#00ff00"/>        
     </Display>
   </Simulation>
 </Lems>

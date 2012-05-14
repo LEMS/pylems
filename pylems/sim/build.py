@@ -107,6 +107,10 @@ class SimulationBuilder(PyLEMSBase):
 
         self.build_structure(component, runnable, context.structure)
 
+        if context.selected_behavior_profile:
+            self.add_recording_behavior(component, runnable,
+                                        context.selected_behavior_profile)
+            
         self.current_record_target = record_target_backup
 
         return runnable
@@ -228,14 +232,6 @@ class SimulationBuilder(PyLEMSBase):
                 raise SimBuildError(('Invalid component reference {0} in '
                                      '<Run>').format(c.id))
 
-        for rn in regime.records:
-            rec = regime.records[rn]
-            print rn, rec.quantity
-            if self.current_record_target == None:
-                raise SimBuildError('No target available for '
-                                    'recording variables')
-            self.current_record_target.add_variable_recorder(rec.quantity)
-            
     def convert_op(self, op):
         """
         Converts NeuroML arithmetic/logical operators to python equivalents.
@@ -396,3 +392,34 @@ class SimulationBuilder(PyLEMSBase):
                          format(event_out.port)
         
         return event_out_code
+
+    def add_recording_behavior(self, component, runnable, behavior_profile):
+        """
+        Adds recording-related behavior to a runnable component based on
+        the behavior specifications in the component model.
+
+        @param component: Component model containing behavior specifications.
+        @type component: pylems.model.component.Component
+
+        @param runnable: Runnable component to which behavior is to be added.
+        @type runnable: pylems.sim.runnable.Runnable
+
+        @param behavior_profile: The behavior profile to be used to generate
+        behavior code in the runnable component.
+        @type behavior_profile: pylems.model.behavior.Behavior
+
+        @raise SimBuildError: Raised when a target for recording could not be
+        found.
+        """
+        
+        context = component.context
+        regime = behavior_profile.default_regime
+
+        for rn in regime.records:
+            rec = regime.records[rn]
+            print rn, rec.quantity
+            if self.current_record_target == None:
+                raise SimBuildError('No target available for '
+                                    'recording variables')
+            self.current_record_target.add_variable_recorder(rec.quantity)
+            

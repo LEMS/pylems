@@ -59,16 +59,6 @@ class Parameter(PyLEMSBase):
         @type: Number """
 
 
-    def copy(self):
-        """
-        Makes a copy of this parameter.
-
-        @return: A copy of this parameter.
-        @rtype: pylems.model.parameter.Parameter
-        """
-
-        return Parameter(self.name, self.dimension, self.fixed, self.value)
-
     def fix_value(self, value):
         """
         Fixes the value of this parameter.
@@ -77,7 +67,8 @@ class Parameter(PyLEMSBase):
         For example, "30mV" or "45 kg"
         @type value: string
 
-        @raise ModelError: Raised ModelError if the parameter is already fixed.
+        @raise ModelError: Raised ModelError if the parameter is already
+        fixed.
         """
 
         if self.fixed:

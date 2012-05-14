@@ -78,6 +78,7 @@ class Runnable(Reflective):
 
     def add_child(self, id, runnable):
         self.children[id] = runnable
+        runnable.configure_time(self.time_step, self.time_total)
 
     def add_event_in_port(self, port):
         if port not in self.event_in_counters:
@@ -100,14 +101,28 @@ class Runnable(Reflective):
             raise SimBuildError('No event out port \'{0}\' in '
                                 'component \'{1}\''.format(port, self.name))
                                     
-            
-
-    def add_variable_recorder(self, variable):
-        self.recorded_variables[variable] = []
+    def add_variable_recorder(self, path):
+        if path[0] == '/':
+            self.parent.add_variable_recorder(path)
+        elif path.find('../') == 0:
+            self.parent.add_variable_recorder(path[3:])
+        elif path.find('/') >= 1:
+            (child, new_path) = path.split('/', 1)
+            if child in self.children:
+                self.children[child].add_variable_recorder(new_path)
+            else:
+                raise SimBuildError('Unable to find child \'{0}\' in '
+                                    '\'{1}\''.format(child, self.id))
+        else:
+            self.recorded_variables[path] = []
 
     def configure_time(self, time_step, time_total):
         self.time_step = time_step
         self.time_total = time_total
+
+        for cn in self.children:
+            self.children[cn].configure_time(self.time_step, self.time_total)
+
         
     def reset_time(self):
         self.time_completed = 0
@@ -127,13 +142,10 @@ class Runnable(Reflective):
         self.run_postprocessing_event_handlers(self)
         self.update_shadow_variables()
 
-        #self.record_variables()
+        self.record_variables()
 
         for cid in self.children:
             self.children[cid].single_step(dt)
-
-        if 'v' in self.__dict__:
-            print self.v
 
         self.time_completed += self.time_step
         if self.time_completed >= self.time_total:
@@ -143,8 +155,10 @@ class Runnable(Reflective):
 
     def record_variables(self):
         for variable in self.recorded_variables:
-            self.recorded_variables[variable] += [(self.time_completed,
-                                                   self.__dict__[variable])]
+            self.recorded_variables[variable].append(\
+                (self.time_completed, self.__dict__[variable]))
+            #print self.id
+            #print self.time_completed, self.__dict__[variable]
             
     def push_state(self):
         vars = []

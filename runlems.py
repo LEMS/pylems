@@ -46,15 +46,22 @@ try:
     
     print 'Running simulation'
     sim.run()
-    sys.exit(0)
-
+    #sys.exit(0)
+    
     if not nogui:
         import matplotlib.pyplot as plt
         import numpy
 
         print 'Plotting graphs'
+        rq = []
         for rn in sim.runnables:
-            runnable = sim.runnables[rn]
+            rq.append(sim.runnables[rn])
+
+        while rq != []:
+            runnable = rq[0]
+            rq = rq[1:]
+            for c in runnable.children:
+                rq.append(runnable.children[c])
             if runnable.recorded_variables:
                 for variable in runnable.recorded_variables:
                     values = runnable.recorded_variables[variable]

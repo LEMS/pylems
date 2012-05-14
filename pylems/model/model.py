@@ -314,10 +314,13 @@ class Model(Contextual):
                         cf = type_context.component_refs[pn]
                         this_context.component_refs[pn] = pc.value
 
-            this_context.behavior_profiles = type_context.behavior_profiles
-            bpn = type_context.selected_behavior_profile
-            this_context.selected_behavior_profile = bpn
-
+            for bpn in type_context.behavior_profiles:
+                bp = type_context.behavior_profiles[bpn].copy()
+                this_context.behavior_profiles[bpn] = bp
+                
+                if bpn == type_context.selected_behavior_profile.name:
+                    this_context.selected_behavior_profile = bp
+                    
             for port in type_context.event_in_ports:
                 this_context.event_in_ports.append(port)
             for port in type_context.event_out_ports:
