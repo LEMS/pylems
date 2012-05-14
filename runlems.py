@@ -46,7 +46,7 @@ try:
     
     print 'Running simulation'
     sim.run()
-    sys.exit(0)
+    #sys.exit(0)
     
     if not nogui:
         import matplotlib.pyplot as plt
