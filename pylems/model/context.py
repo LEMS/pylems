@@ -120,8 +120,8 @@ class Context(PyLEMSBase):
         """
 
         if component_type.name in self.component_types:
-            raise ModelError('Duplicate component type - ' +
-                             component_type.name)
+            raise ModelError("Duplicate component type '{0}'".format(\
+                component_type.name))
 
         self.component_types[component_type.name] = component_type
 
@@ -138,7 +138,7 @@ class Context(PyLEMSBase):
         """
 
         if component.id in self.components:
-            raise ModelError('Duplicate component - ' + component.id)
+            raise ModelError("Duplicate component '{0}'".format(component.id))
 
         self.components[component.id] = component
 
@@ -158,7 +158,8 @@ class Context(PyLEMSBase):
         """
 
         if name in self.component_refs:
-            raise ModelError('Duplicate component reference ' + name)
+            raise ModelError("Duplicate component reference '{0}'".format(\
+                name))
         
         self.component_refs[name] = type
 
@@ -175,8 +176,9 @@ class Context(PyLEMSBase):
         """
 
         if self.context_type == Context.COMPONENT_TYPE:
-            raise ModelError('Component definitions not permitted in \
-                    a component type definition')
+            raise ModelError("Component definition '{0}' not permitted in "
+                             "a component type definition".format(\
+                                 child.id))
         
         self.children.append(child)
 
@@ -197,7 +199,7 @@ class Context(PyLEMSBase):
         """
 
         if name in self.child_defs:
-            raise ModelError('Duplicate child definition ' + name)
+            raise ModelError("Duplicate child definition '{0}'".format(name))
         
         self.child_defs[name] = type
 
@@ -217,7 +219,8 @@ class Context(PyLEMSBase):
         """
 
         if name in self.children_defs:
-            raise ModelError('Duplicate children definition ' + name)
+            raise ModelError("Duplicate children definition '{0}'".format(\
+                name))
         
         self.children_defs[name] = type
 
@@ -234,7 +237,8 @@ class Context(PyLEMSBase):
         """
 
         if parameter.name in self.parameters:
-            raise ModelError('Duplicate parameter type - ' + parameter.name)
+            raise ModelError("Duplicate parameter type '{0}'".format(\
+                parameter.name))
 
         self.parameters[parameter.name] = parameter
 
@@ -247,7 +251,7 @@ class Context(PyLEMSBase):
         """
         
         if name in self.behavior_profiles:
-            raise ModelError('Duplicate behavior profile \'' + name + '\'')
+            raise ModelError("Duplicate behavior profile '{0}'".format(name))
 
         self.behavior_profiles[name] = Behavior(name)
         self.select_behavior_profile(name)
@@ -264,7 +268,7 @@ class Context(PyLEMSBase):
         """
 
         if name not in self.behavior_profiles:
-            raise ModelError('Unknown behavior profile')
+            raise ModelError("Unknown behavior profile '{0}'".format(name))
 
         self.selected_behavior_profile = self.behavior_profiles[name]
         
@@ -282,11 +286,11 @@ class Context(PyLEMSBase):
         being defined in the context of a component type.
         """
         if self.context_type != Context.COMPONENT_TYPE:
-            raise ModelError('Exposure names can only be defined in ' +
-                             'a component type')
+            raise ModelError("Exposure names can only be defined in "
+                             "a component type - '{0}'".format(name))
         
         if name in self.exposures:
-            raise ModelError('Duplicate exposure name')
+            raise ModelError("Duplicate exposure name '{0}'".format(name))
 
         self.exposures += [name]
         
@@ -305,11 +309,11 @@ class Context(PyLEMSBase):
         """
         
         if self.context_type != Context.COMPONENT_TYPE:
-            raise ModelError('Text variables can only be defined in ' +
-                             'a component type')
+            raise ModelError("Text variables can only be defined in "
+                             "a component type - '{0}'".format(name))
         
         if name in self.texts:
-            raise ModelError('Duplicate text variable')
+            raise ModelError("Duplicate text variable '{0}'".format(name))
 
         self.texts[name] = value
         
@@ -328,11 +332,11 @@ class Context(PyLEMSBase):
         """
         
         if self.context_type != Context.COMPONENT_TYPE:
-            raise ModelError('Path variables can only be defined in ' +
-                             'a component type')
+            raise ModelError("Path variables can only be defined in "
+                             "a component type - '{0}'".format(name))
         
         if name in self.paths:
-            raise ModelError('Duplicate path variable')
+            raise ModelError("Duplicate path variable '{0}'".format(name))
 
         self.paths[name] = value
 
@@ -351,6 +355,9 @@ class Context(PyLEMSBase):
         current context.
         """
 
+        if name in self.event_in_ports or name in self.event_out_ports:
+            raise ModelError("Duplicate event '{0}'".format(name))
+        
         if direction == 'in':
             self.event_in_ports.append(name)
         else:

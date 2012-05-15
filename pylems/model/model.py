@@ -196,7 +196,7 @@ class Model(Contextual):
         resolved.
 
         @raise ModelError: Raised when a parameter in the base component
-        is redefined in this component type.
+        is redefined in this component.
 
         @note: Consider changing Component.id to Component.name and merging
         this method with resolve_extended_component_type.
@@ -251,7 +251,7 @@ class Model(Contextual):
         """
 
         if False and component.component_type.find('__type_inherited__') == 0:
-            raise Exception('eee')
+            raise Exception('Should not reach here any more')
             parent = context.lookup_component(context.name)
             if parent == None:
                 self.raise_error('Unable to resolve component \'{0}\''.\
@@ -340,6 +340,12 @@ class Model(Contextual):
 
         @param regime: Behavior regime to be resolved.
         @type regime: pylems.model.behavior.Behavior
+
+        @raise ModelError: Raised when the quantity to be recorded is not a
+        path.
+
+        @raise ModelError: Raised when the color specified is not a text
+        entity.
         """
 
         # Resolve record statements
@@ -392,6 +398,9 @@ class Model(Contextual):
 
         @param component: Component to be resolved.
         @type component: pylems.model.component.Component
+
+        @raise ModelError: Raised when the dimension for a parameter cannot
+        be resolved.
         """
 
         self.resolve_context(component.context)
@@ -420,6 +429,12 @@ class Model(Contextual):
 
         @param child: Child component to be resolved.
         @type child: pylems.model.component.Component
+
+        @raise ModelError: Raised when the parent component cannot be
+        resolved.
+
+        @raise ModelError: Raised when the component type for the parent
+        component cannot be resolved.
         """
 
         parent = context.lookup_component(context.name)
@@ -437,7 +452,7 @@ class Model(Contextual):
             if child.component_type == '__type_inherited__':
                 child.component_type = ptctx.child_defs[child.id]
             else:
-                raise Exception('asdasd')
+                raise Exception('TODO')
             context.add_component(child)
         else:
             for cdn in ptctx.children_defs:
@@ -494,7 +509,7 @@ class Model(Contextual):
         self.resolve_context(self.context)
 
     def raise_error(self, message, context):
-        s = 'Model error in lems'
+        s = 'Caught ModelError in lems'
 
         context_name_stack = []
         while context != None:
