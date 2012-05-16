@@ -94,6 +94,10 @@ class Context(PyLEMSBase):
         """ Dictionary of path parameters.
         @type: dict(string -> string) """
 
+        self.links = {}
+        """ Dictionary of link parameters.
+        @type: dict(string -> string) """
+
         self.event_in_ports = []
         """ List of incoming event port names.
         @type: list(string) """
@@ -176,9 +180,9 @@ class Context(PyLEMSBase):
         """
 
         if self.context_type == Context.COMPONENT_TYPE:
-            raise ModelError("Component definition '{0}' not permitted in "
-                             "a component type definition".format(\
-                                 child.id))
+            raise ModelError("Child definition '{0}' not permitted in "
+                             "component type definition '{1}'".format(\
+                                 child.id, self.name))
         
         self.children.append(child)
 
@@ -339,6 +343,29 @@ class Context(PyLEMSBase):
             raise ModelError("Duplicate path variable '{0}'".format(name))
 
         self.paths[name] = value
+
+    def add_link_var(self, name, type = None):
+        """
+        Adds a link variable to the current context.
+
+        @param name: Name of the link variable.
+        @type name: string
+
+        @param type: Type of the link variable.
+        @type type: string
+
+        @raise ModelError: Raised when the link variable already exists
+        in the current context.
+        """
+        
+        if self.context_type != Context.COMPONENT_TYPE:
+            raise ModelError("Link variables can only be defined in "
+                             "a component type - '{0}'".format(name))
+        
+        if name in self.links:
+            raise ModelError("Duplicate link variable '{0}'".format(name))
+
+        self.links[name] = type
 
     def add_event_port(self, name, direction):
         """

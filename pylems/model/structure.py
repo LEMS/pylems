@@ -7,6 +7,7 @@ Component structure storage.
 """
 
 from pylems.base.base import PyLEMSBase
+from pylems.base.errors import ModelError
 
 class Structure(PyLEMSBase):
     """
@@ -19,9 +20,17 @@ class Structure(PyLEMSBase):
         """
 
         self.event_connections = []
-        """ Dictionary of event connections b/w components. The from and to
+        """ List of event connections b/w components. The from and to
         attributes are described as component:port
         @type: list((string, string)) """
+
+        self.single_child_defs = []
+        """ List of single-child instantiation definitions.
+        @type: list(string) """
+
+        self.multi_child_defs = {}
+        """ List of multi-child instantiation definitions.
+        @type: dict(string -> integer) """
         
     def add_event_connection(self, from_, to):
         """
@@ -49,3 +58,28 @@ class Structure(PyLEMSBase):
 
         self.event_connections.append((from_component, from_port,
                                        to_component, to_port))
+
+    def add_single_child_def(self, component):
+        """
+        Adds a single-child instantiation definition to this component type.
+        """
+        
+        if component in self.single_child_defs:
+            raise ModelError("Duplicate child instantiation = '{0}'".format(\
+                component))
+        self.single_child_defs.append(component)
+
+    def add_multi_child_def(self, component, number):
+        """
+        Adds a single-child instantiation definition to this component type.
+        """
+        
+        if component in self.single_child_defs:
+            raise ModelError("Duplicate child multiinstantiation = "
+                             "'{0}'".format(component))
+
+        if self.multi_child_defs != {}:
+            raise ModelError("Only one multi-instantiation is permitted "
+                             "per component type - '{0}'".format(component))
+
+        self.multi_child_defs[component] = number

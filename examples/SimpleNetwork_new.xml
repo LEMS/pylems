@@ -9,7 +9,7 @@
     <ComponentRef name="component" type="Component"/>
     <Parameter name="size" dimension="none"/>
     <Structure>
-	<MultiInstantiate number="size" component="component"/>
+      <MultiInstantiate number="size" component="component"/>
     </Structure>
   </ComponentType>
 

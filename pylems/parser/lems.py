@@ -383,7 +383,17 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
         
-        pass
+        if self.current_structure == None:
+            self.raise_error('Child instantiations can only be made within ' +
+                             'a structure definition')
+
+        if 'component' in node.lattrib:
+            component = node.lattrib['component']
+        else:
+            self.raise_error('<ChildInstance> must specify a component '
+                             'reference')
+
+        self.current_structure.add_single_child_def(component)
     
     def parse_children(self, node):
         """
@@ -755,7 +765,21 @@ l
         @type node: xml.etree.Element
         """
 
-        pass
+        if self.current_context.context_type != Context.COMPONENT_TYPE:
+            self.raise_error('Link variables can only be defined in ' +
+                             'a component type')
+
+        if 'name' in node.lattrib:
+            name = node.lattrib['name']
+        else:
+            self.raise_error('A name must be provided for <Link>')
+
+        if 'type' in node.lattrib:
+            type = node.lattrib['type']
+        else:
+            type = None
+
+        self.current_context.add_link_var(name, type)
 
     def parse_multi_instantiate(self, node):
         """
@@ -765,7 +789,22 @@ l
         @type node: xml.etree.Element
         """
         
-        pass
+        if self.current_structure == None:
+            self.raise_error('Child instantiations can only be made within ' +
+                             'a structure definition')
+
+        if 'component' in node.lattrib:
+            component = node.lattrib['component']
+        else:
+            self.raise_error('<MultiInstantiate> must specify a component '
+                             'reference')
+
+        if 'number' in node.lattrib:
+            number = node.lattrib['number']
+        else:
+            self.raise_error('<MultiInstantiate> must specify a number')
+
+        self.current_structure.add_multi_child_def(component, number)
     
     def parse_on_condition(self, node):
         """

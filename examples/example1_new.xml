@@ -250,7 +250,8 @@
   </HHCell>
 
 
-  <Component id="celltype_c" type="iaf3" leakConductance="3 pS" refractoryPeriod="3 ms" threshold="45 mV"
+  <Component id="celltype_c" type="iaf3" 
+	     leakConductance="3 pS" refractoryPeriod="3 ms" threshold="45 mV"
 	     leakReversal="-50 mV" deltaV="5mV" capacitance="1uF"/>
   
 
@@ -260,7 +261,9 @@
 
   <Component id="gen2" type="spikeGenerator2" period="32ms"/>
 
-  <Component id="iaf3cpt" type="iaf3" leakReversal="-50mV" deltaV="50mV" threshold="-30mV" leakConductance="50pS"
+  <Component id="iaf3cpt" type="iaf3" 
+	     leakReversal="-50mV" deltaV="50mV" 
+	     threshold="-30mV" leakConductance="50pS"
 	     refractoryPeriod="4ms" capacitance="1pF"/>
 
 

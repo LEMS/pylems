@@ -250,85 +250,71 @@ class Model(Contextual):
         resolved.
         """
 
-        if False and component.component_type.find('__type_inherited__') == 0:
-            raise Exception('Should not reach here any more')
-            parent = context.lookup_component(context.name)
-            if parent == None:
-                self.raise_error('Unable to resolve component \'{0}\''.\
-                                 format(context.name))
-            parent_type = context.lookup_component_type(parent.component_type)
-            if parent_type == None:
-                self.raise_error('Unable to resolve component type \'{0}\''.\
-                                 format(parent.component_type))
-            component.component_type = parent_type.context.lookup_child(\
-                component.id)
-            if component.component_type == None:
-                self.raise_error('Unable to resolve type for child \'{0}\''.\
-                                 format(component.id))
-            self.resolve_component_from_type(context, component)
-        else:
-            component_type = context.lookup_component_type(
-                component.component_type)
+        component_type = context.lookup_component_type(
+            component.component_type)
             
-            if component_type == None:
-                print component.id, component.component_type
-                self.raise_error('Type {0} not found for component {1}'.
-                                 format(component.component_type,
-                                        component.id),
-                                 context)
+        if component_type == None:
+            print component.id, component.component_type
+            self.raise_error('Type {0} not found for component {1}'.
+                             format(component.component_type,
+                                    component.id),
+                             context)
 
-            this_context = component.context
-            type_context = component_type.context
+        this_context = component.context
+        type_context = component_type.context
 
-            for pn in type_context.parameters:
-                pt = type_context.parameters[pn]
-                if pn in this_context.parameters:
-                    pc = this_context.parameters[pn]
-
-                    if pc.value:
-                        value = pc.value
-                    else:
-                        value = pt.value
-                    
-                    if pc.dimension == '__dimension_inherited__':
-                        if pt.fixed:
-                            np = Parameter(pn, pt.dimension, pt.fixed, value)
-                        else:
-                            np = Parameter(pn, pt.dimension, pc.fixed, value)
-                        this_context.parameters[pn] = np
-                else:
-                    this_context.parameters[pn] = pt.copy()
-
-                self.resolve_parameter_value(this_context.parameters[pn],
-                                             this_context)
-
-            for pn in this_context.parameters:
+        for pn in type_context.parameters:
+            pt = type_context.parameters[pn]
+            if pn in this_context.parameters:
                 pc = this_context.parameters[pn]
-                if pc.dimension == '__dimension_inherited__':
-                    if pn in type_context.texts:
-                        pc.dimension = '__text__'
-                        this_context.texts[pn] = type_context.texts[pn]
-                    elif pn in type_context.paths:
-                        pc.dimension = '__path__'
-                        this_context.paths[pn] = type_context.paths[pn]
-                    elif pn in type_context.component_refs:
-                        pc.dimension = '__component_ref__'
-                        cf = type_context.component_refs[pn]
-                        this_context.component_refs[pn] = pc.value
 
-            for bpn in type_context.behavior_profiles:
-                bp = type_context.behavior_profiles[bpn].copy()
-                this_context.behavior_profiles[bpn] = bp
-                
-                if bpn == type_context.selected_behavior_profile.name:
-                    this_context.selected_behavior_profile = bp
+                if pc.value:
+                    value = pc.value
+                else:
+                    value = pt.value
                     
-            for port in type_context.event_in_ports:
-                this_context.event_in_ports.append(port)
-            for port in type_context.event_out_ports:
-                this_context.event_out_ports.append(port)
+                if pc.dimension == '__dimension_inherited__':
+                    if pt.fixed:
+                        np = Parameter(pn, pt.dimension, pt.fixed, value)
+                    else:
+                        np = Parameter(pn, pt.dimension, pc.fixed, value)
+                    this_context.parameters[pn] = np
+            else:
+                this_context.parameters[pn] = pt.copy()
 
-            this_context.structure = type_context.structure
+            self.resolve_parameter_value(this_context.parameters[pn],
+                                         this_context)
+
+        for pn in this_context.parameters:
+            pc = this_context.parameters[pn]
+            if pc.dimension == '__dimension_inherited__':
+                if pn in type_context.texts:
+                    pc.dimension = '__text__'
+                    this_context.texts[pn] = type_context.texts[pn]
+                elif pn in type_context.paths:
+                    pc.dimension = '__path__'
+                    this_context.paths[pn] = type_context.paths[pn]
+                elif pn in type_context.links:
+                    pc.dimension = '__link__'
+                    this_context.links[pn] = type_context.links[pn]
+                elif pn in type_context.component_refs:
+                    pc.dimension = '__component_ref__'
+                    cf = type_context.component_refs[pn]
+                    this_context.component_refs[pn] = pc.value
+
+        for bpn in type_context.behavior_profiles:
+            bp = type_context.behavior_profiles[bpn].copy()
+            this_context.behavior_profiles[bpn] = bp
+                
+            if bpn == type_context.selected_behavior_profile.name:
+                this_context.selected_behavior_profile = bp
+                    
+        for port in type_context.event_in_ports:
+            this_context.event_in_ports.append(port)
+        for port in type_context.event_out_ports:
+            this_context.event_out_ports.append(port)
+
+        this_context.structure = type_context.structure
 
     def resolve_regime(self, context, regime):
         """
@@ -595,6 +581,30 @@ class Model(Contextual):
 
         return s
 
+    def structure2str(self, structure, prefix):
+        s = prefix + 'Structure:\n'
+
+        if structure.event_connections:
+            s += prefix + Model.tab + 'Event connections:\n'
+            for conn in structure.event_connections:
+                (from_, fromport, to, toport) = conn
+                s += prefix + Model.tab*2 + '{0}:{1} -> {2}:{3}\n'.format(\
+                    from_, fromport, to, toport)
+
+        if structure.single_child_defs:
+            s += prefix + Model.tab + 'Single child instantiations:\n'
+            for c in structure.single_child_defs:
+                s += prefix + Model.tab*2 + c + '\n'
+
+        if structure.multi_child_defs:
+            s += prefix + Model.tab + 'Multi child instantiations:\n'
+            for c in structure.multi_child_defs:
+                s += prefix + Model.tab*2 + '{0} * {1}\n'.format(\
+                    c, structure.multi_child_defs[c])
+
+                
+        return s
+
     def context2str(self, context, prefix):
         s = ''
         prefix = prefix + Model.tab
@@ -698,6 +708,9 @@ class Model(Contextual):
             for port in context.event_in_ports:
                 s += prefix + Model.tab + port + '\n'
 
+        if context.structure:
+            s += self.structure2str(context.structure, prefix)
+            
         return s
     
     def __str__(self):
