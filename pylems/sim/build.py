@@ -6,6 +6,8 @@ Simulation builder.
 @contact: gautham@textensor.com, gautham@lisphacker.org
 """
 
+import copy
+
 from pylems.base.base import PyLEMSBase
 from pylems.base.errors import SimBuildError
 from pylems.sim.runnable import Runnable
@@ -131,6 +133,18 @@ class SimulationBuilder(PyLEMSBase):
         @type structure: pylems.model.structure.Structure
         """
 
+        context = component.context
+
+        # Process single-child instantiations
+        # TBD
+        
+        # Process multi-child instatiantions
+        for cparam in structure.multi_child_defs:
+            sparam = structure.multi_child_defs[cparam]
+            template = context.lookup_component(cparam)
+            runnable.array.append(copy.deepcopy(template))
+        
+        # Process event connections
         for (from_component, from_port,
              to_component, to_port) in structure.event_connections:
             self.add_event_connection(runnable, from_component, from_port,

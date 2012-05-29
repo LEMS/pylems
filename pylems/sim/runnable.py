@@ -15,6 +15,7 @@ class Reflective(object):
     def __init__(self):
         self.instance_variables = []
         self.derived_variables = []
+        self.array = []
         
     #@classmethod
     def add_method(self, method_name, parameter_list, statements):
@@ -52,6 +53,12 @@ class Reflective(object):
         code_string = 'self.{0} = 0'.format(\
             variable)
         exec compile(ast.parse(code_string), '<unknown>', 'exec')
+
+    def __getitem__(self, key):
+        return self.array[key]
+
+    def __setitem__(self, key, val):
+        self.array[key] = val
         
         
 class Runnable(Reflective):

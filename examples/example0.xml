@@ -178,10 +178,11 @@
     <Requirement name="v" dimension="voltage"/>
     <Exposure name="current" dimension="current"/>
     
+    <Structure>
+      <ChildInstance component="channel"/>
+    </Structure>
+
     <Behavior>
-      <Build>
-	<ChildInstance component="channel"/>
-      </Build>
       <DerivedVariable name="channelg" dimension="conductance" select="channel/g"/>
       <DerivedVariable name="geff" value="channelg * number"/>
       <DerivedVariable name="current" exposure="current" value="geff * (erev - v)"/>

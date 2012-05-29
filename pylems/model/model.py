@@ -236,6 +236,51 @@ class Model(Contextual):
         component.component_type = base.component_type
         component.extends = None
 
+    def resolve_component_structure_from_type(self,
+                                              comp_context,
+                                              type_context,
+                                              component):
+        """
+        Resolves the specified component's structure from component type.
+
+        @param comp_context: Component's context object.
+        @type comp_context: pylems.model.context.Context
+
+        @param type_context: Component type's context object.
+        @type type_context: pylems.model.context.Context
+
+        @param component: Component to be resolved.
+        @type component: pylems.model.component.Component
+
+        @raise ModelError: Raised when the component type cannot be
+        resolved.
+        """
+
+        comp_str = comp_context.structure
+        type_str = type_context.structure
+        
+        comp_str.event_connections = type_str.event_connections
+
+        for c in type_str.single_child_defs:
+            raise ModelError('TODO')
+
+        for c in type_str.multi_child_defs:
+            n = type_str.multi_child_defs[c]
+            if c in comp_context.component_refs:
+                component = comp_context.component_refs[c]
+                if n in comp_context.parameters:
+                    number = int(comp_context.parameters[n].numeric_value)
+                    comp_str.add_multi_child_def(component, number)
+                else:
+                    raise ModelError("Trying to multi-instantiate using an "
+                                     "invalid number parameter '{0}'".\
+                                     format(n))
+            else:
+                raise ModelError("Trying to multi-instantiate from an "
+                                 "invalid component reference '{0}'".format(\
+                                     c))
+
+
     def resolve_component_from_type(self, context, component):
         """
         Resolves the specified component's parameters from component type.
@@ -314,7 +359,10 @@ class Model(Contextual):
         for port in type_context.event_out_ports:
             this_context.event_out_ports.append(port)
 
-        this_context.structure = type_context.structure
+        
+        self.resolve_component_structure_from_type(this_context,
+                                                   type_context,
+                                                   component)
 
     def resolve_regime(self, context, regime):
         """

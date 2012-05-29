@@ -151,7 +151,6 @@ class LEMSParser(Parser):
 
         self.tag_parse_table = dict()
         self.tag_parse_table['behavior'] = self.parse_behavior
-        #self.tag_parse_table['build'] = self.parse_build
         self.tag_parse_table['child'] = self.parse_child
         self.tag_parse_table['childinstance'] = self.parse_child_instance
         self.tag_parse_table['children'] = self.parse_children
@@ -760,7 +759,7 @@ class LEMSParser(Parser):
     def parse_link(self, node):
         """
         Parses <Link>
-l
+
         @param node: Node containing the <Link> element
         @type node: xml.etree.Element
         """

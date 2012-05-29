@@ -30,7 +30,7 @@ class Structure(PyLEMSBase):
 
         self.multi_child_defs = {}
         """ List of multi-child instantiation definitions.
-        @type: dict(string -> integer) """
+        @type: dict(string -> string) """
         
     def add_event_connection(self, from_, to):
         """
