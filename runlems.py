@@ -10,12 +10,13 @@ from pylems.base.errors import ParseError,ModelError,SimBuildError,SimError
 from pylems.parser.lems import LEMSParser
 from pylems.sim.build import SimulationBuilder
 
-#from pylems.parser.expr import ExprParser
+from pylems.parser.expr import ExprParser
 
 #print ExprParser('1').parse()
 #print ExprParser('1 + 2').parse()
 #print ExprParser('v .gt. threshold').parse()
 #print ExprParser('1-95*v_t/100').parse()
+#print ExprParser('rate / (1 + exp(-(v - midpoint)/scale))').parse()
 #sys.exit(0)
 
 if len(sys.argv) not in [2,3]:

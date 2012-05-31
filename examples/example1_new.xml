@@ -34,9 +34,11 @@
   <Unit symbol="per_ms" dimension="per_time" powTen="3"/>
   <Unit symbol="pA" dimension="current" powTen="-12"/>
 
-  <iaf1 id="celltype_a" threshold="-30 mV" refractoryPeriod="2 ms" capacitance="3uF"/> 
+  <iaf1 id="celltype_a" threshold="-30 mV" refractoryPeriod="2 ms" 
+	capacitance="3uF"/> 
   <!--  or -->
-  <Component id="ctb" type="iaf1" threshold="-30 mV" refractoryPeriod="2 ms" capacitance="1uF"/>
+  <Component id="ctb" type="iaf1" threshold="-30 mV" refractoryPeriod="2 ms" 
+	     capacitance="1uF"/>
   
   
   <ComponentType name="iaf2" extends="iaf1">
@@ -55,7 +57,9 @@
 
     <Behavior>
       <StateVariable name="v" exposure="v" dimension="voltage"/>
-      <TimeDerivative variable="v" value="leakConductance * (leakReversal - v) / capacitance"/>
+      <TimeDerivative variable="v" 
+		      value="leakConductance * (leakReversal - v) / 
+			     capacitance"/>
       
       <OnEvent port="spikes-in">
 	<StateAssignment variable="v" value="v + deltaV"/>

@@ -67,9 +67,15 @@ class TimeDerivative(PyLEMSBase):
         """ Time derivative expression for the state variable.
         @type: string """
 
-        self.expression_tree = ExprParser(value).parse()
-        """ Parse tree for the time derivative expression.
-        @type: pylems.parser.expr.ExprNode """
+        try:
+            self.expression_tree = ExprParser(value).parse()
+            """ Parse tree for the time derivative expression.
+            @type: pylems.parser.expr.ExprNode """
+        except:
+            raise ParseError("Parse error when parsing value expression "
+                             "'{0}' for derived variable {1}".format(\
+                                 self.value,
+                                 self.variable))
 
 class DerivedVariable(PyLEMSBase):
     """
