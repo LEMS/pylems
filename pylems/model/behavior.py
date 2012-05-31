@@ -7,6 +7,7 @@ Component behavior storage.
 """
 
 from pylems.base.base import PyLEMSBase
+from pylems.base.errors import ModelError,ParseError
 from pylems.parser.expr import ExprParser
 
 class StateVariable(PyLEMSBase):
@@ -123,6 +124,20 @@ class DerivedVariable(PyLEMSBase):
         self.reduce = reduce
         """ Reduce operation to be applied over the selected target.
         @type: string """
+
+        if value != None:
+            try:
+                self.expression_tree = ExprParser(value).parse()
+                """ Parse tree for the time derivative expression.
+                @type: pylems.parser.expr.ExprNode """
+            except:
+                raise ParseError("Parse error when parsing value expression "
+                                 "'{0}' for derived variable {1}".format(\
+                                     self.value,
+                                     self.name))
+        else:
+            self.expression_tree = None
+                
 
 class Run(PyLEMSBase):
     """
@@ -534,7 +549,20 @@ class Regime(PyLEMSBase):
         """
 
         if name in self.derived_variables:
-            raise ModelError('Duplicate derived variable ' + name)
+            raise ModelError("Duplicate derived variable '{0}'".format(name))
+
+        if value == None and select == None and reduce == None:
+            raise ModelError("Derived variable '{0}' must specify either a "
+                             "value expression or a reduce "
+                             "operation".format(name))
+        
+        if select != None and reduce == None:
+            raise ModelError("Reduce operation not specified for derived "
+                             "variable '{0}'".format(name))
+
+        if select == None and reduce != None:
+            raise ModelError("Reduce target not specified for derived "
+                             "variable '{0}'".format(name))
 
         self.derived_variables[name] = DerivedVariable(name, exposure,
                                                        dimension, value,
