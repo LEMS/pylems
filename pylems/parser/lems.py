@@ -582,7 +582,43 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        pass
+        if self.current_regime == None:
+            self.raise_error('<DerivedVariable> must be defined inside a ' +
+                             'behavior profile or regime')
+
+        if 'name' in node.lattrib:
+            name = node.lattrib['name']
+        else:
+            self.raise_error('A derived variable must have a name')
+
+        if 'exposure' in node.lattrib:
+            exposure = node.lattrib['exposure']
+        else:
+            exposure = None
+
+        if 'dimension' in node.lattrib:
+            dimension = node.lattrib['dimension']
+        else:
+            dimension = None
+
+        if 'value' in node.lattrib:
+            value = node.lattrib['value']
+        else:
+            value = None
+
+        if 'select' in node.lattrib:
+            select = node.lattrib['select']
+        else:
+            select = None
+
+        if 'reduce' in node.lattrib:
+            reduce = node.lattrib['reduce']
+        else:
+            reduce = None
+
+        self.current_regime.add_derived_variable(name, exposure, dimension,
+                                                 value, select, reduce)
+            
 
     def parse_dimension(self, node):
         """
@@ -997,7 +1033,7 @@ class LEMSParser(Parser):
         """
 
         if self.current_regime == None:
-            self.raise_error('<StateVariable> must be defined inside a ' +
+            self.raise_error('<Run> must be defined inside a ' +
                              'behavior profile or regime')
 
         if 'component' in node.lattrib:
@@ -1074,9 +1110,6 @@ class LEMSParser(Parser):
         being defined in the context of a component type.
         """
 
-        #for node in self.xml_node_stack:
-        #    print node.tag
-            
         if self.current_regime == None:
             self.raise_error('<StateVariable> must be defined inside a ' +
                              'behavior profile or regime')
