@@ -141,7 +141,8 @@ class SimulationBuilder(PyLEMSBase):
         # Process multi-child instatiantions
         for cparam in structure.multi_child_defs:
             sparam = structure.multi_child_defs[cparam]
-            template = context.lookup_component(cparam)
+            template = self.build_runnable(context.lookup_component(cparam),
+                                           component)
             runnable.array.append(copy.deepcopy(template))
         
         # Process event connections
@@ -431,7 +432,6 @@ class SimulationBuilder(PyLEMSBase):
 
         for rn in regime.records:
             rec = regime.records[rn]
-            print rn, rec.quantity
             if self.current_record_target == None:
                 raise SimBuildError('No target available for '
                                     'recording variables')

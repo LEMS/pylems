@@ -115,8 +115,22 @@ class Runnable(Reflective):
             self.parent.add_variable_recorder(path[3:])
         elif path.find('/') >= 1:
             (child, new_path) = path.split('/', 1)
+
+            idxbegin = child.find('[')
+            idxend = child.find(']')
+            if idxbegin != 0 and idxend > idxbegin:
+                idx = int(child[idxbegin+1:idxend])
+                child = child[:idxbegin]
+            else:
+                idx = -1
+
             if child in self.children:
-                self.children[child].add_variable_recorder(new_path)
+                childobj = self.children[child]
+                if idx == -1:
+                    childobj.add_variable_recorder(new_path)
+                else:
+                    print childobj.array[idx]
+                    childobj.array[idx].add_variable_recorder(new_path)
             else:
                 raise SimBuildError('Unable to find child \'{0}\' in '
                                     '\'{1}\''.format(child, self.id))

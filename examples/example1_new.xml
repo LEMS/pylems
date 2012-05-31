@@ -218,7 +218,8 @@
     <Behavior>
       <DerivedVariable name="channelg" dimension="conductance" select="channel/g"/>
       <DerivedVariable name="geff" value="channelg * number"/>
-      <DerivedVariable name="current" exposure="current" value="geff * (erev - v)"/>
+      <DerivedVariable name="current" exposure="current" 
+		       value="geff * (erev - v)"/>
     </Behavior>
   </ComponentType>
 
@@ -236,9 +237,11 @@
 	<StateAssignment variable="v" value="v0"/>
       </OnStart>
       
-      <DerivedVariable name="totcurrent" dimension="current" select="populations[*]/current" reduce="add"/>
+      <DerivedVariable name="totcurrent" dimension="current" 
+		       select="populations[*]/current" reduce="add"/>
       <StateVariable name="v" exposure="v" dimension="voltage"/> 
-      <TimeDerivative variable="v" value="(totcurrent + injection) / capacitance"/>
+      <TimeDerivative variable="v" 
+		      value="(totcurrent + injection) / capacitance"/>
     </Behavior>
   </ComponentType>
 
