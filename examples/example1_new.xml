@@ -107,7 +107,8 @@
 
   <ComponentType name="HHExpRate" extends="HHRate">
     <Behavior>
-      <DerivedVariable name="r" exposure="r" value="rate * exp((v - midpoint)/scale)"/>
+      <DerivedVariable name="r" exposure="r" 
+		       value="rate * exp((v - midpoint)/scale)"/>
     </Behavior>
   </ComponentType>
 

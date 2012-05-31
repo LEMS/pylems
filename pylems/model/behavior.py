@@ -29,13 +29,13 @@ class StateVariable(PyLEMSBase):
         """
 
         self.name = name
-        """ Internal name of the state variable. This is the name used to refer
-        to this variable inside the <Behavior> element.
+        """ Internal name of the state variable. This is the name used to
+        refer to this variable inside the <Behavior> element.
         @type: string """
         
         self.exposure = exposure
-        """ Exposure name of the state variable. This is the name used to refer
-        to this variable from other objects.
+        """ Exposure name of the state variable. This is the name used to
+        refer to this variable from other objects.
         @type: string """
         
         self.dimension = dimension
@@ -69,6 +69,60 @@ class TimeDerivative(PyLEMSBase):
         self.expression_tree = ExprParser(value).parse()
         """ Parse tree for the time derivative expression.
         @type: pylems.parser.expr.ExprNode """
+
+class DerivedVariable(PyLEMSBase):
+    """
+    Stores the definition of a derived variable.
+    """
+
+    def __init__(self, name, exposure, dimension, value, select, reduce):
+        """
+        Constructor.
+
+        @param name: Name (internal) of the derived variable.
+        @type name: string
+
+        @param exposure: Name (external) of the derived variable.
+        @type exposure: string
+
+        @param dimension: Dimension of the derived variable.
+        @type dimension: string
+
+        @param value: Value expression for the derived variable.
+        @type value: string
+
+        @param select: Target component selection for reduction operations.
+        @type select: string
+
+        @param reduce: Reduce operation.
+        @type reduce: string
+        """
+
+        self.name = name
+        """ Internal name of the derived variable. This is the name used to
+        refer to this variable inside the <Behavior> element.
+        @type: string """
+        
+        self.exposure = exposure
+        """ Exposure name of the derived variable. This is the name used to
+        refer to this variable from other objects.
+        @type: string """
+        
+        self.dimension = dimension
+        """ Dimension of this derived variable.
+        @type: string """
+
+        self.value = value
+        """ Expression used for computing the value of the derived variable.
+        @type: string """
+
+        self.select = select
+        """ Selected target object for the reduce operation.
+        @type: string """
+        
+        self.reduce = reduce
+        """ Reduce operation to be applied over the selected target.
+        @type: string """
 
 class Run(PyLEMSBase):
     """
@@ -390,6 +444,10 @@ class Regime(PyLEMSBase):
         """ Dictionary of time derivatives defined in this behavior regime.
         @type: dict(string -> pylems.model.behavior.TimeDerivative) """
 
+        self.derived_variables = {}
+        """ Dictionary of derived variables defined in this behavior regime.
+        @type: dict(string -> pylems.model.behavior.DerivedVariable) """
+    
         self.event_handlers = []
         """ List of event handlers defined in this behavior regime.
         @type: list(EventHandler) """
@@ -448,6 +506,40 @@ class Regime(PyLEMSBase):
 
         self.time_derivatives[variable] = TimeDerivative(variable, value)
     
+    def add_derived_variable(self, name, exposure, dimension,
+                             value, select, reduce):
+        """
+        Adds a derived variable to the behavior current object.
+
+        @param name: Name of the derived variable.
+        @type name: string
+
+        @param exposure: Exposed name of the derived variable.
+        @type exposure: string
+
+        @param dimension: Dimension ofthe derived variable.
+        @type dimension: string
+
+        @param value: Value expression for the derived variable.
+        @type value: string
+
+        @param select: Target component selection for reduction operations.
+        @type select: string
+
+        @param reduce: Reduce operation.
+        @type reduce: string
+        
+        @raise ModelError: Raised when the derived variable is already
+        defined in this behavior regime.
+        """
+
+        if name in self.derived_variables:
+            raise ModelError('Duplicate derived variable ' + name)
+
+        self.derived_variables[name] = DerivedVariable(name, exposure,
+                                                       dimension, value,
+                                                       select, reduce)
+        
     def add_event_handler(self, event_handler):
         """
         Adds a state variable to the behavior current object.
