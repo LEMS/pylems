@@ -561,11 +561,12 @@ class Regime(PyLEMSBase):
             raise ModelError("Derived variable '{0}' must specify either a "
                              "value expression or a reduce "
                              "operation".format(name))
-        
-        if select != None and reduce == None:
-            raise ModelError("Reduce operation not specified for derived "
-                             "variable '{0}'".format(name))
 
+        if value != None and (select != None or reduce != None):
+            raise ModelError("Derived variable '{0}' cannot specify both "
+                             "value expressions or select/reduce "
+                             "operations".format(name))
+        
         if select == None and reduce != None:
             raise ModelError("Reduce target not specified for derived "
                              "variable '{0}'".format(name))

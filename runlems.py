@@ -15,11 +15,11 @@ from pylems.parser.expr import ExprParser
 #print ExprParser('1 + 2').parse()
 #print ExprParser('v .gt. threshold').parse()
 #print ExprParser('1-95*v_t/100').parse()
-print ExprParser('rate / (1 + exp(-(v - midpoint)/scale))').parse()
+#print ExprParser('rate / (1 + exp(-(v - midpoint)/scale))').parse()
 #print ExprParser('-1+-exp(a-b)-(c-d)').parse()
 #print ExprParser('-1--2').parse()
 #print '### {0}'.format(ExprParser('-10').parse())
-sys.exit(0)
+#sys.exit(0)
 
 if len(sys.argv) not in [2,3]:
     print 'Usage: runlems [-nogui] <model-file>'
