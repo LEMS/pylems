@@ -130,7 +130,6 @@ class Runnable(Reflective):
                 if idx == -1:
                     childobj.add_variable_recorder(new_path)
                 else:
-                    print childobj.array[idx]
                     childobj.array[idx].add_variable_recorder(new_path)
             else:
                 raise SimBuildError('Unable to find child \'{0}\' in '

@@ -772,7 +772,29 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        pass
+        if self.current_structure == None:
+            self.raise_error('<ForEach> can only be made within ' +
+                             'a structure definition')
+
+        if 'instances' in node.lattrib:
+            target = node.lattrib['instances']
+        else:
+            self.raise_error('<ForEach> must specify a reference to target'
+                             'instances')
+
+        if 'as' in node.lattrib:
+            name = node.lattrib['as']
+        else:
+            self.raise_error('<ForEach> must specify a name for the '
+                             'enumerated target instances')
+
+        old_structure = self.current_structure
+        self.current_structure = self.current_structure.add_foreach(\
+            name, target)
+
+        self.process_nested_tags(node)
+        
+        self.current_structure = old_structure
     
     def parse_include(self, node):
         """

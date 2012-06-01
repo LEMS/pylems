@@ -46,7 +46,17 @@ try:
 
     print 'Building simulation'
     sim = SimulationBuilder(model).build()
-    
+
+    def print_run(run, offset):
+        print offset,run.id
+        for rn in run.children:
+            r = run.children[rn]
+            print_run(r, '  ' + offset)
+
+    print 'Runnables:'
+    for r in sim.runnables:
+        print_run(sim.runnables[r], '')
+        
     print 'Running simulation'
     sim.run()
     #sys.exit(0)

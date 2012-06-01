@@ -79,13 +79,14 @@ class SimulationBuilder(PyLEMSBase):
             if p.numeric_value:
                 runnable.add_instance_variable(p.name, p.numeric_value)
             else:
-                if p.dimension == '__component_ref__':
-                    ref = context.parent.lookup_component(p.value)
-                    if ref == None:
-                        raise SimBuildError(('Unable to resolve component '
-                                             'reference {0}').\
-                                            format(component_name))
-                    #self.sim.add_runnable(ref.id, self.build_runnable(ref))
+                pass
+                ## if p.dimension == '__component_ref__':
+                ##     ref = context.parent.lookup_component(p.value)
+                ##     if ref == None:
+                ##         raise SimBuildError(('Unable to resolve component '
+                ##                              'reference {0}').\
+                ##                             format(component_name))
+                ##     self.sim.add_runnable(ref.id, self.build_runnable(ref))
 
         for port in context.event_in_ports:
             runnable.add_event_in_port(port)
@@ -240,17 +241,6 @@ class SimulationBuilder(PyLEMSBase):
         for rn in regime.runs:
             run = regime.runs[rn]
             c = context.lookup_component_ref(run.component)
-            ## if c != None and c.id in self.sim.runnables:
-            ##     target = self.sim.runnables[c.id]
-            ##     self.current_record_target = target
-            ##     time_step = context.lookup_parameter(run.increment)
-            ##     time_total = context.lookup_parameter(run.total)
-            ##     if time_step != None and time_total != None:
-            ##         target.configure_time(time_step.numeric_value,
-            ##                               time_total.numeric_value)
-            ##     else:
-            ##         raise SimBuildError(('Invalid time specifications in '
-            ##                              '<Run>'))
             if c != None:
                 target = self.build_runnable(c, self)
                 self.sim.add_runnable(c.id, target)
