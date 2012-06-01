@@ -10,6 +10,7 @@ from pylems.base.base import PyLEMSBase
 from pylems.base.util import Stack
 from pylems.base.errors import SimBuildError
 import ast
+import sys
 
 class Reflective(object):
     def __init__(self):
@@ -152,6 +153,20 @@ class Runnable(Reflective):
             self.children[cid].reset_time()
 
     def single_step(self, dt):
+        # For debugging
+        try:
+            return self.single_step2(dt)
+        except Exception as e:
+            r = self
+            name = r.id
+            while r.parent:
+                name = "{0}.{1}".format(r.id, name)
+                r = r.parent
+                
+            print "Error in '{0}': {1}".format(name, e)
+            sys.exit(0)
+            
+    def single_step2(self, dt):
         #print 'Single stepping {0}'.format(self.id)
         
         self.run_preprocessing_event_handlers(self)

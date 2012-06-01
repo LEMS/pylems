@@ -68,7 +68,7 @@ class SimulationBuilder(PyLEMSBase):
         @raise SimBuildError: Raised when a component reference cannot be
         resolved.
         """
-        
+
         runnable = Runnable(component.id, parent)
 
         context = component.context
@@ -85,7 +85,7 @@ class SimulationBuilder(PyLEMSBase):
                         raise SimBuildError(('Unable to resolve component '
                                              'reference {0}').\
                                             format(component_name))
-                    self.sim.add_runnable(ref.id, self.build_runnable(ref))
+                    #self.sim.add_runnable(ref.id, self.build_runnable(ref))
 
         for port in context.event_in_ports:
             runnable.add_event_in_port(port)
@@ -141,9 +141,17 @@ class SimulationBuilder(PyLEMSBase):
         # Process multi-child instatiantions
         for cparam in structure.multi_child_defs:
             sparam = structure.multi_child_defs[cparam]
+            c1 = component
+            c2 = context.lookup_component(cparam)
             template = self.build_runnable(context.lookup_component(cparam),
                                            component)
-            runnable.array.append(copy.deepcopy(template))
+            
+            for i in xrange(sparam):
+                instance = copy.deepcopy(template)
+                instance.id = "{0}#{1}#{2}".format(component.id,
+                                                   template.id,
+                                                   i)
+                runnable.array.append(instance)
         
         # Process event connections
         for (from_component, from_port,
@@ -232,17 +240,26 @@ class SimulationBuilder(PyLEMSBase):
         for rn in regime.runs:
             run = regime.runs[rn]
             c = context.lookup_component_ref(run.component)
-            if c != None and c.id in self.sim.runnables:
-                target = self.sim.runnables[c.id]
+            ## if c != None and c.id in self.sim.runnables:
+            ##     target = self.sim.runnables[c.id]
+            ##     self.current_record_target = target
+            ##     time_step = context.lookup_parameter(run.increment)
+            ##     time_total = context.lookup_parameter(run.total)
+            ##     if time_step != None and time_total != None:
+            ##         target.configure_time(time_step.numeric_value,
+            ##                               time_total.numeric_value)
+            ##     else:
+            ##         raise SimBuildError(('Invalid time specifications in '
+            ##                              '<Run>'))
+            if c != None:
+                target = self.build_runnable(c, self)
+                self.sim.add_runnable(c.id, target)
                 self.current_record_target = target
                 time_step = context.lookup_parameter(run.increment)
                 time_total = context.lookup_parameter(run.total)
                 if time_step != None and time_total != None:
                     target.configure_time(time_step.numeric_value,
                                           time_total.numeric_value)
-                else:
-                    raise SimBuildError(('Invalid time specifications in '
-                                         '<Run>'))
             else:
                 raise SimBuildError(('Invalid component reference {0} in '
                                      '<Run>').format(c.id))
@@ -426,7 +443,7 @@ class SimulationBuilder(PyLEMSBase):
         @raise SimBuildError: Raised when a target for recording could not be
         found.
         """
-        
+
         context = component.context
         regime = behavior_profile.default_regime
 
@@ -436,4 +453,5 @@ class SimulationBuilder(PyLEMSBase):
                 raise SimBuildError('No target available for '
                                     'recording variables')
             self.current_record_target.add_variable_recorder(rec.quantity)
+            
             
