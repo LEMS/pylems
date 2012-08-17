@@ -106,7 +106,7 @@ class Structure(PyLEMSBase):
         @type name: string
 
         @param target: Path to thetarget references.
-        @type name: string
+        @type target: string
         """
 
         foreach = ForEach(name, target)

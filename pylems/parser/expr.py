@@ -109,8 +109,8 @@ class Func1Node(ExprNode):
         """
         Constructor.
         
-        @param op: Function to be stored in this node.
-        @type op: string
+        @param func: Function to be stored in this node.
+        @type func: string
 
         @param param: Parameter.
         @type param: pylems.parser.expr.ExprNode

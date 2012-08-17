@@ -173,7 +173,7 @@ class Context(PyLEMSBase):
         current context.
 
         @param child: Child object.
-        @type name: pylems.model.component.Component
+        @type child: pylems.model.component.Component
 
         @raise ModelError: Raised when a child is instantiated inside a
         component type.

@@ -11,6 +11,7 @@ BENCHFILE = examples/sawtooth_bench.xml
 lems-code:
 
 lems-doc:
+	mkdir -p doc/epydoc
 	epydoc -v -o doc/epydoc pylems
 
 clean:
