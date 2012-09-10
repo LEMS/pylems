@@ -6,10 +6,10 @@ Component structure storage.
 @contact: gautham@textensor.com, gautham@lisphacker.org
 """
 
-from lems.base.base import PyLEMSBase
+from lems.base.base import LEMSBase
 from lems.base.errors import ModelError
 
-class Structure(PyLEMSBase):
+class Structure(LEMSBase):
     """
     Stores the structural characteristics for a component type.
     """

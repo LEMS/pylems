@@ -23,7 +23,7 @@ class ComponentType(Contextual):
         @type name: string
 
         @param context: The context in which to create this component type.
-        @type context: pylems.model.context.Context
+        @type context: lems.model.context.Context
 
         @param extends: Base component type extended by this type.
         @type extends: string
@@ -52,7 +52,7 @@ class ComponentType(Contextual):
 
         @param model: Model object storing the current model. (Needed to find
         the dimension for the specified symbol)
-        @type model: pylems.model.model.Model
+        @type model: lems.model.model.Model
 
         @attention: Having to pass the model in as a parameter is a temporary
         hack. This should fixed at some point of time, once PyLEMS is able to
@@ -82,7 +82,7 @@ class Component(Contextual):
         @type id: string
 
         @param context: The context in which to create this component.
-        @type context: pylems.model.context.Context
+        @type context: lems.model.context.Context
 
         @param component_type: Type of component.
         @type component_type: string

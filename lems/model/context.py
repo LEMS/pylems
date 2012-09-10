@@ -6,12 +6,12 @@ Context storage
 @contact: gautham@textensor.com, gautham@lisphacker.org
 """
 
-from lems.base.base import PyLEMSBase
+from lems.base.base import LEMSBase
 from lems.base.errors import ModelError
 from lems.model.behavior import Behavior
 from lems.model.structure import Structure
 
-class Context(PyLEMSBase):
+class Context(LEMSBase):
     """
     Stores the current type and variable context.
     """
@@ -36,15 +36,15 @@ class Context(PyLEMSBase):
 
         self.parent = parent
         """ Reference to parent context.
-        @type: pylems.model.context.Context """
+        @type: lems.model.context.Context """
 
         self.component_types = {}
         """ Dictionary of component types defined in this conext.
-        @type: dict(string -> pylems.model.component.ComponentType) """
+        @type: dict(string -> lems.model.component.ComponentType) """
 
         self.components = {}
         """ Dictionary of components defined in this context.
-        @type: dict(string -> pylems.model.component.Component) """
+        @type: dict(string -> lems.model.component.Component) """
 
         self.component_refs = {}
         """ Dictionary of component references defined in this context.
@@ -62,11 +62,11 @@ class Context(PyLEMSBase):
         
         self.children = []
         """ List of child objects defined in this context.
-        @type: list(pylems.model.component.Component) """
+        @type: list(lems.model.component.Component) """
         
         self.parameters = {}
         """ Dictionary of references to parameters defined in this context.
-        @type: dict(string -> pylems.model.parameter.Parameter) """
+        @type: dict(string -> lems.model.parameter.Parameter) """
 
         self.context_type = context_type
         """ Context type (Global, component type or component)
@@ -75,12 +75,12 @@ class Context(PyLEMSBase):
 
         self.behavior_profiles = {}
         """ Stores the various behavior profiles of the current object.
-        @type: dict(string -> pylems.model.behavior.Behavior) """
+        @type: dict(string -> lems.model.behavior.Behavior) """
 
         self.selected_behavior_profile = None
 
         """ Name of the selected behavior profile.
-        @type: pylems.model.behavior.Behavior """
+        @type: lems.model.behavior.Behavior """
 
         self.exposures = []
         """ List of names of exposed variables.
@@ -108,7 +108,7 @@ class Context(PyLEMSBase):
 
         self.structure = Structure()
         """ Structure object detailing structural aspects of this component.
-        @type: pylems.model.structure.Structure """
+        @type: lems.model.structure.Structure """
         
 
     def add_component_type(self, component_type):
@@ -117,7 +117,7 @@ class Context(PyLEMSBase):
         current context.
 
         @param component_type: Component type to be added
-        @type component_type: pylems.model.component.ComponentType
+        @type component_type: lems.model.component.ComponentType
 
         @raise ModelError: Raised when the component type is already defined
         in the current context.
@@ -135,7 +135,7 @@ class Context(PyLEMSBase):
         context.
 
         @param component: Component to be added
-        @type component: pylems.model.component.ComponentType
+        @type component: lems.model.component.ComponentType
 
         @raise ModelError: Raised when the component is already defined in the 
         current context.
@@ -173,7 +173,7 @@ class Context(PyLEMSBase):
         current context.
 
         @param child: Child object.
-        @type child: pylems.model.component.Component
+        @type child: lems.model.component.Component
 
         @raise ModelError: Raised when a child is instantiated inside a
         component type.
@@ -234,7 +234,7 @@ class Context(PyLEMSBase):
         context.
 
         @param parameter: Parameter to be added
-        @type parameter: pylems.model.parameter.ParameterType
+        @type parameter: lems.model.parameter.ParameterType
 
         @raise ModelError: Raised when the parameter is already defined in the 
         current context.
@@ -399,7 +399,7 @@ class Context(PyLEMSBase):
         @type name: string
 
         @return: Resolved component type object, or None on failure.
-        @rtype: pylems.model.component.ComponentType
+        @rtype: lems.model.component.ComponentType
         """
 
         if name in self.component_types:
@@ -418,7 +418,7 @@ class Context(PyLEMSBase):
         @type name: string
 
         @return: Resolved component object, or None on failure.
-        @rtype: pylems.model.component.Component
+        @rtype: lems.model.component.Component
         """
 
         if name in self.components:
@@ -437,7 +437,7 @@ class Context(PyLEMSBase):
         @type name: string
 
         @return: Resolved component object, or None on failure.
-        @rtype: pylems.model.component.Component
+        @rtype: lems.model.component.Component
         """
 
         if name in self.component_refs:
@@ -476,7 +476,7 @@ class Context(PyLEMSBase):
         @type parameter_name: string
 
         @return: Corresponding Parameter object or None if not found.
-        @rtype: pylems.model.parameter.Parameter
+        @rtype: lems.model.parameter.Parameter
         """
 
         if parameter_name in self.parameters:
@@ -485,7 +485,7 @@ class Context(PyLEMSBase):
             return None
 
     
-class Contextual(PyLEMSBase):
+class Contextual(LEMSBase):
     """
     Base class for objects that need to store their own context.
     """
@@ -497,7 +497,7 @@ class Contextual(PyLEMSBase):
         
         self.context = Context(name, parent, context_type)
         """ Context object.
-        @type: pylems.model.context.Context """
+        @type: lems.model.context.Context """
 
     def add_component_type(self, component_type):
         """
@@ -505,7 +505,7 @@ class Contextual(PyLEMSBase):
         current context.
 
         @param component_type: Component type to be added
-        @type component_type: pylems.model.component.ComponentType
+        @type component_type: lems.model.component.ComponentType
         """
 
         self.context.add_component_type(component_type)
@@ -516,7 +516,7 @@ class Contextual(PyLEMSBase):
         context.
 
         @param component: Component to be added
-        @type component: pylems.model.component.Component
+        @type component: lems.model.component.Component
         """
 
         self.context.add_component(component)
@@ -527,7 +527,7 @@ class Contextual(PyLEMSBase):
         context.
 
         @param parameter: Parameter to be added
-        @type parameter: pylems.model.parameter.Parameter
+        @type parameter: lems.model.parameter.Parameter
         """
 
         self.context.add_parameter(parameter)
@@ -540,7 +540,7 @@ class Contextual(PyLEMSBase):
         @type parameter_name: string
 
         @return: Corresponding Parameter object or None if not found.
-        @rtype: pylems.model.parameter.Parameter
+        @rtype: lems.model.parameter.Parameter
         """
 
         return self.context.lookup_parameter(parameter_name)

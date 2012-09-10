@@ -8,9 +8,9 @@ Parameter storage
 
 import re
 from lems.base.errors import ModelError
-from lems.base.base import PyLEMSBase
+from lems.base.base import LEMSBase
 
-class Parameter(PyLEMSBase):
+class Parameter(LEMSBase):
     """
     Stores a parameter.
     """

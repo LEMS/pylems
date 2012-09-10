@@ -30,15 +30,15 @@ class Model(Contextual):
 
         self.dimensions = None
         """ Dictionary of references to dimensions defined in the model.
-        @type: dict(string -> pylems.model.simple.Dimension) """
+        @type: dict(string -> lems.model.simple.Dimension) """
 
         self.units = None
         """ Dictionary of references to units defined in the model.
-        @type: dict(string -> pylems.model.simple.Unit) """
+        @type: dict(string -> lems.model.simple.Unit) """
 
         self.context = None
         """ Global (root) context.
-        @type: pylems.model.context.Context """
+        @type: lems.model.context.Context """
 
     def add_default_run(self, default_run):
         """
@@ -54,7 +54,7 @@ class Model(Contextual):
         Adds a dimension to the list of defined dimensions.
 
         @param dimension: Dimension to be added to the model.
-        @type dimension: pylems.base.units.Dimension
+        @type dimension: lems.base.units.Dimension
 
         @raise ModelError: Raised when the dimension is already defined.
         """
@@ -73,7 +73,7 @@ class Model(Contextual):
         Adds a unit to the list of defined units.
 
         @param unit: Unit to be added to the model.
-        @type unit: pylems.base.units.Unit
+        @type unit: lems.base.units.Unit
 
         @raise ModelError: Raised when the unit is already defined.
         """
@@ -92,10 +92,10 @@ class Model(Contextual):
         in terms of the symbols and dimensions defined in the model.
 
         @param parameter: Parameter object to be resolved.
-        @type parameter: pylems.model.parameter.Parameter
+        @type parameter: lems.model.parameter.Parameter
 
         @param context: Context containing the parameter
-        @type context: pylems.model.context.Context
+        @type context: lems.model.context.Context
 
         @raise ModelError: Raised when the value of the parameter is not set.
 
@@ -136,10 +136,10 @@ class Model(Contextual):
         component type.
 
         @param context: Context object containing the component type.
-        @type context: pylems.model.context.Context
+        @type context: lems.model.context.Context
 
         @param component_type: Component type to be resolved.
-        @type component_type: pylems.model.component.ComponentType
+        @type component_type: lems.model.component.ComponentType
 
         @raise ModelError: Raised when the base component type cannot be
         resolved.
@@ -187,10 +187,10 @@ class Model(Contextual):
         component.
 
         @param context: Context object containing the component.
-        @type context: pylems.model.context.Context
+        @type context: lems.model.context.Context
 
         @param component: Component to be resolved.
-        @type component: pylems.model.component.Component
+        @type component: lems.model.component.Component
 
         @raise ModelError: Raised when the base component cannot be
         resolved.
@@ -244,13 +244,13 @@ class Model(Contextual):
         Resolves the specified component's structure from component type.
 
         @param comp_context: Component's context object.
-        @type comp_context: pylems.model.context.Context
+        @type comp_context: lems.model.context.Context
 
         @param type_context: Component type's context object.
-        @type type_context: pylems.model.context.Context
+        @type type_context: lems.model.context.Context
 
         @param component: Component to be resolved.
-        @type component: pylems.model.component.Component
+        @type component: lems.model.component.Component
 
         @raise ModelError: Raised when the component type cannot be
         resolved.
@@ -286,10 +286,10 @@ class Model(Contextual):
         Resolves the specified component's parameters from component type.
 
         @param context: Context object containing the component.
-        @type context: pylems.model.context.Context
+        @type context: lems.model.context.Context
 
         @param component: Component to be resolved.
-        @type component: pylems.model.component.Component
+        @type component: lems.model.component.Component
 
         @raise ModelError: Raised when the component type cannot be
         resolved.
@@ -370,10 +370,10 @@ class Model(Contextual):
         objects.
 
         @param context: Current context.
-        @type context: pylems.model.context.Context
+        @type context: lems.model.context.Context
 
         @param regime: Behavior regime to be resolved.
-        @type regime: pylems.model.behavior.Behavior
+        @type regime: lems.model.behavior.Behavior
 
         @raise ModelError: Raised when the quantity to be recorded is not a
         path.
@@ -412,10 +412,10 @@ class Model(Contextual):
         objects.
 
         @param context: Current context.
-        @type context: pylems.model.context.Context
+        @type context: lems.model.context.Context
 
         @param behavior: Behavior profile to be resolved.
-        @type behavior: pylems.model.behavior.Behavior
+        @type behavior: lems.model.behavior.Behavior
         """
 
         self.resolve_regime(context, behavior.default_regime)
@@ -428,10 +428,10 @@ class Model(Contextual):
         Resolves the specified component.
 
         @param context: Context object containing the component.
-        @type context: pylems.model.context.Context
+        @type context: lems.model.context.Context
 
         @param component: Component to be resolved.
-        @type component: pylems.model.component.Component
+        @type component: lems.model.component.Component
 
         @raise ModelError: Raised when the dimension for a parameter cannot
         be resolved.
@@ -459,10 +459,10 @@ class Model(Contextual):
         Resolves the specified child component.
 
         @param context: Context object containing the component.
-        @type context: pylems.model.context.Context
+        @type context: lems.model.context.Context
 
         @param child: Child component to be resolved.
-        @type child: pylems.model.component.Component
+        @type child: lems.model.component.Component
 
         @raise ModelError: Raised when the parent component cannot be
         resolved.
@@ -500,7 +500,7 @@ class Model(Contextual):
         Resolves name references in the given context to actual objects.
 
         @param context: Context to be resolved.
-        @type context: pylems.model.context.Context
+        @type context: lems.model.context.Context
 
         @raise ModelError: Raised when the dimension for a parameter cannot
         be resolved.

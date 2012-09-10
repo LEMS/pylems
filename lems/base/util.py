@@ -6,10 +6,10 @@ Utility classes.
 @contact: gautham@textensor.com, gautham@lisphacker.org
 """
 
-from lems.base.base import PyLEMSBase
+from lems.base.base import LEMSBase
 from lems.base.errors import StackError
 
-class Stack(PyLEMSBase):
+class Stack(LEMSBase):
     """
     Basic stack implementation.
     """

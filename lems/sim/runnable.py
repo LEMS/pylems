@@ -6,7 +6,7 @@ Base class for runnable components.
 @contact: gautham@textensor.com, gautham@lisphacker.org
 """
 
-from lems.base.base import PyLEMSBase
+from lems.base.base import LEMSBase
 from lems.base.util import Stack
 from lems.base.errors import SimBuildError
 import ast

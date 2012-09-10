@@ -25,16 +25,16 @@ class SimulationBuilder(PyLEMSBase):
         Constructor.
 
         @param model: Model upon which the simulation is to be generated.
-        @type model: pylems.model.model.Model
+        @type model: lems.model.model.Model
         """
         
         self.model = model
         """ Model to be used for constructing the simulation.
-        @type: pylems.model.model.Model """
+        @type: lems.model.model.Model """
 
         self.sim = None
         """ Simulation built from the model.
-        @type: pylems.sim.sim.Simulation """
+        @type: lems.sim.sim.Simulation """
 
         self.current_record_target = None
 
@@ -44,7 +44,7 @@ class SimulationBuilder(PyLEMSBase):
         Build the simulation components from the model.
 
         @return: A runnable simulation object
-        @rtype: pylems.sim.sim.Simulation
+        @rtype: lems.sim.sim.Simulation
         """
 
         self.sim = Simulation()
@@ -66,10 +66,10 @@ class SimulationBuilder(PyLEMSBase):
         it to the simulation.
 
         @param component: Component specification
-        @type component: pylems.model.component.Component
+        @type component: lems.model.component.Component
 
         @param parent: Parent runnable component.
-        @type parent: pylems.sim.runnable.Runnable
+        @type parent: lems.sim.runnable.Runnable
 
         @raise SimBuildError: Raised when a component reference cannot be
         resolved.
@@ -130,14 +130,14 @@ class SimulationBuilder(PyLEMSBase):
         specifications in the component model.
 
         @param component: Component model containing structure specifications.
-        @type component: pylems.model.component.Component
+        @type component: lems.model.component.Component
 
         @param runnable: Runnable component to which structure is to be added.
-        @type runnable: pylems.sim.runnable.Runnable
+        @type runnable: lems.sim.runnable.Runnable
 
         @param structure: The structure object to be used to add
         structure code in the runnable component.
-        @type structure: pylems.model.structure.Structure
+        @type structure: lems.model.structure.Structure
         """
 
         context = component.context
@@ -193,14 +193,14 @@ class SimulationBuilder(PyLEMSBase):
         specifications in the component model.
 
         @param component: Component model containing behavior specifications.
-        @type component: pylems.model.component.Component
+        @type component: lems.model.component.Component
 
         @param runnable: Runnable component to which behavior is to be added.
-        @type runnable: pylems.sim.runnable.Runnable
+        @type runnable: lems.sim.runnable.Runnable
 
         @param behavior_profile: The behavior profile to be used to generate
         behavior code in the runnable component.
-        @type behavior_profile: pylems.model.behavior.Behavior
+        @type behavior_profile: lems.model.behavior.Behavior
 
         @raise SimBuildError: Raised when a time derivative expression refers
         to an undefined variable.
@@ -292,7 +292,7 @@ class SimulationBuilder(PyLEMSBase):
 
         @param tree_node: Root node for the tree from which the expression
         is to be built.
-        @type tree_node: pylems.parser.expr.ExprNode
+        @type tree_node: lems.parser.expr.ExprNode
 
         @return: Generated Python expression.
         @rtype: string
@@ -314,7 +314,7 @@ class SimulationBuilder(PyLEMSBase):
         Build event handler code.
 
         @param event_handler: Event handler object
-        @type event_handler: pylems.model.behavior.EventHandler
+        @type event_handler: lems.model.behavior.EventHandler
 
         @return: Generated event handler code.
         @rtype: list(string)
@@ -332,7 +332,7 @@ class SimulationBuilder(PyLEMSBase):
         Build OnCondition event handler code.
 
         @param on_condition: OnCondition event handler object
-        @type on_condition: pylems.model.behavior.OnCondition
+        @type on_condition: lems.model.behavior.OnCondition
 
         @return: Generated OnCondition code
         @rtype: list(string)
@@ -353,7 +353,7 @@ class SimulationBuilder(PyLEMSBase):
         Build OnEvent event handler code.
 
         @param on_event: OnEvent event handler object
-        @type on_event: pylems.model.behavior.OnEvent
+        @type on_event: lems.model.behavior.OnEvent
 
         @return: Generated OnEvent code
         @rtype: list(string)
@@ -377,7 +377,7 @@ class SimulationBuilder(PyLEMSBase):
         Build event handler action code.
 
         @param action: Event handler action object
-        @type action: pylems.model.behavior.Action
+        @type action: lems.model.behavior.Action
 
         @return: Generated action code
         @rtype: string
@@ -395,7 +395,7 @@ class SimulationBuilder(PyLEMSBase):
         Build state assignment code.
 
         @param state_assignment: State assignment object
-        @type state_assignment: pylems.model.behavior.StateAssignment
+        @type state_assignment: lems.model.behavior.StateAssignment
 
         @return: Generated state assignment code
         @rtype: string
@@ -410,7 +410,7 @@ class SimulationBuilder(PyLEMSBase):
         Build event out code.
 
         @param event_out: event out object
-        @type event_out: pylems.model.behavior.StateAssignment
+        @type event_out: lems.model.behavior.StateAssignment
 
         @return: Generated event out code
         @rtype: string
@@ -427,14 +427,14 @@ class SimulationBuilder(PyLEMSBase):
         the behavior specifications in the component model.
 
         @param component: Component model containing behavior specifications.
-        @type component: pylems.model.component.Component
+        @type component: lems.model.component.Component
 
         @param runnable: Runnable component to which behavior is to be added.
-        @type runnable: pylems.sim.runnable.Runnable
+        @type runnable: lems.sim.runnable.Runnable
 
         @param behavior_profile: The behavior profile to be used to generate
         behavior code in the runnable component.
-        @type behavior_profile: pylems.model.behavior.Behavior
+        @type behavior_profile: lems.model.behavior.Behavior
 
         @raise SimBuildError: Raised when a target for recording could not be
         found.

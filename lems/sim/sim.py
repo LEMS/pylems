@@ -6,12 +6,12 @@ Simulation.
 @contact: gautham@textensor.com, gautham@lisphacker.org
 """
 
-from lems.base.base import PyLEMSBase
+from lems.base.base import LEMSBase
 from lems.base.errors import SimError
 
 import heapq
 
-class Simulation(PyLEMSBase):
+class Simulation(LEMSBase):
     """
     Simulation class.
     """
@@ -23,11 +23,15 @@ class Simulation(PyLEMSBase):
         
         self.runnables = {}
         """ Dictionary of runnable components in this simulation.
-        @type: dict(string -> pylems.sim.runnable.Runnable) """
+        @type: dict(string -> lems.sim.runnable.Runnable) """
 
         self.run_queue = []
         """ Priority of pairs of (time-to-next run, runnable)
-        @type: list((Integer, pylems.sim.runnable.Runnable)) """
+        @type: list((Integer, lems.sim.runnable.Runnable)) """
+
+        self.event_queue = []
+        """ List of posted events
+        @type: list(lems.sim."""
 
     def add_runnable(self, id, runnable):
         """
@@ -38,7 +42,7 @@ class Simulation(PyLEMSBase):
         @type id: string
         
         @param runnable: A runnable component
-        @type runnable: pylems.sim.runnable.Runnable
+        @type runnable: lems.sim.runnable.Runnable
         """
 
         if id in self.runnables:

@@ -6,11 +6,11 @@ Component behavior storage.
 @contact: gautham@textensor.com, gautham@lisphacker.org
 """
 
-from lems.base.base import PyLEMSBase
+from lems.base.base import LEMSBase
 from lems.base.errors import ModelError,ParseError
 from lems.parser.expr import ExprParser
 
-class StateVariable(PyLEMSBase):
+class StateVariable(LEMSBase):
     """
     Stores the definition of a state variable.
     """
@@ -43,7 +43,7 @@ class StateVariable(PyLEMSBase):
         """ Dimension of this state variable.
         @type: string """
 
-class TimeDerivative(PyLEMSBase):
+class TimeDerivative(LEMSBase):
     """
     Stores the time derivative expression for a given state variable.
     """
@@ -70,14 +70,14 @@ class TimeDerivative(PyLEMSBase):
         try:
             self.expression_tree = ExprParser(value).parse()
             """ Parse tree for the time derivative expression.
-            @type: pylems.parser.expr.ExprNode """
+            @type: lems.parser.expr.ExprNode """
         except:
             raise ParseError("Parse error when parsing value expression "
                              "'{0}' for derived variable {1}".format(\
                                  self.value,
                                  self.variable))
 
-class DerivedVariable(PyLEMSBase):
+class DerivedVariable(LEMSBase):
     """
     Stores the definition of a derived variable.
     """
@@ -135,7 +135,7 @@ class DerivedVariable(PyLEMSBase):
             try:
                 self.expression_tree = ExprParser(value).parse()
                 """ Parse tree for the time derivative expression.
-                @type: pylems.parser.expr.ExprNode """
+                @type: lems.parser.expr.ExprNode """
             except:
                 raise ParseError("Parse error when parsing value expression "
                                  "'{0}' for derived variable {1}".format(\
@@ -145,7 +145,7 @@ class DerivedVariable(PyLEMSBase):
             self.expression_tree = None
                 
 
-class Run(PyLEMSBase):
+class Run(LEMSBase):
     """
     Stores the description of an object to be run according to an independent
     variable (usually time).
@@ -189,7 +189,7 @@ class Run(PyLEMSBase):
         @type: string """
         
 
-class Record(PyLEMSBase):
+class Record(LEMSBase):
     """
     Stores the parameters of a <Record> statement.
     """
@@ -201,7 +201,7 @@ class Record(PyLEMSBase):
 
         self.numeric_scale = None
         
-class Show(PyLEMSBase):
+class Show(LEMSBase):
     """
     Stores the parameters of a <Show> statement.
     """
@@ -210,7 +210,7 @@ class Show(PyLEMSBase):
         self.src = src
         self.scale = scale
     
-class EventHandler(PyLEMSBase):
+class EventHandler(LEMSBase):
     """
     Base class for event an handler.
     """
@@ -242,7 +242,7 @@ class EventHandler(PyLEMSBase):
         Adds an action to the list of actions.
 
         @param action: Action to be performed.
-        @type action: pylems.model.behavior.Action
+        @type action: lems.model.behavior.Action
         """
 
         if self.actions == None:
@@ -343,7 +343,7 @@ class OnCondition(EventHandler):
 
         self.expression_tree = ExprParser(test).parse()
         """ Parse tree for the test expression.
-        @type: pylems.parser.expr.ExprNode """
+        @type: lems.parser.expr.ExprNode """
 
     def __str__(self):
         """ Generates a string representation of this condition."""
@@ -351,7 +351,7 @@ class OnCondition(EventHandler):
         return 'OnCondition: ' + self.test + ' | ' +\
                str(self.expression_tree)
         
-class Action(PyLEMSBase):
+class Action(LEMSBase):
     """
     Base class for an event action.
     """
@@ -401,7 +401,7 @@ class StateAssignment(Action):
 
         self.expression_tree = ExprParser(value).parse()
         """ Parse tree for the assignment expression.
-        @type: pylems.parser.expr.ExprNode """
+        @type: lems.parser.expr.ExprNode """
 
     def __str__(self):
         """ Generates a string representation of this state assigment """
@@ -433,7 +433,7 @@ class EventOut(Action):
 
         return 'Event -> ' + self.port
 
-class Regime(PyLEMSBase):
+class Regime(LEMSBase):
     """
     Store a behavior regime for a component type.
     """
@@ -459,15 +459,15 @@ class Regime(PyLEMSBase):
 
         self.state_variables = {}
         """ Dictionary of state variables defined in this behavior regime.
-        @type: dict(string -> pylems.model.behavior.StateVariable) """
+        @type: dict(string -> lems.model.behavior.StateVariable) """
     
         self.time_derivatives = {}
         """ Dictionary of time derivatives defined in this behavior regime.
-        @type: dict(string -> pylems.model.behavior.TimeDerivative) """
+        @type: dict(string -> lems.model.behavior.TimeDerivative) """
 
         self.derived_variables = {}
         """ Dictionary of derived variables defined in this behavior regime.
-        @type: dict(string -> pylems.model.behavior.DerivedVariable) """
+        @type: dict(string -> lems.model.behavior.DerivedVariable) """
     
         self.event_handlers = []
         """ List of event handlers defined in this behavior regime.
@@ -475,15 +475,15 @@ class Regime(PyLEMSBase):
 
         self.runs = {}
         """ Dictionary of runs in this behavior regime.
-        @type: dict(string -> pylems.model.behavior.Run) """
+        @type: dict(string -> lems.model.behavior.Run) """
         
         self.records = {}
         """ Dictionary of recorded variables in this behavior regime.
-        @type: dict(string -> pylems.model.behavior.Record """
+        @type: dict(string -> lems.model.behavior.Record """
 
         self.shows = {}
         """ Dictionary of recorded variables in this behavior regime.
-        @type: dict(string -> pylems.model.behavior.Record """
+        @type: dict(string -> lems.model.behavior.Record """
 
     def add_state_variable(self, name, exposure, dimension):
         """
@@ -580,7 +580,7 @@ class Regime(PyLEMSBase):
         Adds a state variable to the behavior current object.
 
         @param event_handler: Event handler object.
-        @type event_handler: pylems.model.behavior.EventHandler
+        @type event_handler: lems.model.behavior.EventHandler
         """
 
         self.event_handlers += [event_handler]
@@ -648,7 +648,7 @@ class Regime(PyLEMSBase):
         
         self.shows[src] = Record(src, scale)
 
-class Behavior(PyLEMSBase):
+class Behavior(LEMSBase):
     """
     Stores the behavior characteristics for a component type.
     """
@@ -665,15 +665,15 @@ class Behavior(PyLEMSBase):
         self.default_regime = Regime('')
         """ Default behavior regime for this behavior profile. This regime
         is used to store behavior object not defined within a named regime.
-        @type: pylems.model.behavior.Regime """
+        @type: lems.model.behavior.Regime """
 
         self.current_regime = None
         """ Currently active behavior regime for this behavior profile.
-        @type: pylems.model.behavior.Regime """
+        @type: lems.model.behavior.Regime """
 
         self.regimes = {}
         """ Dictionary of regimes in this behavior profile.
-        @type: dict(string -> pylems.model.behavior.Regime) """
+        @type: dict(string -> lems.model.behavior.Regime) """
 
     def add_regime(self, name, initial = False):
         """

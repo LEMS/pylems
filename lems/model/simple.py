@@ -6,9 +6,9 @@ Types for basic LEMS objects (Dimensions, units, ...)
 @contact: gautham@textensor.com, gautham@lisphacker.org
 """
 
-from lems.base.base import PyLEMSBase
+from lems.base.base import LEMSBase
 
-class Dimension(PyLEMSBase):
+class Dimension(LEMSBase):
     """
     Stores dimensionality of user-defined quantities in terms of the
     seven fundamental SI units
@@ -71,7 +71,7 @@ class Dimension(PyLEMSBase):
         self.n = dims[6]
             
 
-class Unit(PyLEMSBase):
+class Unit(LEMSBase):
     """
     Stores definition of unit symbols (eg, mV, ug) in terms of
     dimensions
@@ -85,7 +85,7 @@ class Unit(PyLEMSBase):
         @type symbol: string
         
         @param dimension: User-defined dimension for this symbol
-        @type dimension: pylems.base.units.Dimension
+        @type dimension: lems.base.units.Dimension
         
         @param pow10: Scaling factor in terms of powers of 10 relative
         to the default dimensions for this unit

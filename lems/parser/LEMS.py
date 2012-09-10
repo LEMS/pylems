@@ -44,7 +44,7 @@ class LEMSParser(Parser):
 
     model = None
     """ Model built during parsing
-    @type: pylems.model.model.model """
+    @type: lems.model.model.model """
 
     tag_parse_table = None
     """ Dictionary of xml tags to parse methods
@@ -56,32 +56,32 @@ class LEMSParser(Parser):
 
     context_stack = []
     """ Stack of contexts used for handling nested contexts.
-    @type: list(pylems.model.context.Context) """
+    @type: list(lems.model.context.Context) """
 
     current_context = None
     """ Currently active (being parsed) context.
-    @type: pylems.model.context.Context """
+    @type: lems.model.context.Context """
 
     component_type_stack = []
     """ Stack of component type objects used for handling nested
     component types.
-    @type: list(pylems.model.parameter.ComponentType) """
+    @type: list(lems.model.parameter.ComponentType) """
 
     current_component_type = None
     """ Component type object being parsed.
-    @type: pylems.model.parameter.ComponentType """
+    @type: lems.model.parameter.ComponentType """
 
     current_regime = None
     """ Current behavior regime being parsed.
-    @type: pylems.model.behavior.Regime """
+    @type: lems.model.behavior.Regime """
 
     current_event_handler = None
     """ Current event_handler being parsed.
-    @type: pylems.model.behavior.EventHandler """
+    @type: lems.model.behavior.EventHandler """
 
     current_structure = None
     """ Current structure being parsed.
-    @type: pylems.model.structure.Structure """
+    @type: lems.model.structure.Structure """
 
     xml_node_stack = []
     """ XML node stack.
@@ -237,7 +237,7 @@ class LEMSParser(Parser):
 
         @return: Component type corresponding to the type name or None if
         undefined.
-        @rtype: pylems.model.component.ComponentType
+        @rtype: lems.model.component.ComponentType
         """
 
         stack = self.context_stack
@@ -259,7 +259,7 @@ class LEMSParser(Parser):
         @type component_name: string
 
         @return: Component corresponding to the name or None if undefined.
-        @rtype: pylems.model.component.Component
+        @rtype: lems.model.component.Component
         """
 
         stack = self.context_stack
@@ -306,7 +306,7 @@ class LEMSParser(Parser):
         Returns the generated model.
 
         @return: The generated model.
-        @rtype: pylems.model.model.Model
+        @rtype: lems.model.model.Model
         """
         
         return self.model

@@ -6,11 +6,11 @@ Expression parser
 @contact: gautham@textensor.com, gautham@lisphacker.org
 """
 
-from lems.base.base import PyLEMSBase
+from lems.base.base import LEMSBase
 from lems.base.errors import ParseError
 from lems.base.util import Stack
 
-class ExprNode(PyLEMSBase):
+class ExprNode(LEMSBase):
     """
     Base class for a node in the expression parse tree.
     """
@@ -70,10 +70,10 @@ class OpNode(ExprNode):
         @type op: string
 
         @param left: Left operand.
-        @type left: pylems.parser.expr.ExprNode
+        @type left: lems.parser.expr.ExprNode
 
         @param right: Right operand.
-        @type right: pylems.parser.expr.ExprNode
+        @type right: lems.parser.expr.ExprNode
         """
         
         ExprNode.__init__(self, ExprNode.OP)
@@ -84,11 +84,11 @@ class OpNode(ExprNode):
 
         self.left = left
         """ Left operand.
-        @type: pylems.parser.expr.ExprNode """
+        @type: lems.parser.expr.ExprNode """
 
         self.right = right
         """ Right operand.
-        @type: pylems.parser.expr.ExprNode """
+        @type: lems.parser.expr.ExprNode """
 
     def __str__(self):
         """
@@ -113,7 +113,7 @@ class Func1Node(ExprNode):
         @type func: string
 
         @param param: Parameter.
-        @type param: pylems.parser.expr.ExprNode
+        @type param: lems.parser.expr.ExprNode
         """
         
         ExprNode.__init__(self, ExprNode.FUNC1)
@@ -124,7 +124,7 @@ class Func1Node(ExprNode):
 
         self.param = param
         """ Parameter.
-        @type: pylems.parser.expr.ExprNode """
+        @type: lems.parser.expr.ExprNode """
 
     def __str__(self):
         """
@@ -134,7 +134,7 @@ class Func1Node(ExprNode):
         return '({0} {1})'.format(self.func, str(self.param))
 
     
-class ExprParser(PyLEMSBase):
+class ExprParser(LEMSBase):
     """
     Parser class for parsing an expression and generating a parse tree.
     """
@@ -274,7 +274,7 @@ class ExprParser(PyLEMSBase):
         itself recursively to handle bracketed subexpressions.
 
         @return: Returns a token string.
-        @rtype: pylems.parser.expr.ExprNode
+        @rtype: lems.parser.expr.ExprNode
 
         @attention: Does not handle unary minuses at the moment. Needs to be
         fixed.
@@ -381,7 +381,7 @@ class ExprParser(PyLEMSBase):
         Tokenizes and parses an arithmetic expression into a parse tree.
 
         @return: Returns a token string.
-        @rtype: pylems.parser.expr.ExprNode
+        @rtype: lems.parser.expr.ExprNode
         """
         
         self.tokenize()

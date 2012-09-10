@@ -1,5 +1,5 @@
 """
-PyLEMS base class.
+LEMS base class.
 
 @author: Gautham Ganapathy
 @organization: Textensor (http://textensor.com)
@@ -8,6 +8,6 @@ PyLEMS base class.
 
 import copy
 
-class PyLEMSBase(object):
+class LEMSBase(object):
     def copy(self):
         return copy.deepcopy(self)
