@@ -158,7 +158,9 @@ class Runnable(Reflective):
         except Exception as e:
             r = self
             name = r.id
+            print 'SIMERR ', e
             while r.parent:
+                print "SIMERR ", r.id#, r.name, r, r.parent
                 name = "{0}.{1}".format(r.id, name)
                 r = r.parent
                 
@@ -170,6 +172,8 @@ class Runnable(Reflective):
         
         self.run_preprocessing_event_handlers(self)
         self.update_shadow_variables()
+
+        self.update_derived_variables(self)
 
         self.update_state_variables(self, dt)
         self.update_shadow_variables()

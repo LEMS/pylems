@@ -48,67 +48,6 @@ try:
     print 'Building simulation'
     sim = SimulationBuilder(model).build()
 
-
-except ParseError as e:
-    print 'Caught ParseError - ' + str(e)
-except ModelError as e:
-    print 'Caught ModelError - ' + str(e)
-except SimBuildError as e:
-    print 'Caught SimBuildError - ' + str(e)
-except SimError as e:
-    print 'Caught SimError - ' + str(e)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#sys.exit(0)
-try:
-    print 'Parsing model file'
-    parser = LEMSParser()
-    parser.init_parser()
-    parser.parse_file(model_file)
-    model = parser.get_model()
-    #print model
-    
-    print 'Resolving model'
-    model.resolve_model()
-    #print model
-
-    print 'Building simulation'
-    sim = SimulationBuilder(model).build()
-
     def print_run(run, offset):
         print offset,run.id
         for rn in run.children:

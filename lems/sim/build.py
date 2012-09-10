@@ -105,6 +105,8 @@ class SimulationBuilder(LEMSBase):
         else:
             runnable.add_method('update_state_variables', ['self', 'dt'],
                                 [])
+            runnable.add_method('update_derived_variables', ['self'],
+                                [])
             runnable.add_method('run_preprocessing_event_handlers', ['self'],
                                 [])
             runnable.add_method('run_postprocessing_event_handlers', ['self'],
@@ -215,10 +217,12 @@ class SimulationBuilder(LEMSBase):
         context = component.context
         regime = behavior_profile.default_regime
 
+        # Process state variables
         for svn in regime.state_variables:
             sv = regime.state_variables[svn]
             runnable.add_instance_variable(sv.name, 0)
 
+        # Process time derivatives
         time_step_code = []
         for tdn in regime.time_derivatives:
             if tdn not in regime.state_variables:
@@ -232,6 +236,30 @@ class SimulationBuilder(LEMSBase):
         runnable.add_method('update_state_variables', ['self', 'dt'],
                             time_step_code)
 
+        # Process derived variables
+        derived_variable_code = []
+        for dvn in regime.derived_variables:
+            dv = regime.derived_variables[dvn]
+            print dv.name, dv.value, dv.select, dv.reduce
+            runnable.add_derived_variable(dv.name)
+            if dv.value:
+                derived_variable_code += ['self.{0} = ({1})'.format(
+                        dv.name,
+                        self.build_expression_from_tree(dv.expression_tree))]
+            elif dv.select:
+                if dv.reduce:
+                    derived_variable_code += self.build_reduce_code(dv.name,
+                                                                    dv.select, 
+                                                                    dv.reduce)
+                else:
+                    derived_variable_code += [dv.select.replace('/', '.')]
+            else:
+                raise SimBuildError(('Inconsistent derived variable settings'
+                                     'for {0}').format(dvn))
+        runnable.add_method('update_derived_variables', ['self'],
+                            derived_variable_code)
+
+        # Process event handlers
         pre_event_handler_code = []
         post_event_handler_code = []
         for eh in regime.event_handlers:
@@ -244,6 +272,7 @@ class SimulationBuilder(LEMSBase):
         runnable.add_method('run_postprocessing_event_handlers', ['self'],
                             post_event_handler_code)
 
+        # Process runs
         for rn in regime.runs:
             run = regime.runs[rn]
             c = context.lookup_component_ref(run.component)
@@ -266,6 +295,7 @@ class SimulationBuilder(LEMSBase):
 
         @param op: NeuroML operator
         @type op: string
+
 
         @return: Python operator
         @rtype: string
@@ -421,6 +451,32 @@ class SimulationBuilder(LEMSBase):
         
         return event_out_code
 
+    def build_reduce_code(self, result, select, reduce):
+        """
+        Builds a reduce operation on the selected target range.
+        """
+        
+        select = select.replace('/', '.')
+        select = select.replace(' ', '')
+        if reduce == 'add':
+            reduce_op = '+'
+            acc_start = 0
+        else:
+            reduce_op = '*'
+            acc_start = 1
+
+        bits = select.split('[*]')
+        array = bits[0]
+        ref = bits[1]
+
+        code = ['acc = {0}'.format(acc_start)]
+        code += ['for i in self.{0}:'.format(array)]
+        code += ['    o = self.{0}[i]'.format(array)]
+        code += ['    acc = acc {0} o{1}'.format(reduce_op, ref)]
+        code += ['self.{0} = acc'.format(result)]
+
+        return code
+        
     def add_recording_behavior(self, component, runnable, behavior_profile):
         """
         Adds recording-related behavior to a runnable component based on
