@@ -6,9 +6,9 @@ Expression parser
 @contact: gautham@textensor.com, gautham@lisphacker.org
 """
 
-from pylems.base.base import PyLEMSBase
-from pylems.base.errors import ParseError
-from pylems.base.util import Stack
+from lems.base.base import PyLEMSBase
+from lems.base.errors import ParseError
+from lems.base.util import Stack
 
 class ExprNode(PyLEMSBase):
     """

@@ -7,8 +7,8 @@ Parameter storage
 """
 
 import re
-from pylems.base.errors import ModelError
-from pylems.base.base import PyLEMSBase
+from lems.base.errors import ModelError
+from lems.base.base import PyLEMSBase
 
 class Parameter(PyLEMSBase):
     """

@@ -6,8 +6,8 @@ Component structure storage.
 @contact: gautham@textensor.com, gautham@lisphacker.org
 """
 
-from pylems.base.base import PyLEMSBase
-from pylems.base.errors import ModelError
+from lems.base.base import PyLEMSBase
+from lems.base.errors import ModelError
 
 class Structure(PyLEMSBase):
     """

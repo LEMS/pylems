@@ -6,8 +6,8 @@ Utility classes.
 @contact: gautham@textensor.com, gautham@lisphacker.org
 """
 
-from pylems.base.base import PyLEMSBase
-from pylems.base.errors import StackError
+from lems.base.base import PyLEMSBase
+from lems.base.errors import StackError
 
 class Stack(PyLEMSBase):
     """

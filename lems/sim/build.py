@@ -8,12 +8,12 @@ Simulation builder.
 
 import copy
 
-from pylems.base.base import PyLEMSBase
-from pylems.base.errors import SimBuildError
-from pylems.sim.runnable import Runnable
-from pylems.sim.sim import Simulation
-from pylems.parser.expr import ExprNode
-from pylems.model.behavior import EventHandler,Action
+from lems.base.base import PyLEMSBase
+from lems.base.errors import SimBuildError
+from lems.sim.runnable import Runnable
+from lems.sim.sim import Simulation
+from lems.parser.expr import ExprNode
+from lems.model.behavior import EventHandler,Action
 
 class SimulationBuilder(PyLEMSBase):
     """

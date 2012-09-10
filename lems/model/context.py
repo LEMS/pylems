@@ -6,10 +6,10 @@ Context storage
 @contact: gautham@textensor.com, gautham@lisphacker.org
 """
 
-from pylems.base.base import PyLEMSBase
-from pylems.base.errors import ModelError
-from pylems.model.behavior import Behavior
-from pylems.model.structure import Structure
+from lems.base.base import PyLEMSBase
+from lems.base.errors import ModelError
+from lems.model.behavior import Behavior
+from lems.model.structure import Structure
 
 class Context(PyLEMSBase):
     """

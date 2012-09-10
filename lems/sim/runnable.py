@@ -6,9 +6,9 @@ Base class for runnable components.
 @contact: gautham@textensor.com, gautham@lisphacker.org
 """
 
-from pylems.base.base import PyLEMSBase
-from pylems.base.util import Stack
-from pylems.base.errors import SimBuildError
+from lems.base.base import PyLEMSBase
+from lems.base.util import Stack
+from lems.base.errors import SimBuildError
 import ast
 import sys
 

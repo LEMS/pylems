@@ -9,14 +9,14 @@ LEMS parser
 from xml.etree import ElementTree as xml
 import os.path
 
-from pylems.model.simple import Dimension,Unit
-from pylems.base.parser import Parser
-from pylems.model.model import Model
-from pylems.base.errors import ParseError,ModelError
-from pylems.model.context import Context,Contextual
-from pylems.model.component import Component,ComponentType
-from pylems.model.parameter import Parameter
-from pylems.model.behavior import *
+from lems.model.simple import Dimension,Unit
+from lems.base.parser import Parser
+from lems.model.model import Model
+from lems.base.errors import ParseError,ModelError
+from lems.model.context import Context,Contextual
+from lems.model.component import Component,ComponentType
+from lems.model.parameter import Parameter
+from lems.model.behavior import *
 #Behavior,Regime,OnCondition,OnEvent,StateAssignment
 
 def xmltolower(node):

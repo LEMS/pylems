@@ -6,9 +6,9 @@ Model storage
 @contact: gautham@textensor.com, gautham@lisphacker.org
 """
 
-from pylems.base.errors import ModelError
-from pylems.model.context import Contextual
-from pylems.model.parameter import Parameter
+from lems.base.errors import ModelError
+from lems.model.context import Contextual
+from lems.model.parameter import Parameter
 
 import re
 

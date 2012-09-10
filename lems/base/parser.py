@@ -6,7 +6,7 @@ Parser interface definition
 @contact: gautham@textensor.com, gautham@lisphacker.org
 """
 
-from pylems.base.base import PyLEMSBase
+from lems.base.base import PyLEMSBase
 
 class Parser(PyLEMSBase):
     """

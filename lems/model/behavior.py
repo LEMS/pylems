@@ -6,9 +6,9 @@ Component behavior storage.
 @contact: gautham@textensor.com, gautham@lisphacker.org
 """
 
-from pylems.base.base import PyLEMSBase
-from pylems.base.errors import ModelError,ParseError
-from pylems.parser.expr import ExprParser
+from lems.base.base import PyLEMSBase
+from lems.base.errors import ModelError,ParseError
+from lems.parser.expr import ExprParser
 
 class StateVariable(PyLEMSBase):
     """
