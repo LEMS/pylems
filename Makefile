@@ -4,8 +4,8 @@ JAVALEMS = ../LEMS/lems
 TIME = /usr/bin/time -f '%E s'
 #MODELFILE = examples/sawtooth.xml
 #MODELFILE = examples/example1.xml
-#MODELFILE = examples/sawtooth_events.xml
-MODELFILE = examples/example1_new.xml
+MODELFILE = examples/sawtooth_events.xml
+#MODELFILE = examples/example1_new.xml
 BENCHFILE = examples/sawtooth_bench.xml
 
 lems-code:

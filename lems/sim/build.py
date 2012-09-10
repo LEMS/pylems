@@ -29,7 +29,13 @@ class SimulationBuilder(PyLEMSBase):
         """
         
         self.model = model
+        """ Model to be used for constructing the simulation.
+        @type: pylems.model.model.Model """
+
         self.sim = None
+        """ Simulation built from the model.
+        @type: pylems.sim.sim.Simulation """
+
         self.current_record_target = None
 
 
