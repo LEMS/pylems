@@ -8,14 +8,14 @@ Simulation builder.
 
 import copy
 
-from lems.base.base import PyLEMSBase
+from lems.base.base import LEMSBase
 from lems.base.errors import SimBuildError
 from lems.sim.runnable import Runnable
 from lems.sim.sim import Simulation
 from lems.parser.expr import ExprNode
 from lems.model.behavior import EventHandler,Action
 
-class SimulationBuilder(PyLEMSBase):
+class SimulationBuilder(LEMSBase):
     """
     Simulation builder class.
     """
