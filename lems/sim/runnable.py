@@ -104,6 +104,8 @@ class Runnable(Reflective):
         
     def register_event_out_callback(self, port, callback):
         if port in self.event_out_callbacks:
+            for vn in self.instance_variables:
+                print '  {0}'.format(vn)
             self.event_out_callbacks[port].append(callback)
         else:
             raise SimBuildError('No event out port \'{0}\' in '
@@ -158,33 +160,44 @@ class Runnable(Reflective):
         except Exception as e:
             r = self
             name = r.id
-            print 'SIMERR ', e
             while r.parent:
-                print "SIMERR ", r.id#, r.name, r, r.parent
-                name = "{0}.{1}".format(r.id, name)
                 r = r.parent
+                name = "{0}.{1}".format(r.id, name)
                 
             print "Error in '{0}': {1}".format(name, e)
+            keys = self.__dict__.keys()
+            keys.sort()
+            for k in keys:
+                print '{0} -> {1}'.format(k, self.__dict__[k])
             sys.exit(0)
             
     def single_step2(self, dt):
         #print 'Single stepping {0}'.format(self.id)
         
+        #print 1
+
         self.run_preprocessing_event_handlers(self)
         self.update_shadow_variables()
 
+        #print 2
+
         self.update_derived_variables(self)
 
-        self.update_state_variables(self, dt)
-        self.update_shadow_variables()
+        #print 3
 
         self.run_postprocessing_event_handlers(self)
         self.update_shadow_variables()
+
+        #print 4
 
         self.record_variables()
 
         for cid in self.children:
             self.children[cid].single_step(dt)
+
+        if self.array:
+            for child in self.array:
+                child.single_step(dt)
 
         self.time_completed += self.time_step
         if self.time_completed >= self.time_total:

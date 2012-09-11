@@ -75,6 +75,11 @@ class SimulationBuilder(LEMSBase):
         resolved.
         """
 
+        print 'Building component ' + component.id
+        if component.id == 'hhcell_1':
+            print component.__dict__
+            print component.context.__dict__
+
         runnable = Runnable(component.id, parent)
 
         context = component.context
@@ -153,7 +158,7 @@ class SimulationBuilder(LEMSBase):
             c1 = component
             c2 = context.lookup_component(cparam)
             template = self.build_runnable(context.lookup_component(cparam),
-                                           component)
+                                           runnable)
             
             for i in xrange(sparam):
                 instance = copy.deepcopy(template)
@@ -259,6 +264,8 @@ class SimulationBuilder(LEMSBase):
         runnable.add_method('update_derived_variables', ['self'],
                             derived_variable_code)
 
+        print runnable.id, derived_variable_code
+
         # Process event handlers
         pre_event_handler_code = []
         post_event_handler_code = []
@@ -277,7 +284,7 @@ class SimulationBuilder(LEMSBase):
             run = regime.runs[rn]
             c = context.lookup_component_ref(run.component)
             if c != None:
-                target = self.build_runnable(c, self)
+                target = self.build_runnable(c, runnable)
                 self.sim.add_runnable(c.id, target)
                 self.current_record_target = target
                 time_step = context.lookup_parameter(run.increment)
@@ -330,7 +337,10 @@ class SimulationBuilder(LEMSBase):
         
         if tree_node.type == ExprNode.VALUE:
             if tree_node.value[0].isalpha():
-                return 'self.{0}_shadow'.format(tree_node.value)
+                if tree_node.value[0] == 't':
+                    return 'self.time_completed'
+                else:
+                    return 'self.{0}_shadow'.format(tree_node.value)
             else:
                 return tree_node.value
         else:

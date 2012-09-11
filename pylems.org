@@ -1,0 +1,7 @@
+* Tasks
+** Add support for derived variables.
+** Get example1_new.xml running.
+** Test other example files.
+** Decouple events from runnables.
+** Perform dimension-checking on expressions.
+** Implement LEMS API over lems.model.* (NeuroML API?)

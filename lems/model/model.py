@@ -40,6 +40,11 @@ class Model(Contextual):
         """ Global (root) context.
         @type: lems.model.context.Context """
 
+        self.next_free_id = 0
+        """ Number used to create a new ID.
+        @type: Integer """
+
+
     def add_default_run(self, default_run):
         """
         Add the name of the component to run to the list of components to
@@ -262,7 +267,13 @@ class Model(Contextual):
         comp_str.event_connections = type_str.event_connections
 
         for c in type_str.single_child_defs:
-            raise ModelError('TODO')
+            if c in comp_context.component_refs:
+                cref = comp_context.component_refs[c]
+                comp_str.add_single_child_def(cref)
+            else:
+                raise ModelError("Trying to multi-instantiate from an "
+                                 "invalid component reference '{0}'".format(\
+                        c))
 
         for c in type_str.multi_child_defs:
             n = type_str.multi_child_defs[c]
@@ -359,7 +370,6 @@ class Model(Contextual):
         for port in type_context.event_out_ports:
             this_context.event_out_ports.append(port)
 
-        
         self.resolve_component_structure_from_type(this_context,
                                                    type_context,
                                                    component)
@@ -486,13 +496,24 @@ class Model(Contextual):
             if child.component_type == '__type_inherited__':
                 child.component_type = ptctx.child_defs[child.id]
             else:
+                print child.id, child.component_type
                 raise Exception('TODO')
             context.add_component(child)
         else:
             for cdn in ptctx.children_defs:
                 cdt = ptctx.children_defs[cdn]
-                if child.component_type == cdt:
+
+                if child.id == cdt:
+                    child.component_type = cdt
+                    child.id = self.make_id()
                     context.add_component(child)
+                    if cdn not in context.children_defs:
+                        context.add_children_def(cdn, cdt)
+                    break
+                elif child.component_type == cdt:
+                    context.add_component(child)
+                    if cdn not in context.children_defs:
+                        context.add_children_def(cdn, cdt)
                     break
 
     def resolve_context(self, context):
@@ -556,6 +577,11 @@ class Model(Contextual):
         s += ':\n  ' + message
 
         raise ModelError(s)
+
+    def make_id(self):
+        self.next_free_id = self.next_free_id + 1
+        return 'id#{0}'.format(self.next_free_id)
+        
     
     #####################################################################33
 
@@ -700,6 +726,7 @@ class Model(Contextual):
             for child in context.children:
                 s += prefix + Model.tab + child.id + ': ' + \
                      child.component_type + '\n'
+                s += self.context2str(child.context, prefix + Model.tab)
 
         if context.parameters:
             s += prefix + 'Parameters:\n'

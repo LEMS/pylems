@@ -43,7 +43,7 @@ try:
     
     print 'Resolving model'
     model.resolve_model()
-    #print model
+    print model
 
     print 'Building simulation'
     sim = SimulationBuilder(model).build()
@@ -53,6 +53,9 @@ try:
         for rn in run.children:
             r = run.children[rn]
             print_run(r, '  ' + offset)
+        if run.array:
+            for r in run.array:
+                print_run(r, '  ' + offset)
 
     print 'Runnables:'
     for r in sim.runnables:
