@@ -91,7 +91,6 @@ class Simulation(LEMSBase):
 
         self.init_run()
         while self.step():
-            #self.dump()
             pass
 
     def push_state(self):

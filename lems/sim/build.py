@@ -75,11 +75,6 @@ class SimulationBuilder(LEMSBase):
         resolved.
         """
 
-        print 'Building component ' + component.id
-        if component.id == 'hhcell_1':
-            print component.__dict__
-            print component.context.__dict__
-
         runnable = Runnable(component.id, parent)
 
         context = component.context
@@ -116,10 +111,16 @@ class SimulationBuilder(LEMSBase):
                                 [])
             runnable.add_method('run_postprocessing_event_handlers', ['self'],
                                 [])
-            
+        
         for cn in context.components:
             child = context.components[cn]
-            runnable.add_child(child.id, self.build_runnable(child, runnable))
+            child_runnable = self.build_runnable(child, runnable)
+            runnable.add_child(child.id, child_runnable)
+            
+            for cdn in context.children_defs:
+                cdt = context.children_defs[cdn]
+                if cdt == child.component_type:
+                    runnable.add_child_to_group(cdn, child_runnable)
 
         self.build_structure(component, runnable, context.structure)
 
@@ -245,7 +246,6 @@ class SimulationBuilder(LEMSBase):
         derived_variable_code = []
         for dvn in regime.derived_variables:
             dv = regime.derived_variables[dvn]
-            print dv.name, dv.value, dv.select, dv.reduce
             runnable.add_derived_variable(dv.name)
             if dv.value:
                 derived_variable_code += ['self.{0} = ({1})'.format(
@@ -480,10 +480,10 @@ class SimulationBuilder(LEMSBase):
         ref = bits[1]
 
         code = ['acc = {0}'.format(acc_start)]
-        code += ['for i in self.{0}:'.format(array)]
-        code += ['    o = self.{0}[i]'.format(array)]
+        code += ['for o in self.{0}:'.format(array)]
         code += ['    acc = acc {0} o{1}'.format(reduce_op, ref)]
         code += ['self.{0} = acc'.format(result)]
+        code += ['self.{0}_shadow = acc'.format(result)]
 
         return code
         

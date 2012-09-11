@@ -51,7 +51,7 @@ class Reflective(object):
     def add_derived_variable(self, variable):
         self.derived_variables.append(variable)
     
-        code_string = 'self.{0} = 0'.format(\
+        code_string = 'self.{0} = 0\nself.{0}_shadow = 0'.format(\
             variable)
         exec compile(ast.parse(code_string), '<unknown>', 'exec')
 
@@ -87,6 +87,11 @@ class Runnable(Reflective):
     def add_child(self, id, runnable):
         self.children[id] = runnable
         runnable.configure_time(self.time_step, self.time_total)
+
+    def add_child_to_group(self, group_name, child):
+        if group_name not in self.__dict__:
+            self.__dict__[group_name] = []
+        self.__dict__[group_name].append(child)
 
     def add_event_in_port(self, port):
         if port not in self.event_in_counters:
@@ -180,8 +185,12 @@ class Runnable(Reflective):
         self.update_shadow_variables()
 
         #print 2
+        
+        self.update_state_variables(self, dt)
+        self.update_shadow_variables()
 
         self.update_derived_variables(self)
+        self.update_shadow_variables()
 
         #print 3
 
