@@ -279,6 +279,10 @@ class SimulationBuilder(LEMSBase):
         runnable.add_method('run_postprocessing_event_handlers', ['self'],
                             post_event_handler_code)
 
+        if component.id == 'Ct1':
+            print pre_event_handler_code
+            print post_event_handler_code
+
         # Process runs
         for rn in regime.runs:
             run = regime.runs[rn]
@@ -337,7 +341,7 @@ class SimulationBuilder(LEMSBase):
         
         if tree_node.type == ExprNode.VALUE:
             if tree_node.value[0].isalpha():
-                if tree_node.value[0] == 't':
+                if tree_node.value == 't':
                     return 'self.time_completed'
                 else:
                     return 'self.{0}_shadow'.format(tree_node.value)

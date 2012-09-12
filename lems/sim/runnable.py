@@ -199,6 +199,9 @@ class Runnable(Reflective):
 
         #print 4
 
+        if self.id == 'Ct1':
+            print self.v
+
         self.record_variables()
 
         for cid in self.children:
