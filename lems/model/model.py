@@ -374,6 +374,8 @@ class Model(Contextual):
                                                    type_context,
                                                    component)
 
+        this_context.requirements = type_context.requirements
+
     def resolve_regime(self, context, regime):
         """
         Resolves name references in the given behavior regime to actual

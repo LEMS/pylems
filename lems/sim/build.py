@@ -236,9 +236,9 @@ class SimulationBuilder(LEMSBase):
                                      'variable {0}').format(tdn))
             
             td = regime.time_derivatives[tdn]
+            exp = self.build_expression_from_tree(context,td.expression_tree)
             time_step_code += ['self.{0} += dt * ({1})'.format(td.variable,
-                               self.build_expression_from_tree(\
-                                   td.expression_tree))]
+                                                               exp)]
         runnable.add_method('update_state_variables', ['self', 'dt'],
                             time_step_code)
 
@@ -250,7 +250,8 @@ class SimulationBuilder(LEMSBase):
             if dv.value:
                 derived_variable_code += ['self.{0} = ({1})'.format(
                         dv.name,
-                        self.build_expression_from_tree(dv.expression_tree))]
+                        self.build_expression_from_tree(context,
+                                                        dv.expression_tree))]
             elif dv.select:
                 if dv.reduce:
                     derived_variable_code += self.build_reduce_code(dv.name,
@@ -271,9 +272,9 @@ class SimulationBuilder(LEMSBase):
         post_event_handler_code = []
         for eh in regime.event_handlers:
             if eh.type == EventHandler.ON_CONDITION:
-                post_event_handler_code += self.build_event_handler(eh)
+                post_event_handler_code += self.build_event_handler(context, eh)
             else:
-                pre_event_handler_code += self.build_event_handler(eh)
+                pre_event_handler_code += self.build_event_handler(context, eh)
         runnable.add_method('run_preprocessing_event_handlers', ['self'],
                             pre_event_handler_code)
         runnable.add_method('run_postprocessing_event_handlers', ['self'],
@@ -327,7 +328,7 @@ class SimulationBuilder(LEMSBase):
         else:
             return op
         
-    def build_expression_from_tree(self, tree_node):
+    def build_expression_from_tree(self, context, tree_node):
         """
         Recursively builds a Python expression from a parsed expression tree.
 
@@ -343,17 +344,34 @@ class SimulationBuilder(LEMSBase):
             if tree_node.value[0].isalpha():
                 if tree_node.value == 't':
                     return 'self.time_completed'
+                elif tree_node.value in context.requirements:
+                    var_prefix = 'self'
+                    v = tree_node.value
+                    ctx = context
+                    regime = ctx.selected_behavior_profile.default_regime #GG
+                    while (v not in ctx.parameters and
+                           v not in regime.state_variables and
+                           v not in regime.derived_variables):
+                        var_prefix = '{0}.{1}'.format(var_prefix, 'parent')
+                        print 1, ctx.name
+                        ctx = ctx.parent
+                        regime = ctx.selected_behavior_profile.default_regime #GG
+                        if ctx == None:
+                            raise SimBuildError("Unable to resolve required "
+                                                "variable '{0}'".format(v))
+                        print 2, ctx.name
+                    return '{0}.{1}'.format(var_prefix, v)
                 else:
                     return 'self.{0}_shadow'.format(tree_node.value)
             else:
                 return tree_node.value
         else:
             return '({0}) {1} ({2})'.format(\
-                self.build_expression_from_tree(tree_node.left),
+                self.build_expression_from_tree(context, tree_node.left),
                 self.convert_op(tree_node.op),
-                self.build_expression_from_tree(tree_node.right))
+                self.build_expression_from_tree(context, tree_node.right))
 
-    def build_event_handler(self, event_handler):
+    def build_event_handler(self, context, event_handler):
         """
         Build event handler code.
 
@@ -365,13 +383,13 @@ class SimulationBuilder(LEMSBase):
         """
         
         if event_handler.type == EventHandler.ON_CONDITION:
-            return self.build_on_condition(event_handler)
+            return self.build_on_condition(context, event_handler)
         elif event_handler.type == EventHandler.ON_EVENT:
-            return self.build_on_event(event_handler)
+            return self.build_on_event(context, event_handler)
         else:
             return []
 
-    def build_on_condition(self, on_condition):
+    def build_on_condition(self, context, on_condition):
         """
         Build OnCondition event handler code.
 
@@ -385,14 +403,15 @@ class SimulationBuilder(LEMSBase):
         on_condition_code = []
 
         on_condition_code += ['if {0}:'.format(\
-            self.build_expression_from_tree(on_condition.expression_tree))]
+            self.build_expression_from_tree(context, 
+                                            on_condition.expression_tree))]
 
         for action in on_condition.actions:
-            on_condition_code += ['    ' + self.build_action(action)]
+            on_condition_code += ['    ' + self.build_action(context, action)]
 
         return on_condition_code
             
-    def build_on_event(self, on_event):
+    def build_on_event(self, context, on_event):
         """
         Build OnEvent event handler code.
 
@@ -410,13 +429,13 @@ class SimulationBuilder(LEMSBase):
                           'while count > 0:',
                           '    count -= 1']
         for action in on_event.actions:
-            on_event_code += ['    ' + self.build_action(action)]
+            on_event_code += ['    ' + self.build_action(context, action)]
         on_event_code += ['self.event_in_counters[\'{0}\'] = 0'.\
                           format(on_event.port),]
 
         return on_event_code
             
-    def build_action(self, action):
+    def build_action(self, context, action):
         """
         Build event handler action code.
 
@@ -428,13 +447,13 @@ class SimulationBuilder(LEMSBase):
         """
         
         if action.type == Action.STATE_ASSIGNMENT:
-            return self.build_state_assignment(action)
+            return self.build_state_assignment(context, action)
         if action.type == Action.EVENT_OUT:
             return self.build_event_out(action)
         else:
             return ''
 
-    def build_state_assignment(self, state_assignment):
+    def build_state_assignment(self, context, state_assignment):
         """
         Build state assignment code.
 
@@ -447,7 +466,8 @@ class SimulationBuilder(LEMSBase):
         
         return 'self.{0} = {1}'.format(\
             state_assignment.variable,
-            self.build_expression_from_tree(state_assignment.expression_tree))
+            self.build_expression_from_tree(context,
+                                            state_assignment.expression_tree))
 
     def build_event_out(self, event_out):
         """

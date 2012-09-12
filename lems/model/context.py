@@ -86,6 +86,10 @@ class Context(LEMSBase):
         """ List of names of exposed variables.
         @type: list(string) """
 
+        self.requirements = {}
+        """ List of names of required variables.
+        @type: dict(string -> string) """
+
         self.texts = {}
         """ Dictionary of text parameters.
         @type: dict(string -> string) """
@@ -297,6 +301,31 @@ class Context(LEMSBase):
             raise ModelError("Duplicate exposure name '{0}'".format(name))
 
         self.exposures += [name]
+        
+    def add_requirement(self, name, dimension):
+        """
+        Adds a parameter requirement to the current context.
+
+        @param name: Name of the variable being required.
+        @type name: string
+
+        @param name: Dimension of the variable being required.
+        @type name: string
+
+        @raise ModelError: Raised when the exposure name already exists
+        in the current context.
+
+        @raise ModelError: Raised when the exposure name is not
+        being defined in the context of a component type.
+        """
+        if self.context_type != Context.COMPONENT_TYPE:
+            raise ModelError("Requirements can only be defined in "
+                             "a component type - '{0}'".format(name))
+        
+        if name in self.requirements:
+            raise ModelError("Duplicate requirement name '{0}'".format(name))
+
+        self.requirements[name] = dimension
         
     def add_text_var(self, name, value = None):
         """

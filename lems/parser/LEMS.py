@@ -1044,7 +1044,21 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        pass
+        if self.current_context.context_type != Context.COMPONENT_TYPE:
+            self.raise_error('Requirements can only be defined in ' +
+                             'a component type')
+
+        if 'name' in node.lattrib:
+            name = node.lattrib['name']
+        else:
+            self.raise_error('Name required for <Requirement>')
+
+        if 'dimension' in node.lattrib:
+            dimension = node.lattrib['dimension']
+        else:
+            self.raise_error('Dimension required for <Requirement>')
+
+        self.current_context.add_requirement(name, dimension)
 
     def parse_run(self, node):
         """
