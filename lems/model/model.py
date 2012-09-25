@@ -268,8 +268,7 @@ class Model(Contextual):
 
         for c in type_str.single_child_defs:
             if c in comp_context.component_refs:
-                cref = comp_context.component_refs[c]
-                comp_str.add_single_child_def(cref)
+                comp_str.add_single_child_def(c)
             else:
                 raise ModelError("Trying to multi-instantiate from an "
                                  "invalid component reference '{0}'".format(\

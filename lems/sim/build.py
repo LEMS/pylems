@@ -151,7 +151,17 @@ class SimulationBuilder(LEMSBase):
         context = component.context
 
         # Process single-child instantiations
-        # TBD
+        for c in structure.single_child_defs:
+            if c in context.component_refs:
+                cref = context.component_refs[c]
+                child = context.lookup_component(cref)
+                child_runnable = self.build_runnable(child, runnable)
+                runnable.add_child(c, child_runnable)
+            else:
+                raise SimBuildError('Unable to find component ref \'{0}\' '
+                                    'under \'{1}\''.format(\
+                        c, runnable.id))
+        
         
         # Process multi-child instatiantions
         for cparam in structure.multi_child_defs:
@@ -258,14 +268,16 @@ class SimulationBuilder(LEMSBase):
                                                                     dv.select, 
                                                                     dv.reduce)
                 else:
-                    derived_variable_code += [dv.select.replace('/', '.')]
+                    derived_variable_code += ['self.{0} = (self.{1})'.format(
+                            dv.name,
+                            dv.select.replace('/', '.'))]
+                    print "HELLO2 {0} -> {1}".format(component.id, 
+                                                     derived_variable_code)
             else:
                 raise SimBuildError(('Inconsistent derived variable settings'
                                      'for {0}').format(dvn))
         runnable.add_method('update_derived_variables', ['self'],
                             derived_variable_code)
-
-        print runnable.id, derived_variable_code
 
         # Process event handlers
         pre_event_handler_code = []
@@ -279,10 +291,6 @@ class SimulationBuilder(LEMSBase):
                             pre_event_handler_code)
         runnable.add_method('run_postprocessing_event_handlers', ['self'],
                             post_event_handler_code)
-
-        if component.id == 'Ct1':
-            print pre_event_handler_code
-            print post_event_handler_code
 
         # Process runs
         for rn in regime.runs:
@@ -325,6 +333,8 @@ class SimulationBuilder(LEMSBase):
             return '=='
         elif op == '.ne.':
             return '!='
+        elif op == '^':
+            return '**'
         else:
             return op
         
@@ -353,18 +363,18 @@ class SimulationBuilder(LEMSBase):
                            v not in regime.state_variables and
                            v not in regime.derived_variables):
                         var_prefix = '{0}.{1}'.format(var_prefix, 'parent')
-                        print 1, ctx.name
                         ctx = ctx.parent
                         regime = ctx.selected_behavior_profile.default_regime #GG
                         if ctx == None:
                             raise SimBuildError("Unable to resolve required "
                                                 "variable '{0}'".format(v))
-                        print 2, ctx.name
                     return '{0}.{1}'.format(var_prefix, v)
                 else:
                     return 'self.{0}_shadow'.format(tree_node.value)
             else:
                 return tree_node.value
+        elif tree_node.type == ExprNode.FUNC1:
+            return '({0}({1}))'.format(tree_node.func, tree_node.param)
         else:
             return '({0}) {1} ({2})'.format(\
                 self.build_expression_from_tree(context, tree_node.left),

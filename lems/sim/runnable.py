@@ -51,8 +51,8 @@ class Reflective(object):
     def add_derived_variable(self, variable):
         self.derived_variables.append(variable)
     
-        code_string = 'self.{0} = 0\nself.{0}_shadow = 0'.format(\
-            variable)
+        code_string = 'self.{0} = {1}\nself.{0}_shadow = {1}'.format(\
+            variable, 0.001)
         exec compile(ast.parse(code_string), '<unknown>', 'exec')
 
     def __getitem__(self, key):
@@ -86,6 +86,7 @@ class Runnable(Reflective):
 
     def add_child(self, id, runnable):
         self.children[id] = runnable
+        self.__dict__[id] = runnable
         runnable.configure_time(self.time_step, self.time_total)
 
     def add_child_to_group(self, group_name, child):

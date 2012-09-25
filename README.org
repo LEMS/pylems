@@ -1,3 +1,5 @@
+PyLEMS - A LEMS simulator written in Python.
+
 * Tasks
 ** Add support for derived variables.
 ** Get example1_new.xml running.
