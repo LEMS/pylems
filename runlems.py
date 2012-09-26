@@ -57,9 +57,10 @@ try:
             for r in run.array:
                 print_run(r, '  ' + offset)
 
-    print 'Runnables:'
-    for r in sim.runnables:
-        print_run(sim.runnables[r], '')
+    if False:
+        print 'Runnables:'
+        for r in sim.runnables:
+            print_run(sim.runnables[r], '')
         
     print 'Running simulation'
     sim.run()

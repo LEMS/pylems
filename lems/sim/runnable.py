@@ -12,7 +12,19 @@ from lems.base.errors import SimBuildError
 import ast
 import sys
 
-from math import *
+#from math import *
+
+import math
+
+class Ex1(Exception):
+    pass
+
+def exp(x):
+    try:
+        return math.exp(x)
+    except Exception as e:
+        print 'ERROR performing exp({0})'.format(x)
+        raise Ex1()
 
 class Reflective(object):
     def __init__(self):
@@ -54,7 +66,7 @@ class Reflective(object):
         self.derived_variables.append(variable)
     
         code_string = 'self.{0} = {1}\nself.{0}_shadow = {1}'.format(\
-            variable, 0.001)
+            variable, 0.00001)
         exec compile(ast.parse(code_string), '<unknown>', 'exec')
 
     def __getitem__(self, key):
@@ -165,6 +177,13 @@ class Runnable(Reflective):
         # For debugging
         try:
             return self.single_step2(dt)
+        except Ex1 as e:
+            print self.rate
+            print self.midpoint
+            print self.scale
+            print self.parent.parent.parent.parent.v
+            # rate * exp((v - midpoint)/scale)
+            sys.exit(0)
         except Exception as e:
             r = self
             name = r.id
@@ -184,15 +203,23 @@ class Runnable(Reflective):
         
         #print 1
 
+        if self.id == 'hhpop#hhcell_1#0':
+            print 'HELLO4', self.v, self.totcurrent, \
+                self.injection, self.capacitance
+
         self.run_preprocessing_event_handlers(self)
         self.update_shadow_variables()
 
         #print 2
         
-        self.update_state_variables(self, dt)
+        self.update_derived_variables(self)
         self.update_shadow_variables()
 
-        self.update_derived_variables(self)
+        if self.id == 'hhpop#hhcell_1#0':
+            print 'HELLO5', self.v, self.totcurrent, \
+                self.injection, self.capacitance
+
+        self.update_state_variables(self, dt)
         self.update_shadow_variables()
 
         #print 3
@@ -202,8 +229,14 @@ class Runnable(Reflective):
 
         #print 4
 
-        if self.id == 'Ct1':
-            print self.v
+        if self.id == 'hhpop#hhcell_1#0':
+            print 'HELLO8', self.v
+
+        if self.id == 'Reverse':
+            print 'HELLO9', self.time_completed,\
+                self.parent.parent.parent.parent.v,\
+                self.id, self.parent.id, self.parent.parent.id, \
+                self.parent.parent.parent.id, self.parent.parent.parent.parent.id
 
         self.record_variables()
 

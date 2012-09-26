@@ -315,7 +315,6 @@ class Model(Contextual):
             component.component_type)
             
         if component_type == None:
-            print component.id, component.component_type
             self.raise_error('Type {0} not found for component {1}'.
                              format(component.component_type,
                                     component.id),
@@ -534,9 +533,6 @@ class Model(Contextual):
         be resolved.
         """
         
-        if context.name == 'k':
-            print 'HELLO2', context.parent.name
-
         # Resolve component-types
         for ctn in context.component_types:
             component_type = context.component_types[ctn]
