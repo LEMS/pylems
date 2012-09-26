@@ -43,7 +43,7 @@ try:
     
     print 'Resolving model'
     model.resolve_model()
-    print model
+    #print model
 
     print 'Building simulation'
     sim = SimulationBuilder(model).build()

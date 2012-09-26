@@ -11,6 +11,7 @@ from lems.model.context import Contextual
 from lems.model.parameter import Parameter
 
 import re
+import copy
 
 class Model(Contextual):
     """
@@ -184,6 +185,8 @@ class Model(Contextual):
                 this_context.parameters[pn] = base_context.parameters[pn].\
                                               copy()
 
+        this_context.requirements = copy.copy(base_context.requirements)
+
         component_type.extends = None
 
     def resolve_extended_component(self, context, component):
@@ -239,6 +242,9 @@ class Model(Contextual):
                                               copy()
 
         component.component_type = base.component_type
+
+        this_context.requirements = copy.copy(base_context.requirements)
+
         component.extends = None
 
     def resolve_component_structure_from_type(self,
@@ -373,7 +379,7 @@ class Model(Contextual):
                                                    type_context,
                                                    component)
 
-        this_context.requirements = type_context.requirements
+        this_context.requirements = copy.copy(type_context.requirements)
 
     def resolve_regime(self, context, regime):
         """
@@ -496,9 +502,9 @@ class Model(Contextual):
         if child.id in ptctx.child_defs:
             if child.component_type == '__type_inherited__':
                 child.component_type = ptctx.child_defs[child.id]
-            else:
-                print child.id, child.component_type
-                raise Exception('TODO')
+            #else:
+            #    print child.id, child.component_type
+            #    raise Exception('TODO')
             context.add_component(child)
         else:
             for cdn in ptctx.children_defs:
@@ -528,6 +534,9 @@ class Model(Contextual):
         be resolved.
         """
         
+        if context.name == 'k':
+            print 'HELLO2', context.parent.name
+
         # Resolve component-types
         for ctn in context.component_types:
             component_type = context.component_types[ctn]

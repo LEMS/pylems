@@ -454,7 +454,10 @@ class LEMSParser(Parser):
                 type = node.tag
             else:
                 id = node.tag
-                type = '__type_inherited__'
+                if 'type' in node.lattrib:
+                    type = node.lattrib['type']
+                else:
+                    type = '__type_inherited__'
 
             component = Component(id, self.current_context, type)
 
@@ -474,7 +477,7 @@ class LEMSParser(Parser):
         """
         Parses <Component>
 
-        @param node: Node containing the <ComponentType> element
+        @param node: Node containing the <Component> element
         @type node: xml.etree.Element
         """
 

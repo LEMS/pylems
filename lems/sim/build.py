@@ -246,7 +246,9 @@ class SimulationBuilder(LEMSBase):
                                      'variable {0}').format(tdn))
             
             td = regime.time_derivatives[tdn]
-            exp = self.build_expression_from_tree(context,td.expression_tree)
+            exp = self.build_expression_from_tree(runnable, 
+                                                  context,
+                                                  td.expression_tree)
             time_step_code += ['self.{0} += dt * ({1})'.format(td.variable,
                                                                exp)]
         runnable.add_method('update_state_variables', ['self', 'dt'],
@@ -260,7 +262,8 @@ class SimulationBuilder(LEMSBase):
             if dv.value:
                 derived_variable_code += ['self.{0} = ({1})'.format(
                         dv.name,
-                        self.build_expression_from_tree(context,
+                        self.build_expression_from_tree(runnable,
+                                                        context,
                                                         dv.expression_tree))]
             elif dv.select:
                 if dv.reduce:
@@ -271,8 +274,6 @@ class SimulationBuilder(LEMSBase):
                     derived_variable_code += ['self.{0} = (self.{1})'.format(
                             dv.name,
                             dv.select.replace('/', '.'))]
-                    print "HELLO2 {0} -> {1}".format(component.id, 
-                                                     derived_variable_code)
             else:
                 raise SimBuildError(('Inconsistent derived variable settings'
                                      'for {0}').format(dvn))
@@ -338,9 +339,15 @@ class SimulationBuilder(LEMSBase):
         else:
             return op
         
-    def build_expression_from_tree(self, context, tree_node):
+    def build_expression_from_tree(self, runnable, context, tree_node):
         """
         Recursively builds a Python expression from a parsed expression tree.
+
+        @param runnable: Runnable object to which this expression would be added.
+        @type runnable: lems.sim.runnable.Runnable
+
+        @param context: Context from which variables are to be resolved.
+        @type context: lems.model.context.Context
 
         @param tree_node: Root node for the tree from which the expression
         is to be built.
@@ -350,6 +357,9 @@ class SimulationBuilder(LEMSBase):
         @rtype: string
         """
         
+        if tree_node.type == ExprNode.VALUE and tree_node.value == 'v':
+            print 'HELLO1', context.name, context.requirements
+
         if tree_node.type == ExprNode.VALUE:
             if tree_node.value[0].isalpha():
                 if tree_node.value == 't':
@@ -358,28 +368,54 @@ class SimulationBuilder(LEMSBase):
                     var_prefix = 'self'
                     v = tree_node.value
                     ctx = context
-                    regime = ctx.selected_behavior_profile.default_regime #GG
-                    while (v not in ctx.parameters and
-                           v not in regime.state_variables and
-                           v not in regime.derived_variables):
+
+                    print ''
+                    print ''
+                    pr = ''
+
+                    while True:
+                        pr = pr + '  '
+                        print pr, ' | ', ctx.name
+                        if v in ctx.parameters:
+                            break
+                        if ctx.selected_behavior_profile:
+                            regime = ctx.selected_behavior_profile.default_regime
+                        if regime and v in regime.state_variables:
+                            break
+                        if regime and v in regime.derived_variables:
+                            break
+
                         var_prefix = '{0}.{1}'.format(var_prefix, 'parent')
                         ctx = ctx.parent
-                        regime = ctx.selected_behavior_profile.default_regime #GG
                         if ctx == None:
                             raise SimBuildError("Unable to resolve required "
                                                 "variable '{0}'".format(v))
+
+
+
+                    print ''
+                    print ''
+
                     return '{0}.{1}'.format(var_prefix, v)
                 else:
                     return 'self.{0}_shadow'.format(tree_node.value)
             else:
                 return tree_node.value
         elif tree_node.type == ExprNode.FUNC1:
-            return '({0}({1}))'.format(tree_node.func, tree_node.param)
+            return '({0}({1}))'.format(\
+                tree_node.func, 
+                self.build_expression_from_tree(runnable, 
+                                                context, 
+                                                tree_node.param))
         else:
             return '({0}) {1} ({2})'.format(\
-                self.build_expression_from_tree(context, tree_node.left),
+                self.build_expression_from_tree(runnable, 
+                                                context, 
+                                                tree_node.left),
                 self.convert_op(tree_node.op),
-                self.build_expression_from_tree(context, tree_node.right))
+                self.build_expression_from_tree(runnable,
+                                                context, 
+                                                tree_node.right))
 
     def build_event_handler(self, context, event_handler):
         """

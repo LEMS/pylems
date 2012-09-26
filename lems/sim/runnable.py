@@ -12,6 +12,8 @@ from lems.base.errors import SimBuildError
 import ast
 import sys
 
+from math import *
+
 class Reflective(object):
     def __init__(self):
         self.instance_variables = []
