@@ -296,6 +296,8 @@ class Model(Contextual):
                                  "invalid component reference '{0}'".format(\
                                      c))
 
+        comp_str.foreach = type_str.foreach
+
 
     def resolve_component_from_type(self, context, component):
         """
@@ -591,7 +593,7 @@ class Model(Contextual):
     
     #####################################################################33
 
-    tab = '  '
+    tab = '    '
 
     def regime2str(self, regime, prefix):
         s = ''
@@ -683,7 +685,12 @@ class Model(Contextual):
                     c, structure.multi_child_defs[c])
 
         if structure.foreach:
-            for fe in 
+            s += prefix + Model.tab + 'ForEach:\n'
+            for fe in structure.foreach:
+                s += prefix + Model.tab*2 + 'ForEach {0} as {1}\n'.format(\
+                    fe.target, fe.name)
+                s += self.structure2str(fe, prefix + Model.tab*3)
+                
 
                 
         return s

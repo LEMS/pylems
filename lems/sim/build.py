@@ -75,7 +75,7 @@ class SimulationBuilder(LEMSBase):
         resolved.
         """
 
-        runnable = Runnable(component.id, parent)
+        runnable = Runnable(component.id, component, parent)
 
         context = component.context
         record_target_backup = self.current_record_target
@@ -84,6 +84,9 @@ class SimulationBuilder(LEMSBase):
             p = context.parameters[pn]
             if p.numeric_value:
                 runnable.add_instance_variable(p.name, p.numeric_value)
+            elif p.dimension == '__link__':
+                r = runnable.parent
+                print 'HELLO2', p.name, p.value,r.id,r.children
             else:
                 pass
                 ## if p.dimension == '__component_ref__':
@@ -178,35 +181,62 @@ class SimulationBuilder(LEMSBase):
                                                    i)
                 runnable.array.append(instance)
 
-        if runnable.id == 'Connections':
-            print 'HELLO1', component.id, structure.foreach
+        # Process foreach statements
+        if structure.foreach:
+            self.build_foreach(component, runnable, structure)
 
         # Process event connections
-        for (from_component, from_port,
-             to_component, to_port) in structure.event_connections:
-            self.add_event_connection(runnable, from_component, from_port,
-                                      to_component, to_port)
+        for (from_cname, from_port,
+             to_cname, to_port) in structure.event_connections:
 
-    def add_event_connection(self, runnable,
-                             from_component, from_port,
-                             to_component, to_port):
-        if from_component in runnable.children:
-            from_ = runnable.children[from_component]
-        else:
-            raise SimBuildError('Unable to find component \'{0}\' '
-                                'under \'{1}\''.format(\
-                                    from_component, runnable.id))
+            from_ = runnable.resolve_path(from_cname)
+            to = runnable.resolve_path(to_cname)
 
-        if to_component in runnable.children:
-            to = runnable.children[to_component]
-        else:
-            raise SimBuildError('Unable to find component \'{0}\' '
-                                'under \'{1}\''.format(\
-                                    to_component, runnable.id))
+            from_.register_event_out_callback(\
+                from_port, lambda: to.inc_event_in(to_port))
 
-        from_.register_event_out_callback(\
-            from_port, lambda: to.inc_event_in(to_port))
+    def build_foreach(self, component, runnable, foreach, name_mappings = {}):
+        """
+        Iterate over ForEach constructs and process nested elements.
+
+        @param component: Component model containing structure specifications.
+        @type component: lems.model.component.Component
+
+        @param runnable: Runnable component to which structure is to be added.
+        @type runnable: lems.sim.runnable.Runnable
+
+        @param foreach: The ForEach structure object to be used to add
+        structure code in the runnable component.
+        @type foreach: lems.model.structure.ForEach
+        """
+
+        print 'HELLO3a', runnable.id, name_mappings
+
+        # Process foreach statements
+        for fe in foreach.foreach:
+            print 'HELLO3b', runnable.id, fe.name, fe.target
+            target_array = runnable.resolve_path(fe.target)
             
+            for target_runnable in target_array:
+                name_mappings[fe.name] = target_runnable
+                self.build_foreach(component, runnable, fe, name_mappings)
+
+        # Process event connections
+        for (from_cname, from_port,
+             to_cname, to_port) in foreach.event_connections:
+
+            from_ = name_mappings[from_cname]
+            to = name_mappings[to_cname]
+
+            print 'HELLO3c', from_.id, from_port
+            print 'HELLO3d', to.id, to_port
+
+            from_port = 'a'
+            to_port = 'spikes-in'
+
+            from_.register_event_out_callback(\
+                from_port, lambda: to.inc_event_in(to_port))
+
 
     def add_runnable_behavior(self, component, runnable, behavior_profile):
         """
@@ -280,9 +310,6 @@ class SimulationBuilder(LEMSBase):
             else:
                 raise SimBuildError(('Inconsistent derived variable settings'
                                      'for {0}').format(dvn))
-        #if runnable.id == 'hhpop#hhcell_1#0':
-        if 'totcurrent' in regime.derived_variables:
-            print 'HELLO3', runnable.id, derived_variable_code
         runnable.add_method('update_derived_variables', ['self'],
                             derived_variable_code)
 
@@ -443,9 +470,9 @@ class SimulationBuilder(LEMSBase):
                                             on_condition.expression_tree))]
 
         for action in on_condition.actions:
-            on_condition_code += ['    ' + self.build_action(runnable, 
-                                                             context, 
-                                                             action)]
+            code = self.build_action(runnable, context, action)
+            for line in code:
+                on_condition_code += ['    ' + line]
 
         return on_condition_code
             
@@ -467,9 +494,10 @@ class SimulationBuilder(LEMSBase):
                           'while count > 0:',
                           '    count -= 1']
         for action in on_event.actions:
-            on_event_code += ['    ' + self.build_action(runnable, 
-                                                         context, 
-                                                         action)]
+            code = self.build_action(runnable, context, action)
+            for line in code:
+                on_event_code += ['    ' + line]
+
         on_event_code += ['self.event_in_counters[\'{0}\'] = 0'.\
                           format(on_event.port),]
 
@@ -491,7 +519,7 @@ class SimulationBuilder(LEMSBase):
         if action.type == Action.EVENT_OUT:
             return self.build_event_out(action)
         else:
-            return ''
+            return ['pass']
 
     def build_state_assignment(self, runnable, context, state_assignment):
         """
@@ -504,11 +532,11 @@ class SimulationBuilder(LEMSBase):
         @rtype: string
         """
         
-        return 'self.{0} = {1}'.format(\
+        return ['self.{0} = {1}'.format(\
             state_assignment.variable,
             self.build_expression_from_tree(runnable, 
                                             context,
-                                            state_assignment.expression_tree))
+                                            state_assignment.expression_tree))]
 
     def build_event_out(self, event_out):
         """
@@ -521,8 +549,9 @@ class SimulationBuilder(LEMSBase):
         @rtype: string
         """
 
-        event_out_code = 'for c in self.event_out_callbacks[\'{0}\']: c()'.\
-                         format(event_out.port)
+        event_out_code = ['if "{0}" in self.event_out_callbacks:'.format(event_out.port),
+                          '    for c in self.event_out_callbacks[\'{0}\']:'.format(event_out.port),
+                          '        c()']
         
         return event_out_code
 
@@ -547,10 +576,10 @@ class SimulationBuilder(LEMSBase):
         code = ['acc = {0}'.format(acc_start)]
         code += ['for o in self.{0}:'.format(array)]
         code += ['    if self.id == "hhpop#hhcell_1#0":']
-        code += ['        print "1> x = ", o{0}, ", acc = ", acc'.format(ref)]
+        code += ['        print self.id, self.time_completed, " 1> x = ", o{0}, ", acc = ", acc'.format(ref)]
         code += ['    acc = acc {0} o{1}'.format(reduce_op, ref)]
         code += ['    if self.id == "hhpop#hhcell_1#0":']
-        code += ['        print "2> x = ", o{0}, ", acc = ", acc'.format(ref)]
+        code += ['        print self.id, self.time_completed, " 2> x = ", o{0}, ", acc = ", acc'.format(ref)]
         code += ['self.{0} = acc'.format(result)]
         code += ['self.{0}_shadow = acc'.format(result)]
 

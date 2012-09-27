@@ -33,7 +33,12 @@ class Structure(LEMSBase):
         @type: dict(string -> string) """
 
         self.foreach = []
-        """ List of foreach declarations. """
+        """ List of foreach declarations. 
+        @type: lems.model.structure.ForEach """
+
+        self.foreach_mappings = {}
+        """ Accumulated name->target mappings for nested ForEach constructs.
+        @type: dict(string -> string) """
         
     def add_event_connection(self, from_, to):
         """
@@ -110,6 +115,13 @@ class Structure(LEMSBase):
         """
 
         foreach = ForEach(name, target)
+        
+        for n in self.foreach_mappings:
+            t = self.foreach_mappings[n]
+            foreach.foreach_mappings[n] = t
+
+        foreach.foreach_mappings[name] = target
+
         self.foreach.append(foreach)
         return foreach
 

@@ -66,7 +66,7 @@ class Reflective(object):
         self.derived_variables.append(variable)
     
         code_string = 'self.{0} = {1}\nself.{0}_shadow = {1}'.format(\
-            variable, 1)
+            variable, 1e-12)
         exec compile(ast.parse(code_string), '<unknown>', 'exec')
 
     def __getitem__(self, key):
@@ -77,10 +77,11 @@ class Reflective(object):
         
         
 class Runnable(Reflective):
-    def __init__(self, id, parent = None):
+    def __init__(self, id, component, parent = None):
         Reflective.__init__(self)
 
         self.id = id
+        self.component = component
         self.parent = parent
         
         self.time_step = 0
@@ -131,6 +132,47 @@ class Runnable(Reflective):
             raise SimBuildError('No event out port \'{0}\' in '
                                 'component \'{1}\''.format(port, self.name))
                                     
+    def resolve_path(self, path):
+        if path == '':
+            return self
+        if path[0] == '/':
+            return self.parent.resolve_path(path)
+        elif path.find('../') == 0:
+            return self.parent.resolve_path(path[3:])
+        elif path.find('..') == 0:
+            return self.parent
+        else:
+            if path.find('/') >= 1:
+                (child, new_path) = path.split('/', 1)
+            else:
+                child = path
+                new_path = ''
+
+            idxbegin = child.find('[')
+            idxend = child.find(']')
+            if idxbegin != 0 and idxend > idxbegin:
+                idx = int(child[idxbegin+1:idxend])
+                child = child[:idxbegin]
+            else:
+                idx = -1
+
+            if child in self.children:
+                childobj = self.children[child]
+                if idx != -1:
+                    childobj = childobj.array[idx]
+            elif child in self.component.context.parameters:
+                ctx = self.component.context
+                p = ctx.parameters[child]
+                return self.resolve_path('../' + p.value)
+            else:
+                raise SimBuildError('Unable to find child \'{0}\' in '
+                                    '\'{1}\''.format(child, self.id))
+
+            if new_path == '':
+                return childobj
+            else:
+                return childobj.resolve_path(new_path)
+        
     def add_variable_recorder(self, path):
         if path[0] == '/':
             self.parent.add_variable_recorder(path)
@@ -159,6 +201,7 @@ class Runnable(Reflective):
         else:
             self.recorded_variables[path] = []
 
+
     def configure_time(self, time_step, time_total):
         self.time_step = time_step
         self.time_total = time_total
@@ -179,6 +222,8 @@ class Runnable(Reflective):
             c.reset_time()
 
     def single_step(self, dt):
+        return self.single_step2(dt)
+
         # For debugging
         try:
             return self.single_step2(dt)
@@ -205,47 +250,17 @@ class Runnable(Reflective):
             sys.exit(0)
             
     def single_step2(self, dt):
-        #print 'Single stepping {0}'.format(self.id)
-        
-        #print 1
-
-        if self.id == 'hhpop#hhcell_1#0':
-            print 'HELLO4', self.v, self.totcurrent, \
-                self.injection, self.capacitance
-
         self.run_preprocessing_event_handlers(self)
         self.update_shadow_variables()
 
-        #print 2
-        
         self.update_derived_variables(self)
         self.update_shadow_variables()
-
-        if self.id == 'hhpop#hhcell_1#0':
-            print 'HELLO5', self.v, self.totcurrent, \
-                self.injection, self.capacitance
 
         self.update_state_variables(self, dt)
         self.update_shadow_variables()
 
-        #print 3
-
         self.run_postprocessing_event_handlers(self)
         self.update_shadow_variables()
-
-        #print 4
-
-        if self.id == 'hhpop#hhcell_1#0':
-            print 'HELLO8', self.v
-
-        #if self.id == 'hhpop#hhcell_1#0':
-        #    print 'HELLO9', self.recorded_variables
-
-        if self.id == 'Reverse':
-            print 'HELLO9', self.time_completed,\
-                self.parent.parent.parent.parent.v,\
-                self.id, self.parent.id, self.parent.parent.id, \
-                self.parent.parent.parent.id, self.parent.parent.parent.parent.id
 
         self.record_variables()
 
@@ -265,9 +280,6 @@ class Runnable(Reflective):
         for variable in self.recorded_variables:
             self.recorded_variables[variable].append(\
                 (self.time_completed, self.__dict__[variable]))
-            print 'HELLO11', len(self.recorded_variables[variable]), self.time_completed, self.__dict__[variable]
-            #print self.id
-            #print self.time_completed, self.__dict__[variable]
             
     def push_state(self):
         vars = []
