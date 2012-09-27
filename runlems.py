@@ -43,7 +43,7 @@ try:
     
     print 'Resolving model'
     model.resolve_model()
-    #print model
+    print model
 
     print 'Building simulation'
     sim = SimulationBuilder(model).build()
@@ -80,9 +80,14 @@ try:
             rq = rq[1:]
             for c in runnable.children:
                 rq.append(runnable.children[c])
+            for child in runnable.array:
+                rq.append(child)
+            if runnable.id == 'hhpop#hhcell_1#0':
+                print 'HELLO12'
             if runnable.recorded_variables:
                 for variable in runnable.recorded_variables:
                     values = runnable.recorded_variables[variable]
+                    print "HELLO10", runnable.id, variable
                     x = numpy.empty(len(values))
                     y = numpy.empty(len(values))
                     i = 0

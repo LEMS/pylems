@@ -66,7 +66,7 @@ class Reflective(object):
         self.derived_variables.append(variable)
     
         code_string = 'self.{0} = {1}\nself.{0}_shadow = {1}'.format(\
-            variable, 0.00001)
+            variable, 1)
         exec compile(ast.parse(code_string), '<unknown>', 'exec')
 
     def __getitem__(self, key):
@@ -166,12 +166,17 @@ class Runnable(Reflective):
         for cn in self.children:
             self.children[cn].configure_time(self.time_step, self.time_total)
 
+        for c in self.array:
+            c.configure_time(self.time_step, self.time_total)
         
     def reset_time(self):
         self.time_completed = 0
         
         for cid in self.children:
             self.children[cid].reset_time()
+
+        for c in self.array:
+            c.reset_time()
 
     def single_step(self, dt):
         # For debugging
@@ -192,6 +197,7 @@ class Runnable(Reflective):
                 name = "{0}.{1}".format(r.id, name)
                 
             print "Error in '{0}': {1}".format(name, e)
+            print type(e)
             keys = self.__dict__.keys()
             keys.sort()
             for k in keys:
@@ -232,6 +238,9 @@ class Runnable(Reflective):
         if self.id == 'hhpop#hhcell_1#0':
             print 'HELLO8', self.v
 
+        #if self.id == 'hhpop#hhcell_1#0':
+        #    print 'HELLO9', self.recorded_variables
+
         if self.id == 'Reverse':
             print 'HELLO9', self.time_completed,\
                 self.parent.parent.parent.parent.v,\
@@ -243,9 +252,8 @@ class Runnable(Reflective):
         for cid in self.children:
             self.children[cid].single_step(dt)
 
-        if self.array:
-            for child in self.array:
-                child.single_step(dt)
+        for child in self.array:
+            child.single_step(dt)
 
         self.time_completed += self.time_step
         if self.time_completed >= self.time_total:
@@ -257,6 +265,7 @@ class Runnable(Reflective):
         for variable in self.recorded_variables:
             self.recorded_variables[variable].append(\
                 (self.time_completed, self.__dict__[variable]))
+            print 'HELLO11', len(self.recorded_variables[variable]), self.time_completed, self.__dict__[variable]
             #print self.id
             #print self.time_completed, self.__dict__[variable]
             
@@ -270,6 +279,9 @@ class Runnable(Reflective):
         for cid in self.children:
             self.children[cid].push_state()
 
+        for c in self.array:
+            c.push_state()
+
     def pop_state(self):
         vars = self.state_stack.pop()
         for varname in self.instance_variables:
@@ -279,6 +291,9 @@ class Runnable(Reflective):
 
         for cid in self.children:
             self.children[cid].pop_state()
+
+        for c in self.array:
+            c.pop_state()
 
     def update_shadow_variables(self):
         if self.plastic:

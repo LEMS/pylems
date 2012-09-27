@@ -177,7 +177,10 @@ class SimulationBuilder(LEMSBase):
                                                    template.id,
                                                    i)
                 runnable.array.append(instance)
-        
+
+        if runnable.id == 'Connections':
+            print 'HELLO1', component.id, structure.foreach
+
         # Process event connections
         for (from_component, from_port,
              to_component, to_port) in structure.event_connections:
@@ -544,10 +547,10 @@ class SimulationBuilder(LEMSBase):
         code = ['acc = {0}'.format(acc_start)]
         code += ['for o in self.{0}:'.format(array)]
         code += ['    if self.id == "hhpop#hhcell_1#0":']
-        code += ['        print "1> x = o{0}, acc = ", acc'.format(ref)]
+        code += ['        print "1> x = ", o{0}, ", acc = ", acc'.format(ref)]
         code += ['    acc = acc {0} o{1}'.format(reduce_op, ref)]
         code += ['    if self.id == "hhpop#hhcell_1#0":']
-        code += ['        print "2> x = o{0}, acc = ", acc'.format(ref)]
+        code += ['        print "2> x = ", o{0}, ", acc = ", acc'.format(ref)]
         code += ['self.{0} = acc'.format(result)]
         code += ['self.{0}_shadow = acc'.format(result)]
 

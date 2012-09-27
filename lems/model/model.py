@@ -41,7 +41,7 @@ class Model(Contextual):
         """ Global (root) context.
         @type: lems.model.context.Context """
 
-        self.next_free_id = 0
+        self.next_free_id = -1
         """ Number used to create a new ID.
         @type: Integer """
 
@@ -681,6 +681,9 @@ class Model(Contextual):
             for c in structure.multi_child_defs:
                 s += prefix + Model.tab*2 + '{0} * {1}\n'.format(\
                     c, structure.multi_child_defs[c])
+
+        if structure.foreach:
+            for fe in 
 
                 
         return s
