@@ -125,8 +125,6 @@ class Runnable(Reflective):
         
     def register_event_out_callback(self, port, callback):
         if port in self.event_out_callbacks:
-            for vn in self.instance_variables:
-                print '  {0}'.format(vn)
             self.event_out_callbacks[port].append(callback)
         else:
             raise SimBuildError('No event out port \'{0}\' in '
@@ -250,6 +248,9 @@ class Runnable(Reflective):
             sys.exit(0)
             
     def single_step2(self, dt):
+        if self.time_completed == 0:
+            self.run_startup_event_handlers(self)
+
         self.run_preprocessing_event_handlers(self)
         self.update_shadow_variables()
 

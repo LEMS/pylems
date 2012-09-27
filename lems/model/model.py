@@ -613,6 +613,18 @@ class Model(Contextual):
                 s += prefix + Model.tab*2 + td.variable + ' = ' + td.value\
                      + ' | ' + str(td.expression_tree) + '\n'
 
+        if regime.derived_variables:
+            s += prefix + Model.tab + 'Derived variables:\n'
+            for dvn in regime.derived_variables:
+                dv = regime.derived_variables[dvn]
+                print dv.name, dv.value, dv.expression_tree
+                s += prefix + Model.tab*2 + dv.name 
+                if dv.value:
+                    s += ' = ' + dv.value + ' | ' + str(dv.expression_tree) + '\n'
+                else:
+                    s += '\n'
+
+
         if regime.event_handlers:
             s += prefix + Model.tab + 'Event Handlers:\n'
             for eh in regime.event_handlers:

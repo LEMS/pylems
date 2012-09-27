@@ -84,9 +84,6 @@ class SimulationBuilder(LEMSBase):
             p = context.parameters[pn]
             if p.numeric_value:
                 runnable.add_instance_variable(p.name, p.numeric_value)
-            elif p.dimension == '__link__':
-                r = runnable.parent
-                print 'HELLO2', p.name, p.value,r.id,r.children
             else:
                 pass
                 ## if p.dimension == '__component_ref__':
@@ -109,6 +106,8 @@ class SimulationBuilder(LEMSBase):
             runnable.add_method('update_state_variables', ['self', 'dt'],
                                 [])
             runnable.add_method('update_derived_variables', ['self'],
+                                [])
+            runnable.add_method('run_startup_event_handlers', ['self'],
                                 [])
             runnable.add_method('run_preprocessing_event_handlers', ['self'],
                                 [])
@@ -210,11 +209,8 @@ class SimulationBuilder(LEMSBase):
         @type foreach: lems.model.structure.ForEach
         """
 
-        print 'HELLO3a', runnable.id, name_mappings
-
         # Process foreach statements
         for fe in foreach.foreach:
-            print 'HELLO3b', runnable.id, fe.name, fe.target
             target_array = runnable.resolve_path(fe.target)
             
             for target_runnable in target_array:
@@ -227,9 +223,6 @@ class SimulationBuilder(LEMSBase):
 
             from_ = name_mappings[from_cname]
             to = name_mappings[to_cname]
-
-            print 'HELLO3c', from_.id, from_port
-            print 'HELLO3d', to.id, to_port
 
             from_port = 'a'
             to_port = 'spikes-in'
@@ -316,8 +309,13 @@ class SimulationBuilder(LEMSBase):
         # Process event handlers
         pre_event_handler_code = []
         post_event_handler_code = []
+        startup_event_handler_code = []
         for eh in regime.event_handlers:
-            if eh.type == EventHandler.ON_CONDITION:
+            if eh.type == EventHandler.ON_START:
+                startup_event_handler_code += self.build_event_handler(runnable,
+                                                                       context, 
+                                                                       eh)
+            elif eh.type == EventHandler.ON_CONDITION:
                 post_event_handler_code += self.build_event_handler(runnable,
                                                                     context, 
                                                                     eh)
@@ -325,6 +323,8 @@ class SimulationBuilder(LEMSBase):
                 pre_event_handler_code += self.build_event_handler(runnable,
                                                                    context, 
                                                                    eh)
+        runnable.add_method('run_startup_event_handlers', ['self'],
+                            startup_event_handler_code)
         runnable.add_method('run_preprocessing_event_handlers', ['self'],
                             pre_event_handler_code)
         runnable.add_method('run_postprocessing_event_handlers', ['self'],
@@ -448,6 +448,8 @@ class SimulationBuilder(LEMSBase):
             return self.build_on_condition(runnable, context, event_handler)
         elif event_handler.type == EventHandler.ON_EVENT:
             return self.build_on_event(runnable, context, event_handler)
+        elif event_handler.type == EventHandler.ON_START:
+            return self.build_on_start(runnable, context, event_handler)
         else:
             return []
 
@@ -502,6 +504,26 @@ class SimulationBuilder(LEMSBase):
                           format(on_event.port),]
 
         return on_event_code
+            
+    def build_on_start(self, runnable, context, on_start):
+        """
+        Build OnStart start handler code.
+
+        @param on_start: OnStart start handler object
+        @type on_start: lems.model.behavior.OnStart
+
+        @return: Generated OnStart code
+        @rtype: list(string)
+        """
+        
+        on_start_code = []
+
+        for action in on_start.actions:
+            code = self.build_action(runnable, context, action)
+            for line in code:
+                on_start_code += [line]
+
+        return on_start_code
             
     def build_action(self, runnable, context, action):
         """
@@ -575,11 +597,7 @@ class SimulationBuilder(LEMSBase):
 
         code = ['acc = {0}'.format(acc_start)]
         code += ['for o in self.{0}:'.format(array)]
-        code += ['    if self.id == "hhpop#hhcell_1#0":']
-        code += ['        print self.id, self.time_completed, " 1> x = ", o{0}, ", acc = ", acc'.format(ref)]
         code += ['    acc = acc {0} o{1}'.format(reduce_op, ref)]
-        code += ['    if self.id == "hhpop#hhcell_1#0":']
-        code += ['        print self.id, self.time_completed, " 2> x = ", o{0}, ", acc = ", acc'.format(ref)]
         code += ['self.{0} = acc'.format(result)]
         code += ['self.{0}_shadow = acc'.format(result)]
 
