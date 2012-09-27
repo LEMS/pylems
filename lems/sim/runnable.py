@@ -66,7 +66,7 @@ class Reflective(object):
         self.derived_variables.append(variable)
     
         code_string = 'self.{0} = {1}\nself.{0}_shadow = {1}'.format(\
-            variable, 1e-12)
+            variable, 1e-15)
         exec compile(ast.parse(code_string), '<unknown>', 'exec')
 
     def __getitem__(self, key):
@@ -249,6 +249,7 @@ class Runnable(Reflective):
             
     def single_step2(self, dt):
         if self.time_completed == 0:
+            print self.id
             self.run_startup_event_handlers(self)
 
         self.run_preprocessing_event_handlers(self)
