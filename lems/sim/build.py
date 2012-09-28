@@ -282,7 +282,10 @@ class SimulationBuilder(LEMSBase):
 
         # Process derived variables
         derived_variable_code = []
-        for dvn in regime.derived_variables:
+        derived_variables_ordering = order_derived_variables(regime)
+        print 'HELLO1 Ordering for ', component.id, '(', component.component_type, ') -> ',\
+            derived_variables_ordering
+        for dvn in derived_variables_ordering: #regime.derived_variables:
             dv = regime.derived_variables[dvn]
             runnable.add_derived_variable(dv.name)
             if dv.value:
@@ -393,7 +396,9 @@ class SimulationBuilder(LEMSBase):
         @return: Generated Python expression.
         @rtype: string
         """
-        
+
+        regime = context.selected_behavior_profile.default_regime
+
         if tree_node.type == ExprNode.VALUE:
             if tree_node.value[0].isalpha():
                 if tree_node.value == 't':
@@ -413,6 +418,8 @@ class SimulationBuilder(LEMSBase):
                                                 "variable '{0}'".format(v))
 
                     return '{0}.{1}'.format(var_prefix, v)
+                elif tree_node.value in regime.derived_variables:
+                    return 'self.{0}'.format(tree_node.value)
                 else:
                     return 'self.{0}_shadow'.format(tree_node.value)
             else:
@@ -630,6 +637,75 @@ class SimulationBuilder(LEMSBase):
             if self.current_record_target == None:
                 raise SimBuildError('No target available for '
                                     'recording variables')
-            self.current_record_target.add_variable_recorder(rec.quantity)
-            
-            
+            self.current_record_target.add_variable_recorder(rec)
+
+############################################################
+
+def order_derived_variables(regime):
+    """
+    Finds ordering of derived_variables.
+    
+    @param regime: Behavior Regime containing derived variables.
+    @type regime: lems.model.behavior.regime
+    
+    @param context: Context of the component being built.
+    @type context:
+    
+    @return: Returns ordered list of derived variables.
+    @rtype: list(string)
+    
+    @raise SimBuildError: Raised when a proper ordering of derived
+    variables could not be found.
+    """
+    
+    ordering = []
+    dvs = []
+    dvsnoexp = []
+    maxcount = 5
+    
+    for dv in regime.derived_variables:
+        if regime.derived_variables[dv].expression_tree == None:
+            dvsnoexp.append(dv)
+        else:
+            dvs.append(dv)
+        
+    count = maxcount
+
+    while count > 0 and dvs != []:
+        count - count - 1
+
+        for dv1 in dvs:
+            exp_tree = regime.derived_variables[dv1].expression_tree
+            found = False
+            for dv2 in dvs:
+                if is_var_in_exp_tree(dv2, exp_tree):
+                    found = True
+            if not found:
+                ordering.append(dv1)
+                del dvs[dvs.index(dv1)]
+                count = maxcount
+                break
+
+    if count == 0:
+        raise SimBuildError(("Unable to find ordering for derived "
+                             "variables in '{0}'").format(context.name))
+        
+    return ordering + dvsnoexp
+
+def is_var_in_exp_tree(var, exp_tree):
+    node = exp_tree
+
+    if node.type == ExprNode.VALUE:
+        if node.value == var:
+            return True
+        else:
+            return False
+    elif node.type == ExprNode.OP:
+        if is_var_in_exp_tree(var, node.left):
+            return True
+        else:
+            return is_var_in_exp_tree(var, node.right)
+    elif node.type == ExprNode.FUNC1:
+        return is_var_in_exp_tree(var, node.param)
+    else:
+        return False

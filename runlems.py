@@ -43,7 +43,7 @@ try:
     
     print 'Resolving model'
     model.resolve_model()
-    print model
+    #print model
 
     print 'Building simulation'
     sim = SimulationBuilder(model).build()
@@ -57,7 +57,7 @@ try:
             for r in run.array:
                 print_run(r, '  ' + offset)
 
-    if False:
+    if True:
         print 'Runnables:'
         for r in sim.runnables:
             print_run(sim.runnables[r], '')
@@ -84,17 +84,17 @@ try:
                 rq.append(child)
             if runnable.recorded_variables:
                 for variable in runnable.recorded_variables:
-                    values = runnable.recorded_variables[variable]
-                    x = numpy.empty(len(values))
-                    y = numpy.empty(len(values))
+                    recording = runnable.recorded_variables[variable]
+                    x = numpy.empty(len(recording.values))
+                    y = numpy.empty(len(recording.values))
                     i = 0
-                    for (xv, yv) in values:
+                    for (xv, yv) in recording.values:
                         x[i] = xv
                         y[i] = yv
                         i = i + 1
 
                     p = plt.subplot(111)
-                    p.plot(x, y)
+                    p.plot(x, y, color=recording.color)
         plt.show()
 
 

@@ -9,6 +9,8 @@ Base class for runnable components.
 from lems.base.base import LEMSBase
 from lems.base.util import Stack
 from lems.base.errors import SimBuildError
+from lems.sim.recording import Recording
+
 import ast
 import sys
 
@@ -65,8 +67,8 @@ class Reflective(object):
     def add_derived_variable(self, variable):
         self.derived_variables.append(variable)
     
-        code_string = 'self.{0} = {1}\nself.{0}_shadow = {1}'.format(\
-            variable, 1e-15)
+        code_string = 'self.{0} = {1}'.format(\
+            variable, 0)
         exec compile(ast.parse(code_string), '<unknown>', 'exec')
 
     def __getitem__(self, key):
@@ -101,7 +103,11 @@ class Runnable(Reflective):
 
     def add_child(self, id, runnable):
         self.children[id] = runnable
+        self.children[runnable.id] = runnable
+
         self.__dict__[id] = runnable
+        self.__dict__[runnable.id] = runnable
+        
         runnable.configure_time(self.time_step, self.time_total)
 
     def add_child_to_group(self, group_name, child):
@@ -171,11 +177,14 @@ class Runnable(Reflective):
             else:
                 return childobj.resolve_path(new_path)
         
-    def add_variable_recorder(self, path):
+    def add_variable_recorder(self, recorder):
+        self.add_variable_recorder2(recorder, recorder.quantity)
+
+    def add_variable_recorder2(self, recorder, path):
         if path[0] == '/':
-            self.parent.add_variable_recorder(path)
+            self.parent.add_variable_recorder2(recorder, path)
         elif path.find('../') == 0:
-            self.parent.add_variable_recorder(path[3:])
+            self.parent.add_variable_recorder2(recorder, path[3:])
         elif path.find('/') >= 1:
             (child, new_path) = path.split('/', 1)
 
@@ -190,14 +199,14 @@ class Runnable(Reflective):
             if child in self.children:
                 childobj = self.children[child]
                 if idx == -1:
-                    childobj.add_variable_recorder(new_path)
+                    childobj.add_variable_recorder2(recorder, new_path)
                 else:
-                    childobj.array[idx].add_variable_recorder(new_path)
+                    childobj.array[idx].add_variable_recorder2(recorder, new_path)
             else:
                 raise SimBuildError('Unable to find child \'{0}\' in '
                                     '\'{1}\''.format(child, self.id))
         else:
-            self.recorded_variables[path] = []
+            self.recorded_variables[path] = Recording(recorder)
 
 
     def configure_time(self, time_step, time_total):
@@ -220,18 +229,18 @@ class Runnable(Reflective):
             c.reset_time()
 
     def single_step(self, dt):
-        return self.single_step2(dt)
+        #return self.single_step2(dt)
 
         # For debugging
         try:
             return self.single_step2(dt)
-        except Ex1 as e:
-            print self.rate
-            print self.midpoint
-            print self.scale
-            print self.parent.parent.parent.parent.v
-            # rate * exp((v - midpoint)/scale)
-            sys.exit(0)
+        #except Ex1 as e:
+        #    print self.rate
+        #    print self.midpoint
+        #    print self.scale
+        #    print self.parent.parent.parent.parent.v
+        #    # rate * exp((v - midpoint)/scale)
+        #    sys.exit(0)
         except Exception as e:
             r = self
             name = r.id
@@ -245,43 +254,59 @@ class Runnable(Reflective):
             keys.sort()
             for k in keys:
                 print '{0} -> {1}'.format(k, self.__dict__[k])
+            print ''
+            print ''
+
+            #if self.id == 'sim1.net1.hhpop.hhpop#hhcell_1#0.id#0.na.h':
+            #    print 'HELLO2', self.instance_variables[x], self.derived_
+
+                
             sys.exit(0)
             
     def single_step2(self, dt):
-        if self.time_completed == 0:
-            print self.id
-            self.run_startup_event_handlers(self)
-
-        self.run_preprocessing_event_handlers(self)
-        self.update_shadow_variables()
-
-        self.update_derived_variables(self)
-        self.update_shadow_variables()
-
-        self.update_state_variables(self, dt)
-        self.update_shadow_variables()
-
-        self.run_postprocessing_event_handlers(self)
-        self.update_shadow_variables()
-
-        self.record_variables()
-
         for cid in self.children:
             self.children[cid].single_step(dt)
 
         for child in self.array:
             child.single_step(dt)
 
-        self.time_completed += self.time_step
+        if self.time_completed == 0:
+            self.run_startup_event_handlers(self)
+
+        self.run_preprocessing_event_handlers(self)
+        self.update_shadow_variables()
+
+        self.update_derived_variables(self)
+        #self.update_shadow_variables()
+
+        self.update_state_variables(self, dt)
+        self.update_shadow_variables()
+
+        #GG - Required?
+        self.update_derived_variables(self)
+        #self.update_shadow_variables()
+
+        self.run_postprocessing_event_handlers(self)
+        self.update_shadow_variables()
+
+        self.record_variables()
+
+        #for cid in self.children:
+        #    self.children[cid].single_step(dt)
+
+        #for child in self.array:
+        #    child.single_step(dt)
+
+        self.time_completed += dt#self.time_step
         if self.time_completed >= self.time_total:
             return 0
         else:
-            return self.time_step
+            return dt#self.time_step
 
     def record_variables(self):
         for variable in self.recorded_variables:
-            self.recorded_variables[variable].append(\
-                (self.time_completed, self.__dict__[variable]))
+            self.recorded_variables[variable].add_value(\
+                self.time_completed, self.__dict__[variable])
             
     def push_state(self):
         vars = []
@@ -313,3 +338,5 @@ class Runnable(Reflective):
         if self.plastic:
             for var in self.instance_variables:
                 self.__dict__[var + '_shadow'] = self.__dict__[var]
+            #for var in self.derived_variables:
+            #    self.__dict__[var + '_shadow'] = self.__dict__[var]

@@ -78,7 +78,6 @@ class Context(LEMSBase):
         @type: dict(string -> lems.model.behavior.Behavior) """
 
         self.selected_behavior_profile = None
-
         """ Name of the selected behavior profile.
         @type: lems.model.behavior.Behavior """
 
