@@ -57,7 +57,7 @@ try:
             for r in run.array:
                 print_run(r, '  ' + offset)
 
-    if True:
+    if False and not nogui:
         print 'Runnables:'
         for r in sim.runnables:
             print_run(sim.runnables[r], '')

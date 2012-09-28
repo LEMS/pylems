@@ -1,11 +1,8 @@
 all:	lems-code lems-doc
 
-JAVALEMS = ../LEMS/lems
+JLEMSPATH = ../LEMS
 TIME = /usr/bin/time -f '%E s'
-#MODELFILE = examples/sawtooth.xml
-#MODELFILE = examples/example1.xml
-#MODELFILE = examples/sawtooth_events.xml
-MODELFILE = examples/example1_new.xml
+MODELFILE = examples/example1.xml
 BENCHFILE = examples/sawtooth_bench.xml
 
 lems-code:
@@ -20,8 +17,7 @@ clean:
 	find . -name "__pycache__" | xargs rm -rf
 	rm -rf doc/epydoc/*
 
-test:
-	# ./runlems.py examples/example1.xml
+run:
 	./runlems.py ${MODELFILE}
 
 example1:
@@ -29,7 +25,7 @@ example1:
 
 bench:
 	@echo "Java"
-	@${TIME} ${JAVALEMS} ${BENCHFILE} -nogui > /dev/null
+	@${TIME} ${JLEMSPATH}/lems ${JLEMSPATH}/${BENCHFILE} -nogui > /dev/null
 
 	@echo "CPython 2 (no optimizations)"
 	@${TIME} python runlems.py -nogui ${BENCHFILE} > /dev/null

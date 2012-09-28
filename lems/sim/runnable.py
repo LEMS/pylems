@@ -14,19 +14,19 @@ from lems.sim.recording import Recording
 import ast
 import sys
 
-#from math import *
+from math import *
 
-import math
-
-class Ex1(Exception):
-    pass
-
-def exp(x):
-    try:
-        return math.exp(x)
-    except Exception as e:
-        print 'ERROR performing exp({0})'.format(x)
-        raise Ex1()
+#import math
+#
+#class Ex1(Exception):
+#    pass
+#
+#def exp(x):
+#    try:
+#        return math.exp(x)
+#    except Exception as e:
+#        print 'ERROR performing exp({0})'.format(x)
+#        raise Ex1()
 
 class Reflective(object):
     def __init__(self):
@@ -98,6 +98,9 @@ class Runnable(Reflective):
 
         self.recorded_variables = {}
 
+        self.event_out_ports = []
+        self.event_in_ports = []
+
         self.event_out_callbacks = {}
         self.event_in_counters = {}
 
@@ -116,6 +119,7 @@ class Runnable(Reflective):
         self.__dict__[group_name].append(child)
 
     def add_event_in_port(self, port):
+        self.event_in_ports.append(port)
         if port not in self.event_in_counters:
             self.event_in_counters[port] = 0
 
@@ -123,6 +127,7 @@ class Runnable(Reflective):
         self.event_in_counters[port] += 1
         
     def add_event_out_port(self, port):
+        self.event_out_ports.append(port)
         if port not in self.event_out_callbacks:
             self.event_out_callbacks[port] = []
 
@@ -257,10 +262,6 @@ class Runnable(Reflective):
             print ''
             print ''
 
-            #if self.id == 'sim1.net1.hhpop.hhpop#hhcell_1#0.id#0.na.h':
-            #    print 'HELLO2', self.instance_variables[x], self.derived_
-
-                
             sys.exit(0)
             
     def single_step2(self, dt):
@@ -277,25 +278,14 @@ class Runnable(Reflective):
         self.update_shadow_variables()
 
         self.update_derived_variables(self)
-        #self.update_shadow_variables()
 
         self.update_state_variables(self, dt)
         self.update_shadow_variables()
-
-        #GG - Required?
-        self.update_derived_variables(self)
-        #self.update_shadow_variables()
 
         self.run_postprocessing_event_handlers(self)
         self.update_shadow_variables()
 
         self.record_variables()
-
-        #for cid in self.children:
-        #    self.children[cid].single_step(dt)
-
-        #for child in self.array:
-        #    child.single_step(dt)
 
         self.time_completed += dt#self.time_step
         if self.time_completed >= self.time_total:

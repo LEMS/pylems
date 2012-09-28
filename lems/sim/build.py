@@ -223,9 +223,19 @@ class SimulationBuilder(LEMSBase):
 
             from_ = name_mappings[from_cname]
             to = name_mappings[to_cname]
-
-            from_port = 'a'
-            to_port = 'spikes-in'
+            
+            if from_port == '':
+                if len(from_.event_out_ports) == 1:
+                    from_port = from_.event_out_ports[0]
+                else:
+                    raise SimBuildError(("No source event port uniquely"
+                                         "identifiable in '{0}'").format(from_.id))
+            if to_port == '':
+                if len(to.event_in_ports) == 1:
+                    to_port = to.event_in_ports[0]
+                else:
+                    raise SimBuildError(("No destination event port uniquely"
+                                         "identifiable in '{0}'").format(to.id))
 
             from_.register_event_out_callback(\
                 from_port, lambda: to.inc_event_in(to_port))
@@ -283,8 +293,6 @@ class SimulationBuilder(LEMSBase):
         # Process derived variables
         derived_variable_code = []
         derived_variables_ordering = order_derived_variables(regime)
-        print 'HELLO1 Ordering for ', component.id, '(', component.component_type, ') -> ',\
-            derived_variables_ordering
         for dvn in derived_variables_ordering: #regime.derived_variables:
             dv = regime.derived_variables[dvn]
             runnable.add_derived_variable(dv.name)
