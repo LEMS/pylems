@@ -51,7 +51,7 @@ class Reflective(object):
             for statement in statements:
                 code_string += '    ' + statement + '\n'
 
-        exec compile(ast.parse(code_string), '<unknown>', 'exec')
+        exec(compile(ast.parse(code_string), '<unknown>', 'exec'))
         
         #setattr(cls, method_name, __generated_function__)
         self.__dict__[method_name] = __generated_function__
@@ -62,14 +62,14 @@ class Reflective(object):
     
         code_string = 'self.{0} = {1}\nself.{0}_shadow = {1}'.format(\
             variable, initial_value)
-        exec compile(ast.parse(code_string), '<unknown>', 'exec')
+        exec(compile(ast.parse(code_string), '<unknown>', 'exec'))
         
     def add_derived_variable(self, variable):
         self.derived_variables.append(variable)
     
         code_string = 'self.{0} = {1}'.format(\
             variable, 0)
-        exec compile(ast.parse(code_string), '<unknown>', 'exec')
+        exec(compile(ast.parse(code_string), '<unknown>', 'exec'))
 
     def __getitem__(self, key):
         return self.array[key]
@@ -253,14 +253,14 @@ class Runnable(Reflective):
                 r = r.parent
                 name = "{0}.{1}".format(r.id, name)
                 
-            print "Error in '{0}': {1}".format(name, e)
-            print type(e)
+            print("Error in '{0}': {1}".format(name, e))
+            print(type(e))
             keys = self.__dict__.keys()
             keys.sort()
             for k in keys:
-                print '{0} -> {1}'.format(k, self.__dict__[k])
-            print ''
-            print ''
+                print('{0} -> {1}'.format(k, self.__dict__[k]))
+            print('')
+            print('')
 
             sys.exit(0)
             

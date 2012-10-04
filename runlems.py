@@ -22,7 +22,7 @@ from lems.sim.build import SimulationBuilder
 #sys.exit(0)
 
 if len(sys.argv) not in [2,3]:
-    print 'Usage: runlems [-nogui] <model-file>'
+    print('Usage: runlems [-nogui] <model-file>')
     sys.exit(-1)
 
 nogui = False
@@ -34,22 +34,22 @@ else:
     model_file = sys.argv[2]
 
 try:
-    print 'Parsing model file'
+    print('Parsing model file')
     parser = LEMSParser()
     parser.init_parser()
     parser.parse_file(model_file)
     model = parser.get_model()
     #print model
     
-    print 'Resolving model'
+    print('Resolving model')
     model.resolve_model()
     #print model
 
-    print 'Building simulation'
+    print('Building simulation')
     sim = SimulationBuilder(model).build()
 
     def print_run(run, offset):
-        print offset,run.id
+        print(offset,run.id)
         for rn in run.children:
             r = run.children[rn]
             print_run(r, '  ' + offset)
@@ -58,11 +58,11 @@ try:
                 print_run(r, '  ' + offset)
 
     if False and not nogui:
-        print 'Runnables:'
+        print('Runnables:')
         for r in sim.runnables:
             print_run(sim.runnables[r], '')
         
-    print 'Running simulation'
+    print('Running simulation')
     sim.run()
     #sys.exit(0)
     
@@ -70,7 +70,7 @@ try:
         import matplotlib.pyplot as plt
         import numpy
 
-        print 'Plotting graphs'
+        print('Plotting graphs')
         rq = []
         for rn in sim.runnables:
             rq.append(sim.runnables[rn])
@@ -99,10 +99,10 @@ try:
 
 
 except ParseError as e:
-    print 'Caught ParseError - ' + str(e)
+    print('Caught ParseError - ' + str(e))
 except ModelError as e:
-    print 'Caught ModelError - ' + str(e)
+    print('Caught ModelError - ' + str(e))
 except SimBuildError as e:
-    print 'Caught SimBuildError - ' + str(e)
+    print('Caught SimBuildError - ' + str(e))
 except SimError as e:
-    print 'Caught SimError - ' + str(e)
+    print('Caught SimError - ' + str(e))

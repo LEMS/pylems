@@ -617,7 +617,6 @@ class Model(Contextual):
             s += prefix + Model.tab + 'Derived variables:\n'
             for dvn in regime.derived_variables:
                 dv = regime.derived_variables[dvn]
-                print dv.name, dv.value, dv.expression_tree
                 s += prefix + Model.tab*2 + dv.name 
                 if dv.value:
                     s += ' = ' + dv.value + ' | ' + str(dv.expression_tree) + '\n'
