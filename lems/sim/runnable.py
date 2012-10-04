@@ -51,11 +51,13 @@ class Reflective(object):
             for statement in statements:
                 code_string += '    ' + statement + '\n'
 
-        exec(compile(ast.parse(code_string), '<unknown>', 'exec'))
+        g = globals()
+        l = locals()
+        exec(compile(ast.parse(code_string), '<unknown>', 'exec'), g, l)
         
         #setattr(cls, method_name, __generated_function__)
-        self.__dict__[method_name] = __generated_function__
-        del __generated_function__
+        self.__dict__[method_name] = l['__generated_function__']
+        del l['__generated_function__']
 
     def add_instance_variable(self, variable, initial_value):
         self.instance_variables.append(variable)
@@ -66,7 +68,7 @@ class Reflective(object):
         
     def add_derived_variable(self, variable):
         self.derived_variables.append(variable)
-    
+        
         code_string = 'self.{0} = {1}'.format(\
             variable, 0)
         exec(compile(ast.parse(code_string), '<unknown>', 'exec'))
