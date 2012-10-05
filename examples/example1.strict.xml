@@ -287,18 +287,18 @@
   <Include file="SimpleNetwork.xml"/>
 
 
-  <Network id="net1">
-    <Population id="p1" component="gen1" size="1"/>
-    <Population id="p2" component="gen2" size="1"/>
-    <Population id="p3" component="iaf3cpt" size="1"/>
+  <Component type="Network" id="net1">
+    <Component type="Population" id="p1" component="gen1" size="1"/>
+    <Component type="Population" id="p2" component="gen2" size="1"/>
+    <Component type="Population" id="p3" component="iaf3cpt" size="1"/>
     
-    <Population id="hhpop" component="hhcell_1" size="1"/>
+    <Component type="Population" id="hhpop" component="hhcell_1" size="1"/>
     
     
     <Component type="EventConnectivity" id="p1-p3" source="p1" target="p3">
-      <Connections type="AllAll"/>
+      <Component child="Connections" type="AllAll"/>
     </Component>
-  </Network>
+  </Component>
 
 
   <Include file="MultiRunSimulation.xml"/>

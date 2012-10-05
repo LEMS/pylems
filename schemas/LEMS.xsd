@@ -11,6 +11,13 @@ as there are currently no plans within the NineML group to update the specificat
 v0.5 is mainly to add description attributes on Parameter, Exposure, etc.
 
 v0.6
+  Added Simulation
+  Changed Show to DataDisplay
+  Moved Run, Record and DataDisplay to be under Simulation
+
+  Changed Behavior to Dynamics
+  Changed Build to Structure and moved it to be under ComponentType
+  Changed 'use' properties for Component attributes.
 -->
 
 <xs:schema targetNamespace="http://www.neuroml.org/lems/0.5"
@@ -73,8 +80,6 @@ v0.6
     <xs:attribute name="offset" type="xs:float" use="optional" default="0"/>
 
   </xs:complexType>
-
-
 
 
   <xs:complexType name="DerivedParameter">
@@ -552,8 +557,4 @@ v0.6
 
   </xs:complexType>
 
-
 </xs:schema>
-
-
-

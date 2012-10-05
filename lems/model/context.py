@@ -10,6 +10,7 @@ from lems.base.base import LEMSBase
 from lems.base.errors import ModelError
 from lems.model.dynamics import Dynamics
 from lems.model.structure import Structure
+from lems.model.simulation import Simulation
 
 class Context(LEMSBase):
     """
@@ -112,6 +113,10 @@ class Context(LEMSBase):
         self.structure = Structure()
         """ Structure object detailing structural aspects of this component.
         @type: lems.model.structure.Structure """
+        
+        self.simulation = Simulation()
+        """ Simulation object detailing simulation-related aspects of this component.
+        @type: lems.model.simulation.Simulation """
         
 
     def add_component_type(self, component_type):

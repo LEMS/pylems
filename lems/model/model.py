@@ -364,12 +364,12 @@ class Model(Contextual):
                     cf = type_context.component_refs[pn]
                     this_context.component_refs[pn] = pc.value
 
-        for bpn in type_context.behavior_profiles:
-            bp = type_context.behavior_profiles[bpn].copy()
-            this_context.behavior_profiles[bpn] = bp
+        for dpn in type_context.dynamics_profiles:
+            dp = type_context.dynamics_profiles[dpn].copy()
+            this_context.dynamics_profiles[dpn] = dp
                 
-            if bpn == type_context.selected_behavior_profile.name:
-                this_context.selected_behavior_profile = bp
+            if dpn == type_context.selected_dynamics_profile.name:
+                this_context.selected_dynamics_profile = dp
                     
         for port in type_context.event_in_ports:
             this_context.event_in_ports.append(port)
@@ -384,14 +384,33 @@ class Model(Contextual):
 
     def resolve_regime(self, context, regime):
         """
-        Resolves name references in the given behavior regime to actual
+        Resolves name references in the given dynamics regime to actual
         objects.
 
         @param context: Current context.
         @type context: lems.model.context.Context
 
-        @param regime: Behavior regime to be resolved.
-        @type regime: lems.model.behavior.Behavior
+        @param regime: Dynamics regime to be resolved.
+        @type regime: lems.model.dynamics.Dynamics
+
+        @raise ModelError: Raised when the quantity to be recorded is not a
+        path.
+
+        @raise ModelError: Raised when the color specified is not a text
+        entity.
+        """
+
+        pass
+
+    def resolve_simulation(self, context, simulation):
+        """
+        Resolves simulation specifications in a component-type context.
+
+        @param context: Current context.
+        @type context: lems.model.context.Context
+
+        @param simulation: Simulation spec to be resolved.
+        @type simulation: lems.model.simulation.Simulation
 
         @raise ModelError: Raised when the quantity to be recorded is not a
         path.
@@ -401,8 +420,8 @@ class Model(Contextual):
         """
 
         # Resolve record statements
-        for idx in regime.records:
-            record = regime.records[idx]
+        for idx in simulation.records:
+            record = simulation.records[idx]
 
             if record.quantity in context.parameters and \
                record.scale in context.parameters and \
@@ -424,21 +443,23 @@ class Model(Contextual):
                 record.color = cp.value
                 record.numeric_scale = sp.numeric_value
 
-    def resolve_behavior_profile(self, context, behavior):
+
+
+    def resolve_dynamics_profile(self, context, dynamics):
         """
-        Resolves name references in the given behavior profile to actual
+        Resolves name references in the given dynamics profile to actual
         objects.
 
         @param context: Current context.
         @type context: lems.model.context.Context
 
-        @param behavior: Behavior profile to be resolved.
-        @type behavior: lems.model.behavior.Behavior
+        @param dynamics: Dynamics profile to be resolved.
+        @type dynamics: lems.model.dynamics.Dynamics
         """
 
-        self.resolve_regime(context, behavior.default_regime)
+        self.resolve_regime(context, dynamics.default_regime)
         
-        for rn in behavior.regimes:
+        for rn in dynamics.regimes:
             self.resolve_regime(context, regime)
             
     def resolve_component(self, context, component):
@@ -467,10 +488,10 @@ class Model(Contextual):
                                  format(pn, component.id),
                                  component.context)
 
-        # Resolve behavior
-        for bpn in component.context.behavior_profiles:
-            bp = component.context.behavior_profiles[bpn]
-            self.resolve_behavior_profile(component.context, bp)
+        # Resolve dynamics
+        for dpn in component.context.dynamics_profiles:
+            dp = component.context.dynamics_profiles[dpn]
+            self.resolve_dynamics_profile(component.context, dp)
 
     def resolve_child(self, context, child):
         """
@@ -659,17 +680,17 @@ class Model(Contextual):
                 
         return s
     
-    def behavior2str(self, behavior, prefix):
+    def dynamics2str(self, dynamics, prefix):
         s = prefix
-        if behavior.name != '':
+        if dynamics.name != '':
             s += name
         else:
             s += '*'
         s += '\n'
 
-        if behavior.default_regime:
+        if dynamics.default_regime:
             s += prefix + Model.tab + 'Default regime:\n'
-            s += self.regime2str(behavior.default_regime,
+            s += self.regime2str(dynamics.default_regime,
                                  prefix + Model.tab)
 
         return s
@@ -794,11 +815,11 @@ class Model(Contextual):
                 else:
                     s += '\n'
 
-        if context.behavior_profiles:
-            s += prefix + 'Behavior profiles:\n'
-            for name in context.behavior_profiles:
-                behavior = context.behavior_profiles[name]
-                s += self.behavior2str(behavior, prefix + Model.tab*2)
+        if context.dynamics_profiles:
+            s += prefix + 'Dynamics profiles:\n'
+            for name in context.dynamics_profiles:
+                dynamics = context.dynamics_profiles[name]
+                s += self.dynamics2str(dynamics, prefix + Model.tab*2)
 
         if context.event_in_ports:
             s += prefix + 'Event in ports:\n'

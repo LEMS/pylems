@@ -6,7 +6,6 @@ LEMS parser
 @contact: gautham@textensor.com, gautham@lisphacker.org
 """
 
-from xml.etree import ElementTree as xml
 import os.path
 
 from lems.model.simple import Dimension,Unit
@@ -19,13 +18,17 @@ from lems.model.parameter import Parameter
 from lems.model.dynamics import *
 #Dynamics,Regime,OnCondition,OnEvent,StateAssignment
 
+import xml.etree.ElementTree
+
 def xmltolower(node):
-    """ Converts the tag and attribute names in the given XML node and
+    """ 
+    Converts the tag and attribute names in the given XML node and
     child nodes to lower case. To convert the entire tree, pass in the
     root.
 
     @param node: Node in an XML tree.
-    @type node: xml.etree.Element """
+    @type node: xml.etree.Element 
+    """
 
     node.lattrib = dict()
     for key in node.attrib:
@@ -33,59 +36,16 @@ def xmltolower(node):
     for child in node:
         xmltolower(child)
 
+def open_file(filename, xslt_preprocessor_callback):
+    if xslt_preprocessor_callback:
+        return xml.etree.ElementTree.XML(xslt_preprocessor_callback(open(filename).read()))
+    else:
+        return xml.etree.ElementTree.parse(filename).getroot()
+
 class LEMSParser(Parser):
     """
     Parser for LEMS files
     """
-
-    base_path = '.'
-    """ Base path for the file being parsed
-    @type: string """
-
-    model = None
-    """ Model built during parsing
-    @type: lems.model.model.model """
-
-    tag_parse_table = None
-    """ Dictionary of xml tags to parse methods
-    @type: dict(string -> function) """
-
-    valid_children = None
-    """ Dictionary mapping each tag to it's list of valid child tags.
-    @type: dict(string -> string) """
-
-    context_stack = []
-    """ Stack of contexts used for handling nested contexts.
-    @type: list(lems.model.context.Context) """
-
-    current_context = None
-    """ Currently active (being parsed) context.
-    @type: lems.model.context.Context """
-
-    component_type_stack = []
-    """ Stack of component type objects used for handling nested
-    component types.
-    @type: list(lems.model.parameter.ComponentType) """
-
-    current_component_type = None
-    """ Component type object being parsed.
-    @type: lems.model.parameter.ComponentType """
-
-    current_regime = None
-    """ Current dynamics regime being parsed.
-    @type: lems.model.dynamics.Regime """
-
-    current_event_handler = None
-    """ Current event_handler being parsed.
-    @type: lems.model.dynamics.EventHandler """
-
-    current_structure = None
-    """ Current structure being parsed.
-    @type: lems.model.structure.Structure """
-
-    xml_node_stack = []
-    """ XML node stack.
-    @type: list(xml.etree.Element) """
 
     def push_context(self, context):
         self.context_stack = [context] + self.context_stack
@@ -114,6 +74,73 @@ class LEMSParser(Parser):
         else:
             self.current_component_type = self.component_type_stack[0]
 
+    def __init__(self, xslt_preprocessor_callback = None):
+        """
+        Constructor.
+
+        @param xslt_preprocessor_callback: XSLT preprocessor callback.
+        @type xslt_preprocessor_callback: fn
+        """
+
+        self.base_path = '.'
+        """ Base path for the file being parsed
+        @type: string """
+
+        self.model = None
+        """ Model built during parsing
+        @type: lems.model.model.model """
+
+        self.tag_parse_table = None
+        """ Dictionary of xml tags to parse methods
+        @type: dict(string -> function) """
+        
+        self.valid_children = None
+        """ Dictionary mapping each tag to it's list of valid child tags.
+        @type: dict(string -> string) """
+        
+        self.context_stack = []
+        """ Stack of contexts used for handling nested contexts.
+        @type: list(lems.model.context.Context) """
+        
+        self.current_context = None
+        """ Currently active (being parsed) context.
+        @type: lems.model.context.Context """
+
+        self.component_type_stack = []
+        """ Stack of component type objects used for handling nested
+        component types.
+        @type: list(lems.model.parameter.ComponentType) """
+        
+        self.current_component_type = None
+        """ Component type object being parsed.
+        @type: lems.model.parameter.ComponentType """
+        
+        self.current_regime = None
+        """ Current dynamics regime being parsed.
+        @type: lems.model.dynamics.Regime """
+        
+        self.current_event_handler = None
+        """ Current event_handler being parsed.
+        @type: lems.model.dynamics.EventHandler """
+        
+        self.current_simulation = None
+        """ Current simulation section being parsed.
+        @type: lems.model.simulation.Simulation """
+        
+        self.current_structure = None
+        """ Current structure being parsed.
+        @type: lems.model.structure.Structure """
+        
+        self.xml_node_stack = []
+        """ XML node stack.
+        @type: list(xml.etree.Element) """
+
+        self.xslt_preprocessor_callback = xslt_preprocessor_callback
+        """ @paraXSLT preprocessor callback.
+        @type: fn """
+        
+        self.init_parser()
+
     def init_parser(self):
         """
         Initializes the parser
@@ -133,12 +160,11 @@ class LEMSParser(Parser):
                                                 'exposure', 'eventport', 
                                                 'fixed', 'link', 'parameter',
                                                 'path', 'requirement',
-                                                'structure', 'text']
+                                                'simulation', 'structure', 'text']
         self.valid_children['dynamics'] = ['derivedvariable',
                                            'oncondition', 'onentry',
                                            'onevent',
-                                           'onstart', 'record',
-                                           'run', 'show',
+                                           'onstart', 
                                            'statevariable', 'timederivative']
         self.valid_children['oncondition'] = ['eventout', 'stateassignment']
         self.valid_children['onentry'] = ['eventout', 'stateassignment']
@@ -148,6 +174,7 @@ class LEMSParser(Parser):
                                             'eventconnection',
                                             'foreach',
                                             'multiinstantiate']
+        self.valid_children['simulation'] = ['record', 'run', 'datadisplay',]
 
         self.tag_parse_table = dict()
         self.tag_parse_table['dynamics'] = self.parse_dynamics
@@ -158,6 +185,7 @@ class LEMSParser(Parser):
         self.tag_parse_table['componentref'] = self.parse_component_ref
         self.tag_parse_table['componenttype'] = self.parse_component_type
         self.tag_parse_table['target'] = self.parse_target
+        self.tag_parse_table['datadisplay'] = self.parse_data_display
         self.tag_parse_table['derivedvariable'] = self.parse_derived_variable
         self.tag_parse_table['dimension'] = self.parse_dimension
         self.tag_parse_table['eventconnection'] = self.parse_event_connection
@@ -179,6 +207,7 @@ class LEMSParser(Parser):
         self.tag_parse_table['requirement'] = self.parse_requirement
         self.tag_parse_table['run'] = self.parse_run
         self.tag_parse_table['show'] = self.parse_show
+        self.tag_parse_table['simulation'] = self.parse_simulation
         self.tag_parse_table['stateassignment'] = self.parse_state_assignment
         self.tag_parse_table['statevariable'] = self.parse_state_variable
         self.tag_parse_table['structure'] = self.parse_structure
@@ -222,7 +251,8 @@ class LEMSParser(Parser):
             if ctagl in self.tag_parse_table:
                 self.tag_parse_table[ctagl](child)
             else:
-                self.parse_component_by_typename(child, child.tag)
+                raise ParseError("Unrecognized tag '{0}'".format(ctagl))
+                #self.parse_component_by_typename(child, child.tag)
 
             self.xml_node_stack = self.xml_node_stack[1:]
             
@@ -253,7 +283,7 @@ class LEMSParser(Parser):
 
     def resolve_component_name(self, component_name):
         """ 
-        Resolves component name from the contex stack.
+        Resolves component name from the context stack.
 
         @param component_name: Name of the component to be resolved.
         @type component_name: string
@@ -310,43 +340,6 @@ class LEMSParser(Parser):
         """
         
         return self.model
-
-    def parse_dynamics(self, node):
-        """
-        Parses <Dynamics>
-
-        @param node: Node containing the <Behaviour> element
-        @type node: xml.etree.Element
-        """
-
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Dynamics must be defined inside a ' +
-                             'component type')
-
-        if 'name' in node.lattrib:
-            name = node.lattrib['name']
-        else:
-            name = ''
-
-        self.current_context.add_dynamics_profile(name)
-        
-        old_regime = self.current_regime
-        self.current_regime = self.current_context.selected_dynamics_profile.\
-                              default_regime
-        
-        self.process_nested_tags(node)
-        
-        self.current_regime = old_regime
-
-    ## def parse_build(self, node):
-    ##     """
-    ##     Parses <Build>
-
-    ##     @param node: Node containing the <Build> element
-    ##     @type node: xml.etree.Element
-    ##     """
-
-    ##     pass
 
     def parse_child(self, node):
         """
@@ -433,6 +426,8 @@ class LEMSParser(Parser):
         @raise ParseError: Raised when the component does not have an id.
         """
 
+        raise Exception("Component initialized using typename '{0}' as the XML tag".format(node.tag))
+
         if self.current_context.context_type == Context.GLOBAL:
             # Global component instatiation
             if 'id' in node.lattrib:
@@ -481,10 +476,14 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
+        if 'id' in node.lattrib and node.lattrib['id'] == 'celltype_d':
+            print node.tag, node.lattrib
+
         if 'id' in node.lattrib:
             id = node.lattrib['id']
         else:            
-            self.raise_error('Component must have an id')
+            #self.raise_error('Component must have an id')
+            id = self.model.make_id()
         
         if 'type' in node.lattrib:
             type = node.lattrib['type']
@@ -500,8 +499,17 @@ class LEMSParser(Parser):
         else:
             extends = None
 
+        if 'child' in node.lattrib:
+            child = node.lattrib['child']
+        else:
+            child = None
+
         component = Component(id, self.current_context, type, extends)
-        self.current_context.add_component(component)
+
+        if child:
+            self.current_context.add_child(component)
+        else:
+            self.current_context.add_component(component)
 
         for key in node.attrib:
             if key.lower() not in ['extends', 'id', 'type']:
@@ -567,16 +575,30 @@ class LEMSParser(Parser):
         self.process_nested_tags(node)
         self.pop_context()
 
-    def parse_target(self, node):
+    def parse_data_display(self, node):
         """
-        Parses <Target>
+        Parses <DataDisplay>
 
-        @param node: Node containing the <Target> element
+        @param node: Node containing the <DataDisplay> element
         @type node: xml.etree.Element
         """
-        
-        self.model.add_target(node.lattrib['component'])
-    
+
+        if self.current_simulation == None:
+            self.raise_error('<DataDisplay> must be defined inside a ' +
+                             'simulation specification')
+
+        if 'title' in node.lattrib:
+            title = node.lattrib['title']
+        else:
+            self.raise_error('A data display must have a title')
+
+        if 'dataregion' in node.lattrib:
+            data_region = node.lattrib['dataregion']
+        else:
+            data_region = None
+
+        self.current_simulation.add_data_display(title, data_region)
+            
     def parse_derived_variable(self, node):
         """
         Parses <DerivedVariable>
@@ -622,7 +644,6 @@ class LEMSParser(Parser):
         self.current_regime.add_derived_variable(name, exposure, dimension,
                                                  value, select, reduce)
             
-
     def parse_dimension(self, node):
         """
         Parses <Dimension>
@@ -645,6 +666,33 @@ class LEMSParser(Parser):
         self.model.add_dimension(Dimension(name, dim[0], dim[1], dim[2],
                                            dim[3], dim[4], dim[4], dim[6]))
             
+    def parse_dynamics(self, node):
+        """
+        Parses <Dynamics>
+
+        @param node: Node containing the <Behaviour> element
+        @type node: xml.etree.Element
+        """
+
+        if self.current_context.context_type != Context.COMPONENT_TYPE:
+            self.raise_error('Dynamics must be defined inside a ' +
+                             'component type')
+
+        if 'name' in node.lattrib:
+            name = node.lattrib['name']
+        else:
+            name = ''
+
+        self.current_context.add_dynamics_profile(name)
+        
+        old_regime = self.current_regime
+        self.current_regime = self.current_context.selected_dynamics_profile.\
+                              default_regime
+        
+        self.process_nested_tags(node)
+        
+        self.current_regime = old_regime
+
     def parse_event_out(self, node):
         """
         Parses <EventOut>
@@ -812,7 +860,7 @@ class LEMSParser(Parser):
 
         path = self.base_path + '/' + node.lattrib['file']
 
-        root = xml.parse(path).getroot()
+        root = open_file(path, self.xslt_preprocessor_callback)
         xmltolower(root)
 
         self.parse_root(root)
@@ -1018,26 +1066,26 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if self.current_regime == None:
+        if self.current_simulation == None:
             self.raise_error('<Record> must be only be used inside a ' +
-                             'dynamics profile or regime')
+                             'simulation specification')
 
         if 'quantity' in node.lattrib:
             quantity = node.lattrib['quantity']
         else:
-            self.raise_error('\'quantity\' attribute required for <Text>')
+            self.raise_error('\'quantity\' attribute required for <Record>')
 
         if 'scale' in node.lattrib:
             scale = node.lattrib['scale']
         else:
-            self.raise_error('\'scale\' attribute required for <Text>')
+            self.raise_error('\'scale\' attribute required for <Record>')
 
         if 'color' in node.lattrib:
             color  = node.lattrib['color']
         else:
-            self.raise_error('\'color\' attribute required for <Text>')
+            self.raise_error('\'color\' attribute required for <Record>')
 
-        self.current_regime.add_record(quantity, scale, color)
+        self.current_simulation.add_record(quantity, scale, color)
 
     def parse_requirement(self, node):
         """
@@ -1071,9 +1119,9 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if self.current_regime == None:
+        if self.current_simulation == None:
             self.raise_error('<Run> must be defined inside a ' +
-                             'dynamics profile or regime')
+                             'simulation specification')
 
         if 'component' in node.lattrib:
             component = node.lattrib['component']
@@ -1097,7 +1145,7 @@ class LEMSParser(Parser):
             self.raise_error('<Run> must specify a final value for the ' +
                              'state variable')
 
-        self.current_regime.add_run(component, variable, increment, total)
+        self.current_simulation.add_run(component, variable, increment, total)
             
     def parse_show(self, node):
         """
@@ -1109,6 +1157,25 @@ class LEMSParser(Parser):
 
         pass
  
+    def parse_simulation(self, node):
+        """
+        Parses <Simulation>
+
+        @param node: Node containing the <Simulation> element
+        @type node: xml.etree.Element
+        """
+
+        if self.current_context.context_type != Context.COMPONENT_TYPE:
+            self.raise_error('Simulation must be defined inside a ' +
+                             'component type')
+
+        old_simulation = self.current_simulation
+        self.current_simulation = self.current_context.simulation
+
+        self.process_nested_tags(node)
+        
+        self.current_simulation = old_simulation
+
     def parse_state_assignment(self, node):
         """
         Parses <StateAssignment>
@@ -1189,6 +1256,16 @@ class LEMSParser(Parser):
         
         self.current_structure = old_structure
 
+    def parse_target(self, node):
+        """
+        Parses <Target>
+
+        @param node: Node containing the <Target> element
+        @type node: xml.etree.Element
+        """
+        
+        self.model.add_target(node.lattrib['component'])
+    
     def parse_text(self, node):
         """
         Parses <Text>
@@ -1295,7 +1372,7 @@ class LEMSParser(Parser):
         @type filename: string
         """
 
-        root = xml.parse(filename).getroot()
+        root = open_file(filename, self.xslt_preprocessor_callback)
         xmltolower(root)
         
         self.base_path = os.path.dirname(filename)

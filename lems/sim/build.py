@@ -49,7 +49,7 @@ class SimulationBuilder(LEMSBase):
 
         self.sim = Simulation()
 
-        for component_id in self.model.default_runs:
+        for component_id in self.model.targets:
             if component_id not in self.model.context.components:
                 raise SimBuildError('Unable to find component \'{0}\' to run'\
                                     .format(component_id))
@@ -99,9 +99,10 @@ class SimulationBuilder(LEMSBase):
         for port in context.event_out_ports:
             runnable.add_event_out_port(port)
 
-        if context.selected_behavior_profile:
-            self.add_runnable_behavior(component, runnable,
-                                       context.selected_behavior_profile)
+        if context.selected_dynamics_profile:
+            self.add_dynamics(component, runnable,
+                              context.selected_dynamics_profile,
+                              context.simulation)
         else:
             runnable.add_method('update_state_variables', ['self', 'dt'],
                                 [])
@@ -126,9 +127,9 @@ class SimulationBuilder(LEMSBase):
 
         self.build_structure(component, runnable, context.structure)
 
-        if context.selected_behavior_profile:
+        if context.selected_dynamics_profile:
             self.add_recording_behavior(component, runnable,
-                                        context.selected_behavior_profile)
+                                        context.simulation)
             
         self.current_record_target = record_target_backup
 
@@ -241,20 +242,24 @@ class SimulationBuilder(LEMSBase):
                 from_port, lambda: to.inc_event_in(to_port))
 
 
-    def add_runnable_behavior(self, component, runnable, behavior_profile):
+    def add_dynamics(self, component, runnable, dynamics_profile, simulation):
         """
-        Adds behavior to a runnable component based on the behavior
+        Adds dynamics to a runnable component based on the dynamics
         specifications in the component model.
 
-        @param component: Component model containing behavior specifications.
+        @param component: Component model containing dynamics specifications.
         @type component: lems.model.component.Component
 
-        @param runnable: Runnable component to which behavior is to be added.
+        @param runnable: Runnable component to which dynamics is to be added.
         @type runnable: lems.sim.runnable.Runnable
 
-        @param behavior_profile: The behavior profile to be used to generate
-        behavior code in the runnable component.
-        @type behavior_profile: lems.model.behavior.Behavior
+        @param dynamics_profile: The dynamics profile to be used to generate
+        dynamics code in the runnable component.
+        @type dynamics_profile: lems.model.dynamics.Dynamics
+
+        @param simulation: The simulation-related aspects to be implemented 
+        in the runnable component.
+        @type simulation: lems.model.simulation.Simulation
 
         @raise SimBuildError: Raised when a time derivative expression refers
         to an undefined variable.
@@ -267,7 +272,7 @@ class SimulationBuilder(LEMSBase):
         """
         
         context = component.context
-        regime = behavior_profile.default_regime
+        regime = dynamics_profile.default_regime
 
         # Process state variables
         for svn in regime.state_variables:
@@ -342,8 +347,8 @@ class SimulationBuilder(LEMSBase):
                             post_event_handler_code)
 
         # Process runs
-        for rn in regime.runs:
-            run = regime.runs[rn]
+        for rn in simulation.runs:
+            run = simulation.runs[rn]
             c = context.lookup_component_ref(run.component)
             if c != None:
                 target = self.build_runnable(c, runnable)
@@ -405,7 +410,7 @@ class SimulationBuilder(LEMSBase):
         @rtype: string
         """
 
-        regime = context.selected_behavior_profile.default_regime
+        regime = context.selected_dynamics_profile.default_regime
 
         if tree_node.type == ExprNode.VALUE:
             if tree_node.value[0].isalpha():
@@ -453,7 +458,7 @@ class SimulationBuilder(LEMSBase):
         Build event handler code.
 
         @param event_handler: Event handler object
-        @type event_handler: lems.model.behavior.EventHandler
+        @type event_handler: lems.model.dynamics.EventHandler
 
         @return: Generated event handler code.
         @rtype: list(string)
@@ -473,7 +478,7 @@ class SimulationBuilder(LEMSBase):
         Build OnCondition event handler code.
 
         @param on_condition: OnCondition event handler object
-        @type on_condition: lems.model.behavior.OnCondition
+        @type on_condition: lems.model.dynamics.OnCondition
 
         @return: Generated OnCondition code
         @rtype: list(string)
@@ -498,7 +503,7 @@ class SimulationBuilder(LEMSBase):
         Build OnEvent event handler code.
 
         @param on_event: OnEvent event handler object
-        @type on_event: lems.model.behavior.OnEvent
+        @type on_event: lems.model.dynamics.OnEvent
 
         @return: Generated OnEvent code
         @rtype: list(string)
@@ -525,7 +530,7 @@ class SimulationBuilder(LEMSBase):
         Build OnStart start handler code.
 
         @param on_start: OnStart start handler object
-        @type on_start: lems.model.behavior.OnStart
+        @type on_start: lems.model.dynamics.OnStart
 
         @return: Generated OnStart code
         @rtype: list(string)
@@ -545,7 +550,7 @@ class SimulationBuilder(LEMSBase):
         Build event handler action code.
 
         @param action: Event handler action object
-        @type action: lems.model.behavior.Action
+        @type action: lems.model.dynamics.Action
 
         @return: Generated action code
         @rtype: string
@@ -563,7 +568,7 @@ class SimulationBuilder(LEMSBase):
         Build state assignment code.
 
         @param state_assignment: State assignment object
-        @type state_assignment: lems.model.behavior.StateAssignment
+        @type state_assignment: lems.model.dynamics.StateAssignment
 
         @return: Generated state assignment code
         @rtype: string
@@ -580,7 +585,7 @@ class SimulationBuilder(LEMSBase):
         Build event out code.
 
         @param event_out: event out object
-        @type event_out: lems.model.behavior.StateAssignment
+        @type event_out: lems.model.dynamics.StateAssignment
 
         @return: Generated event out code
         @rtype: string
@@ -618,29 +623,28 @@ class SimulationBuilder(LEMSBase):
 
         return code
         
-    def add_recording_behavior(self, component, runnable, behavior_profile):
+    def add_recording_behavior(self, component, runnable, simulation):
         """
-        Adds recording-related behavior to a runnable component based on
-        the behavior specifications in the component model.
+        Adds recording-related dynamics to a runnable component based on
+        the dynamics specifications in the component model.
 
-        @param component: Component model containing behavior specifications.
+        @param component: Component model containing dynamics specifications.
         @type component: lems.model.component.Component
 
-        @param runnable: Runnable component to which behavior is to be added.
+        @param runnable: Runnable component to which dynamics is to be added.
         @type runnable: lems.sim.runnable.Runnable
 
-        @param behavior_profile: The behavior profile to be used to generate
-        behavior code in the runnable component.
-        @type behavior_profile: lems.model.behavior.Behavior
+        @param simulation: The simulation-related aspects to be implemented 
+        in the runnable component.
+        @type simulation: lems.model.simulation.Simulation
 
         @raise SimBuildError: Raised when a target for recording could not be
         found.
         """
 
         context = component.context
-        regime = behavior_profile.default_regime
 
-        for rn in regime.records:
+        for rn in simulation.records:
             rec = regime.records[rn]
             if self.current_record_target == None:
                 raise SimBuildError('No target available for '
@@ -653,8 +657,8 @@ def order_derived_variables(regime):
     """
     Finds ordering of derived_variables.
     
-    @param regime: Behavior Regime containing derived variables.
-    @type regime: lems.model.behavior.regime
+    @param regime: Dynamics Regime containing derived variables.
+    @type regime: lems.model.dynamics.regime
     
     @param context: Context of the component being built.
     @type context:

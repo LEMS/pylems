@@ -145,71 +145,6 @@ class DerivedVariable(LEMSBase):
             self.expression_tree = None
                 
 
-class Run(LEMSBase):
-    """
-    Stores the description of an object to be run according to an independent
-    variable (usually time).
-    """
-
-    def __init__(self, component, variable, increment, total):
-        """
-        Constructor.
-
-        @param component: Name of the target component to be run according to
-        the specification given for an independent state variable.
-        @type component: string
-        
-        @param variable: The name of an independent state variable according
-        to which the target component will be run.
-        @type variable: string
-
-        @param increment: Increment of the state variable on each step.
-        @type increment: string
-
-        @param total: Final value of the state variable.
-        @type total: string
-        """
-        
-        self.component = component
-        """ Name of the target component to be run according to the
-        specification given for an independent state variable.
-        @type: string """
-        
-        self.variable = variable
-        """ The name of an independent state variable according to which the
-        target component will be run.
-        @type: string """
-        
-        self.increment = increment
-        """ Increment of the state variable on each step.
-        @type: string """
-        
-        self.total = total
-        """ Final value of the state variable.
-        @type: string """
-        
-
-class Record(LEMSBase):
-    """
-    Stores the parameters of a <Record> statement.
-    """
-    
-    def __init__(self, quantity, scale, color):
-        self.quantity = quantity
-        self.scale = scale
-        self.color = color
-
-        self.numeric_scale = None
-        
-class Show(LEMSBase):
-    """
-    Stores the parameters of a <Show> statement.
-    """
-    
-    def __init__(self, src, scale):
-        self.src = src
-        self.scale = scale
-    
 class EventHandler(LEMSBase):
     """
     Base class for event an handler.
@@ -473,18 +408,6 @@ class Regime(LEMSBase):
         """ List of event handlers defined in this dynamics regime.
         @type: list(EventHandler) """
 
-        self.runs = {}
-        """ Dictionary of runs in this dynamics regime.
-        @type: dict(string -> lems.model.dynamics.Run) """
-        
-        self.records = {}
-        """ Dictionary of recorded variables in this dynamics regime.
-        @type: dict(string -> lems.model.dynamics.Record """
-
-        self.shows = {}
-        """ Dictionary of recorded variables in this dynamics regime.
-        @type: dict(string -> lems.model.dynamics.Record """
-
     def add_state_variable(self, name, exposure, dimension):
         """
         Adds a state variable to the dynamics current object.
@@ -584,69 +507,6 @@ class Regime(LEMSBase):
         """
 
         self.event_handlers += [event_handler]
-
-    def add_run(self, component, variable, increment, total):
-        """
-        Adds a runnable target component definition to the list of runnable
-        components stored in this context.
-
-        @param component: Name of the target component to be run.
-        @type component: string
-
-        @param variable: Name of an indendent state variable used to control
-        the target component (usually time).
-        @type variable: string
-
-        @param increment: Value by which the control variable is to be
-        incremented in each step.
-        @type increment: string
-
-        @param total: End value for the control variable.
-        @type total: string
-        """
-
-        if component in self.runs:
-            raise ModelError('Duplicate run for ' + component)
-
-        self.runs[component] = Run(component, variable, increment, total)
-
-    def add_record(self, quantity, scale, color):
-        """
-        Adds a record objects to the list of record objects in this dynamics
-        regime.
-
-        @param quantity: Path to the quantity to be recorded
-        @type quantity: string
-
-        @param scale: Scale of the quantity to be recorded
-        @type scale: string
-
-        @param color: Color of the quantity to be recorded as a 24-bit hex
-        RGB value (#RRGGBB)
-        @type color: string
-        """
-        
-        if quantity in self.records:
-            raise ModelError('Duplicate record {0}'.format(quantity))
-        
-        self.records[quantity] = Record(quantity, scale, color)
-
-    def add_show(self, src, scale):
-        """
-        Adds a record objects to the list of record objects in this dynamics
-        regime.
-
-        @param src: Path to the element(s) that defines what should be shown
-        @type src: string
-
-        @param scale: Scale of the quantity to be recorded
-        @type scale: string
-        """
-        
-        if src in self.shows:
-            raise ModelError('Duplicate show {0}'.format(quantity))
-        
-        self.shows[src] = Record(src, scale)
 
 class Dynamics(LEMSBase):
     """
