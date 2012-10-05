@@ -20,7 +20,7 @@ def xslt_preprocessor_callback(xmltext):
     return str(xslt(xml2.XML(xmltext)))
 
 def print_run(run, offset):
-    print (offset + run.id)
+    print('{0}{1} ({2})'.format(offset, run.id, run.component.component_type))
     for rn in run.children:
         r = run.children[rn]
         print_run(r, '  ' + offset)
@@ -34,7 +34,6 @@ if __name__ == '__main__':
         print('Usage: runlems [-nogui] <model-file>')
         sys.exit(-1)
 
-    print(len(sys.argv))
     nogui = False
     if len(sys.argv) == 2:
         model_file = sys.argv[1]

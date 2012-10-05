@@ -101,8 +101,7 @@ class SimulationBuilder(LEMSBase):
 
         if context.selected_dynamics_profile:
             self.add_dynamics(component, runnable,
-                              context.selected_dynamics_profile,
-                              context.simulation)
+                              context.selected_dynamics_profile)
         else:
             runnable.add_method('update_state_variables', ['self', 'dt'],
                                 [])
@@ -114,7 +113,12 @@ class SimulationBuilder(LEMSBase):
                                 [])
             runnable.add_method('run_postprocessing_event_handlers', ['self'],
                                 [])
+
+        self.process_simulation_specs(component, runnable, context.simulation)
         
+        if component.id == 'id#6':
+            print 'HELLO6', context.components, context.children, context.child_defs,context.children_defs
+
         for cn in context.components:
             child = context.components[cn]
             child_runnable = self.build_runnable(child, runnable)
@@ -130,7 +134,7 @@ class SimulationBuilder(LEMSBase):
         if context.selected_dynamics_profile:
             self.add_recording_behavior(component, runnable,
                                         context.simulation)
-            
+
         self.current_record_target = record_target_backup
 
         return runnable
@@ -153,6 +157,9 @@ class SimulationBuilder(LEMSBase):
 
         context = component.context
 
+        if component.id == 'id#6':
+            print 'HELLO5', structure.single_child_defs
+
         # Process single-child instantiations
         for c in structure.single_child_defs:
             if c in context.component_refs:
@@ -160,6 +167,15 @@ class SimulationBuilder(LEMSBase):
                 child = context.lookup_component(cref)
                 child_runnable = self.build_runnable(child, runnable)
                 runnable.add_child(c, child_runnable)
+
+                print 'HELLO1', component.id, context.children_defs
+                if component.id == 'na':
+                    print 'HELLO2', context.children_defs
+                for cdn in context.children_defs:
+                    cdt = context.children_defs[cdn]
+                    if cdt == child.component_type:
+                        runnable.add_child_to_group(cdn, child_runnable)
+
             else:
                 raise SimBuildError('Unable to find component ref \'{0}\' '
                                     'under \'{1}\''.format(\
@@ -242,7 +258,7 @@ class SimulationBuilder(LEMSBase):
                 from_port, lambda: to.inc_event_in(to_port))
 
 
-    def add_dynamics(self, component, runnable, dynamics_profile, simulation):
+    def add_dynamics(self, component, runnable, dynamics_profile):
         """
         Adds dynamics to a runnable component based on the dynamics
         specifications in the component model.
@@ -256,10 +272,6 @@ class SimulationBuilder(LEMSBase):
         @param dynamics_profile: The dynamics profile to be used to generate
         dynamics code in the runnable component.
         @type dynamics_profile: lems.model.dynamics.Dynamics
-
-        @param simulation: The simulation-related aspects to be implemented 
-        in the runnable component.
-        @type simulation: lems.model.simulation.Simulation
 
         @raise SimBuildError: Raised when a time derivative expression refers
         to an undefined variable.
@@ -346,10 +358,38 @@ class SimulationBuilder(LEMSBase):
         runnable.add_method('run_postprocessing_event_handlers', ['self'],
                             post_event_handler_code)
 
+    def process_simulation_specs(self, component, runnable, simulation):
+        """
+        Process simulation-related aspects to a runnable component based on the dynamics
+        specifications in the component model.
+
+        @param component: Component model containing dynamics specifications.
+        @type component: lems.model.component.Component
+
+        @param runnable: Runnable component to which dynamics is to be added.
+        @type runnable: lems.sim.runnable.Runnable
+
+        @param simulation: The simulation-related aspects to be implemented 
+        in the runnable component.
+        @type simulation: lems.model.simulation.Simulation
+
+        @raise SimBuildError: Raised when a time derivative expression refers
+        to an undefined variable.
+
+        @raise SimBuildError: Raised when there are invalid time
+        specifications for the <Run> statement.
+
+        @raise SimBuildError: Raised when the component reference for <Run>
+        cannot be resolved.
+        """
+
+        context = component.context
+
         # Process runs
         for rn in simulation.runs:
             run = simulation.runs[rn]
             c = context.lookup_component_ref(run.component)
+
             if c != None:
                 target = self.build_runnable(c, runnable)
                 self.sim.add_runnable(c.id, target)
@@ -362,6 +402,7 @@ class SimulationBuilder(LEMSBase):
             else:
                 raise SimBuildError(('Invalid component reference {0} in '
                                      '<Run>').format(c.id))
+
 
     def convert_op(self, op):
         """

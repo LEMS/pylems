@@ -476,9 +476,6 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if 'id' in node.lattrib and node.lattrib['id'] == 'celltype_d':
-            print node.tag, node.lattrib
-
         if 'id' in node.lattrib:
             id = node.lattrib['id']
         else:            
@@ -501,6 +498,7 @@ class LEMSParser(Parser):
 
         if 'child' in node.lattrib:
             child = node.lattrib['child']
+            id = child
         else:
             child = None
 
@@ -512,7 +510,7 @@ class LEMSParser(Parser):
             self.current_context.add_component(component)
 
         for key in node.attrib:
-            if key.lower() not in ['extends', 'id', 'type']:
+            if key.lower() not in ['extends', 'id', 'type', 'child']:
                 param = Parameter(key, '__dimension_inherited__')
                 param.set_value(node.attrib[key])
                 component.add_parameter(param)

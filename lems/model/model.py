@@ -370,6 +370,8 @@ class Model(Contextual):
                 
             if dpn == type_context.selected_dynamics_profile.name:
                 this_context.selected_dynamics_profile = dp
+
+        this_context.simulation = type_context.simulation.copy()
                     
         for port in type_context.event_in_ports:
             this_context.event_in_ports.append(port)

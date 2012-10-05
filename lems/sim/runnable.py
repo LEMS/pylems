@@ -107,7 +107,10 @@ class Runnable(Reflective):
         self.event_in_counters = {}
 
     def add_child(self, id, runnable):
-        self.children[id] = runnable
+        if runnable.id == 'h':
+            raise Exception('HELLO3')
+
+        #self.children[id] = runnable
         self.children[runnable.id] = runnable
 
         self.__dict__[id] = runnable
