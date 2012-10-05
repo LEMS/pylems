@@ -1,5 +1,5 @@
 """
-Component behavior storage.
+Component dynamics storage.
 
 @author: Gautham Ganapathy
 @organization: Textensor (http://textensor.com)
@@ -31,7 +31,7 @@ class StateVariable(LEMSBase):
 
         self.name = name
         """ Internal name of the state variable. This is the name used to
-        refer to this variable inside the <Behavior> element.
+        refer to this variable inside the <Dynamics> element.
         @type: string """
         
         self.exposure = exposure
@@ -107,7 +107,7 @@ class DerivedVariable(LEMSBase):
 
         self.name = name
         """ Internal name of the derived variable. This is the name used to
-        refer to this variable inside the <Behavior> element.
+        refer to this variable inside the <Dynamics> element.
         @type: string """
         
         self.exposure = exposure
@@ -242,7 +242,7 @@ class EventHandler(LEMSBase):
         Adds an action to the list of actions.
 
         @param action: Action to be performed.
-        @type action: lems.model.behavior.Action
+        @type action: lems.model.dynamics.Action
         """
 
         if self.actions == None:
@@ -435,14 +435,14 @@ class EventOut(Action):
 
 class Regime(LEMSBase):
     """
-    Store a behavior regime for a component type.
+    Store a dynamics regime for a component type.
     """
 
     def __init__(self, name, initial = False):
         """
         Constructor.
 
-        @param name: Name of the behavior regime.
+        @param name: Name of the dynamics regime.
         @type name: string
 
         @param initial: Is this the initial regime? Default: False
@@ -458,36 +458,36 @@ class Regime(LEMSBase):
         @type: Boolean """
 
         self.state_variables = {}
-        """ Dictionary of state variables defined in this behavior regime.
-        @type: dict(string -> lems.model.behavior.StateVariable) """
+        """ Dictionary of state variables defined in this dynamics regime.
+        @type: dict(string -> lems.model.dynamics.StateVariable) """
     
         self.time_derivatives = {}
-        """ Dictionary of time derivatives defined in this behavior regime.
-        @type: dict(string -> lems.model.behavior.TimeDerivative) """
+        """ Dictionary of time derivatives defined in this dynamics regime.
+        @type: dict(string -> lems.model.dynamics.TimeDerivative) """
 
         self.derived_variables = {}
-        """ Dictionary of derived variables defined in this behavior regime.
-        @type: dict(string -> lems.model.behavior.DerivedVariable) """
+        """ Dictionary of derived variables defined in this dynamics regime.
+        @type: dict(string -> lems.model.dynamics.DerivedVariable) """
     
         self.event_handlers = []
-        """ List of event handlers defined in this behavior regime.
+        """ List of event handlers defined in this dynamics regime.
         @type: list(EventHandler) """
 
         self.runs = {}
-        """ Dictionary of runs in this behavior regime.
-        @type: dict(string -> lems.model.behavior.Run) """
+        """ Dictionary of runs in this dynamics regime.
+        @type: dict(string -> lems.model.dynamics.Run) """
         
         self.records = {}
-        """ Dictionary of recorded variables in this behavior regime.
-        @type: dict(string -> lems.model.behavior.Record """
+        """ Dictionary of recorded variables in this dynamics regime.
+        @type: dict(string -> lems.model.dynamics.Record """
 
         self.shows = {}
-        """ Dictionary of recorded variables in this behavior regime.
-        @type: dict(string -> lems.model.behavior.Record """
+        """ Dictionary of recorded variables in this dynamics regime.
+        @type: dict(string -> lems.model.dynamics.Record """
 
     def add_state_variable(self, name, exposure, dimension):
         """
-        Adds a state variable to the behavior current object.
+        Adds a state variable to the dynamics current object.
 
         @param name: Name of the state variable.
         @type name: string
@@ -499,7 +499,7 @@ class Regime(LEMSBase):
         @type dimension: string
 
         @raise ModelError: Raised when the state variable is already
-        defined in this behavior regime.
+        defined in this dynamics regime.
         """
 
         if name in self.state_variables:
@@ -509,7 +509,7 @@ class Regime(LEMSBase):
 
     def add_time_derivative(self, variable, value):
         """
-        Adds a state variable to the behavior current object.
+        Adds a state variable to the dynamics current object.
 
         @param variable: Name of the state variable whose time derivative
         is being specified.
@@ -519,7 +519,7 @@ class Regime(LEMSBase):
         @type value: string
 
         @raise ModelError: Raised when the time derivative for this state
-        variable is already defined in this behavior regime.
+        variable is already defined in this dynamics regime.
         """
 
         if variable in self.time_derivatives:
@@ -530,7 +530,7 @@ class Regime(LEMSBase):
     def add_derived_variable(self, name, exposure, dimension,
                              value, select, reduce):
         """
-        Adds a derived variable to the behavior current object.
+        Adds a derived variable to the dynamics current object.
 
         @param name: Name of the derived variable.
         @type name: string
@@ -551,7 +551,7 @@ class Regime(LEMSBase):
         @type reduce: string
         
         @raise ModelError: Raised when the derived variable is already
-        defined in this behavior regime.
+        defined in this dynamics regime.
         """
 
         if name in self.derived_variables:
@@ -577,10 +577,10 @@ class Regime(LEMSBase):
         
     def add_event_handler(self, event_handler):
         """
-        Adds a state variable to the behavior current object.
+        Adds a state variable to the dynamics current object.
 
         @param event_handler: Event handler object.
-        @type event_handler: lems.model.behavior.EventHandler
+        @type event_handler: lems.model.dynamics.EventHandler
         """
 
         self.event_handlers += [event_handler]
@@ -612,7 +612,7 @@ class Regime(LEMSBase):
 
     def add_record(self, quantity, scale, color):
         """
-        Adds a record objects to the list of record objects in this behavior
+        Adds a record objects to the list of record objects in this dynamics
         regime.
 
         @param quantity: Path to the quantity to be recorded
@@ -633,7 +633,7 @@ class Regime(LEMSBase):
 
     def add_show(self, src, scale):
         """
-        Adds a record objects to the list of record objects in this behavior
+        Adds a record objects to the list of record objects in this dynamics
         regime.
 
         @param src: Path to the element(s) that defines what should be shown
@@ -648,9 +648,9 @@ class Regime(LEMSBase):
         
         self.shows[src] = Record(src, scale)
 
-class Behavior(LEMSBase):
+class Dynamics(LEMSBase):
     """
-    Stores the behavior characteristics for a component type.
+    Stores the dynamic dynamics for a component type.
     """
 
     def __init__(self, name):
@@ -659,28 +659,28 @@ class Behavior(LEMSBase):
         """
         
         self.name = name
-        """ Name of this behavior profile.
+        """ Name of this dynamics profile.
         @type: string """
 
         self.default_regime = Regime('')
-        """ Default behavior regime for this behavior profile. This regime
-        is used to store behavior object not defined within a named regime.
-        @type: lems.model.behavior.Regime """
+        """ Default dynamics regime for this dynamics profile. This regime
+        is used to store dynamics object not defined within a named regime.
+        @type: lems.model.dynamics.Regime """
 
         self.current_regime = None
-        """ Currently active behavior regime for this behavior profile.
-        @type: lems.model.behavior.Regime """
+        """ Currently active dynamics regime for this dynamics profile.
+        @type: lems.model.dynamics.Regime """
 
         self.regimes = {}
-        """ Dictionary of regimes in this behavior profile.
-        @type: dict(string -> lems.model.behavior.Regime) """
+        """ Dictionary of regimes in this dynamics profile.
+        @type: dict(string -> lems.model.dynamics.Regime) """
 
     def add_regime(self, name, initial = False):
         """
-        Adds a behavior regime to the list of regimes in this behavior
+        Adds a dynamics regime to the list of regimes in this dynamics
         profile.
 
-        @param name: Name of the behavior regime.
+        @param name: Name of the dynamics regime.
         @type name: string
 
         @param initial: Is this the initial regime? Default: False
@@ -694,7 +694,7 @@ class Behavior(LEMSBase):
             for rn in self.regimes:
                 if self.regimes[rn].initial:
                     raise('Cannot define two initial regimes in the same' +
-                          ' behavior profile')
+                          ' dynamics profile')
             
         regime = Regime(name, initial)
         if initial:

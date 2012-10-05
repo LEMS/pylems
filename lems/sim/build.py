@@ -13,7 +13,7 @@ from lems.base.errors import SimBuildError
 from lems.sim.runnable import Runnable
 from lems.sim.sim import Simulation
 from lems.parser.expr import ExprNode
-from lems.model.behavior import EventHandler,Action
+from lems.model.dynamics import EventHandler,Action
 
 class SimulationBuilder(LEMSBase):
     """

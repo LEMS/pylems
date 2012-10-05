@@ -8,7 +8,7 @@ Context storage
 
 from lems.base.base import LEMSBase
 from lems.base.errors import ModelError
-from lems.model.behavior import Behavior
+from lems.model.dynamics import Dynamics
 from lems.model.structure import Structure
 
 class Context(LEMSBase):
@@ -73,13 +73,13 @@ class Context(LEMSBase):
         @type: enum(Context.GLOBAL, Context.COMPONENT_TYPE or
         Context.COMPONENT_TYPE) """
 
-        self.behavior_profiles = {}
-        """ Stores the various behavior profiles of the current object.
-        @type: dict(string -> lems.model.behavior.Behavior) """
+        self.dynamics_profiles = {}
+        """ Stores the various dynamics profiles of the current object.
+        @type: dict(string -> lems.model.dynamics.Dynamics) """
 
-        self.selected_behavior_profile = None
-        """ Name of the selected behavior profile.
-        @type: lems.model.behavior.Behavior """
+        self.selected_dynamics_profile = None
+        """ Name of the dynamics dynamics profile.
+        @type: lems.model.dynamics.Dynamics """
 
         self.exposures = []
         """ List of names of exposed variables.
@@ -249,35 +249,35 @@ class Context(LEMSBase):
 
         self.parameters[parameter.name] = parameter
 
-    def add_behavior_profile(self, name):
+    def add_dynamics_profile(self, name):
         """
-        Adds a behavior profile to the current context.
+        Adds a dynamics profile to the current context.
 
-        @param name: Name of the behavior profile.
+        @param name: Name of the dynamics profile.
         @type name: string
         """
         
-        if name in self.behavior_profiles:
-            raise ModelError("Duplicate behavior profile '{0}'".format(name))
+        if name in self.dynamics_profiles:
+            raise ModelError("Duplicate dynamics profile '{0}'".format(name))
 
-        self.behavior_profiles[name] = Behavior(name)
-        self.select_behavior_profile(name)
+        self.dynamics_profiles[name] = Dynamics(name)
+        self.select_dynamics_profile(name)
 
-    def select_behavior_profile(self, name):
+    def select_dynamics_profile(self, name):
         """
-        Selects a behavior profile by name.
+        Selects a dynamics profile by name.
 
-        @param name: Name of the behavior profile.
+        @param name: Name of the dynamics profile.
         @type name: string
 
-        @raise ModelError: Raised when the specified behavior profile is
+        @raise ModelError: Raised when the specified dynamics profile is
         undefined in the current context.
         """
 
-        if name not in self.behavior_profiles:
-            raise ModelError("Unknown behavior profile '{0}'".format(name))
+        if name not in self.dynamics_profiles:
+            raise ModelError("Unknown dynamics profile '{0}'".format(name))
 
-        self.selected_behavior_profile = self.behavior_profiles[name]
+        self.selected_dynamics_profile = self.dynamics_profiles[name]
         
     def add_exposure(self, name):
         """

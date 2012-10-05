@@ -25,7 +25,7 @@ class Model(Contextual):
 
         super(Model, self).__init__('__model__')
         
-        self.default_runs = []
+        self.targets = []
         """ Names of simulations to run.
         @type: string """
 
@@ -46,14 +46,14 @@ class Model(Contextual):
         @type: Integer """
 
 
-    def add_default_run(self, default_run):
+    def add_target(self, target):
         """
         Add the name of the component to run to the list of components to
         run by default.
         
-        @param default_run: Name of a simulation to run by default
-        @type default_run: string """
-        self.default_runs += [default_run]
+        @param target: Name of a simulation to run by default
+        @type target: string """
+        self.targets += [target]
 
     def add_dimension(self, dimension):
         """
@@ -818,8 +818,8 @@ class Model(Contextual):
     def __str__(self):
         s = ''
 
-        s += 'Default run:\n'
-        for run in self.default_runs:
+        s += 'Targets:\n'
+        for run in self.targets:
             s += Model.tab + run + '\n'
         
         s += 'Dimensions:\n'

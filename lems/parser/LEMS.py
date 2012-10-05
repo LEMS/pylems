@@ -16,8 +16,8 @@ from lems.base.errors import ParseError,ModelError
 from lems.model.context import Context,Contextual
 from lems.model.component import Component,ComponentType
 from lems.model.parameter import Parameter
-from lems.model.behavior import *
-#Behavior,Regime,OnCondition,OnEvent,StateAssignment
+from lems.model.dynamics import *
+#Dynamics,Regime,OnCondition,OnEvent,StateAssignment
 
 def xmltolower(node):
     """ Converts the tag and attribute names in the given XML node and
@@ -72,12 +72,12 @@ class LEMSParser(Parser):
     @type: lems.model.parameter.ComponentType """
 
     current_regime = None
-    """ Current behavior regime being parsed.
-    @type: lems.model.behavior.Regime """
+    """ Current dynamics regime being parsed.
+    @type: lems.model.dynamics.Regime """
 
     current_event_handler = None
     """ Current event_handler being parsed.
-    @type: lems.model.behavior.EventHandler """
+    @type: lems.model.dynamics.EventHandler """
 
     current_structure = None
     """ Current structure being parsed.
@@ -125,16 +125,16 @@ class LEMSParser(Parser):
 
         self.valid_children = dict()
         self.valid_children['lems'] = ['component', 'componenttype', 
-                                       'defaultrun', 'dimension', 'include',
+                                       'target', 'dimension', 'include',
                                        'unit']
-        self.valid_children['componenttype'] = ['behavior', 'behaviour',
+        self.valid_children['componenttype'] = ['dynamics', 
                                                 'child', 'children',
                                                 'componentref',
                                                 'exposure', 'eventport', 
                                                 'fixed', 'link', 'parameter',
                                                 'path', 'requirement',
                                                 'structure', 'text']
-        self.valid_children['behavior'] = ['derivedvariable',
+        self.valid_children['dynamics'] = ['derivedvariable',
                                            'oncondition', 'onentry',
                                            'onevent',
                                            'onstart', 'record',
@@ -150,14 +150,14 @@ class LEMSParser(Parser):
                                             'multiinstantiate']
 
         self.tag_parse_table = dict()
-        self.tag_parse_table['behavior'] = self.parse_behavior
+        self.tag_parse_table['dynamics'] = self.parse_dynamics
         self.tag_parse_table['child'] = self.parse_child
         self.tag_parse_table['childinstance'] = self.parse_child_instance
         self.tag_parse_table['children'] = self.parse_children
         self.tag_parse_table['component'] = self.parse_component
         self.tag_parse_table['componentref'] = self.parse_component_ref
         self.tag_parse_table['componenttype'] = self.parse_component_type
-        self.tag_parse_table['defaultrun'] = self.parse_default_run
+        self.tag_parse_table['target'] = self.parse_target
         self.tag_parse_table['derivedvariable'] = self.parse_derived_variable
         self.tag_parse_table['dimension'] = self.parse_dimension
         self.tag_parse_table['eventconnection'] = self.parse_event_connection
@@ -311,16 +311,16 @@ class LEMSParser(Parser):
         
         return self.model
 
-    def parse_behavior(self, node):
+    def parse_dynamics(self, node):
         """
-        Parses <Behavior>
+        Parses <Dynamics>
 
         @param node: Node containing the <Behaviour> element
         @type node: xml.etree.Element
         """
 
         if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Behavior must be defined inside a ' +
+            self.raise_error('Dynamics must be defined inside a ' +
                              'component type')
 
         if 'name' in node.lattrib:
@@ -328,10 +328,10 @@ class LEMSParser(Parser):
         else:
             name = ''
 
-        self.current_context.add_behavior_profile(name)
+        self.current_context.add_dynamics_profile(name)
         
         old_regime = self.current_regime
-        self.current_regime = self.current_context.selected_behavior_profile.\
+        self.current_regime = self.current_context.selected_dynamics_profile.\
                               default_regime
         
         self.process_nested_tags(node)
@@ -567,15 +567,15 @@ class LEMSParser(Parser):
         self.process_nested_tags(node)
         self.pop_context()
 
-    def parse_default_run(self, node):
+    def parse_target(self, node):
         """
-        Parses <DefaultRun>
+        Parses <Target>
 
-        @param node: Node containing the <DefaultRun> element
+        @param node: Node containing the <Target> element
         @type node: xml.etree.Element
         """
         
-        self.model.add_default_run(node.lattrib['component'])
+        self.model.add_target(node.lattrib['component'])
     
     def parse_derived_variable(self, node):
         """
@@ -587,7 +587,7 @@ class LEMSParser(Parser):
 
         if self.current_regime == None:
             self.raise_error('<DerivedVariable> must be defined inside a ' +
-                             'behavior profile or regime')
+                             'dynamics profile or regime')
 
         if 'name' in node.lattrib:
             name = node.lattrib['name']
@@ -655,7 +655,7 @@ class LEMSParser(Parser):
 
         if self.current_event_handler == None:
             self.raise_error('<EventOut> must be defined inside an ' +
-                             'event handler in a behavior profile or regime')
+                             'event handler in a dynamics profile or regime')
 
         if 'port' in node.lattrib:
             port = node.lattrib['port']
@@ -876,7 +876,7 @@ class LEMSParser(Parser):
 
         if self.current_regime == None:
             self.raise_error('<OnCondition> must be defined inside a ' +
-                             'behavior profile or regime')
+                             'dynamics profile or regime')
 
         if 'test' in node.lattrib:
             test = node.lattrib['test']
@@ -902,7 +902,7 @@ class LEMSParser(Parser):
 
         if self.current_regime == None:
             self.raise_error('<OnEvent> must be defined inside a ' +
-                             'behavior profile or regime')
+                             'dynamics profile or regime')
 
         event_handler = OnEntry()
         
@@ -923,7 +923,7 @@ class LEMSParser(Parser):
 
         if self.current_regime == None:
             self.raise_error('<OnEvent> must be defined inside a ' +
-                             'behavior profile or regime')
+                             'dynamics profile or regime')
 
         if 'port' in node.lattrib:
             port = node.lattrib['port']
@@ -949,7 +949,7 @@ class LEMSParser(Parser):
 
         if self.current_regime == None:
             self.raise_error('<OnEvent> must be defined inside a ' +
-                             'behavior profile or regime')
+                             'dynamics profile or regime')
 
         event_handler = OnStart()
         
@@ -1020,7 +1020,7 @@ class LEMSParser(Parser):
 
         if self.current_regime == None:
             self.raise_error('<Record> must be only be used inside a ' +
-                             'behavior profile or regime')
+                             'dynamics profile or regime')
 
         if 'quantity' in node.lattrib:
             quantity = node.lattrib['quantity']
@@ -1073,7 +1073,7 @@ class LEMSParser(Parser):
 
         if self.current_regime == None:
             self.raise_error('<Run> must be defined inside a ' +
-                             'behavior profile or regime')
+                             'dynamics profile or regime')
 
         if 'component' in node.lattrib:
             component = node.lattrib['component']
@@ -1119,7 +1119,7 @@ class LEMSParser(Parser):
 
         if self.current_event_handler == None:
             self.raise_error('<StateAssignment> must be defined inside an ' +
-                             'event handler in a behavior profile or regime')
+                             'event handler in a dynamics profile or regime')
 
         if 'variable' in node.lattrib:
             variable = node.lattrib['variable']
@@ -1151,7 +1151,7 @@ class LEMSParser(Parser):
 
         if self.current_regime == None:
             self.raise_error('<StateVariable> must be defined inside a ' +
-                             'behavior profile or regime')
+                             'dynamics profile or regime')
 
         if 'name' in node.lattrib:
             name = node.lattrib['name']
@@ -1226,7 +1226,7 @@ class LEMSParser(Parser):
 
         if self.current_regime == None:
             self.raise_error('<TimeDerivative> must be defined inside a ' +
-                             'behavior profile or regime')
+                             'dynamics profile or regime')
 
         if self.current_context.context_type != Context.COMPONENT_TYPE:
             self.raise_error('Time derivatives can only be defined in ' +
