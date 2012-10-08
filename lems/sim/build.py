@@ -116,9 +116,6 @@ class SimulationBuilder(LEMSBase):
 
         self.process_simulation_specs(component, runnable, context.simulation)
         
-        if component.id == 'id#6':
-            print 'HELLO6', context.components, context.children, context.child_defs,context.children_defs
-
         for cn in context.components:
             child = context.components[cn]
             child_runnable = self.build_runnable(child, runnable)
@@ -131,9 +128,7 @@ class SimulationBuilder(LEMSBase):
 
         self.build_structure(component, runnable, context.structure)
 
-        if context.selected_dynamics_profile:
-            self.add_recording_behavior(component, runnable,
-                                        context.simulation)
+        self.add_recording_behavior(component, runnable)
 
         self.current_record_target = record_target_backup
 
@@ -157,9 +152,6 @@ class SimulationBuilder(LEMSBase):
 
         context = component.context
 
-        if component.id == 'id#6':
-            print 'HELLO5', structure.single_child_defs
-
         # Process single-child instantiations
         for c in structure.single_child_defs:
             if c in context.component_refs:
@@ -168,9 +160,6 @@ class SimulationBuilder(LEMSBase):
                 child_runnable = self.build_runnable(child, runnable)
                 runnable.add_child(c, child_runnable)
 
-                print 'HELLO1', component.id, context.children_defs
-                if component.id == 'na':
-                    print 'HELLO2', context.children_defs
                 for cdn in context.children_defs:
                     cdt = context.children_defs[cdn]
                     if cdt == child.component_type:
@@ -394,6 +383,7 @@ class SimulationBuilder(LEMSBase):
                 target = self.build_runnable(c, runnable)
                 self.sim.add_runnable(c.id, target)
                 self.current_record_target = target
+
                 time_step = context.lookup_parameter(run.increment)
                 time_total = context.lookup_parameter(run.total)
                 if time_step != None and time_total != None:
@@ -664,7 +654,7 @@ class SimulationBuilder(LEMSBase):
 
         return code
         
-    def add_recording_behavior(self, component, runnable, simulation):
+    def add_recording_behavior(self, component, runnable):
         """
         Adds recording-related dynamics to a runnable component based on
         the dynamics specifications in the component model.
@@ -675,18 +665,15 @@ class SimulationBuilder(LEMSBase):
         @param runnable: Runnable component to which dynamics is to be added.
         @type runnable: lems.sim.runnable.Runnable
 
-        @param simulation: The simulation-related aspects to be implemented 
-        in the runnable component.
-        @type simulation: lems.model.simulation.Simulation
-
         @raise SimBuildError: Raised when a target for recording could not be
         found.
         """
 
         context = component.context
+        simulation = context.simulation
 
         for rn in simulation.records:
-            rec = regime.records[rn]
+            rec = simulation.records[rn]
             if self.current_record_target == None:
                 raise SimBuildError('No target available for '
                                     'recording variables')

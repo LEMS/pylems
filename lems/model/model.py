@@ -382,6 +382,8 @@ class Model(Contextual):
                                                    type_context,
                                                    component)
 
+        this_context.children_defs = copy.copy(type_context.children_defs)
+
         this_context.requirements = copy.copy(type_context.requirements)
 
     def resolve_regime(self, context, regime):
@@ -404,15 +406,12 @@ class Model(Contextual):
 
         pass
 
-    def resolve_simulation(self, context, simulation):
+    def resolve_simulation(self, context):
         """
         Resolves simulation specifications in a component-type context.
 
         @param context: Current context.
         @type context: lems.model.context.Context
-
-        @param simulation: Simulation spec to be resolved.
-        @type simulation: lems.model.simulation.Simulation
 
         @raise ModelError: Raised when the quantity to be recorded is not a
         path.
@@ -420,6 +419,8 @@ class Model(Contextual):
         @raise ModelError: Raised when the color specified is not a text
         entity.
         """
+
+        simulation = context.simulation
 
         # Resolve record statements
         for idx in simulation.records:
@@ -444,6 +445,7 @@ class Model(Contextual):
                 record.scale = sp.value
                 record.color = cp.value
                 record.numeric_scale = sp.numeric_value
+
 
 
 
@@ -574,6 +576,8 @@ class Model(Contextual):
         for cid in context.components:
             component = context.components[cid]
             self.resolve_component(context, component)
+            self.resolve_simulation(component.context)
+
 
     def resolve_model(self):
         """
@@ -656,30 +660,6 @@ class Model(Contextual):
                     for a in eh.actions:
                         s += prefix + Model.tab*4 + str(a) + '\n'
 
-        if regime.runs:
-            s += prefix + Model.tab + 'Runs:\n'
-            for r in regime.runs:
-                run = regime.runs[r]
-                s += prefix + Model.tab*2 + run.component + ': ' + \
-                     run.variable + ' ' + run.increment + ' ' + run.total + \
-                     '\n'
-
-        if regime.records:
-            s += prefix + Model.tab + 'Recorded variables:\n'
-            for rn in regime.records:
-                rec = regime.records[rn]
-                s += prefix + Model.tab*2 + rec.quantity + ': '
-                s += rec.scale
-                if rec.numeric_scale:
-                    s += ' (' + str(rec.numeric_scale) + ')'
-                s += ', ' + rec.color + '\n'
-                
-        if regime.shows:
-            s += prefix + Model.tab + 'Shows:\n'
-            for sn in regime.shows:
-                sh = regime.shows[sn]
-                s += prefix + Model.tab*2 + rec.src + '\n'
-                
         return s
     
     def dynamics2str(self, dynamics, prefix):
@@ -728,6 +708,39 @@ class Model(Contextual):
 
                 
         return s
+
+    def simulation2str(self, simulation, prefix):
+        s = prefix + 'Simulation Specs:\n'
+        prefix = prefix + Model.tab
+
+        if simulation.runs:
+            s += prefix + 'Runs:\n'
+            for rn in simulation.runs:
+                r = simulation.runs[rn]
+                s += '{0}{1} {2} {3} {4}\n'.format(prefix + Model.tab,
+                                                   r.component,
+                                                   r.variable,
+                                                   r.increment,
+                                                   r.total)
+
+        if simulation.records:
+            s += prefix + 'Recordings:\n'
+            for q in simulation.records:
+                r = simulation.records[q]
+                s += '{0}{1} {2} {3}\n'.format(prefix + Model.tab,
+                                                   r.quantity,
+                                                   r.scale,
+                                                   r.color)
+
+        if simulation.data_displays:
+            s += prefix + 'Data displays:\n'
+            for t in simulation.data_displays:
+                r = simulation.data_displays[t]
+                s += '{0}{1} {2}\n'.format(prefix + Model.tab,
+                                                   t, r)
+
+        return s
+
 
     def context2str(self, context, prefix):
         s = ''
@@ -835,7 +848,10 @@ class Model(Contextual):
 
         if context.structure:
             s += self.structure2str(context.structure, prefix)
-            
+
+        if context.simulation.runs or context.simulation.records or context.simulation.data_displays:
+            s += self.simulation2str(context.simulation, prefix)
+        
         return s
     
     def __str__(self):
