@@ -24,7 +24,7 @@ class Model(Contextual):
         """
 
         super(Model, self).__init__('__model__')
-        
+
         self.targets = []
         """ Names of simulations to run.
         @type: string """
@@ -50,7 +50,7 @@ class Model(Contextual):
         """
         Add the name of the component to run to the list of components to
         run by default.
-        
+
         @param target: Name of a simulation to run by default
         @type target: string """
         self.targets += [target]
@@ -69,11 +69,20 @@ class Model(Contextual):
             self.dimensions = dict()
 
         if dimension.name in self.dimensions:
-            self.raise_error('Duplicate dimension - ' + dimension.name,
-                             self.context)
+            d = self.dimensions[dimension.name]
+            if ((d.l != dimension.l) or
+                (d.m != dimension.m) or
+                (d.t != dimension.t) or
+                (d.i != dimension.i) or
+                (d.k != dimension.k) or
+                (d.c != dimension.c) or
+                (d.n != dimension.n)):
+                self.raise_error(("Incompatible redefinition of "
+                                  "dimension '{0}'").format(dimension.name),
+                                  self.context)
         else:
             self.dimensions[dimension.name] = dimension
-        
+
     def add_unit(self, unit):
         """
         Adds a unit to the list of defined units.
@@ -88,7 +97,11 @@ class Model(Contextual):
             self.units = dict()
 
         if unit.symbol in self.units:
-            self.raise_error('Duplicate unit - ' + unit.symbol, self.context)
+            u = self.units[unit.symbol]
+            if u.dimension != unit.dimension or u.power != unit.power:
+                self.raise_error(("Incompatible redefinition of "
+                                  "unit '{0}'").format(unit.symbol),
+                                  self.context)
         else:
             self.units[unit.symbol] = unit
 
@@ -110,7 +123,7 @@ class Model(Contextual):
 
         @raise ModelError: Raised when the unit symbol is undefined.
         """
-        
+
         if parameter.value == None:
             self.raise_error('Parameter {0} not initialized'.format(\
                 parameter.name), context)
@@ -153,7 +166,7 @@ class Model(Contextual):
         @raise ModelError: Raised when a parameter in the base component type
         is redefined in this component type.
         """
-        
+
         base_type = context.lookup_component_type(component_type.extends)
         if base_type == None:
             self.raise_error('Base type {0} not found for component type {1}'.
@@ -209,7 +222,7 @@ class Model(Contextual):
         @note: Consider changing Component.id to Component.name and merging
         this method with resolve_extended_component_type.
         """
-        
+
         base = context.lookup_component(component.extends)
         if base == None:
             self.raise_error('Base component {0} not found for component {1}'.
@@ -269,7 +282,7 @@ class Model(Contextual):
 
         comp_str = comp_context.structure
         type_str = type_context.structure
-        
+
         comp_str.event_connections = type_str.event_connections
 
         for c in type_str.single_child_defs:
@@ -315,7 +328,7 @@ class Model(Contextual):
 
         component_type = context.lookup_component_type(
             component.component_type)
-            
+
         if component_type == None:
             self.raise_error('Type {0} not found for component {1}'.
                              format(component.component_type,
@@ -334,7 +347,7 @@ class Model(Contextual):
                     value = pc.value
                 else:
                     value = pt.value
-                    
+
                 if pc.dimension == '__dimension_inherited__':
                     if pt.fixed:
                         np = Parameter(pn, pt.dimension, pt.fixed, value)
@@ -367,12 +380,12 @@ class Model(Contextual):
         for dpn in type_context.dynamics_profiles:
             dp = type_context.dynamics_profiles[dpn].copy()
             this_context.dynamics_profiles[dpn] = dp
-                
+
             if dpn == type_context.selected_dynamics_profile.name:
                 this_context.selected_dynamics_profile = dp
 
         this_context.simulation = type_context.simulation.copy()
-                    
+
         for port in type_context.event_in_ports:
             this_context.event_in_ports.append(port)
         for port in type_context.event_out_ports:
@@ -462,10 +475,10 @@ class Model(Contextual):
         """
 
         self.resolve_regime(context, dynamics.default_regime)
-        
+
         for rn in dynamics.regimes:
             self.resolve_regime(context, regime)
-            
+
     def resolve_component(self, context, component):
         """
         Resolves the specified component.
@@ -559,14 +572,14 @@ class Model(Contextual):
         @raise ModelError: Raised when the dimension for a parameter cannot
         be resolved.
         """
-        
+
         # Resolve component-types
         for ctn in context.component_types:
             component_type = context.component_types[ctn]
             self.resolve_context(component_type.context)
             if component_type.extends:
                 self.resolve_extended_component_type(context, component_type)
-            
+
         # Resolve children
         if context.children:
             for child in context.children:
@@ -586,7 +599,7 @@ class Model(Contextual):
         @raise ModelError: Raised when the dimension for a given unit cannot
         be resolved.
         """
-        
+
         # Verify dimensions for units
         for symbol in self.units:
             dimension = self.units[symbol].dimension
@@ -608,7 +621,7 @@ class Model(Contextual):
 
         for context_name in context_name_stack:
             s += '.' + context_name
-            
+
         s += ':\n  ' + message
 
         raise ModelError(s)
@@ -616,8 +629,8 @@ class Model(Contextual):
     def make_id(self):
         self.next_free_id = self.next_free_id + 1
         return 'id#{0}'.format(self.next_free_id)
-        
-    
+
+
     #####################################################################33
 
     tab = '    '
@@ -644,7 +657,7 @@ class Model(Contextual):
             s += prefix + Model.tab + 'Derived variables:\n'
             for dvn in regime.derived_variables:
                 dv = regime.derived_variables[dvn]
-                s += prefix + Model.tab*2 + dv.name 
+                s += prefix + Model.tab*2 + dv.name
                 if dv.value:
                     s += ' = ' + dv.value + ' | ' + str(dv.expression_tree) + '\n'
                 else:
@@ -661,7 +674,7 @@ class Model(Contextual):
                         s += prefix + Model.tab*4 + str(a) + '\n'
 
         return s
-    
+
     def dynamics2str(self, dynamics, prefix):
         s = prefix
         if dynamics.name != '':
@@ -704,9 +717,9 @@ class Model(Contextual):
                 s += prefix + Model.tab*2 + 'ForEach {0} as {1}\n'.format(\
                     fe.target, fe.name)
                 s += self.structure2str(fe, prefix + Model.tab*3)
-                
 
-                
+
+
         return s
 
     def simulation2str(self, simulation, prefix):
@@ -851,16 +864,16 @@ class Model(Contextual):
 
         if context.simulation.runs or context.simulation.records or context.simulation.data_displays:
             s += self.simulation2str(context.simulation, prefix)
-        
+
         return s
-    
+
     def __str__(self):
         s = ''
 
         s += 'Targets:\n'
         for run in self.targets:
             s += Model.tab + run + '\n'
-        
+
         s += 'Dimensions:\n'
         if self.dimensions != None:
             for d in self.dimensions:
@@ -874,5 +887,5 @@ class Model(Contextual):
         if self.context:
             s += 'Global context:\n'
             s += self.context2str(self.context, '')
-            
+
         return s

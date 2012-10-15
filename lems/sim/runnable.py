@@ -185,7 +185,6 @@ class Runnable(Reflective):
                 return childobj.resolve_path(new_path)
         
     def add_variable_recorder(self, recorder):
-        print 'HELLO3', recorder.quantity
         self.add_variable_recorder2(recorder, recorder.quantity)
 
     def add_variable_recorder2(self, recorder, path):

@@ -19,7 +19,7 @@ class SimulationBuilder(LEMSBase):
     """
     Simulation builder class.
     """
-    
+
     def __init__(self, model):
         """
         Constructor.
@@ -27,7 +27,7 @@ class SimulationBuilder(LEMSBase):
         @param model: Model upon which the simulation is to be generated.
         @type model: lems.model.model.Model
         """
-        
+
         self.model = model
         """ Model to be used for constructing the simulation.
         @type: lems.model.model.Model """
@@ -57,7 +57,7 @@ class SimulationBuilder(LEMSBase):
 
             runnable = self.build_runnable(component)
             self.sim.add_runnable(component.id, runnable)
-            
+
         return self.sim
 
     def build_runnable(self, component, parent = None):
@@ -115,12 +115,12 @@ class SimulationBuilder(LEMSBase):
                                 [])
 
         self.process_simulation_specs(component, runnable, context.simulation)
-        
+
         for cn in context.components:
             child = context.components[cn]
             child_runnable = self.build_runnable(child, runnable)
             runnable.add_child(child.id, child_runnable)
-            
+
             for cdn in context.children_defs:
                 cdt = context.children_defs[cdn]
                 if cdt == child.component_type:
@@ -169,8 +169,8 @@ class SimulationBuilder(LEMSBase):
                 raise SimBuildError('Unable to find component ref \'{0}\' '
                                     'under \'{1}\''.format(\
                         c, runnable.id))
-        
-        
+
+
         # Process multi-child instatiantions
         for cparam in structure.multi_child_defs:
             sparam = structure.multi_child_defs[cparam]
@@ -178,7 +178,7 @@ class SimulationBuilder(LEMSBase):
             c2 = context.lookup_component(cparam)
             template = self.build_runnable(context.lookup_component(cparam),
                                            runnable)
-            
+
             for i in xrange(sparam):
                 instance = copy.deepcopy(template)
                 instance.id = "{0}#{1}#{2}".format(component.id,
@@ -218,7 +218,7 @@ class SimulationBuilder(LEMSBase):
         # Process foreach statements
         for fe in foreach.foreach:
             target_array = runnable.resolve_path(fe.target)
-            
+
             for target_runnable in target_array:
                 name_mappings[fe.name] = target_runnable
                 self.build_foreach(component, runnable, fe, name_mappings)
@@ -229,7 +229,7 @@ class SimulationBuilder(LEMSBase):
 
             from_ = name_mappings[from_cname]
             to = name_mappings[to_cname]
-            
+
             if from_port == '':
                 if len(from_.event_out_ports) == 1:
                     from_port = from_.event_out_ports[0]
@@ -271,7 +271,7 @@ class SimulationBuilder(LEMSBase):
         @raise SimBuildError: Raised when the component reference for <Run>
         cannot be resolved.
         """
-        
+
         context = component.context
         regime = dynamics_profile.default_regime
 
@@ -286,9 +286,9 @@ class SimulationBuilder(LEMSBase):
             if tdn not in regime.state_variables:
                 raise SimBuildError(('Time derivative for undefined state '
                                      'variable {0}').format(tdn))
-            
+
             td = regime.time_derivatives[tdn]
-            exp = self.build_expression_from_tree(runnable, 
+            exp = self.build_expression_from_tree(runnable,
                                                   context,
                                                   td.expression_tree)
             time_step_code += ['self.{0} += dt * ({1})'.format(td.variable,
@@ -311,7 +311,7 @@ class SimulationBuilder(LEMSBase):
             elif dv.select:
                 if dv.reduce:
                     derived_variable_code += self.build_reduce_code(dv.name,
-                                                                    dv.select, 
+                                                                    dv.select,
                                                                     dv.reduce)
                 else:
                     derived_variable_code += ['self.{0} = (self.{1})'.format(
@@ -330,15 +330,15 @@ class SimulationBuilder(LEMSBase):
         for eh in regime.event_handlers:
             if eh.type == EventHandler.ON_START:
                 startup_event_handler_code += self.build_event_handler(runnable,
-                                                                       context, 
+                                                                       context,
                                                                        eh)
             elif eh.type == EventHandler.ON_CONDITION:
                 post_event_handler_code += self.build_event_handler(runnable,
-                                                                    context, 
+                                                                    context,
                                                                     eh)
             else:
                 pre_event_handler_code += self.build_event_handler(runnable,
-                                                                   context, 
+                                                                   context,
                                                                    eh)
         runnable.add_method('run_startup_event_handlers', ['self'],
                             startup_event_handler_code)
@@ -349,8 +349,8 @@ class SimulationBuilder(LEMSBase):
 
     def process_simulation_specs(self, component, runnable, simulation):
         """
-        Process simulation-related aspects to a runnable component based on the dynamics
-        specifications in the component model.
+        Process simulation-related aspects to a runnable component based on the
+        dynamics specifications in the component model.
 
         @param component: Component model containing dynamics specifications.
         @type component: lems.model.component.Component
@@ -358,7 +358,7 @@ class SimulationBuilder(LEMSBase):
         @param runnable: Runnable component to which dynamics is to be added.
         @type runnable: lems.sim.runnable.Runnable
 
-        @param simulation: The simulation-related aspects to be implemented 
+        @param simulation: The simulation-related aspects to be implemented
         in the runnable component.
         @type simulation: lems.model.simulation.Simulation
 
@@ -405,7 +405,7 @@ class SimulationBuilder(LEMSBase):
         @return: Python operator
         @rtype: string
         """
-        
+
         if op == '.gt.':
             return '>'
         elif op == '.ge.':
@@ -422,7 +422,7 @@ class SimulationBuilder(LEMSBase):
             return '**'
         else:
             return op
-        
+
     def build_expression_from_tree(self, runnable, context, tree_node):
         """
         Recursively builds a Python expression from a parsed expression tree.
@@ -470,18 +470,18 @@ class SimulationBuilder(LEMSBase):
                 return tree_node.value
         elif tree_node.type == ExprNode.FUNC1:
             return '({0}({1}))'.format(\
-                tree_node.func, 
-                self.build_expression_from_tree(runnable, 
-                                                context, 
+                tree_node.func,
+                self.build_expression_from_tree(runnable,
+                                                context,
                                                 tree_node.param))
         else:
             return '({0}) {1} ({2})'.format(\
-                self.build_expression_from_tree(runnable, 
-                                                context, 
+                self.build_expression_from_tree(runnable,
+                                                context,
                                                 tree_node.left),
                 self.convert_op(tree_node.op),
                 self.build_expression_from_tree(runnable,
-                                                context, 
+                                                context,
                                                 tree_node.right))
 
     def build_event_handler(self, runnable, context, event_handler):
@@ -494,7 +494,7 @@ class SimulationBuilder(LEMSBase):
         @return: Generated event handler code.
         @rtype: list(string)
         """
-        
+
         if event_handler.type == EventHandler.ON_CONDITION:
             return self.build_on_condition(runnable, context, event_handler)
         elif event_handler.type == EventHandler.ON_EVENT:
@@ -514,12 +514,12 @@ class SimulationBuilder(LEMSBase):
         @return: Generated OnCondition code
         @rtype: list(string)
         """
-        
+
         on_condition_code = []
 
         on_condition_code += ['if {0}:'.format(\
-            self.build_expression_from_tree(runnable, 
-                                            context, 
+            self.build_expression_from_tree(runnable,
+                                            context,
                                             on_condition.expression_tree))]
 
         for action in on_condition.actions:
@@ -528,7 +528,7 @@ class SimulationBuilder(LEMSBase):
                 on_condition_code += ['    ' + line]
 
         return on_condition_code
-            
+
     def build_on_event(self, runnable, context, on_event):
         """
         Build OnEvent event handler code.
@@ -539,7 +539,7 @@ class SimulationBuilder(LEMSBase):
         @return: Generated OnEvent code
         @rtype: list(string)
         """
-        
+
         on_event_code = []
 
         on_event_code += ['count = self.event_in_counters[\'{0}\']'.\
@@ -555,7 +555,7 @@ class SimulationBuilder(LEMSBase):
                           format(on_event.port),]
 
         return on_event_code
-            
+
     def build_on_start(self, runnable, context, on_start):
         """
         Build OnStart start handler code.
@@ -566,7 +566,7 @@ class SimulationBuilder(LEMSBase):
         @return: Generated OnStart code
         @rtype: list(string)
         """
-        
+
         on_start_code = []
 
         for action in on_start.actions:
@@ -575,7 +575,7 @@ class SimulationBuilder(LEMSBase):
                 on_start_code += [line]
 
         return on_start_code
-            
+
     def build_action(self, runnable, context, action):
         """
         Build event handler action code.
@@ -586,7 +586,7 @@ class SimulationBuilder(LEMSBase):
         @return: Generated action code
         @rtype: string
         """
-        
+
         if action.type == Action.STATE_ASSIGNMENT:
             return self.build_state_assignment(runnable, context, action)
         if action.type == Action.EVENT_OUT:
@@ -604,10 +604,10 @@ class SimulationBuilder(LEMSBase):
         @return: Generated state assignment code
         @rtype: string
         """
-        
+
         return ['self.{0} = {1}'.format(\
             state_assignment.variable,
-            self.build_expression_from_tree(runnable, 
+            self.build_expression_from_tree(runnable,
                                             context,
                                             state_assignment.expression_tree))]
 
@@ -625,14 +625,14 @@ class SimulationBuilder(LEMSBase):
         event_out_code = ['if "{0}" in self.event_out_callbacks:'.format(event_out.port),
                           '    for c in self.event_out_callbacks[\'{0}\']:'.format(event_out.port),
                           '        c()']
-        
+
         return event_out_code
 
     def build_reduce_code(self, result, select, reduce):
         """
         Builds a reduce operation on the selected target range.
         """
-        
+
         select = select.replace('/', '.')
         select = select.replace(' ', '')
         if reduce == 'add':
@@ -653,7 +653,7 @@ class SimulationBuilder(LEMSBase):
         code += ['self.{0}_shadow = acc'.format(result)]
 
         return code
-        
+
     def add_recording_behavior(self, component, runnable):
         """
         Adds recording-related dynamics to a runnable component based on
@@ -684,31 +684,31 @@ class SimulationBuilder(LEMSBase):
 def order_derived_variables(regime):
     """
     Finds ordering of derived_variables.
-    
+
     @param regime: Dynamics Regime containing derived variables.
     @type regime: lems.model.dynamics.regime
-    
+
     @param context: Context of the component being built.
     @type context:
-    
+
     @return: Returns ordered list of derived variables.
     @rtype: list(string)
-    
+
     @raise SimBuildError: Raised when a proper ordering of derived
     variables could not be found.
     """
-    
+
     ordering = []
     dvs = []
     dvsnoexp = []
     maxcount = 5
-    
+
     for dv in regime.derived_variables:
         if regime.derived_variables[dv].expression_tree == None:
             dvsnoexp.append(dv)
         else:
             dvs.append(dv)
-        
+
     count = maxcount
 
     while count > 0 and dvs != []:
@@ -729,7 +729,7 @@ def order_derived_variables(regime):
     if count == 0:
         raise SimBuildError(("Unable to find ordering for derived "
                              "variables in '{0}'").format(context.name))
-        
+
     return ordering + dvsnoexp
 
 def is_var_in_exp_tree(var, exp_tree):
