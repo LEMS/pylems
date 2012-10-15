@@ -6,7 +6,7 @@
 
 
   <ComponentType name="Population">
-    <ComponentRef name="component" type="Component"/>
+    <ComponentReference name="component" type="Component"/>
     <Parameter name="size" dimension="none"/>
     <Structure>
       <MultiInstantiate number="size" component="component"/>
@@ -21,8 +21,8 @@
     <Child name="Connections" type="ConnectionPattern"/>
   </ComponentType>
 
-  <ComponentType name="ConnectionPattern">
-  </ComponentType>
+<ComponentType name="ConnectionPattern"/>
+
 
 
   <ComponentType name="AllAll" extends="ConnectionPattern">

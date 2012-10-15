@@ -24,15 +24,15 @@
   </ComponentType>
 
 
-  <Unit symbol="mV" dimension="voltage" powTen="-3"/> 
-  <Unit symbol="ms" dimension="time" powTen="-3"/> 
-  <Unit symbol="pS" dimension="conductance" powTen="-12"/>
-  <Unit symbol="nS" dimension="conductance" powTen="-9"/>
-  <Unit symbol="uF" dimension="capacitance" powTen="-6"/>
-  <Unit symbol="nF" dimension="capacitance" powTen="-9"/>
-  <Unit symbol="pF" dimension="capacitance" powTen="-12"/>
-  <Unit symbol="per_ms" dimension="per_time" powTen="3"/>
-  <Unit symbol="pA" dimension="current" powTen="-12"/>
+<Unit symbol="mV" dimension="voltage" power="-3"/> 
+<Unit symbol="ms" dimension="time" power="-3"/> 
+<Unit symbol="pS" dimension="conductance" power="-12"/>
+<Unit symbol="nS" dimension="conductance" power="-9"/>
+<Unit symbol="uF" dimension="capacitance" power="-6"/>
+<Unit symbol="nF" dimension="capacitance" power="-9"/>
+<Unit symbol="pF" dimension="capacitance" power="-12"/>
+<Unit symbol="per_ms" dimension="per_time" power="3"/>
+<Unit symbol="pA" dimension="current" power="-12"/>
 
   <iaf1 id="celltype_a" threshold="-30 mV" refractoryPeriod="2 ms" capacitance="3uF"/> 
   <!--  or -->
@@ -201,7 +201,7 @@
 
 
   <ComponentType name="ChannelPopulation">
-    <ComponentRef name="channel" type="HHChannel"/>
+    <ComponentReference name="channel" type="HHChannel"/>
     <Parameter name="number" dimension="none"/>
     <Parameter name="erev" dimension="voltage"/>
     <Requirement name="v" dimension="voltage"/>
@@ -281,9 +281,7 @@
   <Include file="MultiRunSimulation.xml"/>
 
   <SimulationSet id="simset">
-    <Display id="disp1" title="Example1" xmin="0" xmax="80" ymin="-80" ymax="50">
-      
-    </Display>
+	<Display id="disp1" title="Example1" xmin="0" xmax="80" ymin="-80" ymax="50"/>
     
     <Simulation id="sim1" length="80ms" step="0.05ms" target="net1" display="disp1">
       <DisplayList timeScale="1ms" title="Example 1: Dimensions, Units, ComponentTypes and Components">

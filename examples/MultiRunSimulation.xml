@@ -39,7 +39,7 @@
   <ComponentType name="Simulation">
     <Parameter name="length" dimension="time"/>
     <Parameter name="step" dimension="time"/>
-    <ComponentRef name="target" type="Component"/>
+    <ComponentReference name="target" type="Component"/>
     <Link name="display" type="Display"/>
     <Children name="outputs" type="DisplayList"/>
     <Dynamics>

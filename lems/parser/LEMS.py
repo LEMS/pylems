@@ -156,7 +156,7 @@ class LEMSParser(Parser):
                                        'unit']
         self.valid_children['componenttype'] = ['dynamics', 
                                                 'child', 'children',
-                                                'componentref',
+                                                'componentreference',
                                                 'exposure', 'eventport', 
                                                 'fixed', 'link', 'parameter',
                                                 'path', 'requirement',
@@ -182,7 +182,7 @@ class LEMSParser(Parser):
         self.tag_parse_table['childinstance'] = self.parse_child_instance
         self.tag_parse_table['children'] = self.parse_children
         self.tag_parse_table['component'] = self.parse_component
-        self.tag_parse_table['componentref'] = self.parse_component_ref
+        self.tag_parse_table['componentreference'] = self.parse_component_reference
         self.tag_parse_table['componenttype'] = self.parse_component_type
         self.tag_parse_table['target'] = self.parse_target
         self.tag_parse_table['datadisplay'] = self.parse_data_display
@@ -519,9 +519,9 @@ class LEMSParser(Parser):
         self.process_nested_tags(node)
         self.pop_context()
 
-    def parse_component_ref(self, node):
+    def parse_component_reference(self, node):
         """
-        Parses <ComponentRef>
+        Parses <ComponentReference>
 
         @param node: Node containing the <ComponentTypeRef> element
         @type node: xml.etree.Element
@@ -534,13 +534,13 @@ class LEMSParser(Parser):
         if 'name' in node.lattrib:
             name = node.lattrib['name']
         else:
-            self.raise_error('<ComponentRef> must specify a name for the ' +
+            self.raise_error('<ComponentReference> must specify a name for the ' +
                              'reference.')
 
         if 'type' in node.lattrib:
             type = node.lattrib['type']
         else:
-            self.raise_error('<ComponentRef> must specify a type for the ' +
+            self.raise_error('<ComponentReference> must specify a type for the ' +
                              'reference.')
             
         self.current_context.add_component_ref(name, type)
@@ -1340,12 +1340,12 @@ class LEMSParser(Parser):
         except:
             self.raise_error('Unit must have a symbol and dimension.')
 
-        if 'powten' in node.lattrib:
-            pow10 = int(node.lattrib['powten'])
+        if 'power' in node.lattrib:
+            power = int(node.lattrib['power'])
         else:
-            pow10 = 0
+            power = 0
 
-        self.model.add_unit(Unit(symbol, dimension, pow10))
+        self.model.add_unit(Unit(symbol, dimension, power))
     
     def parse_root(self, node):
         """

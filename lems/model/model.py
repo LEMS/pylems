@@ -131,7 +131,7 @@ class Model(Contextual):
                                          'be used for dimension {1}').format(\
                                              sym, parameter.dimension),
                                          context)
-                parameter.numeric_value = number * (10 ** unit.pow10)
+                parameter.numeric_value = number * (10 ** unit.power)
             else:
                 self.raise_error('Unknown unit symbol {0}'.format(sym),
                                  context)

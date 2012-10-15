@@ -77,7 +77,7 @@ class Unit(LEMSBase):
     dimensions
     """
     
-    def __init__(self, symbol, dimension, pow10):
+    def __init__(self, symbol, dimension, power):
         """
         Constructor
         
@@ -87,9 +87,9 @@ class Unit(LEMSBase):
         @param dimension: User-defined dimension for this symbol
         @type dimension: lems.base.units.Dimension
         
-        @param pow10: Scaling factor in terms of powers of 10 relative
+        @param power: Scaling factor in terms of powers of 10 relative
         to the default dimensions for this unit
-        @type pow10: int
+        @type power: int
         """
 
         self.symbol = symbol
@@ -100,7 +100,7 @@ class Unit(LEMSBase):
         """ Dimension of this unit.
         @type: string """
 
-        self.pow10 = pow10
+        self.power = power
         """ Scaling factor in terms of powers of 10 relative to
         the default dimensions for this unit.
         @type: int """
