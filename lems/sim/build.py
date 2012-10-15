@@ -56,11 +56,11 @@ class SimulationBuilder(LEMSBase):
             component = self.model.context.components[component_id]
 
             runnable = self.build_runnable(component)
-            self.sim.add_runnable(component.id, runnable)
+            self.sim.add_runnable(runnable)
 
         return self.sim
 
-    def build_runnable(self, component, parent = None):
+    def build_runnable(self, component, parent = None, id_ = None):
         """
         Build a runnable component from a component specification and add
         it to the simulation.
@@ -71,11 +71,17 @@ class SimulationBuilder(LEMSBase):
         @param parent: Parent runnable component.
         @type parent: lems.sim.runnable.Runnable
 
+        @param id_: Optional id for therunnable. If it's not passed in,
+        the runnable will inherit the id of the component.
+
         @raise SimBuildError: Raised when a component reference cannot be
         resolved.
         """
 
-        runnable = Runnable(component.id, component, parent)
+        if id_ == None:
+            runnable = Runnable(component.id, component, parent)
+        else:
+            runnable = Runnable(id_, component, parent)
 
         context = component.context
         record_target_backup = self.current_record_target
@@ -380,8 +386,17 @@ class SimulationBuilder(LEMSBase):
             c = context.lookup_component_ref(run.component)
 
             if c != None:
-                target = self.build_runnable(c, runnable)
-                self.sim.add_runnable(c.id, target)
+                #cid = c.id
+                #if c.id in self.sim.runnables:
+                #    idx = 2
+                #    cid = c.id + '_' + str(idx)
+                #    while cid in self.sim.runnables:
+                #        idx = idx + 1
+                #        cid = c.id + '_' + str(idx)
+                cid = c.id + '_' + component.id
+
+                target = self.build_runnable(c, runnable, cid)
+                self.sim.add_runnable(target)
                 self.current_record_target = target
 
                 time_step = context.lookup_parameter(run.increment)

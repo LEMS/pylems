@@ -435,13 +435,13 @@ class LEMSParser(Parser):
         if self.current_context.context_type == Context.GLOBAL:
             # Global component instatiation
             if 'id' in node.lattrib:
-                id = node.lattrib['id']
+                id_ = node.lattrib['id']
             else:
                 self.raise_error('Component must have an id')
 
             type = node.tag
 
-            component = Component(id, self.current_context, type, None)
+            component = Component(id_, self.current_context, type, None)
 
             self.current_context.add_component(component)
 
@@ -449,16 +449,16 @@ class LEMSParser(Parser):
             # Child instantiation
 
             if 'id' in node.lattrib:
-                id = node.lattrib['id']
+                id_ = node.lattrib['id']
                 type = node.tag
             else:
-                id = node.tag
+                id_ = node.tag
                 if 'type' in node.lattrib:
                     type = node.lattrib['type']
                 else:
                     type = '__type_inherited__'
 
-            component = Component(id, self.current_context, type)
+            component = Component(id_, self.current_context, type)
 
             self.current_context.add_child(component)
 
@@ -481,10 +481,10 @@ class LEMSParser(Parser):
         """
 
         if 'id' in node.lattrib:
-            id = node.lattrib['id']
+            id_ = node.lattrib['id']
         else:
             #self.raise_error('Component must have an id')
-            id = self.model.make_id()
+            id_ = self.model.make_id()
 
         if 'type' in node.lattrib:
             type = node.lattrib['type']
@@ -502,11 +502,11 @@ class LEMSParser(Parser):
 
         if 'child' in node.lattrib:
             child = node.lattrib['child']
-            id = child
+            id_ = child
         else:
             child = None
 
-        component = Component(id, self.current_context, type, extends)
+        component = Component(id_, self.current_context, type, extends)
 
         if child:
             self.current_context.add_child(component)

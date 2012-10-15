@@ -19,10 +19,10 @@ class Context(LEMSBase):
 
     GLOBAL = 0
     """ Global context """
-    
+
     COMPONENT_TYPE = 1
     """ Component type context """
-    
+
     COMPONENT = 2
     """ Component context """
 
@@ -55,16 +55,16 @@ class Context(LEMSBase):
         """ Dictionary of single-instance child object definitions in this
         context.
         @type: dict(string -> string) """
-        
+
         self.children_defs = {}
         """ Dictionary of multi-instance child objects definitions in this
         context.
         @type: dict(string -> string) """
-        
+
         self.children = []
         """ List of child objects defined in this context.
         @type: list(lems.model.component.Component) """
-        
+
         self.parameters = {}
         """ Dictionary of references to parameters defined in this context.
         @type: dict(string -> lems.model.parameter.Parameter) """
@@ -93,7 +93,7 @@ class Context(LEMSBase):
         self.texts = {}
         """ Dictionary of text parameters.
         @type: dict(string -> string) """
-        
+
         self.paths = {}
         """ Dictionary of path parameters.
         @type: dict(string -> string) """
@@ -113,11 +113,11 @@ class Context(LEMSBase):
         self.structure = Structure()
         """ Structure object detailing structural aspects of this component.
         @type: lems.model.structure.Structure """
-        
+
         self.simulation = Simulation()
         """ Simulation object detailing simulation-related aspects of this component.
         @type: lems.model.simulation.Simulation """
-        
+
 
     def add_component_type(self, component_type):
         """
@@ -145,7 +145,7 @@ class Context(LEMSBase):
         @param component: Component to be added
         @type component: lems.model.component.ComponentType
 
-        @raise ModelError: Raised when the component is already defined in the 
+        @raise ModelError: Raised when the component is already defined in the
         current context.
         """
 
@@ -172,7 +172,7 @@ class Context(LEMSBase):
         if name in self.component_refs:
             raise ModelError("Duplicate component reference '{0}'".format(\
                 name))
-        
+
         self.component_refs[name] = type
 
     def add_child(self, child):
@@ -191,7 +191,7 @@ class Context(LEMSBase):
             raise ModelError("Child definition '{0}' not permitted in "
                              "component type definition '{1}'".format(\
                                  child.id, self.name))
-        
+
         self.children.append(child)
 
 
@@ -212,7 +212,7 @@ class Context(LEMSBase):
 
         if name in self.child_defs:
             raise ModelError("Duplicate child definition '{0}'".format(name))
-        
+
         self.child_defs[name] = type
 
     def add_children_def(self, name, type):
@@ -233,7 +233,7 @@ class Context(LEMSBase):
         if name in self.children_defs:
             raise ModelError("Duplicate children definition '{0}'".format(\
                 name))
-        
+
         self.children_defs[name] = type
 
     def add_parameter(self, parameter):
@@ -244,7 +244,7 @@ class Context(LEMSBase):
         @param parameter: Parameter to be added
         @type parameter: lems.model.parameter.ParameterType
 
-        @raise ModelError: Raised when the parameter is already defined in the 
+        @raise ModelError: Raised when the parameter is already defined in the
         current context.
         """
 
@@ -261,7 +261,7 @@ class Context(LEMSBase):
         @param name: Name of the dynamics profile.
         @type name: string
         """
-        
+
         if name in self.dynamics_profiles:
             raise ModelError("Duplicate dynamics profile '{0}'".format(name))
 
@@ -283,7 +283,7 @@ class Context(LEMSBase):
             raise ModelError("Unknown dynamics profile '{0}'".format(name))
 
         self.selected_dynamics_profile = self.dynamics_profiles[name]
-        
+
     def add_exposure(self, name):
         """
         Adds a state variable exposure to the current context.
@@ -300,12 +300,12 @@ class Context(LEMSBase):
         if self.context_type != Context.COMPONENT_TYPE:
             raise ModelError("Exposure names can only be defined in "
                              "a component type - '{0}'".format(name))
-        
+
         if name in self.exposures:
             raise ModelError("Duplicate exposure name '{0}'".format(name))
 
         self.exposures += [name]
-        
+
     def add_requirement(self, name, dimension):
         """
         Adds a parameter requirement to the current context.
@@ -325,12 +325,12 @@ class Context(LEMSBase):
         if self.context_type != Context.COMPONENT_TYPE:
             raise ModelError("Requirements can only be defined in "
                              "a component type - '{0}'".format(name))
-        
+
         if name in self.requirements:
             raise ModelError("Duplicate requirement name '{0}'".format(name))
 
         self.requirements[name] = dimension
-        
+
     def add_text_var(self, name, value = None):
         """
         Adds a text variable to the current context.
@@ -344,16 +344,16 @@ class Context(LEMSBase):
         @raise ModelError: Raised when the text variable already exists
         in the current context.
         """
-        
+
         if self.context_type != Context.COMPONENT_TYPE:
             raise ModelError("Text variables can only be defined in "
                              "a component type - '{0}'".format(name))
-        
+
         if name in self.texts:
             raise ModelError("Duplicate text variable '{0}'".format(name))
 
         self.texts[name] = value
-        
+
     def add_path_var(self, name, value = None):
         """
         Adds a path variable to the current context.
@@ -367,11 +367,11 @@ class Context(LEMSBase):
         @raise ModelError: Raised when the path variable already exists
         in the current context.
         """
-        
+
         if self.context_type != Context.COMPONENT_TYPE:
             raise ModelError("Path variables can only be defined in "
                              "a component type - '{0}'".format(name))
-        
+
         if name in self.paths:
             raise ModelError("Duplicate path variable '{0}'".format(name))
 
@@ -390,11 +390,11 @@ class Context(LEMSBase):
         @raise ModelError: Raised when the link variable already exists
         in the current context.
         """
-        
+
         if self.context_type != Context.COMPONENT_TYPE:
             raise ModelError("Link variables can only be defined in "
                              "a component type - '{0}'".format(name))
-        
+
         if name in self.links:
             raise ModelError("Duplicate link variable '{0}'".format(name))
 
@@ -417,12 +417,12 @@ class Context(LEMSBase):
 
         if name in self.event_in_ports or name in self.event_out_ports:
             raise ModelError("Duplicate event '{0}'".format(name))
-        
+
         if direction == 'in':
             self.event_in_ports.append(name)
         else:
             self.event_out_ports.append(name)
-        
+
     def lookup_component_type(self, name):
         """
         Searches the current context and parent contexts for a component type
@@ -517,7 +517,7 @@ class Context(LEMSBase):
         else:
             return None
 
-    
+
 class Contextual(LEMSBase):
     """
     Base class for objects that need to store their own context.
@@ -527,7 +527,7 @@ class Contextual(LEMSBase):
         """
         Constructor.
         """
-        
+
         self.context = Context(name, parent, context_type)
         """ Context object.
         @type: lems.model.context.Context """

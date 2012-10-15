@@ -15,12 +15,12 @@ class Simulation(LEMSBase):
     """
     Simulation class.
     """
-    
+
     def __init__(self):
         """
         Constructor.
         """
-        
+
         self.runnables = {}
         """ Dictionary of runnable components in this simulation.
         @type: dict(string -> lems.sim.runnable.Runnable) """
@@ -33,28 +33,25 @@ class Simulation(LEMSBase):
         """ List of posted events.
         @type: list(lems.sim.sim.Event) """
 
-    def add_runnable(self, id, runnable):
+    def add_runnable(self, runnable):
         """
         Adds a runnable component to the list of runnable components in
         this simulation.
 
-        @param id: Component id
-        @type id: string
-        
         @param runnable: A runnable component
         @type runnable: lems.sim.runnable.Runnable
         """
 
-        if id in self.runnables:
-            raise SimError('Duplicate runnable component {0}'.format(id))
-        
-        self.runnables[id] = runnable
+        if runnable.id in self.runnables:
+            raise SimError('Duplicate runnable component {0}'.format(runnable.id))
+
+        self.runnables[runnable.id] = runnable
 
     def init_run(self):
         self.current_time = 0
         for id in self.runnables:
             heapq.heappush(self.run_queue, (0, self.runnables[id]))
-        
+
     def step(self):
         current_time = self.current_time
 
@@ -69,7 +66,7 @@ class Simulation(LEMSBase):
 
             if next_time > current_time:
                 heapq.heappush(self.run_queue, (next_time, runnable))
-                        
+
             if self.run_queue == []:
                 break
             (time, runnable) = heapq.heappop(self.run_queue)
@@ -131,8 +128,8 @@ class Simulation(LEMSBase):
     def dump(self):
         for id in self.runnables:
             self.dump_runnable(self.runnables[id])
-                
-                    
+
+
 class Event:
     """
     Stores data associated with an event.

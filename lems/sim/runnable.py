@@ -81,10 +81,10 @@ class Reflective(object):
         
         
 class Runnable(Reflective):
-    def __init__(self, id, component, parent = None):
+    def __init__(self, id_, component, parent = None):
         Reflective.__init__(self)
 
-        self.id = id
+        self.id = id_
         self.component = component
         self.parent = parent
         
@@ -106,11 +106,11 @@ class Runnable(Reflective):
         self.event_out_callbacks = {}
         self.event_in_counters = {}
 
-    def add_child(self, id, runnable):
+    def add_child(self, id_, runnable):
         #self.children[id] = runnable
         self.children[runnable.id] = runnable
 
-        self.__dict__[id] = runnable
+        self.__dict__[id_] = runnable
         self.__dict__[runnable.id] = runnable
         
         runnable.configure_time(self.time_step, self.time_total)

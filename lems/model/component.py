@@ -74,12 +74,12 @@ class Component(Contextual):
     Stores a single instance of a given component type.
     """
 
-    def __init__(self, id, context, component_type, extends = None):
+    def __init__(self, id_, context, component_type, extends = None):
         """
         Constructor
 
-        @param id: Id/name for this component.
-        @type id: string
+        @param id_: Id/name for this component.
+        @type id_: string
 
         @param context: The context in which to create this component.
         @type context: lems.model.context.Context
@@ -93,9 +93,9 @@ class Component(Contextual):
         @note: Atleast one of component_type or extends must be valid.
         """
         
-        Contextual.__init__(self, id, context, Context.COMPONENT)
+        Contextual.__init__(self, id_, context, Context.COMPONENT)
 
-        self.id = id 
+        self.id = id_
         """ Globally unique name for this component.
         @type: string """
         
