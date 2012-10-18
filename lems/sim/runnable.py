@@ -14,26 +14,26 @@ from lems.sim.recording import Recording
 import ast
 import sys
 
-from math import *
+#from math import *
 
-#import math
-#
-#class Ex1(Exception):
-#    pass
-#
-#def exp(x):
-#    try:
-#        return math.exp(x)
-#    except Exception as e:
-#        print 'ERROR performing exp({0})'.format(x)
-#        raise Ex1()
+import math
+
+class Ex1(Exception):
+    pass
+
+def exp(x):
+    try:
+        return math.exp(x)
+    except Exception as e:
+        print('ERROR performing exp({0})'.format(x))
+        raise Ex1()
 
 class Reflective(object):
     def __init__(self):
         self.instance_variables = []
         self.derived_variables = []
         self.array = []
-        
+
     #@classmethod
     def add_method(self, method_name, parameter_list, statements):
         code_string = 'def __generated_function__'
@@ -54,21 +54,21 @@ class Reflective(object):
         g = globals()
         l = locals()
         exec(compile(ast.parse(code_string), '<unknown>', 'exec'), g, l)
-        
+
         #setattr(cls, method_name, __generated_function__)
         self.__dict__[method_name] = l['__generated_function__']
         del l['__generated_function__']
 
     def add_instance_variable(self, variable, initial_value):
         self.instance_variables.append(variable)
-    
+
         code_string = 'self.{0} = {1}\nself.{0}_shadow = {1}'.format(\
             variable, initial_value)
         exec(compile(ast.parse(code_string), '<unknown>', 'exec'))
-        
+
     def add_derived_variable(self, variable):
         self.derived_variables.append(variable)
-        
+
         code_string = 'self.{0} = {1}'.format(\
             variable, 0)
         exec(compile(ast.parse(code_string), '<unknown>', 'exec'))
@@ -78,8 +78,8 @@ class Reflective(object):
 
     def __setitem__(self, key, val):
         self.array[key] = val
-        
-        
+
+
 class Runnable(Reflective):
     def __init__(self, id_, component, parent = None):
         Reflective.__init__(self)
@@ -87,7 +87,7 @@ class Runnable(Reflective):
         self.id = id_
         self.component = component
         self.parent = parent
-        
+
         self.time_step = 0
         self.time_completed = 0
         self.time_total = 0
@@ -112,7 +112,7 @@ class Runnable(Reflective):
 
         self.__dict__[id_] = runnable
         self.__dict__[runnable.id] = runnable
-        
+
         runnable.configure_time(self.time_step, self.time_total)
 
     def add_child_to_group(self, group_name, child):
@@ -127,7 +127,7 @@ class Runnable(Reflective):
 
     def inc_event_in(self, port):
         self.event_in_counters[port] += 1
-        
+
     def add_event_out_port(self, port):
         self.event_out_ports.append(port)
         if port not in self.event_out_callbacks:
@@ -135,14 +135,14 @@ class Runnable(Reflective):
 
     def register_event_out_link(self, port, runnable, remote_port):
         self.event_out_callbacks[port].append((runnable, remote_port))
-        
+
     def register_event_out_callback(self, port, callback):
         if port in self.event_out_callbacks:
             self.event_out_callbacks[port].append(callback)
         else:
             raise SimBuildError('No event out port \'{0}\' in '
                                 'component \'{1}\''.format(port, self.name))
-                                    
+
     def resolve_path(self, path):
         if path == '':
             return self
@@ -183,7 +183,7 @@ class Runnable(Reflective):
                 return childobj
             else:
                 return childobj.resolve_path(new_path)
-        
+
     def add_variable_recorder(self, recorder):
         self.add_variable_recorder2(recorder, recorder.quantity)
 
@@ -225,10 +225,10 @@ class Runnable(Reflective):
 
         for c in self.array:
             c.configure_time(self.time_step, self.time_total)
-        
+
     def reset_time(self):
         self.time_completed = 0
-        
+
         for cid in self.children:
             self.children[cid].reset_time()
 
@@ -254,7 +254,7 @@ class Runnable(Reflective):
             while r.parent:
                 r = r.parent
                 name = "{0}.{1}".format(r.id, name)
-                
+
             print("Error in '{0}': {1}".format(name, e))
             print(type(e))
             keys = self.__dict__.keys()
@@ -265,16 +265,31 @@ class Runnable(Reflective):
             print('')
 
             sys.exit(0)
-            
-    def single_step2(self, dt):
-        for cid in self.children:
-            self.children[cid].single_step(dt)
 
-        for child in self.array:
-            child.single_step(dt)
+    def single_step2(self, dt):
+        children_first = True
+
+        if children_first:
+            for cid in self.children:
+                self.children[cid].single_step(dt)
+
+            for child in self.array:
+                child.single_step(dt)
 
         if self.time_completed == 0:
             self.run_startup_event_handlers(self)
+
+        if (False and self.id == 'm' and
+            self.parent.parent.parent.parent.parent.id == 'net1_sim1'):
+            print('HELLO1 1 - {0} {1} {2}'.format(
+                self.parent.parent.parent.parent.parent.id,
+                self.x,
+                self.ex))
+            print('HELLO1 2'.format(
+                self.parent.parent.parent.parent.parent.id,
+                self.rf,
+                self.rr,
+                self.q))
 
         self.run_preprocessing_event_handlers(self)
         self.update_shadow_variables()
@@ -289,17 +304,25 @@ class Runnable(Reflective):
 
         self.record_variables()
 
+        if not children_first:
+            for cid in self.children:
+                self.children[cid].single_step(dt)
+
+            for child in self.array:
+                child.single_step(dt)
+
         self.time_completed += dt#self.time_step
         if self.time_completed >= self.time_total:
             return 0
         else:
             return dt#self.time_step
 
+
     def record_variables(self):
         for variable in self.recorded_variables:
             self.recorded_variables[variable].add_value(\
                 self.time_completed, self.__dict__[variable])
-            
+
     def push_state(self):
         vars = []
         for varname in self.instance_variables:

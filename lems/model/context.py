@@ -118,6 +118,10 @@ class Context(LEMSBase):
         """ Simulation object detailing simulation-related aspects of this component.
         @type: lems.model.simulation.Simulation """
 
+        self.attachments = dict()
+        """ Dictionary of attachments in this component-type
+        @type: dict(string -> string """
+
 
     def add_component_type(self, component_type):
         """
@@ -422,6 +426,26 @@ class Context(LEMSBase):
             self.event_in_ports.append(name)
         else:
             self.event_out_ports.append(name)
+
+    def add_attachment(self, name, type_):
+        """
+        Adds an attachment to this component-type.
+
+        @param name: Name of the attachment.
+        @type name: string
+
+        @param type_: Type of the attachment.
+        @type type_: string
+
+        @raise ModelError: Raised when the attachment is already in the
+        current context.
+        """
+
+        if name in self.attachments:
+            raise ModelError("Duplicate attachment '{0}'".format(name))
+
+        self.attachments[name] = type_
+        
 
     def lookup_component_type(self, name):
         """

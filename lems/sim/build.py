@@ -185,7 +185,7 @@ class SimulationBuilder(LEMSBase):
             template = self.build_runnable(context.lookup_component(cparam),
                                            runnable)
 
-            for i in xrange(sparam):
+            for i in range(sparam):
                 instance = copy.deepcopy(template)
                 instance.id = "{0}#{1}#{2}".format(component.id,
                                                    template.id,
@@ -240,8 +240,9 @@ class SimulationBuilder(LEMSBase):
                 if len(from_.event_out_ports) == 1:
                     from_port = from_.event_out_ports[0]
                 else:
-                    raise SimBuildError(("No source event port uniquely"
-                                         "identifiable in '{0}'").format(from_.id))
+                    raise SimBuildError(("No source event port "
+                                         "uniquely identifiable"
+                                         " in '{0}'").format(from_.id))
             if to_port == '':
                 if len(to.event_in_ports) == 1:
                     to_port = to.event_in_ports[0]

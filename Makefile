@@ -22,6 +22,9 @@ example1:
 example2:
 	./runlems.py examples/example2.xml
 
+example3:
+	./runlems.py examples/example3.xml
+
 run:	example2
 
 bench:

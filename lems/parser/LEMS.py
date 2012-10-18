@@ -164,7 +164,8 @@ class LEMSParser(Parser):
                                                 'exposure', 'eventport',
                                                 'fixed', 'link', 'parameter',
                                                 'path', 'requirement',
-                                                'simulation', 'structure', 'text']
+                                                'simulation', 'structure',
+                                                'text', 'attachments']
         self.valid_children['dynamics'] = ['derivedvariable',
                                            'oncondition', 'onentry',
                                            'onevent',
@@ -181,17 +182,17 @@ class LEMSParser(Parser):
         self.valid_children['simulation'] = ['record', 'run', 'datadisplay',]
 
         self.tag_parse_table = dict()
-        self.tag_parse_table['dynamics'] = self.parse_dynamics
+        self.tag_parse_table['attachments'] = self.parse_attachments
         self.tag_parse_table['child'] = self.parse_child
         self.tag_parse_table['childinstance'] = self.parse_child_instance
         self.tag_parse_table['children'] = self.parse_children
         self.tag_parse_table['component'] = self.parse_component
         self.tag_parse_table['componentreference'] = self.parse_component_reference
         self.tag_parse_table['componenttype'] = self.parse_component_type
-        self.tag_parse_table['target'] = self.parse_target
         self.tag_parse_table['datadisplay'] = self.parse_data_display
         self.tag_parse_table['derivedvariable'] = self.parse_derived_variable
         self.tag_parse_table['dimension'] = self.parse_dimension
+        self.tag_parse_table['dynamics'] = self.parse_dynamics
         self.tag_parse_table['eventconnection'] = self.parse_event_connection
         self.tag_parse_table['eventout'] = self.parse_event_out
         self.tag_parse_table['eventport'] = self.parse_event_port
@@ -215,6 +216,7 @@ class LEMSParser(Parser):
         self.tag_parse_table['stateassignment'] = self.parse_state_assignment
         self.tag_parse_table['statevariable'] = self.parse_state_variable
         self.tag_parse_table['structure'] = self.parse_structure
+        self.tag_parse_table['target'] = self.parse_target
         self.tag_parse_table['text'] = self.parse_text
         self.tag_parse_table['timederivative'] = self.parse_time_derivative
         self.tag_parse_table['unit'] = self.parse_unit
@@ -345,6 +347,32 @@ class LEMSParser(Parser):
 
         return self.model
 
+    def parse_attachments(self, node):
+        """
+        Parses <Attachments>
+
+        @param node: Node containing the <Attachments> element
+        @type node: xml.etree.Element
+        """
+
+        if self.current_context.context_type != Context.COMPONENT_TYPE:
+            self.raise_error('Attachments can only be made in ' +
+                             'a component type')
+
+        if 'name' in node.lattrib:
+            name = node.lattrib['name']
+        else:
+            self.raise_error('<Attachments> must specify a name for the ' +
+                             'attachment.')
+
+        if 'type' in node.lattrib:
+            type_ = node.lattrib['type']
+        else:
+            self.raise_error('<Attachment> must specify a type for the ' +
+                             'attachment.')
+
+        self.current_context.add_attachment(name, type_)
+        
     def parse_child(self, node):
         """
         Parses <Child>
@@ -364,12 +392,12 @@ class LEMSParser(Parser):
                              'reference.')
 
         if 'type' in node.lattrib:
-            type = node.lattrib['type']
+            type_ = node.lattrib['type']
         else:
             self.raise_error('<Child> must specify a type for the ' +
                              'reference.')
 
-        self.current_context.add_child_def(name, type)
+        self.current_context.add_child_def(name, type_)
 
     def parse_child_instance(self, node):
         """
