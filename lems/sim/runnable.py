@@ -123,12 +123,10 @@ class Runnable(Reflective):
         self.__dict__[group_name].append(child)
 
     def make_attachment(self, type_, name):
-        print 'HELLO2', self.id, type_, name
         self.attachments[type_] = name
         self.__dict__[name] = []
 
     def add_attachment(self, runnable):
-        print 'HELLO3', self.id, runnable.id, self.attachments
         name = self.attachments[runnable.component.component_type]
         runnable.id = runnable.id + str(len(self.__dict__[name]))
         self.__dict__[name].append(runnable)

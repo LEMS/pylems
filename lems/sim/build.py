@@ -83,8 +83,6 @@ class SimulationBuilder(LEMSBase):
         else:
             runnable = Runnable(id_, component, parent)
 
-        print 'HELLO0 1>', runnable.id
-
         context = component.context
         record_target_backup = self.current_record_target
 
@@ -197,7 +195,6 @@ class SimulationBuilder(LEMSBase):
                 instance.id = "{0}#{1}#{2}".format(component.id,
                                                    template.id,
                                                    i)
-                print 'HELLO0 2>', instance.id, template.id
                 runnable.array.append(instance)
 
         # Process foreach statements
@@ -213,9 +210,6 @@ class SimulationBuilder(LEMSBase):
 
                 source_path = context.lookup_path_parameter(source_pathvar)
                 target_path = context.lookup_path_parameter(target_pathvar)
-
-                print 'HELLO1 1>', source_pathvar, source_path
-                print 'HELLO1 2>', target_pathvar, target_path
 
                 source = runnable.parent.resolve_path(source_path)
                 target = runnable.parent.resolve_path(target_path)
