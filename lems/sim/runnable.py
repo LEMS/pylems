@@ -106,6 +106,8 @@ class Runnable(Reflective):
         self.event_out_callbacks = {}
         self.event_in_counters = {}
 
+        self.attachments = {}
+
     def add_child(self, id_, runnable):
         #self.children[id] = runnable
         self.children[runnable.id] = runnable
@@ -119,6 +121,17 @@ class Runnable(Reflective):
         if group_name not in self.__dict__:
             self.__dict__[group_name] = []
         self.__dict__[group_name].append(child)
+
+    def make_attachment(self, type_, name):
+        print 'HELLO2', self.id, type_, name
+        self.attachments[type_] = name
+        self.__dict__[name] = []
+
+    def add_attachment(self, runnable):
+        print 'HELLO3', self.id, runnable.id, self.attachments
+        name = self.attachments[runnable.component.component_type]
+        runnable.id = runnable.id + str(len(self.__dict__[name]))
+        self.__dict__[name].append(runnable)
 
     def add_event_in_port(self, port):
         self.event_in_ports.append(port)
@@ -141,7 +154,7 @@ class Runnable(Reflective):
             self.event_out_callbacks[port].append(callback)
         else:
             raise SimBuildError('No event out port \'{0}\' in '
-                                'component \'{1}\''.format(port, self.name))
+                                'component \'{1}\''.format(port, self.id))
 
     def resolve_path(self, path):
         if path == '':

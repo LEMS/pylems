@@ -28,6 +28,12 @@ def print_run(run, offset):
         for r in run.array:
             print_run(r, '  ' + offset)
 
+def dump_runnables(sim):
+    print('Runnables:')
+    for r in sim.runnables:
+        print_run(sim.runnables[r], '')
+        
+            
 if __name__ == '__main__':
 
     if len(sys.argv) not in [2,3]:
@@ -56,13 +62,8 @@ if __name__ == '__main__':
 
         print('Building simulation')
         sim = SimulationBuilder(model).build()
+        #dump_runnables(sim)
 
-
-        if True and not nogui:
-            print('Runnables:')
-            for r in sim.runnables:
-                print_run(sim.runnables[r], '')
-        
         print('Running simulation')
         sim.run()
         #sys.exit(0)
@@ -103,7 +104,7 @@ if __name__ == '__main__':
         print('Caught ParseError - ' + str(e))
     except ModelError as e:
         print('Caught ModelError - ' + str(e))
-    except SimBuildError as e:
-        print('Caught SimBuildError - ' + str(e))
+        #except SimBuildError as e:
+        #print('Caught SimBuildError - ' + str(e))
     except SimError as e:
         print('Caught SimError - ' + str(e))

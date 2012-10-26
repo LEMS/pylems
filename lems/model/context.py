@@ -444,8 +444,8 @@ class Context(LEMSBase):
         if name in self.attachments:
             raise ModelError("Duplicate attachment '{0}'".format(name))
 
-        self.attachments[name] = type_
-        
+        self.attachments[type_] = name
+
 
     def lookup_component_type(self, name):
         """
@@ -541,6 +541,39 @@ class Context(LEMSBase):
         else:
             return None
 
+    def lookup_path_parameter(self, path_name):
+        """
+        Looks up a path parameter.
+
+        @param path_name: Name of the path parameter.
+        @type parameter_name: string
+
+        @return: Value of the path parameter
+        @rtype: string
+        """
+
+        path_param = self.lookup_parameter(path_name)
+        if path_param == None or path_param.dimension != '__path__':
+            return None
+        else:
+            return path_param.value
+
+    def lookup_text_parameter(self, text_name):
+        """
+        Looks up a text parameter.
+
+        @param text_name: Name of the text parameter.
+        @type parameter_name: string
+
+        @return: Value of the text parameter
+        @rtype: string
+        """
+
+        text_param = self.lookup_parameter(text_name)
+        if text_param == None or text_param.dimension != '__text__':
+            return None
+        else:
+            return text_param.value
 
 class Contextual(LEMSBase):
     """

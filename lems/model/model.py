@@ -200,6 +200,14 @@ class Model(Contextual):
 
         this_context.requirements = copy.copy(base_context.requirements)
 
+        for port in base_context.event_in_ports:
+            this_context.event_in_ports.append(port)
+        for port in base_context.event_out_ports:
+            this_context.event_out_ports.append(port)
+
+        for exposure in base_context.exposures:
+            this_context.exposures.append(exposure)
+
         component_type.extends = None
 
     def resolve_extended_component(self, context, component):
@@ -310,6 +318,7 @@ class Model(Contextual):
                                      c))
 
         comp_str.foreach = type_str.foreach
+        comp_str.with_mappings = type_str.with_mappings
 
 
     def resolve_component_from_type(self, context, component):
@@ -396,8 +405,8 @@ class Model(Contextual):
                                                    component)
 
         this_context.children_defs = copy.copy(type_context.children_defs)
-
         this_context.requirements = copy.copy(type_context.requirements)
+        this_context.attachments = copy.copy(type_context.attachments)
 
     def resolve_regime(self, context, regime):
         """
@@ -696,9 +705,9 @@ class Model(Contextual):
         if structure.event_connections:
             s += prefix + Model.tab + 'Event connections:\n'
             for conn in structure.event_connections:
-                (from_, fromport, to, toport) = conn
-                s += prefix + Model.tab*2 + '{0}:{1} -> {2}:{3}\n'.format(\
-                    from_, fromport, to, toport)
+                s += prefix + Model.tab*2 + '{0}:{1} -> {2}:{3}\n'.format(
+                    conn.source_path, conn.source_port,
+                    conn.target_path, conn.target_port)
 
         if structure.single_child_defs:
             s += prefix + Model.tab + 'Single child instantiations:\n'
@@ -856,7 +865,7 @@ class Model(Contextual):
 
         if context.event_out_ports:
             s += prefix + 'Event out ports:\n'
-            for port in context.event_in_ports:
+            for port in context.event_out_ports:
                 s += prefix + Model.tab + port + '\n'
 
         if context.structure:

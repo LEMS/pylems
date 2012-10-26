@@ -21,9 +21,7 @@
     <Child name="Connections" type="ConnectionPattern"/>
   </ComponentType>
 
-<ComponentType name="ConnectionPattern"/>
-
-
+  <ComponentType name="ConnectionPattern"/>
 
   <ComponentType name="AllAll" extends="ConnectionPattern">
     <Structure>

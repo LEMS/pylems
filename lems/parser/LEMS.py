@@ -220,6 +220,7 @@ class LEMSParser(Parser):
         self.tag_parse_table['text'] = self.parse_text
         self.tag_parse_table['timederivative'] = self.parse_time_derivative
         self.tag_parse_table['unit'] = self.parse_unit
+        self.tag_parse_table['with'] = self.parse_with
 
         def counter():
             count = 1
@@ -372,7 +373,7 @@ class LEMSParser(Parser):
                              'attachment.')
 
         self.current_context.add_attachment(name, type_)
-        
+
     def parse_child(self, node):
         """
         Parses <Child>
@@ -769,7 +770,14 @@ class LEMSParser(Parser):
             self.raise_error('\'to\' attribute not provided for ' +
                              '<EventConnection>')
 
-        self.current_structure.add_event_connection(from_, to)
+        source_port = node.lattrib.get('sourceport', '')
+        target_port = node.lattrib.get('targetport', '')
+        receiver = node.lattrib.get('receiver', '')
+        receiver_container = node.lattrib.get('receivercontainer', '')
+
+        self.current_structure.add_event_connection(from_, to,
+                                                    source_port, target_port,
+                                                    receiver, receiver_container)
 
     def parse_event_port(self, node):
         """
@@ -1379,6 +1387,32 @@ class LEMSParser(Parser):
             power = 0
 
         self.model.add_unit(Unit(symbol, dimension, power))
+
+    def parse_with(self, node):
+        """
+        Parses <With>
+
+        @param node: Node containing the <With> element
+        @type node: xml.etree.Element
+        """
+
+        if self.current_structure == None:
+            self.raise_error('<With> can only be made within ' +
+                             'a structure definition')
+
+        if 'instance' in node.lattrib:
+            target = node.lattrib['instance']
+        else:
+            self.raise_error('<With> must specify a reference to target'
+                             'instance')
+
+        if 'as' in node.lattrib:
+            name = node.lattrib['as']
+        else:
+            self.raise_error('<With> must specify a name for the '
+                             'target instance')
+
+        self.current_structure.add_with(name, target)
 
     def parse_root(self, node):
         """

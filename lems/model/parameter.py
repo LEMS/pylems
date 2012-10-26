@@ -37,11 +37,11 @@ class Parameter(LEMSBase):
         self.name = name
         """ Parameter name.
         @type: string """
-        
+
         self.dimension = dimension
         """ Dimension for this parameter.
         @type: string """
-        
+
         self.fixed = fixed
         """ Set to True if this parameter has a fixed value.
         @type: Boolean """
@@ -49,7 +49,7 @@ class Parameter(LEMSBase):
         if fixed and value == None:
             raise ModelError('A numeric value must be provided to fix' +
                              'this parameter')
-            
+
         self.value = value
         """ Value for this parameter.
         @type: string """
@@ -106,12 +106,12 @@ class Parameter(LEMSBase):
 
     ##     if self.fixed:
     ##         raise ModelError('Parameter already fixed.')
-        
+
     ##     split_loc = min(map(lambda x: 100
     ##                         if value_string.find(x) == -1
-    ##                         else value_string.find(x), 
+    ##                         else value_string.find(x),
     ##     'abcdesghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'))
-        
+
     ##     self.value = int(value_string[0:split_loc])
     ##     sym = value_string[split_loc:].strip()
 
@@ -124,3 +124,11 @@ class Parameter(LEMSBase):
     ##         raise ModelError('Dimension mismatch')
 
     ##     self.value *= 10 ** model.units[sym].pow10
+
+    def __str__(self):
+        return '[Parameter - {0},{1},{2},{3}]'.format(
+            self.name,
+            self.dimension,
+            self.value,
+            self.fixed)
+
