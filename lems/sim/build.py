@@ -105,6 +105,12 @@ class SimulationBuilder(LEMSBase):
         for port in context.event_out_ports:
             runnable.add_event_out_port(port)
 
+        print 'HELLO1 1>', component.id, runnable.id
+        if context.selected_dynamics_profile:
+            print 'HELLO1 2>', context.selected_dynamics_profile, context.selected_dynamics_profile.default_regime, [dvn for dvn in context.selected_dynamics_profile.default_regime.derived_variables]
+        print ''
+
+
         if context.selected_dynamics_profile:
             self.add_dynamics(component, runnable,
                               context.selected_dynamics_profile)

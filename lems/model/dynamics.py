@@ -33,12 +33,12 @@ class StateVariable(LEMSBase):
         """ Internal name of the state variable. This is the name used to
         refer to this variable inside the <Dynamics> element.
         @type: string """
-        
+
         self.exposure = exposure
         """ Exposure name of the state variable. This is the name used to
         refer to this variable from other objects.
         @type: string """
-        
+
         self.dimension = dimension
         """ Dimension of this state variable.
         @type: string """
@@ -109,12 +109,12 @@ class DerivedVariable(LEMSBase):
         """ Internal name of the derived variable. This is the name used to
         refer to this variable inside the <Dynamics> element.
         @type: string """
-        
+
         self.exposure = exposure
         """ Exposure name of the derived variable. This is the name used to
         refer to this variable from other objects.
         @type: string """
-        
+
         self.dimension = dimension
         """ Dimension of this derived variable.
         @type: string """
@@ -126,7 +126,7 @@ class DerivedVariable(LEMSBase):
         self.select = select
         """ Selected target object for the reduce operation.
         @type: string """
-        
+
         self.reduce = reduce
         """ Reduce operation to be applied over the selected target.
         @type: string """
@@ -143,7 +143,7 @@ class DerivedVariable(LEMSBase):
                                      self.name))
         else:
             self.expression_tree = None
-                
+
 
 class EventHandler(LEMSBase):
     """
@@ -163,7 +163,7 @@ class EventHandler(LEMSBase):
         @type type: enum(EventHandler.ONSTART, EventHandler.ON_ENTRY,
         EventHandler.ON_EVENT and EventHandler.ON_CONDITION)
         """
-        
+
         self.type = type
         """ Type of event.
         @type: enum(EventHandler.ONSTART, EventHandler.ON_ENTRY,
@@ -198,7 +198,7 @@ class EventHandler(LEMSBase):
         """
 
         return False
-    
+
 class OnStart(EventHandler):
     """
     Stores the parameters of an <OnStart> statement.
@@ -213,9 +213,9 @@ class OnStart(EventHandler):
 
     def __str__(self):
         """ Generates a string representation of this condition."""
-        
+
         return 'OnStart'
-        
+
 class OnEntry(EventHandler):
     """
     Stores the parameters of an <OnEntry> statement.
@@ -230,9 +230,9 @@ class OnEntry(EventHandler):
 
     def __str__(self):
         """ Generates a string representation of this condition."""
-        
+
         return 'OnEntry'
-        
+
 class OnEvent(EventHandler):
     """
     Stores the parameters of an <OnEvent> statement.
@@ -247,16 +247,16 @@ class OnEvent(EventHandler):
         """
 
         EventHandler.__init__(self, EventHandler.ON_EVENT)
-        
+
         self.port = port
         """ The name of the event port to listen on.
         @type: string """
 
     def __str__(self):
         """ Generates a string representation of this condition."""
-        
+
         return 'OnEvent: ' + self.port
-    
+
 class OnCondition(EventHandler):
     """
     Event handler for a condition check.
@@ -282,15 +282,15 @@ class OnCondition(EventHandler):
 
     def __str__(self):
         """ Generates a string representation of this condition."""
-        
+
         return 'OnCondition: ' + self.test + ' | ' +\
                str(self.expression_tree)
-        
+
 class Action(LEMSBase):
     """
     Base class for an event action.
     """
-    
+
     STATE_ASSIGNMENT = 1
     EVENT_OUT = 2
     TRANSITION = 3
@@ -302,7 +302,7 @@ class Action(LEMSBase):
         @param type: Type of action.
         @type type: enum(Action.STATEASSIGNMENT, Action.EVENT_OUT)
         """
-        
+
         self.type = type
         """ Type of action.
         @type: enum(Action.STATEASSIGNMENT, Action.EVENT_OUT) """
@@ -383,7 +383,7 @@ class Regime(LEMSBase):
         @param initial: Is this the initial regime? Default: False
         @type initial: Boolean
         """
-        
+
         self.name = name
         """ Name of this ehavior regime.
         @type: string """
@@ -395,7 +395,7 @@ class Regime(LEMSBase):
         self.state_variables = {}
         """ Dictionary of state variables defined in this dynamics regime.
         @type: dict(string -> lems.model.dynamics.StateVariable) """
-    
+
         self.time_derivatives = {}
         """ Dictionary of time derivatives defined in this dynamics regime.
         @type: dict(string -> lems.model.dynamics.TimeDerivative) """
@@ -403,7 +403,7 @@ class Regime(LEMSBase):
         self.derived_variables = {}
         """ Dictionary of derived variables defined in this dynamics regime.
         @type: dict(string -> lems.model.dynamics.DerivedVariable) """
-    
+
         self.event_handlers = []
         """ List of event handlers defined in this dynamics regime.
         @type: list(EventHandler) """
@@ -449,7 +449,7 @@ class Regime(LEMSBase):
             raise ModelError('Duplicate time derivative for ' + variable)
 
         self.time_derivatives[variable] = TimeDerivative(variable, value)
-    
+
     def add_derived_variable(self, name, exposure, dimension,
                              value, select, reduce):
         """
@@ -472,7 +472,7 @@ class Regime(LEMSBase):
 
         @param reduce: Reduce operation.
         @type reduce: string
-        
+
         @raise ModelError: Raised when the derived variable is already
         defined in this dynamics regime.
         """
@@ -489,7 +489,7 @@ class Regime(LEMSBase):
             raise ModelError("Derived variable '{0}' cannot specify both "
                              "value expressions or select/reduce "
                              "operations".format(name))
-        
+
         if select == None and reduce != None:
             raise ModelError("Reduce target not specified for derived "
                              "variable '{0}'".format(name))
@@ -497,7 +497,7 @@ class Regime(LEMSBase):
         self.derived_variables[name] = DerivedVariable(name, exposure,
                                                        dimension, value,
                                                        select, reduce)
-        
+
     def add_event_handler(self, event_handler):
         """
         Adds a state variable to the dynamics current object.
@@ -508,6 +508,30 @@ class Regime(LEMSBase):
 
         self.event_handlers += [event_handler]
 
+    def merge(self, regime):
+        """
+        Merge another regime into this one.
+
+        @param regime: Regime to be merged in.
+        @type regime: lems.model.dynamics.Regime
+        """
+
+        for svn in regime.state_variables:
+            if svn not in self.state_variables:
+                self.state_variables[svn] = regime.state_variables[svn]
+
+        for tdn in regime.time_derivatives:
+            if tdn not in self.time_derivatives:
+                self.time_derivatives[tdn] = regime.time_derivatives[tdn]
+
+        for dvn in regime.derived_variables:
+            if dvn not in self.derived_variables:
+                self.derived_variables[dvn] = regime.derived_variables[dvn]
+
+        for ev in regime.event_handlers:
+            regime.event_handlers.append(ev)
+
+
 class Dynamics(LEMSBase):
     """
     Stores the dynamic dynamics for a component type.
@@ -517,7 +541,7 @@ class Dynamics(LEMSBase):
         """
         Constructor.
         """
-        
+
         self.name = name
         """ Name of this dynamics profile.
         @type: string """
@@ -546,7 +570,7 @@ class Dynamics(LEMSBase):
         @param initial: Is this the initial regime? Default: False
         @type initial: Boolean
         """
-        
+
         if name in self.regimes:
             raise ModelError('Duplicate regime ' + name)
 
@@ -555,9 +579,28 @@ class Dynamics(LEMSBase):
                 if self.regimes[rn].initial:
                     raise('Cannot define two initial regimes in the same' +
                           ' dynamics profile')
-            
+
         regime = Regime(name, initial)
         if initial:
             self.current_regime = regime
-        
+
         self.regimes[name] = regime
+
+    def merge(self, dynamics):
+        """
+        Merge another dynamics profile into this one.
+
+        @param dynamics: Dynamics profile to be merged in.
+        @type dynamics: lems.model.dynamics.Dynamics
+        """
+
+        self.default_regime.merge(dynamics.default_regime)
+
+        if not self.current_regime:
+            self.current_regime = dynamics.current_regime
+
+        for rn in dynamics.regimes:
+            if rn in self.regimes:
+                self.regimes[rn].merge(dynamics.regimes[rn])
+            else:
+                self.regimes[rn] = dynamics.regimes[rn]

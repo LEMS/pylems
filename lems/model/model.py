@@ -273,6 +273,19 @@ class Model(Contextual):
 
         this_context.requirements = copy.copy(base_context.requirements)
 
+        for dpn in base_context.dynamics_profiles:
+            dp = base_context.dynamics_profiles[dpn].copy()
+            this_context.dynamics_profiles[dpn] = dp
+
+            if dpn == base_context.selected_dynamics_profile.name:
+                this_context.selected_dynamics_profile = dp
+
+        for dn in base_context.dynamics_profiles:
+            if dn in this_context.dynamics_profiles:
+                this_context.dynamics_profiles[dn].merge(base_context.dynamics_profiles[dn])
+            else:
+                this_context.dynamics_profiles[dn] = base_context.dynamics_profiles[dn]
+
         component.extends = None
 
     def resolve_component_structure_from_type(self,
@@ -677,6 +690,8 @@ class Model(Contextual):
                 s += prefix + Model.tab*2 + dv.name
                 if dv.value:
                     s += ' = ' + dv.value + ' | ' + str(dv.expression_tree) + '\n'
+                elif dv.select and dv.reduce:
+                    s += ' = reduce.' + dv.reduce + ' over ' + dv.select + '\n'
                 else:
                     s += '\n'
 
@@ -869,7 +884,7 @@ class Model(Contextual):
             s += prefix + 'Dynamics profiles:\n'
             for name in context.dynamics_profiles:
                 dynamics = context.dynamics_profiles[name]
-                s += self.dynamics2str(dynamics, prefix + Model.tab*2)
+                s += self.dynamics2str(dynamics, prefix + Model.tab)
 
         if context.event_in_ports:
             s += prefix + 'Event in ports:\n'
