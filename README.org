@@ -3,8 +3,16 @@ PyLEMS - A LEMS simulator written in Python.
 * Tasks
 ** DONE Add support for derived variables.
 ** DONE Get example1_new.xml running.
-** Get example1.xml running with new LEMS XML updates in the latest version of jLEMS.
+** DONE Get example1.xml running with new LEMS XML updates in the latest version of jLEMS.
 ** Test other example files.
+*** example1.xml works
+*** example2.xml works
+*** example3.xml works
+*** TODO example4.xml
+** Implement flattening
 ** Decouple events from runnables.
 ** Perform dimension-checking on expressions.
 ** Implement LEMS API over lems.model.* (NeuroML API?)
+*** Interface with libNeuroML and Pyramidal to export Neuron MOD files
+*** Export C files (Interface? Steve Marsh's project?)
+
