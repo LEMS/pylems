@@ -290,18 +290,6 @@ class Runnable(Reflective):
         if self.time_completed == 0:
             self.run_startup_event_handlers(self)
 
-        if (False and self.id == 'm' and
-            self.parent.parent.parent.parent.parent.id == 'net1_sim1'):
-            print('HELLO1 1 - {0} {1} {2}'.format(
-                self.parent.parent.parent.parent.parent.id,
-                self.x,
-                self.ex))
-            print('HELLO1 2'.format(
-                self.parent.parent.parent.parent.parent.id,
-                self.rf,
-                self.rr,
-                self.q))
-
         self.run_preprocessing_event_handlers(self)
         self.update_shadow_variables()
 
