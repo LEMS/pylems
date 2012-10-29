@@ -51,7 +51,6 @@ if __name__ == '__main__':
     try:
         print('Parsing model file')
         parser = LEMSParser(xslt_preprocessor_callback)
-        #parser = LEMSParser()
         parser.parse_file(model_file)
         model = parser.get_model()
         print model

@@ -14,7 +14,7 @@ class ComponentType(Contextual):
     """
     Stores the specification of a user-defined component type.
     """
-    
+
     def __init__(self, name, context, extends = None):
         """
         Constructor
@@ -39,6 +39,13 @@ class ComponentType(Contextual):
         """ Base component type extended by this type.
         @type: string """
 
+        self.types = set()
+        """ List of compatible type (base types).
+        @type: set(string) """
+
+        self.types.add(name)
+        self.types.add(extends)
+
     def fix_parameter(self, parameter_name, value_string, model):
         """
         Fixes the value of a parameter to the specified value.
@@ -58,7 +65,7 @@ class ComponentType(Contextual):
         hack. This should fixed at some point of time, once PyLEMS is able to
         run a few example files.
 
-        @raise ModelError: Raised when the parameter does not exist in this 
+        @raise ModelError: Raised when the parameter does not exist in this
         component type.
         """
 
@@ -92,17 +99,17 @@ class Component(Contextual):
 
         @note: Atleast one of component_type or extends must be valid.
         """
-        
+
         Contextual.__init__(self, id_, context, Context.COMPONENT)
 
         self.id = id_
         """ Globally unique name for this component.
         @type: string """
-        
+
         self.component_type = component_type
         """ Type of component.
         @type: string """
-            
+
         if component_type == None and extends == None:
             raise ModelError('Component definition requires a component type ' +
                              'or a base component')
@@ -110,3 +117,19 @@ class Component(Contextual):
         self.extends = extends
         """ Name of component extended by this component..
         @type: string """
+
+    def is_type(self, component_type):
+        """
+        Check if this component is an instance of the specified component
+        type.
+
+        @param component_type: Name of the component type.
+        @type component_type: string
+
+        @return: Returns True if this component is of the specified type,
+        otherwide False
+        @rtype: Boolean
+        """
+
+        typeobj = self.context.lookup_component_type(self.component_type)
+        return component_type in typeobj.types

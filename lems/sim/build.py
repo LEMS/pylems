@@ -129,7 +129,8 @@ class SimulationBuilder(LEMSBase):
 
             for cdn in context.children_defs:
                 cdt = context.children_defs[cdn]
-                if cdt == child.component_type:
+                #if cdt == child.component_type:
+                if child.is_type(cdt):
                     runnable.add_child_to_group(cdn, child_runnable)
 
         for type_ in context.attachments:

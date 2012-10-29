@@ -128,7 +128,6 @@ class Model(Contextual):
             self.raise_error('Parameter {0} not initialized'.format(\
                 parameter.name), context)
 
-        print parameter.value
         number = float(re.split('[a-zA-z]+', parameter.value)[0].strip())
         sym = re.split('[^a-zA-z]+', parameter.value)[1].strip()
 
@@ -213,6 +212,8 @@ class Model(Contextual):
         this_context.texts = base_context.texts
         this_context.paths = base_context.paths
         this_context.links = base_context.links
+
+        component_type.types = component_type.types.union(base_type.types)
 
         component_type.extends = None
 
