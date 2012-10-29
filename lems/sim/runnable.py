@@ -237,6 +237,12 @@ class Runnable(Reflective):
         for c in self.array:
             c.configure_time(self.time_step, self.time_total)
 
+        for type_ in self.attachments:
+            components = self.__dict__[self.attachments[type_]]
+            for component in components:
+                component.configure_time(self.time_step, self.time_total)
+
+
     def reset_time(self):
         self.time_completed = 0
 
@@ -245,6 +251,11 @@ class Runnable(Reflective):
 
         for c in self.array:
             c.reset_time()
+
+        for type_ in self.attachments:
+            components = self.__dict__[self.attachments[type_]]
+            for component in components:
+                component.reset_time()
 
     def single_step(self, dt):
         #return self.single_step2(dt)
@@ -287,6 +298,11 @@ class Runnable(Reflective):
             for child in self.array:
                 child.single_step(dt)
 
+            for type_ in self.attachments:
+                components = self.__dict__[self.attachments[type_]]
+                for component in components:
+                    component.single_step(dt)
+
         if self.time_completed == 0:
             self.run_startup_event_handlers(self)
 
@@ -310,6 +326,11 @@ class Runnable(Reflective):
             for child in self.array:
                 child.single_step(dt)
 
+            for type_ in self.attachments:
+                components = self.__dict__[self.attachments[type_]]
+                for component in components:
+                    component.single_step(dt)
+                    
         self.time_completed += dt#self.time_step
         if self.time_completed >= self.time_total:
             return 0
