@@ -92,39 +92,6 @@ class Parameter(LEMSBase):
 
         self.value = value
 
-
-    ## def set_value_text(self, value_string, model):
-    ##     """
-    ##     Sets the value of this parameter.
-
-    ##     @param value_string: Value for this parameter. For example, "30mV" or
-    ##     "45 kg"
-    ##     @type value_string: string
-
-    ##     @raise: Raised ModelError if the parameter is already fixed.
-    ##     """
-
-    ##     if self.fixed:
-    ##         raise ModelError('Parameter already fixed.')
-
-    ##     split_loc = min(map(lambda x: 100
-    ##                         if value_string.find(x) == -1
-    ##                         else value_string.find(x),
-    ##     'abcdesghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'))
-
-    ##     self.value = int(value_string[0:split_loc])
-    ##     sym = value_string[split_loc:].strip()
-
-    ##     if sym not in model.units:
-    ##         raise ModelError('Invalid symbol ' + sym)
-
-    ##     dim1 = model.dimensions[model.units[sym].dimension]
-    ##     dim2 = model.dimensions[self.dimension]
-    ##     if dim1 != dim2:
-    ##         raise ModelError('Dimension mismatch')
-
-    ##     self.value *= 10 ** model.units[sym].pow10
-
     def __str__(self):
         return '[Parameter - {0},{1},{2},{3}]'.format(
             self.name,

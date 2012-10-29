@@ -277,7 +277,8 @@ class Runnable(Reflective):
                 r = r.parent
                 name = "{0}.{1}".format(r.id, name)
 
-            print("Error in '{0}': {1}".format(name, e))
+            print("Error in '{0} ({2})': {1}".format(name, e,
+                                                     self.component.component_type))
             print(type(e))
             keys = self.__dict__.keys()
             keys.sort()
@@ -330,7 +331,7 @@ class Runnable(Reflective):
                 components = self.__dict__[self.attachments[type_]]
                 for component in components:
                     component.single_step(dt)
-                    
+
         self.time_completed += dt#self.time_step
         if self.time_completed >= self.time_total:
             return 0

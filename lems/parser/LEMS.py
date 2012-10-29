@@ -165,12 +165,13 @@ class LEMSParser(Parser):
                                                 'fixed', 'link', 'parameter',
                                                 'path', 'requirement',
                                                 'simulation', 'structure',
-                                                'text', 'attachments']
+                                                'text', 'attachments',
+                                                'constant']
         self.valid_children['dynamics'] = ['derivedvariable',
                                            'oncondition', 'onentry',
-                                           'onevent',
-                                           'onstart',
-                                           'statevariable', 'timederivative']
+                                           'onevent', 'onstart',
+                                           'statevariable', 'timederivative',
+                                           'kineticscheme']
         self.valid_children['oncondition'] = ['eventout', 'stateassignment']
         self.valid_children['onentry'] = ['eventout', 'stateassignment']
         self.valid_children['onevent'] = ['eventout', 'stateassignment']
@@ -189,6 +190,7 @@ class LEMSParser(Parser):
         self.tag_parse_table['component'] = self.parse_component
         self.tag_parse_table['componentreference'] = self.parse_component_reference
         self.tag_parse_table['componenttype'] = self.parse_component_type
+        self.tag_parse_table['constant'] = self.parse_constant
         self.tag_parse_table['datadisplay'] = self.parse_data_display
         self.tag_parse_table['derivedvariable'] = self.parse_derived_variable
         self.tag_parse_table['dimension'] = self.parse_dimension
@@ -200,6 +202,7 @@ class LEMSParser(Parser):
         self.tag_parse_table['fixed'] = self.parse_fixed
         self.tag_parse_table['foreach'] = self.parse_foreach
         self.tag_parse_table['include'] = self.parse_include
+        self.tag_parse_table['kineticscheme'] = self.parse_kinetic_scheme
         self.tag_parse_table['link'] = self.parse_link
         self.tag_parse_table['multiinstantiate'] = \
                                                  self.parse_multi_instantiate
@@ -606,6 +609,41 @@ class LEMSParser(Parser):
         self.process_nested_tags(node)
         self.pop_context()
 
+    def parse_constant(self, node):
+        """
+        Parses <Constant>
+
+        @param node: Node containing the <Constant> element
+        @type node: xml.etree.Element
+
+        @raise ParseError: Raised when the constant does not have a name.
+        @raise ParseError: Raised when the constant does not have a
+        dimension.
+        """
+
+        if self.current_context.context_type != Context.COMPONENT_TYPE:
+            self.raise_error('Constants can only be defined in ' +
+                             'a component type')
+
+        try:
+            name = node.lattrib['name']
+        except:
+            self.raise_error('Constant must have a name')
+
+        try:
+            dimension = node.lattrib['dimension']
+        except:
+            dimension = None
+            
+        try:
+            value = node.lattrib['value']
+        except:
+            self.raise_error('Constant must have a value')
+
+        constant = Parameter(name, dimension, True, value)
+
+        self.current_context.add_parameter(constant)
+
     def parse_data_display(self, node):
         """
         Parses <DataDisplay>
@@ -904,6 +942,20 @@ class LEMSParser(Parser):
             xmltolower(root)
             self.parse_root(root)
 
+    def parse_kinetic_scheme(self, node):
+        """
+        Parses <KineticScheme>
+
+        @param node: Node containing the <KineticScheme> element
+        @type node: xml.etree.Element
+        """
+
+        if self.current_regime == None:
+            self.raise_error('<KineticScheme> must be defined inside a ' +
+                             'dynamics profile or regime')
+
+        print 'TODO - <KineticScheme>'
+
     def parse_link(self, node):
         """
         Parses <Link>
@@ -1058,6 +1110,10 @@ class LEMSParser(Parser):
         @raise ParseError: Raised when the parameter does not have a
         dimension.
         """
+
+        if self.current_context.context_type != Context.COMPONENT_TYPE:
+            self.raise_error('Parameters can only be defined in ' +
+                             'a component type')
 
         try:
             name = node.lattrib['name']

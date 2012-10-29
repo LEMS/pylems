@@ -25,7 +25,10 @@ example2:
 example3:
 	./runlems.py examples/example3.xml
 
-run:	example3
+example4:
+	./runlems.py examples/example4.xml
+
+run:	example4
 
 bench:
 	@echo "Java"

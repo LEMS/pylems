@@ -128,6 +128,7 @@ class Model(Contextual):
             self.raise_error('Parameter {0} not initialized'.format(\
                 parameter.name), context)
 
+        print parameter.value
         number = float(re.split('[a-zA-z]+', parameter.value)[0].strip())
         sym = re.split('[^a-zA-z]+', parameter.value)[1].strip()
 
@@ -198,7 +199,8 @@ class Model(Contextual):
                 this_context.parameters[pn] = base_context.parameters[pn].\
                                               copy()
 
-        this_context.requirements = copy.copy(base_context.requirements)
+        for rn in base_context.requirements:
+            this_context.requirements[rn] = base_context.requirements[rn]
 
         for port in base_context.event_in_ports:
             this_context.event_in_ports.append(port)
@@ -207,6 +209,10 @@ class Model(Contextual):
 
         for exposure in base_context.exposures:
             this_context.exposures.append(exposure)
+
+        this_context.texts = base_context.texts
+        this_context.paths = base_context.paths
+        this_context.links = base_context.links
 
         component_type.extends = None
 
@@ -510,8 +516,9 @@ class Model(Contextual):
             p = component.context.parameters[pn]
             if p.dimension == '__dimension_inherited__':
                 self.raise_error(('The dimension for parameter {0} in '
-                                  'component {1} could not be resolved').\
-                                 format(pn, component.id),
+                                  'component {1} ({2}) could not be resolved').\
+                                 format(pn, component.id,
+                                        component.component_type),
                                  component.context)
 
         # Resolve dynamics
@@ -830,6 +837,11 @@ class Model(Contextual):
         if context.exposures:
             s += prefix + 'Exposures:\n'
             for name in context.exposures:
+                s += prefix + Model.tab + name + '\n'
+
+        if context.requirements:
+            s += prefix + 'Requirements:\n'
+            for name in context.requirements:
                 s += prefix + Model.tab + name + '\n'
 
         if context.texts:

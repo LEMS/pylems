@@ -54,15 +54,15 @@ if __name__ == '__main__':
         #parser = LEMSParser()
         parser.parse_file(model_file)
         model = parser.get_model()
-        #print model
+        print model
     
         print('Resolving model')
         model.resolve_model()
-        #print model
+        print model
 
         print('Building simulation')
         sim = SimulationBuilder(model).build()
-        #dump_runnables(sim)
+        dump_runnables(sim)
 
         print('Running simulation')
         sim.run()
