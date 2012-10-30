@@ -10,6 +10,8 @@ from lems.base.errors import ModelError
 from lems.model.context import Contextual
 from lems.model.parameter import Parameter
 
+from lems.base.util import merge_dict
+
 import re
 import copy
 
@@ -179,42 +181,9 @@ class Model(Contextual):
         this_context = component_type.context
         base_context = base_type.context
 
-        for pn in base_context.parameters:
-            if pn in this_context.parameters:
-                pt = this_context.parameters[pn]
+        this_context.merge(base_context)
 
-                if pt.dimension == '__dimension_inherited__':
-                    pb = base_context.parameters[pn]
-                    this_context.parameters[pn] = Parameter(pt.name,
-                                                            pb.dimension,
-                                                            pt.fixed,
-                                                            pt.value)
-                else:
-                    self.raise_error(('Parameter {0} in {1} is redefined ' +
-                                     'in {2}').format(pn, base_type.name,
-                                                      component_type.name),
-                                     context)
-            else:
-                this_context.parameters[pn] = base_context.parameters[pn].\
-                                              copy()
-
-        for rn in base_context.requirements:
-            this_context.requirements[rn] = base_context.requirements[rn]
-
-        for port in base_context.event_in_ports:
-            this_context.event_in_ports.append(port)
-        for port in base_context.event_out_ports:
-            this_context.event_out_ports.append(port)
-
-        for exposure in base_context.exposures:
-            this_context.exposures.append(exposure)
-
-        this_context.texts = base_context.texts
-        this_context.paths = base_context.paths
-        this_context.links = base_context.links
-
-        component_type.types = component_type.types.union(base_type.types)
-
+        component_type.types = component_type.types | base_type.types
         component_type.extends = None
 
     def resolve_extended_component(self, context, component):
@@ -416,9 +385,9 @@ class Model(Contextual):
         this_context.simulation = type_context.simulation.copy()
 
         for port in type_context.event_in_ports:
-            this_context.event_in_ports.append(port)
+            this_context.event_in_ports.add(port)
         for port in type_context.event_out_ports:
-            this_context.event_out_ports.append(port)
+            this_context.event_out_ports.add(port)
 
         self.resolve_component_structure_from_type(this_context,
                                                    type_context,

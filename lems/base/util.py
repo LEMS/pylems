@@ -13,16 +13,16 @@ class Stack(LEMSBase):
     """
     Basic stack implementation.
     """
-    
+
     def __init__(self):
         """
         Constructor.
         """
-        
+
         self.stack = []
         """ List used to store the stack contents.
         @type: list """
-        
+
     def push(self, val):
         """
         Pushed a value onto the stack.
@@ -30,7 +30,7 @@ class Stack(LEMSBase):
         @param val: Value to be pushed.
         @type val: *
         """
-        
+
         self.stack = [val] + self.stack
 
     def pop(self):
@@ -42,7 +42,7 @@ class Stack(LEMSBase):
 
         @raise StackError: Raised when there is a stack underflow.
         """
-        
+
         if self.stack:
             val = self.stack[0]
             self.stack = self.stack[1:]
@@ -59,7 +59,7 @@ class Stack(LEMSBase):
 
         @raise StackError: Raised when there is a stack underflow.
         """
-        
+
         if self.stack:
             return self.stack[0]
         else:
@@ -72,7 +72,7 @@ class Stack(LEMSBase):
         @return: True if the stack is empty, otherwise False.
         @rtype: Boolean
         """
-        
+
         return self.stack == []
 
     def __str__(self):
@@ -82,7 +82,7 @@ class Stack(LEMSBase):
         @note: This assumes that the stack contents are capable of generating
         string representations.
         """
-        
+
         if len(self.stack) == 0:
             s = '[]'
         else:
@@ -91,3 +91,8 @@ class Stack(LEMSBase):
                 s += ', ' + str(self.stack[i])
             s += ']'
         return s
+
+def merge_dict(new, old):
+    for key in old:
+        if key not in new:
+            new[key] = old[key]

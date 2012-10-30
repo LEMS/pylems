@@ -250,10 +250,6 @@ class LEMSParser(Parser):
         #self.prefix += '  '
 
         for child in node:
-            #print self.prefix, child.tag,
-            #print child.attrib['name'] if 'name' in child.attrib else '',
-            #print child.attrib['id'] if 'id' in child.attrib else ''
-
             self.xml_node_stack = [child] + self.xml_node_stack
 
             ctagl = child.tag.lower()

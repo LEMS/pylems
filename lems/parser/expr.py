@@ -293,8 +293,6 @@ class ExprParser(LEMSBase):
             token = self.token_list[0]
             self.token_list = self.token_list[1:]
             
-            #print '###> ', token,op_stack,node_stack,val_stack
-            
             if token == '(':
                 node_stack.push(self.parse_token_list_rec())
                 val_stack.push('$')

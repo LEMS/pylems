@@ -53,7 +53,7 @@ if __name__ == '__main__':
         parser = LEMSParser(xslt_preprocessor_callback)
         parser.parse_file(model_file)
         model = parser.get_model()
-        print model
+        #print model
     
         print('Resolving model')
         model.resolve_model()

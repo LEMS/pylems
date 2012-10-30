@@ -9,6 +9,8 @@ Component structure storage.
 from lems.base.base import LEMSBase
 from lems.base.errors import ModelError
 
+from lems.base.util import merge_dict
+
 class Structure(LEMSBase):
     """
     Stores the structural characteristics for a component type.
@@ -22,7 +24,7 @@ class Structure(LEMSBase):
         self.event_connections = []
         """ List of event connections b/w components. The from and to
         attributes are described as component:port
-        @type: list((string, string)) """
+        @type: list(lems.base.structure.EventConnection) """
 
         self.single_child_defs = []
         """ List of single-child instantiation definitions.
@@ -152,6 +154,25 @@ class Structure(LEMSBase):
                              "'{0}'".format(component))
 
         self.with_mappings[name] = target
+
+    def merge(self, other):
+        """
+        Merge another set of structural characteristics
+        into this one.
+
+        @param other: structural characteristics
+        @type other: lems.model.structure.Structure
+        """
+
+        self.event_connections += other.event_connections
+        self.single_child_defs += other.single_child_defs
+
+        merge_dict(self.multi_child_defs, other.multi_child_defs)
+
+        self.foreach += other.foreach
+        merge_dict(self.foreach_mappings, other.foreach_mappings)
+        merge_dict(self.with_mappings, other.with_mappings)
+
 
 class ForEach(Structure):
     """

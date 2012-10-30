@@ -529,7 +529,7 @@ class Regime(LEMSBase):
                 self.derived_variables[dvn] = regime.derived_variables[dvn]
 
         for ev in regime.event_handlers:
-            regime.event_handlers.append(ev)
+            self.event_handlers.append(ev)
 
 
 class Dynamics(LEMSBase):

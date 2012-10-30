@@ -11,6 +11,9 @@ from lems.base.errors import ModelError
 from lems.model.dynamics import Dynamics
 from lems.model.structure import Structure
 from lems.model.simulation import Simulation
+from lems.model.parameter import Parameter
+
+from lems.base.util import merge_dict
 
 class Context(LEMSBase):
     """
@@ -38,6 +41,11 @@ class Context(LEMSBase):
         self.parent = parent
         """ Reference to parent context.
         @type: lems.model.context.Context """
+
+        self.context_type = context_type
+        """ Context type (Global, component type or component)
+        @type: enum(Context.GLOBAL, Context.COMPONENT_TYPE or
+        Context.COMPONENT_TYPE) """
 
         self.component_types = {}
         """ Dictionary of component types defined in this conext.
@@ -69,11 +77,6 @@ class Context(LEMSBase):
         """ Dictionary of references to parameters defined in this context.
         @type: dict(string -> lems.model.parameter.Parameter) """
 
-        self.context_type = context_type
-        """ Context type (Global, component type or component)
-        @type: enum(Context.GLOBAL, Context.COMPONENT_TYPE or
-        Context.COMPONENT_TYPE) """
-
         self.dynamics_profiles = {}
         """ Stores the various dynamics profiles of the current object.
         @type: dict(string -> lems.model.dynamics.Dynamics) """
@@ -82,9 +85,9 @@ class Context(LEMSBase):
         """ Name of the dynamics dynamics profile.
         @type: lems.model.dynamics.Dynamics """
 
-        self.exposures = []
+        self.exposures = set()
         """ List of names of exposed variables.
-        @type: list(string) """
+        @type: set(string) """
 
         self.requirements = {}
         """ List of names of required variables.
@@ -102,13 +105,13 @@ class Context(LEMSBase):
         """ Dictionary of link parameters.
         @type: dict(string -> string) """
 
-        self.event_in_ports = []
+        self.event_in_ports = set()
         """ List of incoming event port names.
-        @type: list(string) """
+        @type: set(string) """
 
-        self.event_out_ports = []
+        self.event_out_ports = set()
         """ List of outgoing event port names.
-        @type: list(string) """
+        @type: set(string) """
 
         self.structure = Structure()
         """ Structure object detailing structural aspects of this component.
@@ -308,7 +311,7 @@ class Context(LEMSBase):
         if name in self.exposures:
             raise ModelError("Duplicate exposure name '{0}'".format(name))
 
-        self.exposures += [name]
+        self.exposures.add(name)
 
     def add_requirement(self, name, dimension):
         """
@@ -423,9 +426,9 @@ class Context(LEMSBase):
             raise ModelError("Duplicate event '{0}'".format(name))
 
         if direction == 'in':
-            self.event_in_ports.append(name)
+            self.event_in_ports.add(name)
         else:
-            self.event_out_ports.append(name)
+            self.event_out_ports.add(name)
 
     def add_attachment(self, name, type_):
         """
@@ -574,6 +577,72 @@ class Context(LEMSBase):
             return None
         else:
             return text_param.value
+
+    def merge(self, other):
+        """
+        Merge another context (base or type context) into this one.
+
+        @param other: Base or type context to be merged in
+        @type other: lems.model.context.Context
+        """
+
+        merge_dict(self.component_types, other.component_types)
+        merge_dict(self.components, other.components)
+        merge_dict(self.component_refs, other.component_refs)
+        merge_dict(self.child_defs, other.child_defs)
+        merge_dict(self.children_defs, other.children_defs)
+
+        for child in other.children:
+            self.children.append(child)
+
+        if (self.context_type == Context.COMPONENT_TYPE and
+            other.context_type == Context.COMPONENT_TYPE):
+            self.merge_extended_component_type_parameters(other)
+
+        merge_dict(self.dynamics_profiles, other.dynamics_profiles)
+        if not self.selected_dynamics_profile:
+            self.selected_dynamics_profile = other.selected_dynamics_profile
+
+        self.exposures |= other.exposures
+
+        merge_dict(self.requirements, other.requirements)
+        merge_dict(self.texts, other.texts)
+        merge_dict(self.paths, other.paths)
+        merge_dict(self.links, other.links)
+
+        self.event_in_ports |= other.event_in_ports
+        self.event_out_ports |= other.event_out_ports
+
+        self.structure.merge(other.structure)
+        self.simulation.merge(other.simulation)
+
+        merge_dict(self.attachments, other.attachments)
+        
+    def merge_extended_component_type_parameters(self, other):
+        """
+        Merge parameters from a base component type into this one
+
+        @param other: Base or type context to be merged in
+        @type other: lems.model.context.Context
+        """
+
+        for pn in other.parameters:
+            if pn in self.parameters:
+                pt = self.parameters[pn]
+
+                if pt.dimension == '__dimension_inherited__':
+                    pb = other.parameters[pn]
+                    self.parameters[pn] = Parameter(pt.name,
+                                                    pb.dimension,
+                                                    pt.fixed,
+                                                    pt.value)
+                else:
+                    raise ModelError(('Parameter {0} in {1} is redefined ' +
+                                      'in {2}').format(pn, other.name,
+                                                       self.name))
+            else:
+                self.parameters[pn] = other.parameters[pn].copy()
+
 
 class Contextual(LEMSBase):
     """

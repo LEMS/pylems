@@ -9,6 +9,8 @@ Component simulation-spec storage.
 from lems.base.base import LEMSBase
 from lems.base.errors import ModelError
 
+from lems.base.util import merge_dict
+
 class Run(LEMSBase):
     """
     Stores the description of an object to be run according to an independent
@@ -22,7 +24,7 @@ class Run(LEMSBase):
         @param component: Name of the target component to be run according to
         the specification given for an independent state variable.
         @type component: string
-        
+
         @param variable: The name of an independent state variable according
         to which the target component will be run.
         @type variable: string
@@ -33,37 +35,37 @@ class Run(LEMSBase):
         @param total: Final value of the state variable.
         @type total: string
         """
-        
+
         self.component = component
         """ Name of the target component to be run according to the
         specification given for an independent state variable.
         @type: string """
-        
+
         self.variable = variable
         """ The name of an independent state variable according to which the
         target component will be run.
         @type: string """
-        
+
         self.increment = increment
         """ Increment of the state variable on each step.
         @type: string """
-        
+
         self.total = total
         """ Final value of the state variable.
         @type: string """
-        
+
 class Record(LEMSBase):
     """
     Stores the parameters of a <Record> statement.
     """
-    
+
     def __init__(self, quantity, scale, color):
         self.quantity = quantity
         self.scale = scale
         self.color = color
 
         self.numeric_scale = None
-        
+
 class Simulation(LEMSBase):
     """
     Stores the simulation-related aspects for a component type.
@@ -83,7 +85,7 @@ class Simulation(LEMSBase):
         @type: dict(string -> lems.model.dynamics.Record """
 
         self.data_displays = {}
-        """ Dictionary of data displays mapping titles to regions. 
+        """ Dictionary of data displays mapping titles to regions.
         @type: dict(string -> string) """
 
     def add_run(self, component, variable, increment, total):
@@ -126,10 +128,10 @@ class Simulation(LEMSBase):
         RGB value (#RRGGBB)
         @type color: string
         """
-        
+
         if quantity in self.records:
             raise ModelError('Duplicate record {0}'.format(quantity))
-        
+
         self.records[quantity] = Record(quantity, scale, color)
 
     def add_data_display(self, title, data_region):
@@ -147,3 +149,15 @@ class Simulation(LEMSBase):
             raise ModelError("Redefinition of data display '{0}'".format(title))
 
         self.data_displays[title] = data_region
+
+    def merge(self, other):
+        """
+        Merge another set of simulation specs into this one.
+
+        @param other: Simulation specs
+        @type other: lems.model.simulation.Simulation
+        """
+
+        merge_dict(self.runs, other.runs)
+        merge_dict(self.records, other.records)
+        merge_dict(self.data_displays, other.data_displays)
