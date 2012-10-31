@@ -578,7 +578,7 @@ class Context(LEMSBase):
         else:
             return text_param.value
 
-    def merge(self, other):
+    def merge(self, other, model):
         """
         Merge another context (base or type context) into this one.
 
@@ -595,9 +595,12 @@ class Context(LEMSBase):
         for child in other.children:
             self.children.append(child)
 
-        if (self.context_type == Context.COMPONENT_TYPE and
-            other.context_type == Context.COMPONENT_TYPE):
-            self.merge_extended_component_type_parameters(other)
+        if (self.context_type == other.context_type and
+            self.context_type in [Context.COMPONENT_TYPE, Context.COMPONENT]):
+            self.merge_extended_parameters(other)
+        elif (self.context_type == Context.COMPONENT and
+              other.context_type == Context.COMPONENT_TYPE):
+            self.merge_component_parameters_from_component_type(other, model)
 
         merge_dict(self.dynamics_profiles, other.dynamics_profiles)
         if not self.selected_dynamics_profile:
@@ -613,14 +616,20 @@ class Context(LEMSBase):
         self.event_in_ports |= other.event_in_ports
         self.event_out_ports |= other.event_out_ports
 
-        self.structure.merge(other.structure)
+        if (self.context_type == Context.COMPONENT and
+            other.context_type == Context.COMPONENT_TYPE):
+            self.structure.merge_from_type(other.structure, self)
+        else:
+            self.structure.merge(other.structure)
+
         self.simulation.merge(other.simulation)
 
         merge_dict(self.attachments, other.attachments)
-        
-    def merge_extended_component_type_parameters(self, other):
+
+    def merge_extended_parameters(self, other):
         """
-        Merge parameters from a base component type into this one
+        Merge parameters from a base component or component type
+        into this one
 
         @param other: Base or type context to be merged in
         @type other: lems.model.context.Context
@@ -642,6 +651,55 @@ class Context(LEMSBase):
                                                        self.name))
             else:
                 self.parameters[pn] = other.parameters[pn].copy()
+
+    def merge_component_parameters_from_component_type(self, type_context, model):
+        """
+        Merge component parameters from a component type
+        definition.
+
+        @param type_context: Type context to be merged in
+        @type type_context: lems.model.context.Context
+        """
+
+
+        for pn in type_context.parameters:
+            pt = type_context.parameters[pn]
+            if pn in self.parameters:
+                pc = self.parameters[pn]
+
+                if pc.value:
+                    value = pc.value
+                else:
+                    value = pt.value
+
+                if pc.dimension == '__dimension_inherited__':
+                    if pt.fixed:
+                        np = Parameter(pn, pt.dimension, pt.fixed, value)
+                    else:
+                        np = Parameter(pn, pt.dimension, pc.fixed, value)
+                    self.parameters[pn] = np
+            else:
+                self.parameters[pn] = pt.copy()
+
+            model.resolve_parameter_value(self.parameters[pn],
+                                          self)
+
+        for pn in self.parameters:
+            pc = self.parameters[pn]
+            if pc.dimension == '__dimension_inherited__':
+                if pn in type_context.texts:
+                    pc.dimension = '__text__'
+                    self.texts[pn] = type_context.texts[pn]
+                elif pn in type_context.paths:
+                    pc.dimension = '__path__'
+                    self.paths[pn] = type_context.paths[pn]
+                elif pn in type_context.links:
+                    pc.dimension = '__link__'
+                    self.links[pn] = type_context.links[pn]
+                elif pn in type_context.component_refs:
+                    pc.dimension = '__component_ref__'
+                    cf = type_context.component_refs[pn]
+                    self.component_refs[pn] = pc.value
 
 
 class Contextual(LEMSBase):

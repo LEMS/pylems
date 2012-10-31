@@ -9,6 +9,8 @@ Utility classes.
 from lems.base.base import LEMSBase
 from lems.base.errors import StackError
 
+import copy
+
 class Stack(LEMSBase):
     """
     Basic stack implementation.
@@ -95,4 +97,4 @@ class Stack(LEMSBase):
 def merge_dict(new, old):
     for key in old:
         if key not in new:
-            new[key] = old[key]
+            new[key] = copy.deepcopy(old[key])

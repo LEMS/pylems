@@ -181,7 +181,7 @@ class Model(Contextual):
         this_context = component_type.context
         base_context = base_type.context
 
-        this_context.merge(base_context)
+        this_context.merge(base_context, self)
 
         component_type.types = component_type.types | base_type.types
         component_type.extends = None
@@ -216,44 +216,12 @@ class Model(Contextual):
         if base.extends:
             self.resolve_extended_component(context, base)
 
+        component.component_type = base.component_type
+
         this_context = component.context
         base_context = base.context
 
-        for pn in base_context.parameters:
-            if pn in this_context.parameters:
-                pt = this_context.parameters[pn]
-
-                if pt.dimension == '__dimension_inherited__':
-                    pb = base_context.parameters[pn]
-                    this_context.parameters[pn] = Parameter(pt.name,
-                                                            pb.dimension,
-                                                            pt.fixed,
-                                                            pt.value)
-                else:
-                    self.raise_error(('Parameter {0} in {1} is redefined '
-                                     'in {2}').format(pn, base_type.name,
-                                                      component_type.name),
-                                     context)
-            else:
-                this_context.parameters[pn] = base_context.parameters[pn].\
-                                              copy()
-
-        component.component_type = base.component_type
-
-        this_context.requirements = copy.copy(base_context.requirements)
-
-        for dpn in base_context.dynamics_profiles:
-            dp = base_context.dynamics_profiles[dpn].copy()
-            this_context.dynamics_profiles[dpn] = dp
-
-            if dpn == base_context.selected_dynamics_profile.name:
-                this_context.selected_dynamics_profile = dp
-
-        for dn in base_context.dynamics_profiles:
-            if dn in this_context.dynamics_profiles:
-                this_context.dynamics_profiles[dn].merge(base_context.dynamics_profiles[dn])
-            else:
-                this_context.dynamics_profiles[dn] = base_context.dynamics_profiles[dn]
+        this_context.merge(base_context, self)
 
         component.extends = None
 
@@ -336,87 +304,8 @@ class Model(Contextual):
         this_context = component.context
         type_context = component_type.context
 
-        for pn in type_context.parameters:
-            pt = type_context.parameters[pn]
-            if pn in this_context.parameters:
-                pc = this_context.parameters[pn]
-
-                if pc.value:
-                    value = pc.value
-                else:
-                    value = pt.value
-
-                if pc.dimension == '__dimension_inherited__':
-                    if pt.fixed:
-                        np = Parameter(pn, pt.dimension, pt.fixed, value)
-                    else:
-                        np = Parameter(pn, pt.dimension, pc.fixed, value)
-                    this_context.parameters[pn] = np
-            else:
-                this_context.parameters[pn] = pt.copy()
-
-            self.resolve_parameter_value(this_context.parameters[pn],
-                                         this_context)
-
-        for pn in this_context.parameters:
-            pc = this_context.parameters[pn]
-            if pc.dimension == '__dimension_inherited__':
-                if pn in type_context.texts:
-                    pc.dimension = '__text__'
-                    this_context.texts[pn] = type_context.texts[pn]
-                elif pn in type_context.paths:
-                    pc.dimension = '__path__'
-                    this_context.paths[pn] = type_context.paths[pn]
-                elif pn in type_context.links:
-                    pc.dimension = '__link__'
-                    this_context.links[pn] = type_context.links[pn]
-                elif pn in type_context.component_refs:
-                    pc.dimension = '__component_ref__'
-                    cf = type_context.component_refs[pn]
-                    this_context.component_refs[pn] = pc.value
-
-        for dpn in type_context.dynamics_profiles:
-            dp = type_context.dynamics_profiles[dpn].copy()
-            this_context.dynamics_profiles[dpn] = dp
-
-            if dpn == type_context.selected_dynamics_profile.name:
-                this_context.selected_dynamics_profile = dp
-
-        this_context.simulation = type_context.simulation.copy()
-
-        for port in type_context.event_in_ports:
-            this_context.event_in_ports.add(port)
-        for port in type_context.event_out_ports:
-            this_context.event_out_ports.add(port)
-
-        self.resolve_component_structure_from_type(this_context,
-                                                   type_context,
-                                                   component)
-
-        this_context.children_defs = copy.copy(type_context.children_defs)
-        this_context.requirements = copy.copy(type_context.requirements)
-        this_context.attachments = copy.copy(type_context.attachments)
-
-    def resolve_regime(self, context, regime):
-        """
-        Resolves name references in the given dynamics regime to actual
-        objects.
-
-        @param context: Current context.
-        @type context: lems.model.context.Context
-
-        @param regime: Dynamics regime to be resolved.
-        @type regime: lems.model.dynamics.Dynamics
-
-        @raise ModelError: Raised when the quantity to be recorded is not a
-        path.
-
-        @raise ModelError: Raised when the color specified is not a text
-        entity.
-        """
-
-        pass
-
+        this_context.merge(type_context, self)
+        
     def resolve_simulation(self, context):
         """
         Resolves simulation specifications in a component-type context.
@@ -457,6 +346,25 @@ class Model(Contextual):
                 record.color = cp.value
                 record.numeric_scale = sp.numeric_value
 
+    def resolve_regime(self, context, regime):
+        """
+        Resolves name references in the given dynamics regime to actual
+        objects.
+
+        @param context: Current context.
+        @type context: lems.model.context.Context
+
+        @param regime: Dynamics regime to be resolved.
+        @type regime: lems.model.dynamics.Dynamics
+
+        @raise ModelError: Raised when the quantity to be recorded is not a
+        path.
+
+        @raise ModelError: Raised when the color specified is not a text
+        entity.
+        """
+
+        pass
 
 
 

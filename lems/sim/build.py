@@ -88,7 +88,7 @@ class SimulationBuilder(LEMSBase):
 
         for pn in context.parameters:
             p = context.parameters[pn]
-            if p.numeric_value:
+            if p.numeric_value != None:
                 runnable.add_instance_variable(p.name, p.numeric_value)
             else:
                 pass

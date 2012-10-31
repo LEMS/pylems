@@ -174,6 +174,49 @@ class Structure(LEMSBase):
         merge_dict(self.with_mappings, other.with_mappings)
 
 
+    def merge_from_type(self, other, context):
+        """
+        Merge another set of structural characteristics
+        into this one.
+
+        @param other: Structural characteristics
+        @type other: lems.model.structure.Structure
+
+        @param context: Context of the component
+        @type context: lems.model.context.Context
+        """
+
+        self.event_connections += other.event_connections
+
+        for c in other.single_child_defs:
+            if c in context.component_refs:
+                self.add_single_child_def(c)
+            else:
+                raise ModelError("Trying to multi-instantiate from an "
+                                 "invalid component reference '{0}'".format(\
+                        c))
+
+        for c in other.multi_child_defs:
+            n = other.multi_child_defs[c]
+            if c in context.component_refs:
+                component = context.component_refs[c]
+                if n in context.parameters:
+                    number = int(context.parameters[n].numeric_value)
+                    self.add_multi_child_def(component, number)
+                else:
+                    raise ModelError("Trying to multi-instantiate using an "
+                                     "invalid number parameter '{0}'".\
+                                     format(n))
+            else:
+                raise ModelError("Trying to multi-instantiate from an "
+                                 "invalid component reference '{0}'".format(\
+                                     c))
+
+        self.foreach += other.foreach
+        merge_dict(self.foreach_mappings, other.foreach_mappings)
+        merge_dict(self.with_mappings, other.with_mappings)
+
+
 class ForEach(Structure):
     """
     Stores a <ForEach> statement and containing structures.
