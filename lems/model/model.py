@@ -535,7 +535,7 @@ class Model(Contextual):
 
     def make_id(self):
         self.next_free_id = self.next_free_id + 1
-        return 'id#{0}'.format(self.next_free_id)
+        return 'id__{0}'.format(self.next_free_id)
 
 
     #####################################################################33

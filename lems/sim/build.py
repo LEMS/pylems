@@ -90,26 +90,17 @@ class SimulationBuilder(LEMSBase):
             p = context.parameters[pn]
             if p.numeric_value != None:
                 runnable.add_instance_variable(p.name, p.numeric_value)
-            else:
-                pass
-                ## if p.dimension == '__component_ref__':
-                ##     ref = context.parent.lookup_component(p.value)
-                ##     if ref == None:
-                ##         raise SimBuildError(('Unable to resolve component '
-                ##                              'reference {0}').\
-                ##                             format(component_name))
-                ##     self.sim.add_runnable(ref.id, self.build_runnable(ref))
+            elif p.dimension in ['__link__', '__text__']:
+                runnable.add_text_variable(p.name, p.value)
 
         for port in context.event_in_ports:
             runnable.add_event_in_port(port)
         for port in context.event_out_ports:
             runnable.add_event_out_port(port)
 
-        self.build_structure(component, runnable, context.structure)
-
         if context.selected_dynamics_profile:
-            self.add_dynamics(component, runnable,
-                              context.selected_dynamics_profile)
+            self.add_dynamics_1(component, runnable,
+                                context.selected_dynamics_profile)
         else:
             runnable.add_method('update_state_variables', ['self', 'dt'],
                                 [])
@@ -139,8 +130,14 @@ class SimulationBuilder(LEMSBase):
             name = context.attachments[type_]
             runnable.make_attachment(type_, name)
 
+        self.build_structure(component, runnable, context.structure)
 
-        #self.build_structure(component, runnable, context.structure)
+        if context.selected_dynamics_profile:
+            self.add_dynamics_2(component, runnable,
+                                context.selected_dynamics_profile)
+        else:
+            runnable.add_method('update_kinetic_scheme', ['self', 'dt'],
+                                [])
 
         self.add_recording_behavior(component, runnable)
 
@@ -195,7 +192,7 @@ class SimulationBuilder(LEMSBase):
 
             for i in range(sparam):
                 instance = copy.deepcopy(template)
-                instance.id = "{0}#{1}#{2}".format(component.id,
+                instance.id = "{0}__{1}__{2}".format(component.id,
                                                    template.id,
                                                    i)
                 runnable.array.append(instance)
@@ -222,7 +219,7 @@ class SimulationBuilder(LEMSBase):
                     receiver_template = self.build_runnable(receiver_component,
                                                             target)
                     receiver = copy.deepcopy(receiver_template)
-                    receiver.id = "{0}#{1}#".format(component.id,
+                    receiver.id = "{0}__{1}__".format(component.id,
                                                     receiver_template.id)
                     target.add_attachment(receiver)
                     target = receiver
@@ -301,10 +298,12 @@ class SimulationBuilder(LEMSBase):
                 source_port, lambda: target.inc_event_in(target_port))
 
 
-    def add_dynamics(self, component, runnable, dynamics_profile):
+    def add_dynamics_1(self, component, runnable, dynamics_profile):
         """
         Adds dynamics to a runnable component based on the dynamics
         specifications in the component model.
+
+        This method builds dynamics necessary for building child components.
 
         @param component: Component model containing dynamics specifications.
         @type component: lems.model.component.Component
@@ -401,14 +400,75 @@ class SimulationBuilder(LEMSBase):
         runnable.add_method('run_postprocessing_event_handlers', ['self'],
                             post_event_handler_code)
 
+    def add_dynamics_2(self, component, runnable, dynamics_profile):
+        """
+        Adds dynamics to a runnable component based on the dynamics
+        specifications in the component model.
+
+        This method builds dynamics dependent on child components.
+
+        @param component: Component model containing dynamics specifications.
+        @type component: lems.model.component.Component
+
+        @param runnable: Runnable component to which dynamics is to be added.
+        @type runnable: lems.sim.runnable.Runnable
+
+        @param dynamics_profile: The dynamics profile to be used to generate
+        dynamics code in the runnable component.
+        @type dynamics_profile: lems.model.dynamics.Dynamics
+
+        @raise SimBuildError: Raised when a time derivative expression refers
+        to an undefined variable.
+
+        @raise SimBuildError: Raised when there are invalid time
+        specifications for the <Run> statement.
+
+        @raise SimBuildError: Raised when the component reference for <Run>
+        cannot be resolved.
+        """
+
+        context = component.context
+        regime = dynamics_profile.default_regime
+
         # Process kinetic schemes
         ks_code = []
         for ksn in regime.kinetic_schemes:
             ks = regime.kinetic_schemes[ksn]
-            print 'HELLO1 1>', runnable.id
-            print 'HELLO1 2>', ks.name, ks.nodes, ks.state_variable, ks.edges
-            print 'HELLO1 3>', runnable.__dict__.keys()
 
+            try:
+                nodes = {node.id:node for node in runnable.__dict__[ks.nodes]}
+                edges = runnable.__dict__[ks.edges]
+
+                for edge in edges:
+                    from_ = edge.__dict__[ks.edge_source]
+                    to = edge.__dict__[ks.edge_target]
+
+                    ks_code += [('self.{0}.{2} += dt * (-self.{3}.{4} * self.{0}.{2}_shadow + '
+                                 'self.{3}.{5} * self.{1}.{2}_shadow)').format(
+                        from_, to, ks.state_variable, edge.id, ks.forward_rate, ks.reverse_rate)]
+
+                    ks_code += [('self.{1}.{2} += dt * (self.{3}.{4} * self.{0}.{2}_shadow - '
+                                 'self.{3}.{5} * self.{1}.{2}_shadow)').format(
+                        from_, to, ks.state_variable, edge.id, ks.forward_rate, ks.reverse_rate)]
+
+                ks_code += ['sum = 0']
+                for node in nodes:
+                    nodes[node].__dict__[ks.state_variable] = 1.0 / len(nodes)
+                    nodes[node].__dict__[ks.state_variable + '_shadow'] = 1.0 / len(nodes)
+                    ks_code += ['sum += self.{0}.{1}'.format(node, ks.state_variable)]
+
+                for node in nodes:
+                    ks_code += ['self.{0}.{1} /= sum'.format(node, ks.state_variable)]
+
+                for node in nodes:
+                    ks_code += ['self.{0}.{1}_shadow = self.{0}.{1}'.format(node, ks.state_variable)]
+
+            except Exception as e:
+                raise SimBuildError(("Unable to construct kinetic scheme '{0}' "
+                                     "for component '{1}' - {2}").format(ks.name, component.id, str(e)))
+
+        runnable.add_method('update_kinetic_scheme', ['self', 'dt'],
+                            ks_code)
 
     def process_simulation_specs(self, component, runnable, simulation):
         """
@@ -426,7 +486,7 @@ class SimulationBuilder(LEMSBase):
         @type simulation: lems.model.simulation.Simulation
 
         @raise SimBuildError: Raised when a time derivative expression refers
-        to an undefined variable.
+        to an undefined variable
 
         @raise SimBuildError: Raised when there are invalid time
         specifications for the <Run> statement.

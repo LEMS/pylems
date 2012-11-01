@@ -14,19 +14,19 @@ from lems.sim.recording import Recording
 import ast
 import sys
 
-#from math import *
+from math import *
 
-import math
+#import math
 
-class Ex1(Exception):
-    pass
+#class Ex1(Exception):
+#    pass
 
-def exp(x):
-    try:
-        return math.exp(x)
-    except Exception as e:
-        print('ERROR performing exp({0})'.format(x))
-        raise Ex1()
+#def exp(x):
+#    try:
+#        return math.exp(x)
+#    except Exception as e:
+#        print('ERROR performing exp({0})'.format(x))
+#        raise Ex1()
 
 class Reflective(object):
     def __init__(self):
@@ -69,9 +69,12 @@ class Reflective(object):
     def add_derived_variable(self, variable):
         self.derived_variables.append(variable)
 
-        code_string = 'self.{0} = {1}'.format(\
+        code_string = 'self.{0} = {1}\nself.{0}_shadow = {1}'.format(\
             variable, 0)
         exec(compile(ast.parse(code_string), '<unknown>', 'exec'))
+
+    def add_text_variable(self, variable, value):
+        self.__dict__[variable] = value
 
     def __getitem__(self, key):
         return self.array[key]
@@ -287,22 +290,41 @@ class Runnable(Reflective):
             print('')
             print('')
 
+            print('This is an arithmatic error. Consider reducing the integration time step.')
+            sys.exit(0)
+            
+        except Exception as e:
+            r = self
+            name = r.id
+            while r.parent:
+                r = r.parent
+                name = "{0}.{1}".format(r.id, name)
+
+            print("Error in '{0} ({2})': {1}".format(name, e,
+                                                     self.component.component_type))
+            print(type(e))
+            keys = self.__dict__.keys()
+            keys.sort()
+            for k in keys:
+                print('{0} -> {1}'.format(k, self.__dict__[k]))
+            print('')
+            print('')
+
             sys.exit(0)
 
     def single_step2(self, dt):
-        children_first = True
+        for cid in self.children:
+            self.children[cid].single_step(dt)
 
-        if children_first:
-            for cid in self.children:
-                self.children[cid].single_step(dt)
+        for child in self.array:
+            child.single_step(dt)
 
-            for child in self.array:
-                child.single_step(dt)
+        for type_ in self.attachments:
+            components = self.__dict__[self.attachments[type_]]
+            for component in components:
+                component.single_step(dt)
 
-            for type_ in self.attachments:
-                components = self.__dict__[self.attachments[type_]]
-                for component in components:
-                    component.single_step(dt)
+        self.update_kinetic_scheme(self, dt)
 
         if self.time_completed == 0:
             self.run_startup_event_handlers(self)
@@ -311,6 +333,7 @@ class Runnable(Reflective):
         self.update_shadow_variables()
 
         self.update_derived_variables(self)
+        self.update_shadow_variables()
 
         self.update_state_variables(self, dt)
         self.update_shadow_variables()
@@ -319,18 +342,6 @@ class Runnable(Reflective):
         self.update_shadow_variables()
 
         self.record_variables()
-
-        if not children_first:
-            for cid in self.children:
-                self.children[cid].single_step(dt)
-
-            for child in self.array:
-                child.single_step(dt)
-
-            for type_ in self.attachments:
-                components = self.__dict__[self.attachments[type_]]
-                for component in components:
-                    component.single_step(dt)
 
         self.time_completed += dt#self.time_step
         if self.time_completed >= self.time_total:
@@ -374,5 +385,5 @@ class Runnable(Reflective):
         if self.plastic:
             for var in self.instance_variables:
                 self.__dict__[var + '_shadow'] = self.__dict__[var]
-            #for var in self.derived_variables:
-            #    self.__dict__[var + '_shadow'] = self.__dict__[var]
+            for var in self.derived_variables:
+                self.__dict__[var + '_shadow'] = self.__dict__[var]

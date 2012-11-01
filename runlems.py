@@ -57,16 +57,16 @@ if __name__ == '__main__':
 
         print('Resolving model')
         model.resolve_model()
-        print model
+        #print model
 
         print('Building simulation')
         sim = SimulationBuilder(model).build()
-        dump_runnables(sim)
+        #dump_runnables(sim)
         #sys.exit(0)
 
         print('Running simulation')
         sim.run()
-        sys.exit(0)
+        #sys.exit(0)
 
         if not nogui:
             import matplotlib.pyplot as plt
