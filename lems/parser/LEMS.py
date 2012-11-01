@@ -458,7 +458,8 @@ class LEMSParser(Parser):
         @raise ParseError: Raised when the component does not have an id.
         """
 
-        raise Exception("Component initialized using typename '{0}' as the XML tag".format(node.tag))
+        raise Exception(("Component initialized using typename "
+                         "'{0}' as the XML tag").format(node.tag))
 
         if self.current_context.context_type == Context.GLOBAL:
             # Global component instatiation
@@ -630,7 +631,7 @@ class LEMSParser(Parser):
             dimension = node.lattrib['dimension']
         except:
             dimension = None
-            
+
         try:
             value = node.lattrib['value']
         except:
@@ -950,8 +951,50 @@ class LEMSParser(Parser):
             self.raise_error('<KineticScheme> must be defined inside a ' +
                              'dynamics profile or regime')
 
-        print 'TODO - <KineticScheme>'
+        if 'name' in node.lattrib:
+            name = node.lattrib['name']
+        else:
+            self.raise_error('A name must be provided for <KineticScheme>')
 
+        if 'nodes' in node.lattrib:
+            nodes = node.lattrib['nodes']
+        else:
+            self.raise_error("The 'nodes' must be provided for <KineticScheme>")
+
+        if 'statevariable' in node.lattrib:
+            state_variable = node.lattrib['statevariable']
+        else:
+            self.raise_error("The 'stateVariable' must be provided for <KineticScheme>")
+
+        if 'edges' in node.lattrib:
+            edges = node.lattrib['edges']
+        else:
+            self.raise_error("The 'edges' must be provided for <KineticScheme>")
+
+        if 'edgesource' in node.lattrib:
+            edge_source = node.lattrib['edgesource']
+        else:
+            self.raise_error("The 'edgeSource' must be provided for <KineticScheme>")
+
+        if 'edgetarget' in node.lattrib:
+            edge_target = node.lattrib['edgetarget']
+        else:
+            self.raise_error("The 'edgeTarget' must be provided for <KineticScheme>")
+
+        if 'forwardrate' in node.lattrib:
+            forward_rate = node.lattrib['forwardrate']
+        else:
+            self.raise_error("The 'forwardRate' must be provided for <KineticScheme>")
+
+        if 'reverserate' in node.lattrib:
+            reverse_rate = node.lattrib['reverserate']
+        else:
+            self.raise_error("The 'reverseRate' must be provided for <KineticScheme>")
+
+        self.current_regime.add_kinetic_scheme(name, nodes, state_variable,
+                                               edges, edge_source, edge_target,
+                                               forward_rate, reverse_rate)
+        
     def parse_link(self, node):
         """
         Parses <Link>

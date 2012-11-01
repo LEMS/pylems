@@ -10,6 +10,8 @@ from lems.base.base import LEMSBase
 from lems.base.errors import ModelError,ParseError
 from lems.parser.expr import ExprParser
 
+from lems.base.util import merge_dict
+
 class StateVariable(LEMSBase):
     """
     Stores the definition of a state variable.
@@ -368,6 +370,59 @@ class EventOut(Action):
 
         return 'Event -> ' + self.port
 
+class KineticScheme(LEMSBase):
+    """
+    Stores a kinetic scheme specification.
+    """
+
+    def __init__(self, name, nodes, state_variable,
+                 edges, edge_source, edge_target,
+                 forward_rate, reverse_rate):
+        """
+        Constructor.
+
+        See instance variable documentation for info on parameters.
+        """
+
+        self.name = name
+        """ Name of the kinetic scheme.
+        @type: string """
+
+        self.nodes = nodes
+        """ Name of the children collection specifying the nodes
+        for the kinetic scheme.
+        @type: string """
+
+        self.state_variable = state_variable
+        """ Name of the state variable in the KS node specifying
+        the value of the scheme.
+        @type: string """
+
+        self.edges = edges
+        """ Name of the children collection specifying the edges
+        for the kinetic scheme.
+        @type: string """
+
+        self.edge_source = edge_source
+        """ Name of the link in a KS edge pointing to the source
+        node for the edge.
+        @type: string """
+
+        self.edge_target = edge_target
+        """ Name of the link in a KS edge pointing to the target
+        node for the edge.
+        @type: string """
+
+        self.forward_rate = forward_rate
+        """ Name of the state variable in a KS edge specifying
+        forward rate for the edge.
+        @type: string """
+
+        self.reverse_rate = reverse_rate
+        """ Name of the state variable in a KS edge specifying
+        reverse rate for the edge.
+        @type: string """
+
 class Regime(LEMSBase):
     """
     Store a dynamics regime for a component type.
@@ -407,6 +462,10 @@ class Regime(LEMSBase):
         self.event_handlers = []
         """ List of event handlers defined in this dynamics regime.
         @type: list(EventHandler) """
+
+        self.kinetic_schemes = {}
+        """ Dictionary of kinetic schemes defined in this dynamics regime.
+        @type: dict(string -> lems.model.dynamics.KineticScheme) """
 
     def add_state_variable(self, name, exposure, dimension):
         """
@@ -508,6 +567,25 @@ class Regime(LEMSBase):
 
         self.event_handlers += [event_handler]
 
+    def add_kinetic_scheme(self, name, nodes, state_variable,
+                           edges, edge_source, edge_target,
+                           forward_rate, reverse_rate):
+        """
+        Constructor.
+
+        See KineticScheme documentation for info on parameters.
+
+        @raise ModelError: Raised if a kinetic scheme with the same
+        name already exists in this behavior regime.
+        """
+
+        if name in self.kinetic_schemes:
+            raise ModelError('Duplicate kinetic scheme ' + name)
+
+        self.kinetic_schemes[name] = KineticScheme(name, nodes, state_variable,
+                                                   edges, edge_source, edge_target,
+                                                   forward_rate, reverse_rate)
+
     def merge(self, regime):
         """
         Merge another regime into this one.
@@ -516,20 +594,13 @@ class Regime(LEMSBase):
         @type regime: lems.model.dynamics.Regime
         """
 
-        for svn in regime.state_variables:
-            if svn not in self.state_variables:
-                self.state_variables[svn] = regime.state_variables[svn]
+        merge_dict(self.state_variables, regime)
+        merge_dict(self.time_derivatives, regime.time_derivatives)
+        merge_dict(self.derived_variables, regime.derived_variables)
 
-        for tdn in regime.time_derivatives:
-            if tdn not in self.time_derivatives:
-                self.time_derivatives[tdn] = regime.time_derivatives[tdn]
+        self.event_handlers += regime.event_handlers
 
-        for dvn in regime.derived_variables:
-            if dvn not in self.derived_variables:
-                self.derived_variables[dvn] = regime.derived_variables[dvn]
-
-        for ev in regime.event_handlers:
-            self.event_handlers.append(ev)
+        merge_dict(self.kinetic_schemes, regime.kinetic_schemes)
 
 
 class Dynamics(LEMSBase):

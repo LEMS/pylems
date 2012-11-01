@@ -32,8 +32,8 @@ def dump_runnables(sim):
     print('Runnables:')
     for r in sim.runnables:
         print_run(sim.runnables[r], '')
-        
-            
+
+
 if __name__ == '__main__':
 
     if len(sys.argv) not in [2,3]:
@@ -54,7 +54,7 @@ if __name__ == '__main__':
         parser.parse_file(model_file)
         model = parser.get_model()
         #print model
-    
+
         print('Resolving model')
         model.resolve_model()
         print model
@@ -62,11 +62,12 @@ if __name__ == '__main__':
         print('Building simulation')
         sim = SimulationBuilder(model).build()
         dump_runnables(sim)
+        #sys.exit(0)
 
         print('Running simulation')
         sim.run()
-        #sys.exit(0)
-    
+        sys.exit(0)
+
         if not nogui:
             import matplotlib.pyplot as plt
             import numpy

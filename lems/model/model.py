@@ -305,7 +305,7 @@ class Model(Contextual):
         type_context = component_type.context
 
         this_context.merge(type_context, self)
-        
+
     def resolve_simulation(self, context):
         """
         Resolves simulation specifications in a component-type context.
@@ -581,6 +581,17 @@ class Model(Contextual):
                     s += prefix + Model.tab*3 + 'Actions:\n'
                     for a in eh.actions:
                         s += prefix + Model.tab*4 + str(a) + '\n'
+
+        if regime.kinetic_schemes:
+            s += prefix + Model.tab + 'Kinetic schemes:\n'
+            for ksn in regime.kinetic_schemes:
+                ks = regime.kinetic_schemes[ksn]
+                s += prefix + Model.tab*2
+                s += '{0}: ({1} {2}) ({3} {4} {5}) ({6} {7})\n'.format(
+                    ks.name,
+                    ks.nodes, ks.state_variable,
+                    ks.edges, ks.edge_source, ks.edge_target,
+                    ks.forward_rate, ks.reverse_rate)
 
         return s
 

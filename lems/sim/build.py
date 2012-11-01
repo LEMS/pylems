@@ -105,6 +105,8 @@ class SimulationBuilder(LEMSBase):
         for port in context.event_out_ports:
             runnable.add_event_out_port(port)
 
+        self.build_structure(component, runnable, context.structure)
+
         if context.selected_dynamics_profile:
             self.add_dynamics(component, runnable,
                               context.selected_dynamics_profile)
@@ -138,7 +140,7 @@ class SimulationBuilder(LEMSBase):
             runnable.make_attachment(type_, name)
 
 
-        self.build_structure(component, runnable, context.structure)
+        #self.build_structure(component, runnable, context.structure)
 
         self.add_recording_behavior(component, runnable)
 
@@ -398,6 +400,15 @@ class SimulationBuilder(LEMSBase):
                             pre_event_handler_code)
         runnable.add_method('run_postprocessing_event_handlers', ['self'],
                             post_event_handler_code)
+
+        # Process kinetic schemes
+        ks_code = []
+        for ksn in regime.kinetic_schemes:
+            ks = regime.kinetic_schemes[ksn]
+            print 'HELLO1 1>', runnable.id
+            print 'HELLO1 2>', ks.name, ks.nodes, ks.state_variable, ks.edges
+            print 'HELLO1 3>', runnable.__dict__.keys()
+
 
     def process_simulation_specs(self, component, runnable, simulation):
         """
