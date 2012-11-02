@@ -58,6 +58,7 @@ if __name__ == '__main__':
         print('Resolving model')
         model.resolve_model()
         #print model
+        sys.exit(0)
 
         print('Building simulation')
         sim = SimulationBuilder(model).build()

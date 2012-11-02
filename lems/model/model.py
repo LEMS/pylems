@@ -9,6 +9,7 @@ Model storage
 from lems.base.errors import ModelError
 from lems.model.context import Contextual
 from lems.model.parameter import Parameter
+from lems.parser.xpath import resolve_xpath
 
 from lems.base.util import merge_dict
 
@@ -401,14 +402,15 @@ class Model(Contextual):
         if component_type.extends:
             self.resolve_extended_component_type(context, component_type)
 
-        for dpn in component_type.context.derived_parameters:
-            dp = component_type.context.derived_parameters[dpn]
+        this_context = component_type.context
+
+        for dpn in this_context.derived_parameters:
+            dp = this_context.derived_parameters[dpn]
 
             if dp.select:
-                print('TODO - Derived parameter selection')
+                target = resolve_xpath(dp.select, this_context)
             else:
                 print('TODO - Derived parameter value computation')
-
 
     def resolve_component(self, context, component):
         """
@@ -559,7 +561,6 @@ class Model(Contextual):
     def make_id(self):
         self.next_free_id = self.next_free_id + 1
         return 'id__{0}'.format(self.next_free_id)
-
 
     #####################################################################33
 
