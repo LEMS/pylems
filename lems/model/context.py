@@ -77,6 +77,11 @@ class Context(LEMSBase):
         """ Dictionary of references to parameters defined in this context.
         @type: dict(string -> lems.model.parameter.Parameter) """
 
+        self.derived_parameters = {}
+        """ Dictionary of references to derived parameters defined in
+        this context.
+        @type: dict(string -> lems.model.parameter.DerivedParameter) """
+
         self.dynamics_profiles = {}
         """ Stores the various dynamics profiles of the current object.
         @type: dict(string -> lems.model.dynamics.Dynamics) """
@@ -249,17 +254,35 @@ class Context(LEMSBase):
         context.
 
         @param parameter: Parameter to be added
-        @type parameter: lems.model.parameter.ParameterType
+        @type parameter: lems.model.parameter.Parameter
 
         @raise ModelError: Raised when the parameter is already defined in the
         current context.
         """
 
         if parameter.name in self.parameters:
-            raise ModelError("Duplicate parameter type '{0}'".format(\
+            raise ModelError("Duplicate parameter '{0}'".format(\
                 parameter.name))
 
         self.parameters[parameter.name] = parameter
+
+    def add_derived_parameter(self, parameter):
+        """
+        Adds a parameter to the list of defined parameters in the current
+        context.
+
+        @param parameter: Parameter to be added
+        @type parameter: lems.model.parameter.DerivedParameter
+
+        @raise ModelError: Raised when the parameter is already defined in the
+        current context.
+        """
+
+        if parameter.name in self.derived_parameters:
+            raise ModelError("Duplicate derived parameter '{0}'".format(
+                parameter.name))
+
+        self.derived_parameters[parameter.name] = parameter
 
     def add_dynamics_profile(self, name):
         """

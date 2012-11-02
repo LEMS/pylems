@@ -18,20 +18,9 @@ class Parameter(LEMSBase):
     def __init__(self, name, dimension, fixed = False, value = None,
                  numeric_value = None):
         """
-        Constructor
+        Constructor.
 
-        @param name: Name of this parameter.
-        @type name: string
-
-        @param dimension: Dimension of this parameter.
-        @type dimension: string
-
-        @param fixed: Is this parameter fixed?
-        @type fixed: Boolean
-
-        @param value: Value of this parameter.
-        @type value: string
-
+        See instance variable documentation for more info on parameters.
         """
 
         self.name = name
@@ -98,4 +87,39 @@ class Parameter(LEMSBase):
             self.dimension,
             self.value,
             self.fixed)
+
+class DerivedParameter(LEMSBase):
+    """
+    Storesa derived parameter. Consider merging with Parameter
+    """
+
+    def __init__(self, name, dimension, value, select):
+        """
+        Constructor.
+
+        See instance variable documentation for more info on parameters.
+        """
+
+        self.name = name
+        """ Name of the parameter.
+        @type: string """
+
+        self.dimension = dimension
+        """ Dimension of the parameter. Used for type checking.
+        @type: string """
+
+        if (value and select) or (not value and not select):
+            raise ("Atleast one of 'value' and 'select' must be"
+                   "specified for derived parameter '{0}'").format(name)
+
+        self.value = value
+        """ Expression for computing the Value of this parameter.
+        @type: string """
+
+        self.select = select
+        """ XPath selector
+        @type: string """
+
+
+
 

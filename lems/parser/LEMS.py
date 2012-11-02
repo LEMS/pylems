@@ -14,7 +14,7 @@ from lems.model.model import Model
 from lems.base.errors import ParseError,ModelError
 from lems.model.context import Context,Contextual
 from lems.model.component import Component,ComponentType
-from lems.model.parameter import Parameter
+from lems.model.parameter import Parameter,DerivedParameter
 from lems.model.dynamics import *
 #Dynamics,Regime,OnCondition,OnEvent,StateAssignment
 
@@ -166,7 +166,7 @@ class LEMSParser(Parser):
                                                 'path', 'requirement',
                                                 'simulation', 'structure',
                                                 'text', 'attachments',
-                                                'constant']
+                                                'constant', 'derivedparameter']
         self.valid_children['dynamics'] = ['derivedvariable',
                                            'oncondition', 'onentry',
                                            'onevent', 'onstart',
@@ -192,6 +192,7 @@ class LEMSParser(Parser):
         self.tag_parse_table['componenttype'] = self.parse_component_type
         self.tag_parse_table['constant'] = self.parse_constant
         self.tag_parse_table['datadisplay'] = self.parse_data_display
+        self.tag_parse_table['derivedparameter'] = self.parse_derived_parameter
         self.tag_parse_table['derivedvariable'] = self.parse_derived_variable
         self.tag_parse_table['dimension'] = self.parse_dimension
         self.tag_parse_table['dynamics'] = self.parse_dynamics
@@ -665,6 +666,41 @@ class LEMSParser(Parser):
 
         self.current_simulation.add_data_display(title, data_region)
 
+    def parse_derived_parameter(self, node):
+        """
+        Parses <DerivedParameter>
+
+        @param node: Node containing the <DerivedParameter> element
+        @type node: xml.etree.Element
+        """
+
+        if self.current_context.context_type != Context.COMPONENT_TYPE:
+            self.raise_error('Dynamics must be defined inside a ' +
+                             'component type')
+
+        if 'name' in node.lattrib:
+            name = node.lattrib['name']
+        else:
+            self.raise_error('A derived parameter must have a name')
+
+        if 'dimension' in node.lattrib:
+            dimension = node.lattrib['dimension']
+        else:
+            dimension = None
+
+        if 'value' in node.lattrib:
+            value = node.lattrib['value']
+        else:
+            value = None
+
+        if 'select' in node.lattrib:
+            select = node.lattrib['select']
+        else:
+            select = None
+
+        self.current_context.add_derived_parameter(DerivedParameter(name, dimension,
+                                                                    value, select))
+
     def parse_derived_variable(self, node):
         """
         Parses <DerivedVariable>
@@ -994,7 +1030,7 @@ class LEMSParser(Parser):
         self.current_regime.add_kinetic_scheme(name, nodes, state_variable,
                                                edges, edge_source, edge_target,
                                                forward_rate, reverse_rate)
-        
+
     def parse_link(self, node):
         """
         Parses <Link>
