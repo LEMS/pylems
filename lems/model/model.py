@@ -385,6 +385,31 @@ class Model(Contextual):
         for rn in dynamics.regimes:
             self.resolve_regime(context, regime)
 
+    def resolve_component_type(self, context, component_type):
+        """
+        Resolves the specified component.
+
+        @param context: Context object containing the component type.
+        @type context: lems.model.context.Context
+
+        @param component_type: Component type to be resolved.
+        @type component_type: lems.model.component.Component
+
+        """
+
+        self.resolve_context(component_type.context)
+        if component_type.extends:
+            self.resolve_extended_component_type(context, component_type)
+
+        for dpn in component_type.context.derived_parameters:
+            dp = component_type.context.derived_parameters[dpn]
+
+            if dp.select:
+                print('TODO - Derived parameter selection')
+            else:
+                print('TODO - Derived parameter value computation')
+
+
     def resolve_component(self, context, component):
         """
         Resolves the specified component.
@@ -483,9 +508,7 @@ class Model(Contextual):
         # Resolve component-types
         for ctn in context.component_types:
             component_type = context.component_types[ctn]
-            self.resolve_context(component_type.context)
-            if component_type.extends:
-                self.resolve_extended_component_type(context, component_type)
+            self.resolve_component_type(context, component_type)
 
         # Resolve children
         if context.children:

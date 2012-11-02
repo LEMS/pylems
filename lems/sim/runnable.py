@@ -290,25 +290,9 @@ class Runnable(Reflective):
             print('')
             print('')
 
-            print('This is an arithmatic error. Consider reducing the integration time step.')
-            sys.exit(0)
-            
-        except Exception as e:
-            r = self
-            name = r.id
-            while r.parent:
-                r = r.parent
-                name = "{0}.{1}".format(r.id, name)
-
-            print("Error in '{0} ({2})': {1}".format(name, e,
-                                                     self.component.component_type))
-            print(type(e))
-            keys = self.__dict__.keys()
-            keys.sort()
-            for k in keys:
-                print('{0} -> {1}'.format(k, self.__dict__[k]))
-            print('')
-            print('')
+            if isinstance(e, ArithmeticError):
+                print(('This is an arithmetic error. Consider reducing the '
+                       'integration time step.'))
 
             sys.exit(0)
 
