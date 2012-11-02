@@ -343,8 +343,8 @@ class Context(LEMSBase):
         @param name: Name of the variable being required.
         @type name: string
 
-        @param name: Dimension of the variable being required.
-        @type name: string
+        @param dimension: Dimension of the variable being required.
+        @type dimension: string
 
         @raise ModelError: Raised when the exposure name already exists
         in the current context.
@@ -572,7 +572,7 @@ class Context(LEMSBase):
         Looks up a path parameter.
 
         @param path_name: Name of the path parameter.
-        @type parameter_name: string
+        @type path_name: string
 
         @return: Value of the path parameter
         @rtype: string
@@ -589,7 +589,7 @@ class Context(LEMSBase):
         Looks up a text parameter.
 
         @param text_name: Name of the text parameter.
-        @type parameter_name: string
+        @type text_name: string
 
         @return: Value of the text parameter
         @rtype: string

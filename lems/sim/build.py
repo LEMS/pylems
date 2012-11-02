@@ -820,9 +820,6 @@ def order_derived_variables(regime):
     @param regime: Dynamics Regime containing derived variables.
     @type regime: lems.model.dynamics.regime
 
-    @param context: Context of the component being built.
-    @type context:
-
     @return: Returns ordered list of derived variables.
     @rtype: list(string)
 

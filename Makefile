@@ -8,7 +8,7 @@ lems-code:
 
 lems-doc:
 	mkdir -p doc/epydoc
-	epydoc -v -o doc/epydoc pylems
+	epydoc -v -o doc/epydoc lems
 
 clean:
 	find . -name "*.pyc" | xargs rm -f
