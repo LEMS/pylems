@@ -93,11 +93,11 @@ if __name__ == '__main__':
                         i = 0
                         for (xv, yv) in recording.values:
                             x[i] = xv
-                            y[i] = yv
+                            y[i] = yv / recording.numeric_scale
                             i = i + 1
 
                         p = plt.subplot(111)
-                        p.plot(x, y, color=recording.color)
+                        p.plot(x, y, color=recording.color,label=recording.quantity)
             plt.show()
 
 

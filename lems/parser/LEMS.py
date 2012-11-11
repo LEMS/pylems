@@ -145,6 +145,10 @@ class LEMSParser(Parser):
 
         self.init_parser()
 
+        self.xml_root = None
+        """ Root element of current XML file
+        @type: xml.etree.Element """
+
     def init_parser(self):
         """
         Initializes the parser
@@ -973,6 +977,7 @@ class LEMSParser(Parser):
             self.included_files.append(path)
             root = open_file(path, self.xslt_preprocessor_callback)
             xmltolower(root)
+
             self.parse_root(root)
 
     def parse_kinetic_scheme(self, node):
@@ -1552,6 +1557,8 @@ class LEMSParser(Parser):
         @param node: Node containing the <LEMS> element
         @type node: xml.etree.Element
         """
+
+        self.xml_root = node
 
         if node.tag.lower() != 'lems':
             self.raise_error('Not a LEMS file')

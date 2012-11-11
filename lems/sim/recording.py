@@ -19,7 +19,9 @@ class Recording(LEMSBase):
             self.scale = recorder.scale
 
             self.color = recorder.color
-            
+
+            self.numeric_scale = recorder.numeric_scale
+
             self.values = []
 
       def add_value(self, time, value):

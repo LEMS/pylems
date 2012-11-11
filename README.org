@@ -23,4 +23,4 @@ PyLEMS - A LEMS simulator written in Python.
 ** example3 -- Running
 ** example4 -- Running
 ** example5 -- Not running
-** example6 -- Not running
+** example6 -- Running
