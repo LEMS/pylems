@@ -38,7 +38,7 @@ def seperate_predicate(selector):
 
 def get_root_ctx(context):
     ctx = context
-    while ctx.parent == None:
+    while ctx.parent is not None:
         ctx = ctx.parent
 
     return ctx
@@ -71,3 +71,10 @@ def resolve_xpath(xpath, context):
 
     print xpath
     print selector, predicate, path, global_search
+
+    print search_across_model(ctx, selector)
+
+def search_across_model(ctx, name):
+    nodes = []
+
+    print ctx.name, name
