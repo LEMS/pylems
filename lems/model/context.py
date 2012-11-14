@@ -13,7 +13,7 @@ from lems.model.structure import Structure
 from lems.model.simulation import Simulation
 from lems.model.parameter import Parameter
 
-from lems.base.util import merge_dict
+from lems.base.util import merge_dict, merge_ordered_dict
 
 class Context(LEMSBase):
     """
@@ -54,6 +54,10 @@ class Context(LEMSBase):
         self.components = {}
         """ Dictionary of components defined in this context.
         @type: dict(string -> lems.model.component.Component) """
+
+        self.components_ordering = []
+        """ Ordering for components defined in this context.
+        @type: list(string) """
 
         self.component_refs = {}
         """ Dictionary of component references defined in this context.
@@ -165,6 +169,7 @@ class Context(LEMSBase):
             raise ModelError("Duplicate component '{0}'".format(component.id))
 
         self.components[component.id] = component
+        self.components_ordering.append(component.id)
 
     def add_component_ref(self, name, type):
         """
@@ -610,7 +615,8 @@ class Context(LEMSBase):
         """
 
         merge_dict(self.component_types, other.component_types)
-        merge_dict(self.components, other.components)
+        merge_ordered_dict(self.components, self.components_ordering,
+                           other.components, other.components_ordering)
         merge_dict(self.component_refs, other.component_refs)
         merge_dict(self.child_defs, other.child_defs)
         merge_dict(self.children_defs, other.children_defs)

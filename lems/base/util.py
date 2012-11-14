@@ -98,3 +98,9 @@ def merge_dict(new, old):
     for key in old:
         if key not in new:
             new[key] = copy.deepcopy(old[key])
+
+def merge_ordered_dict(new, neworder, old, oldorder):
+    for key in oldorder:
+        if key not in neworder:
+            new[key] = copy.deepcopy(old[key])
+            neworder = [key] + neworder

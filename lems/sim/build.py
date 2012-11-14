@@ -115,7 +115,8 @@ class SimulationBuilder(LEMSBase):
 
         self.process_simulation_specs(component, runnable, context.simulation)
 
-        for cn in context.components:
+        #for cn in context.components:
+        for cn in context.components_ordering:
             child = context.components[cn]
             child_runnable = self.build_runnable(child, runnable)
             runnable.add_child(child.id, child_runnable)
