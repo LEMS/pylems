@@ -17,6 +17,7 @@ PyLEMS - A LEMS simulator written in Python.
 *** Interface with libNeuroML and Pyramidal to export Neuron MOD files
 *** Export C files (Interface? Steve Marsh's project?)
 
+
 * Examples
 ** example1 -- Running
 ** example2 -- Running
@@ -25,3 +26,4 @@ PyLEMS - A LEMS simulator written in Python.
 ** example5 -- Not running
 ** example6 -- Running
 ** example7 -- Running
+** example8 -- Not running
