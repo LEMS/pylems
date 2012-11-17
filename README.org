@@ -2,11 +2,11 @@
 PyLEMS - A LEMS simulator written in Python.
 
 * Tasks
-** DONE Cleanup/consolidate model resolution code.
-** Implement flattening
-** Decouple events from runnables.
-** Perform dimension-checking on expressions.
-** Implement LEMS API over lems.model.* (NeuroML API?)
+1. Implement flattening
+2. Decouple events from runnables.
+This would be useful when running a model across a cluster.
+3. Perform dimension-checking on expressions.
+4. Implement LEMS API over lems.model.* (NeuroML API?)
 *** Interface with libNeuroML and Pyramidal to export Neuron MOD files
 *** Export C files (Interface? Steve Marsh's project?)
 
