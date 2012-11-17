@@ -21,4 +21,4 @@ PyLEMS - A LEMS simulator written in Python.
 
 
 * LEMS elements that do not work
-** XPath based parameters - DerivedParameter, PathParameter
+  + XPath based parameters - DerivedParameter, PathParameter
