@@ -1,3 +1,4 @@
+* PyLEMS
 PyLEMS - A LEMS simulator written in Python.
 
 * Tasks
@@ -9,7 +10,7 @@ PyLEMS - A LEMS simulator written in Python.
 *** example2.xml works
 *** example3.xml works
 *** TODO example4.xml
-** Cleanup/consolidate model resolution code.
+** DONE Cleanup/consolidate model resolution code.
 ** Implement flattening
 ** Decouple events from runnables.
 ** Perform dimension-checking on expressions.
@@ -27,6 +28,7 @@ PyLEMS - A LEMS simulator written in Python.
 ** example6 -- Running
 ** example7 -- Running
 ** example8 -- Running (?)
+
 
 * LEMS elements that do not work
 ** XPath based parameters - DerivedParameter, PathParameter
