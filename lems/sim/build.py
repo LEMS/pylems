@@ -372,6 +372,9 @@ class SimulationBuilder(LEMSBase):
         else:
             suffix = '_regime_' + regime.name
 
+        if regime.initial:
+            runnable.new_regime = regime.name
+
         # Process state variables
         for svn in regime.state_variables:
             sv = regime.state_variables[svn]
@@ -446,7 +449,6 @@ class SimulationBuilder(LEMSBase):
                             startup_event_handler_code)
         runnable.add_method('run_preprocessing_event_handlers' + suffix, ['self'],
                             pre_event_handler_code)
-        print 'HELLO2', post_event_handler_code
         runnable.add_method('run_postprocessing_event_handlers' + suffix, ['self'],
                             post_event_handler_code)
 
@@ -787,16 +789,14 @@ class SimulationBuilder(LEMSBase):
 
         on_entry_code = []
 
-        on_entry_code += ["if self.new_regime == '{0}':".format(regime.name)]
-        on_entry_code += ['    self.current_regime = self.new_regime']
-        on_entry_code += ["    self.new_regime = ''"]
+        on_entry_code += ['if self.current_regime != self.last_regime:']
+        on_entry_code += ['    self.last_regime = self.current_regime']
 
         for action in on_entry.actions:
             code = self.build_action(runnable, context, regime, action)
             for line in code:
                 on_entry_code += ['    ' + line]
 
-        print "HELLO0", on_entry_code
         return on_entry_code
 
     def build_action(self, runnable, context, regime, action):

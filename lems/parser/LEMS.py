@@ -1135,7 +1135,7 @@ class LEMSParser(Parser):
         """
 
         if self.current_regime == None:
-            self.raise_error('<OnEvent> must be defined inside a ' +
+            self.raise_error('<OnEntry> must be defined inside a ' +
                              'dynamics profile or regime')
 
         event_handler = OnEntry()

@@ -120,7 +120,9 @@ class Runnable(Reflective):
 
         self.attachments = {}
 
+        self.new_regime = ''
         self.current_regime = ''
+        self.last_regime = ''
         self.regimes = {}
 
     def add_child(self, id_, runnable):
@@ -323,6 +325,10 @@ class Runnable(Reflective):
             for component in components:
                 component.single_step(dt)
 
+        if self.new_regime != '':
+            self.current_regime = self.new_regime
+            self.new_regime = ''
+
         self.update_kinetic_scheme(self, dt)
 
         if self.time_completed == 0:
@@ -342,7 +348,7 @@ class Runnable(Reflective):
 
         if self.current_regime != '':
             regime = self.regimes[self.current_regime]
-            
+
             regime.update_kinetic_scheme(self, dt)
 
             #if self.time_completed == 0:
@@ -356,7 +362,7 @@ class Runnable(Reflective):
 
             regime.update_state_variables(self, dt)
             self.update_shadow_variables()
-            
+
             regime.run_postprocessing_event_handlers(self)
             self.update_shadow_variables()
 
