@@ -348,7 +348,7 @@ class StateAssignment(Action):
 
 class EventOut(Action):
     """
-    Stores a state assignment expression.
+    Stores an event out operation.
     """
 
     def __init__(self, port):
@@ -369,6 +369,30 @@ class EventOut(Action):
         """ Generates a string representation of this state assigment """
 
         return 'Event -> ' + self.port
+
+class Transition(Action):
+    """
+    Stores an regime transition operation.
+    """
+
+    def __init__(self, regime):
+        """
+        Constructor.
+
+        @param regime: Name of a dynamics regime
+        @type regime: string
+        """
+
+        Action.__init__(self, Action.TRANSITION)
+
+        self.regime = regime
+        """ Name of the dynamics regime to switch to.
+        @type: string """
+
+    def __str__(self):
+        """ Generates a string representation of this state assigment """
+
+        return 'Regime -> ' + self.regime
 
 class KineticScheme(LEMSBase):
     """

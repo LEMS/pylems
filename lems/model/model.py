@@ -367,8 +367,6 @@ class Model(Contextual):
 
         pass
 
-
-
     def resolve_dynamics_profile(self, context, dynamics):
         """
         Resolves name references in the given dynamics profile to actual
@@ -384,6 +382,7 @@ class Model(Contextual):
         self.resolve_regime(context, dynamics.default_regime)
 
         for rn in dynamics.regimes:
+            regime = dynamics.regimes[rn]
             self.resolve_regime(context, regime)
 
     def resolve_component_type(self, context, component_type):

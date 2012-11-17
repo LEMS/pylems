@@ -115,6 +115,10 @@ class LEMSParser(Parser):
         """ Component type object being parsed.
         @type: lems.model.parameter.ComponentType """
 
+        self.current_dynamics_profile = None
+        """ Current dynamics profile being parsed.
+        @type: lems.model.dynamics.Dynamics """
+
         self.current_regime = None
         """ Current dynamics regime being parsed.
         @type: lems.model.dynamics.Regime """
@@ -175,7 +179,12 @@ class LEMSParser(Parser):
                                            'oncondition', 'onentry',
                                            'onevent', 'onstart',
                                            'statevariable', 'timederivative',
-                                           'kineticscheme']
+                                           'kineticscheme', 'regime']
+        self.valid_children['regime'] = ['derivedvariable',
+                                         'oncondition', 'onentry',
+                                         'onevent', 'onstart',
+                                         'statevariable', 'timederivative',
+                                         'kineticscheme', 'transition']
         self.valid_children['oncondition'] = ['eventout', 'stateassignment']
         self.valid_children['onentry'] = ['eventout', 'stateassignment']
         self.valid_children['onevent'] = ['eventout', 'stateassignment']
@@ -212,11 +221,13 @@ class LEMSParser(Parser):
         self.tag_parse_table['multiinstantiate'] = \
                                                  self.parse_multi_instantiate
         self.tag_parse_table['oncondition'] = self.parse_on_condition
+        self.tag_parse_table['onentry'] = self.parse_on_entry
         self.tag_parse_table['onevent'] = self.parse_on_event
         self.tag_parse_table['onstart'] = self.parse_on_start
         self.tag_parse_table['parameter'] = self.parse_parameter
         self.tag_parse_table['path'] = self.parse_path
         self.tag_parse_table['record'] = self.parse_record
+        self.tag_parse_table['regime'] = self.parse_regime
         self.tag_parse_table['requirement'] = self.parse_requirement
         self.tag_parse_table['run'] = self.parse_run
         self.tag_parse_table['show'] = self.parse_show
@@ -227,6 +238,7 @@ class LEMSParser(Parser):
         self.tag_parse_table['target'] = self.parse_target
         self.tag_parse_table['text'] = self.parse_text
         self.tag_parse_table['timederivative'] = self.parse_time_derivative
+        self.tag_parse_table['transition'] = self.parse_transition
         self.tag_parse_table['unit'] = self.parse_unit
         self.tag_parse_table['with'] = self.parse_with
 
@@ -791,13 +803,16 @@ class LEMSParser(Parser):
 
         self.current_context.add_dynamics_profile(name)
 
+        old_dynamics_profile = self.current_dynamics_profile
+        self.current_dynamics_profile = self.current_context.selected_dynamics_profile
+
         old_regime = self.current_regime
-        self.current_regime = self.current_context.selected_dynamics_profile.\
-                              default_regime
+        self.current_regime = self.current_dynamics_profile.default_regime
 
         self.process_nested_tags(node)
 
         self.current_regime = old_regime
+        self.current_dynamics_profile = old_dynamics_profile
 
     def parse_event_out(self, node):
         """
@@ -1262,6 +1277,35 @@ class LEMSParser(Parser):
 
         self.current_simulation.add_record(quantity, scale, color)
 
+    def parse_regime(self, node):
+        """
+        Parses <Regime>
+
+        @param node: Node containing the <Behaviour> element
+        @type node: xml.etree.Element
+        """
+
+        if self.current_dynamics_profile is None:
+            self.raise_error('Regime must be defined inside a dynamics profile')
+
+        if 'name' in node.lattrib:
+            name = node.lattrib['name']
+        else:
+            name = ''
+
+        if 'initial' in node.lattrib:
+            initial = (node.lattrib['initial'].strip().lower() == 'true')
+        else:
+            initial = False
+
+        old_regime = self.current_regime
+        self.current_dynamics_profile.add_regime(name, initial)
+        self.current_regime = self.current_dynamics_profile.regimes[name]
+
+        self.process_nested_tags(node)
+
+        self.current_regime = old_regime
+
     def parse_requirement(self, node):
         """
         Parses <Requirement>
@@ -1497,6 +1541,35 @@ class LEMSParser(Parser):
                              'provided')
 
         self.current_regime.add_time_derivative(name, value)
+
+    def parse_transition(self, node):
+        """
+        Parses <Transition>
+
+        @param node: Node containing the <Transition> element
+        @type node: xml.etree.Element
+        """
+
+        """
+        Parses <Transition>
+
+        @param node: Node containing the <Transition> element
+        @type node: xml.etree.Element
+        """
+
+        if self.current_event_handler == None:
+            self.raise_error('<Transition> must be defined inside an ' +
+                             'event handler in a dynamics profile or regime')
+
+        if 'regime' in node.lattrib:
+            regime = node.lattrib['regime']
+        else:
+            self.raise_error('\'regime\' attribute not provided for ' +
+                             '<Transition>')
+
+        action = Transition(regime)
+
+        self.current_event_handler.add_action(action)
 
     def parse_unit(self, node):
         """

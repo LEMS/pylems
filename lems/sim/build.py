@@ -14,6 +14,7 @@ from lems.sim.runnable import Runnable
 from lems.sim.sim import Simulation
 from lems.parser.expr import ExprNode
 from lems.model.dynamics import EventHandler,Action
+from lems.sim.runnable import Regime
 
 class SimulationBuilder(LEMSBase):
     """
@@ -99,8 +100,32 @@ class SimulationBuilder(LEMSBase):
             runnable.add_event_out_port(port)
 
         if context.selected_dynamics_profile:
+            dynamics = context.selected_dynamics_profile
             self.add_dynamics_1(component, runnable,
-                                context.selected_dynamics_profile)
+                                dynamics.default_regime, dynamics.default_regime)
+
+            for rn in dynamics.regimes:
+                regime = dynamics.regimes[rn]
+                self.add_dynamics_1(component, runnable, regime, dynamics.default_regime)
+
+                if regime.initial:
+                    runnable.current_regime = regime.name
+
+                if rn not in runnable.regimes:
+                    runnable.add_regime(Regime(rn))
+                r = runnable.regimes[rn]
+                suffix = '_regime_' + rn
+
+                r.update_state_variables = runnable.__dict__['update_state_variables'
+                                                             + suffix]
+                r.update_derived_variables = runnable.__dict__['update_derived_variables'
+                                                               + suffix]
+                r.run_startup_event_handlers = runnable.__dict__['run_startup_event_handlers'
+                                                                 + suffix]
+                r.run_preprocessing_event_handlers = runnable.__dict__['run_preprocessing_event_handlers'
+                                                                       + suffix]
+                r.run_postprocessing_event_handlers = runnable.__dict__['run_postprocessing_event_handlers'
+                                                                        + suffix]
         else:
             runnable.add_method('update_state_variables', ['self', 'dt'],
                                 [])
@@ -134,8 +159,20 @@ class SimulationBuilder(LEMSBase):
         self.build_structure(component, runnable, context.structure)
 
         if context.selected_dynamics_profile:
+            dynamics = context.selected_dynamics_profile
             self.add_dynamics_2(component, runnable,
-                                context.selected_dynamics_profile)
+                                dynamics.default_regime, dynamics.default_regime)
+            for rn in dynamics.regimes:
+                regime = dynamics.regimes[rn]
+                self.add_dynamics_2(component, runnable, regime, dynamics.default_regime)
+
+                if rn not in runnable.regimes:
+                    runnable.add_regime(Regime(rn))
+                r = runnable.regimes[rn]
+                suffix = '_regime_' + rn
+
+                r.update_kinetic_scheme = runnable.__dict__['update_kinetic_scheme'
+                                                            + suffix]
         else:
             runnable.add_method('update_kinetic_scheme', ['self', 'dt'],
                                 [])
@@ -299,7 +336,7 @@ class SimulationBuilder(LEMSBase):
                 source_port, lambda: target.inc_event_in(target_port))
 
 
-    def add_dynamics_1(self, component, runnable, dynamics_profile):
+    def add_dynamics_1(self, component, runnable, regime, default_regime):
         """
         Adds dynamics to a runnable component based on the dynamics
         specifications in the component model.
@@ -312,9 +349,12 @@ class SimulationBuilder(LEMSBase):
         @param runnable: Runnable component to which dynamics is to be added.
         @type runnable: lems.sim.runnable.Runnable
 
-        @param dynamics_profile: The dynamics profile to be used to generate
+        @param regime: The dynamics regime to be used to generate
         dynamics code in the runnable component.
-        @type dynamics_profile: lems.model.dynamics.Dynamics
+        @type regime: lems.model.dynamics.Regime
+
+        @param default_regime: Shared dynamics specifications.
+        @type default_regime: lems.model.dynamics.Regime
 
         @raise SimBuildError: Raised when a time derivative expression refers
         to an undefined variable.
@@ -327,7 +367,10 @@ class SimulationBuilder(LEMSBase):
         """
 
         context = component.context
-        regime = dynamics_profile.default_regime
+        if regime.name == '':
+            suffix = ''
+        else:
+            suffix = '_regime_' + regime.name
 
         # Process state variables
         for svn in regime.state_variables:
@@ -337,17 +380,18 @@ class SimulationBuilder(LEMSBase):
         # Process time derivatives
         time_step_code = []
         for tdn in regime.time_derivatives:
-            if tdn not in regime.state_variables:
+            if tdn not in regime.state_variables and tdn not in default_regime.state_variables:
                 raise SimBuildError(('Time derivative for undefined state '
                                      'variable {0}').format(tdn))
 
             td = regime.time_derivatives[tdn]
             exp = self.build_expression_from_tree(runnable,
                                                   context,
+                                                  regime,
                                                   td.expression_tree)
             time_step_code += ['self.{0} += dt * ({1})'.format(td.variable,
                                                                exp)]
-        runnable.add_method('update_state_variables', ['self', 'dt'],
+        runnable.add_method('update_state_variables' + suffix, ['self', 'dt'],
                             time_step_code)
 
         # Process derived variables
@@ -361,6 +405,7 @@ class SimulationBuilder(LEMSBase):
                         dv.name,
                         self.build_expression_from_tree(runnable,
                                                         context,
+                                                        regime,
                                                         dv.expression_tree))]
             elif dv.select:
                 if dv.reduce:
@@ -374,7 +419,7 @@ class SimulationBuilder(LEMSBase):
             else:
                 raise SimBuildError(('Inconsistent derived variable settings'
                                      'for {0}').format(dvn))
-        runnable.add_method('update_derived_variables', ['self'],
+        runnable.add_method('update_derived_variables' + suffix, ['self'],
                             derived_variable_code)
 
         # Process event handlers
@@ -385,23 +430,27 @@ class SimulationBuilder(LEMSBase):
             if eh.type == EventHandler.ON_START:
                 startup_event_handler_code += self.build_event_handler(runnable,
                                                                        context,
+                                                                       regime,
                                                                        eh)
             elif eh.type == EventHandler.ON_CONDITION:
                 post_event_handler_code += self.build_event_handler(runnable,
                                                                     context,
+                                                                    regime,
                                                                     eh)
             else:
                 pre_event_handler_code += self.build_event_handler(runnable,
                                                                    context,
+                                                                   regime,
                                                                    eh)
-        runnable.add_method('run_startup_event_handlers', ['self'],
+        runnable.add_method('run_startup_event_handlers' + suffix, ['self'],
                             startup_event_handler_code)
-        runnable.add_method('run_preprocessing_event_handlers', ['self'],
+        runnable.add_method('run_preprocessing_event_handlers' + suffix, ['self'],
                             pre_event_handler_code)
-        runnable.add_method('run_postprocessing_event_handlers', ['self'],
+        print 'HELLO2', post_event_handler_code
+        runnable.add_method('run_postprocessing_event_handlers' + suffix, ['self'],
                             post_event_handler_code)
 
-    def add_dynamics_2(self, component, runnable, dynamics_profile):
+    def add_dynamics_2(self, component, runnable, regime, default_regime):
         """
         Adds dynamics to a runnable component based on the dynamics
         specifications in the component model.
@@ -414,9 +463,12 @@ class SimulationBuilder(LEMSBase):
         @param runnable: Runnable component to which dynamics is to be added.
         @type runnable: lems.sim.runnable.Runnable
 
-        @param dynamics_profile: The dynamics profile to be used to generate
+        @param regime: The dynamics regime to be used to generate
         dynamics code in the runnable component.
-        @type dynamics_profile: lems.model.dynamics.Dynamics
+        @type regime: lems.model.dynamics.Regime
+
+        @param default_regime: Shared dynamics specifications.
+        @type default_regime: lems.model.dynamics.Regime
 
         @raise SimBuildError: Raised when a time derivative expression refers
         to an undefined variable.
@@ -429,7 +481,10 @@ class SimulationBuilder(LEMSBase):
         """
 
         context = component.context
-        regime = dynamics_profile.default_regime
+        if regime.name == '':
+            suffix = ''
+        else:
+            suffix = '_regime_' + regime.name
 
         # Process kinetic schemes
         ks_code = []
@@ -468,7 +523,7 @@ class SimulationBuilder(LEMSBase):
                 raise SimBuildError(("Unable to construct kinetic scheme '{0}' "
                                      "for component '{1}' - {2}").format(ks.name, component.id, str(e)))
 
-        runnable.add_method('update_kinetic_scheme', ['self', 'dt'],
+        runnable.add_method('update_kinetic_scheme' + suffix, ['self', 'dt'],
                             ks_code)
 
     def process_simulation_specs(self, component, runnable, simulation):
@@ -556,7 +611,7 @@ class SimulationBuilder(LEMSBase):
         else:
             return op
 
-    def build_expression_from_tree(self, runnable, context, tree_node):
+    def build_expression_from_tree(self, runnable, context, regime, tree_node):
         """
         Recursively builds a Python expression from a parsed expression tree.
 
@@ -566,6 +621,9 @@ class SimulationBuilder(LEMSBase):
         @param context: Context from which variables are to be resolved.
         @type context: lems.model.context.Context
 
+        @param regime: Dynamics regime being built.
+        @type regime: lems.model.dynamics.Regime
+
         @param tree_node: Root node for the tree from which the expression
         is to be built.
         @type tree_node: lems.parser.expr.ExprNode
@@ -574,7 +632,7 @@ class SimulationBuilder(LEMSBase):
         @rtype: string
         """
 
-        regime = context.selected_dynamics_profile.default_regime
+        default_regime = context.selected_dynamics_profile.default_regime
 
         if tree_node.type == ExprNode.VALUE:
             if tree_node.value[0].isalpha():
@@ -595,7 +653,8 @@ class SimulationBuilder(LEMSBase):
                                                 "variable '{0}'".format(v))
 
                     return '{0}.{1}'.format(var_prefix, v)
-                elif tree_node.value in regime.derived_variables:
+                elif (tree_node.value in regime.derived_variables or
+                      tree_node.value in default_regime.derived_variables):
                     return 'self.{0}'.format(tree_node.value)
                 else:
                     return 'self.{0}_shadow'.format(tree_node.value)
@@ -606,18 +665,21 @@ class SimulationBuilder(LEMSBase):
                 tree_node.func,
                 self.build_expression_from_tree(runnable,
                                                 context,
+                                                regime,
                                                 tree_node.param))
         else:
             return '({0}) {1} ({2})'.format(\
                 self.build_expression_from_tree(runnable,
                                                 context,
+                                                regime,
                                                 tree_node.left),
                 self.convert_op(tree_node.op),
                 self.build_expression_from_tree(runnable,
                                                 context,
+                                                regime,
                                                 tree_node.right))
 
-    def build_event_handler(self, runnable, context, event_handler):
+    def build_event_handler(self, runnable, context, regime, event_handler):
         """
         Build event handler code.
 
@@ -629,15 +691,17 @@ class SimulationBuilder(LEMSBase):
         """
 
         if event_handler.type == EventHandler.ON_CONDITION:
-            return self.build_on_condition(runnable, context, event_handler)
+            return self.build_on_condition(runnable, context, regime, event_handler)
         elif event_handler.type == EventHandler.ON_EVENT:
-            return self.build_on_event(runnable, context, event_handler)
+            return self.build_on_event(runnable, context, regime, event_handler)
         elif event_handler.type == EventHandler.ON_START:
-            return self.build_on_start(runnable, context, event_handler)
+            return self.build_on_start(runnable, context, regime, event_handler)
+        elif event_handler.type == EventHandler.ON_ENTRY:
+            return self.build_on_entry(runnable, context, regime, event_handler)
         else:
             return []
 
-    def build_on_condition(self, runnable, context, on_condition):
+    def build_on_condition(self, runnable, context, regime, on_condition):
         """
         Build OnCondition event handler code.
 
@@ -653,16 +717,17 @@ class SimulationBuilder(LEMSBase):
         on_condition_code += ['if {0}:'.format(\
             self.build_expression_from_tree(runnable,
                                             context,
+                                            regime,
                                             on_condition.expression_tree))]
 
         for action in on_condition.actions:
-            code = self.build_action(runnable, context, action)
+            code = self.build_action(runnable, context, regime, action)
             for line in code:
                 on_condition_code += ['    ' + line]
 
         return on_condition_code
 
-    def build_on_event(self, runnable, context, on_event):
+    def build_on_event(self, runnable, context, regime, on_event):
         """
         Build OnEvent event handler code.
 
@@ -680,7 +745,7 @@ class SimulationBuilder(LEMSBase):
                           'while count > 0:',
                           '    count -= 1']
         for action in on_event.actions:
-            code = self.build_action(runnable, context, action)
+            code = self.build_action(runnable, context, regime, action)
             for line in code:
                 on_event_code += ['    ' + line]
 
@@ -689,7 +754,7 @@ class SimulationBuilder(LEMSBase):
 
         return on_event_code
 
-    def build_on_start(self, runnable, context, on_start):
+    def build_on_start(self, runnable, context, regime, on_start):
         """
         Build OnStart start handler code.
 
@@ -703,13 +768,38 @@ class SimulationBuilder(LEMSBase):
         on_start_code = []
 
         for action in on_start.actions:
-            code = self.build_action(runnable, context, action)
+            code = self.build_action(runnable, context, regime, action)
             for line in code:
-                on_start_code += [line]
+                on_start_code += ['    ' + line]
 
         return on_start_code
 
-    def build_action(self, runnable, context, action):
+    def build_on_entry(self, runnable, context, regime, on_entry):
+        """
+        Build OnEntry start handler code.
+
+        @param on_start: OnStart start handler object
+        @type on_start: lems.model.dynamics.OnStart
+
+        @return: Generated OnStart code
+        @rtype: list(string)
+        """
+
+        on_entry_code = []
+
+        on_entry_code += ["if self.new_regime == '{0}':".format(regime.name)]
+        on_entry_code += ['    self.current_regime = self.new_regime']
+        on_entry_code += ["    self.new_regime = ''"]
+
+        for action in on_entry.actions:
+            code = self.build_action(runnable, context, regime, action)
+            for line in code:
+                on_entry_code += ['    ' + line]
+
+        print "HELLO0", on_entry_code
+        return on_entry_code
+
+    def build_action(self, runnable, context, regime, action):
         """
         Build event handler action code.
 
@@ -721,13 +811,15 @@ class SimulationBuilder(LEMSBase):
         """
 
         if action.type == Action.STATE_ASSIGNMENT:
-            return self.build_state_assignment(runnable, context, action)
+            return self.build_state_assignment(runnable, context, regime, action)
         if action.type == Action.EVENT_OUT:
             return self.build_event_out(action)
+        if action.type == Action.TRANSITION:
+            return self.build_transition(action)
         else:
             return ['pass']
 
-    def build_state_assignment(self, runnable, context, state_assignment):
+    def build_state_assignment(self, runnable, context, regime, state_assignment):
         """
         Build state assignment code.
 
@@ -742,6 +834,7 @@ class SimulationBuilder(LEMSBase):
             state_assignment.variable,
             self.build_expression_from_tree(runnable,
                                             context,
+                                            regime,
                                             state_assignment.expression_tree))]
 
     def build_event_out(self, event_out):
@@ -749,7 +842,7 @@ class SimulationBuilder(LEMSBase):
         Build event out code.
 
         @param event_out: event out object
-        @type event_out: lems.model.dynamics.StateAssignment
+        @type event_out: lems.model.dynamics.EventOut
 
         @return: Generated event out code
         @rtype: string
@@ -760,6 +853,19 @@ class SimulationBuilder(LEMSBase):
                           '        c()']
 
         return event_out_code
+
+    def build_transition(self, transition):
+        """
+        Build regime transition code.
+
+        @param transition: Transition object
+        @type transition: lems.model.dynamics.Transition
+
+        @return: Generated transition code
+        @rtype: string
+        """
+
+        return ["self.new_regime = '{0}'".format(transition.regime)]
 
     def build_reduce_code(self, result, select, reduce):
         """

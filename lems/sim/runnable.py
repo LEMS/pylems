@@ -82,6 +82,15 @@ class Reflective(object):
     def __setitem__(self, key, val):
         self.array[key] = val
 
+class Regime:
+    def __init__(self, name):
+        self.name = name
+        self.update_state_variables = None
+        self.update_derived_variables = None
+        self.run_startup_event_handlers = None
+        self.run_preprocessing_event_handlers = None
+        self.run_postprocessing_event_handlers = None
+        self.update_kinetic_scheme = None
 
 class Runnable(Reflective):
     def __init__(self, id_, component, parent = None):
@@ -110,6 +119,9 @@ class Runnable(Reflective):
         self.event_in_counters = {}
 
         self.attachments = {}
+
+        self.current_regime = ''
+        self.regimes = {}
 
     def add_child(self, id_, runnable):
         #self.children[id] = runnable
@@ -156,6 +168,9 @@ class Runnable(Reflective):
         else:
             raise SimBuildError('No event out port \'{0}\' in '
                                 'component \'{1}\''.format(port, self.id))
+
+    def add_regime(self, regime):
+        self.regimes[regime.name] = regime
 
     def resolve_path(self, path):
         if path == '':
@@ -324,6 +339,26 @@ class Runnable(Reflective):
 
         self.run_postprocessing_event_handlers(self)
         self.update_shadow_variables()
+
+        if self.current_regime != '':
+            regime = self.regimes[self.current_regime]
+            
+            regime.update_kinetic_scheme(self, dt)
+
+            #if self.time_completed == 0:
+            #    self.run_startup_event_handlers(self)
+
+            regime.run_preprocessing_event_handlers(self)
+            self.update_shadow_variables()
+
+            regime.update_derived_variables(self)
+            self.update_shadow_variables()
+
+            regime.update_state_variables(self, dt)
+            self.update_shadow_variables()
+            
+            regime.run_postprocessing_event_handlers(self)
+            self.update_shadow_variables()
 
         self.record_variables()
 
