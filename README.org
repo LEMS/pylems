@@ -2,10 +2,6 @@
 PyLEMS - A LEMS simulator written in Python.
 
 * Tasks
-** DONE Add support for derived variables.
-** DONE Get example1_new.xml running.
-** DONE Get example1.xml running with new LEMS XML updates in the latest version of jLEMS.
-** Test other example files.
 ** DONE Cleanup/consolidate model resolution code.
 ** Implement flattening
 ** Decouple events from runnables.
@@ -21,10 +17,15 @@ example1 -- Running
 example2 -- Running
 
 example3 -- Running
+
 example4 -- Running
+
 example5 -- Not running
+
 example6 -- Running
+
 example7 -- Running
+
 example8 -- Running (?)
 
 
