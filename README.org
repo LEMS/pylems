@@ -6,10 +6,6 @@ PyLEMS - A LEMS simulator written in Python.
 ** DONE Get example1_new.xml running.
 ** DONE Get example1.xml running with new LEMS XML updates in the latest version of jLEMS.
 ** Test other example files.
-*** example1.xml works
-*** example2.xml works
-*** example3.xml works
-*** TODO example4.xml
 ** DONE Cleanup/consolidate model resolution code.
 ** Implement flattening
 ** Decouple events from runnables.
@@ -20,14 +16,14 @@ PyLEMS - A LEMS simulator written in Python.
 
 
 * Examples
-** example1 -- Running
-** example2 -- Running
-** example3 -- Running
-** example4 -- Running
-** example5 -- Not running
-** example6 -- Running
-** example7 -- Running
-** example8 -- Running (?)
+example1 -- Running
+example2 -- Running
+example3 -- Running
+example4 -- Running
+example5 -- Not running
+example6 -- Running
+example7 -- Running
+example8 -- Running (?)
 
 
 * LEMS elements that do not work
