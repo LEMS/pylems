@@ -598,7 +598,7 @@ class SimulationBuilder(LEMSBase):
 
         if op == '.gt.':
             return '>'
-        elif op == '.ge.':
+        elif op == '.ge.' or op == '.geq.':
             return '>='
         elif op == '.lt.':
             return '<'
@@ -610,6 +610,10 @@ class SimulationBuilder(LEMSBase):
             return '!='
         elif op == '^':
             return '**'
+        elif op == '.and.':
+            return 'and'
+        elif op == '.or.':
+            return 'or'
         else:
             return op
 

@@ -18,6 +18,7 @@ from lems.model.parameter import Parameter,DerivedParameter
 from lems.model.dynamics import *
 #Dynamics,Regime,OnCondition,OnEvent,StateAssignment
 
+import re
 import xml.etree.ElementTree
 
 def xmltolower(node):
@@ -37,10 +38,15 @@ def xmltolower(node):
         xmltolower(child)
 
 def open_file(filename, xslt_preprocessor_callback):
+    xmltext = open(filename).read()
+
+    # Cleanup LEMS file
+    xmltext = re.sub('<([Ll][Ee][Mm][Ss])[^>]*>', r'<\1>', xmltext, 0, re.DOTALL)
+
     if xslt_preprocessor_callback:
-        return xml.etree.ElementTree.XML(xslt_preprocessor_callback(open(filename).read()))
+        return xml.etree.ElementTree.XML(xslt_preprocessor_callback(xmltext))
     else:
-        return xml.etree.ElementTree.parse(filename).getroot()
+        return xml.etree.ElementTree.XML(xmltext).getroot()
 
 class LEMSParser(Parser):
     """
@@ -988,6 +994,8 @@ class LEMSParser(Parser):
 
         path = self.base_path + '/' + node.lattrib['file']
 
+        print path
+
         if path not in self.included_files:
             self.included_files.append(path)
             root = open_file(path, self.xslt_preprocessor_callback)
@@ -1634,6 +1642,7 @@ class LEMSParser(Parser):
         self.xml_root = node
 
         if node.tag.lower() != 'lems':
+            print node.tag, node.attrib
             self.raise_error('Not a LEMS file')
 
         self.xml_node_stack = [node] + self.xml_node_stack

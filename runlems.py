@@ -16,6 +16,15 @@ from lxml import etree as xml2
 xsl = xml2.parse('xsl/canonical.xsl')
 xslt = xml2.XSLT(xsl)
 
+from lems.parser.expr import ExprParser
+e = '(0.04 * v^2 / MVOLT + A)/MSEC'
+e = '0.04 * v^2 / MVOLT + A'
+e = 'a * b^c / d + e'
+e = 'a * b^c / d + e'
+print e
+print ExprParser(e).parse()
+#ys.exit(0)
+
 def xslt_preprocessor_callback(xmltext):
     return str(xslt(xml2.XML(xmltext)))
 
@@ -57,12 +66,12 @@ if __name__ == '__main__':
 
         print('Resolving model')
         model.resolve_model()
-        #print model
+        print model
         #sys.exit(0)
 
         print('Building simulation')
         sim = SimulationBuilder(model).build()
-        #dump_runnables(sim)
+        dump_runnables(sim)
         #sys.exit(0)
 
         print('Running simulation')
