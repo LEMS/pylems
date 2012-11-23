@@ -2086,7 +2086,7 @@
 
             <DerivedVariable name="ISyn" dimension="none" select="synapses[*]/I" reduce="add" />
 
-            <TimeDerivative variable="v" value="((0.04 * v^2 / MVOLT) + 5 * v + (140.0 - U + I + ISyn) * MVOLT)/MSEC"/>
+            <TimeDerivative variable="v" value="(0.04 * v^2 / MVOLT + 5 * v + (140.0 - U + I + ISyn) * MVOLT)/MSEC"/>
             <TimeDerivative variable="U" value="a * (b * v / MVOLT - U) / MSEC"/>
 
 
