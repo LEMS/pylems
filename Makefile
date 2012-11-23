@@ -40,10 +40,13 @@ example7:
 example8:
 	./runlems.py examples/example8.xml
 
+example9:
+	./runlems.py examples/example9.xml
+
 ex0:
 	./runlems.py examples/LEMS_NML2_Ex0.xml
 
-run:	ex0
+run:	example9
 
 bench:
 	@echo "Java"
