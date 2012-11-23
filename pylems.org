@@ -1,6 +1,3 @@
-* PyLEMS
-PyLEMS - A LEMS simulator written in Python.
-
 * Tasks
   1. Implement flattening
   2. Decouple events from runnables
@@ -9,16 +6,19 @@ PyLEMS - A LEMS simulator written in Python.
      + Interface with libNeuroML and Pyramidal to export Neuron MOD files
      + Export C files (Interface? Steve Marsh’s project?)
 
+
 * Examples
-  + example1 -- Running
-  + example2 -- Running
-  + example3 -- Running
-  + example4 -- Running
-  + example5 -- Not running
-  + example6 -- Running
-  + example7 -- Running
-  + example8 -- Running (?)
+** example1 -- Running
+** example2 -- Running
+** example3 -- Running
+** example4 -- Running
+** example5 -- Not running
+** example6 -- Running
+** example7 -- Running
+** example8 -- Running
++ example9 -- Not running
 
 
 * LEMS elements that do not work
-  + XPath based parameters - DerivedParameter, PathParameter
+** XPath based parameters - DerivedParameter, PathParameter
+** Assertions
