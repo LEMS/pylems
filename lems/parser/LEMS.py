@@ -170,8 +170,8 @@ class LEMSParser(Parser):
 
         self.valid_children = dict()
         self.valid_children['lems'] = ['component', 'componenttype',
-                                       'target', 'dimension', 'include',
-                                       'unit']
+                                       'target', 'include',
+                                       'dimension', 'unit', 'assertion']
         self.valid_children['componenttype'] = ['dynamics',
                                                 'child', 'children',
                                                 'componentreference',
@@ -202,6 +202,7 @@ class LEMSParser(Parser):
         self.valid_children['simulation'] = ['record', 'run', 'datadisplay',]
 
         self.tag_parse_table = dict()
+        self.tag_parse_table['assertion'] = self.parse_assertion
         self.tag_parse_table['attachments'] = self.parse_attachments
         self.tag_parse_table['child'] = self.parse_child
         self.tag_parse_table['childinstance'] = self.parse_child_instance
@@ -369,6 +370,17 @@ class LEMSParser(Parser):
         """
 
         return self.model
+
+    def parse_assertion(self, node):
+        """
+        Parses <Assertion>
+
+        @param node: Node containing the <Assertion> element
+        @type node: xml.etree.Element
+        """
+
+        print('TODO - <Assertion>')
+
 
     def parse_attachments(self, node):
         """
