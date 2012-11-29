@@ -1,0 +1,118 @@
+"""
+@author: Gautham Ganapathy
+@organization: Textensor (http://textensor.com)
+@contact: gautham@textensor.com, gautham@lisphacker.org
+"""
+
+import sys
+
+from xml.etree import ElementTree as xml
+from lxml import etree as xml2
+
+from options import Options,parse_cmdline_options
+
+from lems.base.errors import ParseError,ModelError,SimBuildError,SimError
+from lems.parser.LEMS import LEMSParser
+from lems.sim.build import SimulationBuilder
+
+xsl_preprocessor_file = 'canonical.xsl'
+
+def main(argv):
+    try:
+        options = parse_cmdline_options(argv)
+    except Exception as e:
+        print("Caught exception when processing command line options: '{0}'".format(
+            str(e)))
+        sys.exit(-1)
+
+    xsl_pp_cb = make_xsl_preprocessor_callback(options)
+    if xsl_pp_cb == None:
+        print('Unable to find preprocessor file canonical.xsl. Try using -XI '
+              'or -xsl-include to specifiy additional include directories')
+        sys.exit(-1)
+
+    for source_file in options.source_files:
+        run(source_file, options, xsl_pp_cb)
+
+def make_xsl_preprocessor_callback(options):
+    for xsl_include_dir in options.xsl_include_dirs:
+        xslpath = xsl_include_dir + '/' + xsl_preprocessor_file
+        print xsl_include_dir,xslpath
+        try:
+            xsl = xml2.parse(xslpath)
+            xslt = xml2.XSLT(xsl)
+
+            def xsl_pp_cb(xmltext):
+                return str(xslt(xml2.XML(xmltext)))
+
+            return xsl_pp_cb
+
+            print xslpath
+            break
+        except:
+            pass
+
+    return None
+
+def run(source_file, options, xsl_pp_cb):
+    try:
+        print('Parsing model file')
+        parser = LEMSParser(xsl_pp_cb, options.include_dirs)
+        parser.parse_file(source_file)
+        model = parser.get_model()
+        #print model
+
+        print('Resolving model')
+        model.resolve_model()
+        #print model
+        #sys.exit(0)
+
+        print('Building simulation')
+        sim = SimulationBuilder(model).build()
+        #sim.dump()
+        #sys.exit(0)
+
+        print('Running simulation')
+        sim.run()
+        #sys.exit(0)
+
+        if not options.nogui:
+            import matplotlib.pyplot as plt
+            import numpy
+
+            print('Plotting graphs')
+            rq = []
+            for rn in sim.runnables:
+                rq.append(sim.runnables[rn])
+
+            while rq != []:
+                runnable = rq[0]
+                rq = rq[1:]
+                for c in runnable.children:
+                    rq.append(runnable.children[c])
+                for child in runnable.array:
+                    rq.append(child)
+                if runnable.recorded_variables:
+                    for variable in runnable.recorded_variables:
+                        recording = runnable.recorded_variables[variable]
+                        x = numpy.empty(len(recording.values))
+                        y = numpy.empty(len(recording.values))
+                        i = 0
+                        for (xv, yv) in recording.values:
+                            x[i] = xv
+                            y[i] = yv / recording.numeric_scale
+                            i = i + 1
+
+                        p = plt.subplot(111)
+                        p.plot(x, y, color=recording.color,label=recording.quantity)
+            plt.show()
+
+
+    except ParseError as e:
+        print('Caught ParseError - ' + str(e))
+    except ModelError as e:
+        print('Caught ModelError - ' + str(e))
+    except SimBuildError as e:
+        print('Caught SimBuildError - ' + str(e))
+    except SimError as e:
+        print('Caught SimError - ' + str(e))
