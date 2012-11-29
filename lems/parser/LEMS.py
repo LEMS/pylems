@@ -80,7 +80,7 @@ class LEMSParser(Parser):
         else:
             self.current_component_type = self.component_type_stack[0]
 
-    def __init__(self, xslt_preprocessor_callback = None):
+    def __init__(self, xslt_preprocessor_callback = None, include_dirs = []):
         """
         Constructor.
 
@@ -148,6 +148,10 @@ class LEMSParser(Parser):
         self.xslt_preprocessor_callback = xslt_preprocessor_callback
         """ XSLT preprocessor callback.
         @type: fn """
+
+        self.include_dirs = include_dirs
+        """ List of directories to search for include files
+        @type: list(string) """
 
         self.included_files = []
         """ List of files already included.
@@ -1006,11 +1010,25 @@ class LEMSParser(Parser):
 
         path = self.base_path + '/' + node.lattrib['file']
 
-        print path
+        root = None
 
         if path not in self.included_files:
             self.included_files.append(path)
-            root = open_file(path, self.xslt_preprocessor_callback)
+
+            try:
+                root = open_file(path, self.xslt_preprocessor_callback)
+            except:
+                for include_dir in self.include_dirs:
+                    path = include_dir + '/' + node.lattrib['file']
+                    if path not in self.included_files:
+                        try:
+                            root = open_file(path, self.xslt_preprocessor_callback)
+                        except:
+                            pass
+
+            if root == None:
+                raise ParseError("Unable to find included file '{0}'".format(node.lattrib['file']))
+
             xmltolower(root)
 
             self.parse_root(root)
