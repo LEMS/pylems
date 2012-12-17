@@ -46,6 +46,10 @@ example9:
 ex0:
 	./runlems.py examples/LEMS_NML2_Ex0.xml
 
+nml:
+	#./runlems.py ../NeuroML2/NeuroML2CoreTypes/LEMS_NML2_Ex0_IaF.xml
+	./runlems.py ../NeuroML2/NeuroML2CoreTypes/LEMS_NML2_Ex1_HH.xml
+
 run:	example9
 
 bench:

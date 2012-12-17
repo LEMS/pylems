@@ -412,6 +412,8 @@ class SimulationBuilder(LEMSBase):
                                                         dv.expression_tree))]
             elif dv.select:
                 if dv.reduce:
+                    print 'HELLO0', runnable.id, component.id, component.component_type
+                    print 'HELLO1', dv.name, dv.select, dv.reduce
                     derived_variable_code += self.build_reduce_code(dv.name,
                                                                     dv.select,
                                                                     dv.reduce)

@@ -753,6 +753,8 @@ class LEMSParser(Parser):
 
         if 'name' in node.lattrib:
             name = node.lattrib['name']
+        elif 'exposure' in node.lattrib:
+            name = node.lattrib['exposure']
         else:
             self.raise_error('A derived variable must have a name')
 
