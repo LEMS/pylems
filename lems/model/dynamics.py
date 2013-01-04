@@ -171,7 +171,7 @@ class EventHandler(LEMSBase):
         @type: enum(EventHandler.ONSTART, EventHandler.ON_ENTRY,
         EventHandler.ON_EVENT and EventHandler.ON_CONDITION) """
 
-        self.actions = None
+        self.actions = []
         "List of actions to be performed on the occurence of the event."
 
     def add_action(self, action):
@@ -181,9 +181,6 @@ class EventHandler(LEMSBase):
         @param action: Action to be performed.
         @type action: lems.model.dynamics.Action
         """
-
-        if self.actions == None:
-            self.actions = []
 
         self.actions += [action]
 

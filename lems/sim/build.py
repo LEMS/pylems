@@ -412,8 +412,6 @@ class SimulationBuilder(LEMSBase):
                                                         dv.expression_tree))]
             elif dv.select:
                 if dv.reduce:
-                    print 'HELLO0', runnable.id, component.id, component.component_type
-                    print 'HELLO1', dv.name, dv.select, dv.reduce
                     derived_variable_code += self.build_reduce_code(dv.name,
                                                                     dv.select,
                                                                     dv.reduce)
@@ -426,6 +424,8 @@ class SimulationBuilder(LEMSBase):
                                      'for {0}').format(dvn))
         runnable.add_method('update_derived_variables' + suffix, ['self'],
                             derived_variable_code)
+
+        print 'HELLO0', runnable.id, component.id, component.component_type
 
         # Process event handlers
         pre_event_handler_code = []
@@ -888,14 +888,22 @@ class SimulationBuilder(LEMSBase):
             acc_start = 1
 
         bits = select.split('[*]')
-        array = bits[0]
-        ref = bits[1]
 
-        code = ['acc = {0}'.format(acc_start)]
-        code += ['for o in self.{0}:'.format(array)]
-        code += ['    acc = acc {0} o{1}'.format(reduce_op, ref)]
-        code += ['self.{0} = acc'.format(result)]
-        code += ['self.{0}_shadow = acc'.format(result)]
+        if len(bits) == 1:
+            target = select
+            code = ["self.{0} = {1}".format(result, target)]
+            code += ["self.{0}_shadow = {1}".format(result, target)]
+        elif len(bits) == 2:
+            array = bits[0]
+            ref = bits[1]
+
+            code = ['acc = {0}'.format(acc_start)]
+            code += ['for o in self.{0}:'.format(array)]
+            code += ['    acc = acc {0} o{1}'.format(reduce_op, ref)]
+            code += ['self.{0} = acc'.format(result)]
+            code += ['self.{0}_shadow = acc'.format(result)]
+        else:
+            raise SimbuildError("Invalid reduce target - '{0}'".format(select))
 
         return code
 
