@@ -69,7 +69,7 @@ def run(source_file, options, xsl_pp_cb):
 
         print('Building simulation')
         sim = SimulationBuilder(model).build()
-        #sim.dump()
+        sim.dump()
         #sys.exit(0)
 
         print('Running simulation')

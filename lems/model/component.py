@@ -44,7 +44,8 @@ class ComponentType(Contextual):
         @type: set(string) """
 
         self.types.add(name)
-        self.types.add(extends)
+        if extends:
+            self.types.add(extends)
 
     def fix_parameter(self, parameter_name, value_string, model):
         """

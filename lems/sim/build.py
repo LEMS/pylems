@@ -258,7 +258,8 @@ class SimulationBuilder(LEMSBase):
                                                             target)
                     receiver = copy.deepcopy(receiver_template)
                     receiver.id = "{0}__{1}__".format(component.id,
-                                                    receiver_template.id)
+                                                      receiver_template.id)
+
                     target.add_attachment(receiver)
                     target = receiver
 
@@ -424,8 +425,8 @@ class SimulationBuilder(LEMSBase):
                                      'for {0}').format(dvn))
         runnable.add_method('update_derived_variables' + suffix, ['self'],
                             derived_variable_code)
-
-        print 'HELLO0', runnable.id, component.id, component.component_type
+        if runnable.id == 'n':
+            print 'HELLO2', derived_variable_code
 
         # Process event handlers
         pre_event_handler_code = []
@@ -503,13 +504,15 @@ class SimulationBuilder(LEMSBase):
                     from_ = edge.__dict__[ks.edge_source]
                     to = edge.__dict__[ks.edge_target]
 
-                    ks_code += [('self.{0}.{2} += dt * (-self.{3}.{4} * self.{0}.{2}_shadow + '
-                                 'self.{3}.{5} * self.{1}.{2}_shadow)').format(
-                        from_, to, ks.state_variable, edge.id, ks.forward_rate, ks.reverse_rate)]
+                    ks_code += [('self.{0}.{2} += dt * (-self.{3}.{4} * self.{0}.{2}_shadow'
+                                 ' + self.{3}.{5} * self.{1}.{2}_shadow)').format(
+                        from_, to, ks.state_variable, edge.id,
+                        ks.forward_rate, ks.reverse_rate)]
 
-                    ks_code += [('self.{1}.{2} += dt * (self.{3}.{4} * self.{0}.{2}_shadow - '
-                                 'self.{3}.{5} * self.{1}.{2}_shadow)').format(
-                        from_, to, ks.state_variable, edge.id, ks.forward_rate, ks.reverse_rate)]
+                    ks_code += [('self.{1}.{2} += dt * (self.{3}.{4} * self.{0}.{2}_shadow'
+                                 ' - self.{3}.{5} * self.{1}.{2}_shadow)').format(
+                        from_, to, ks.state_variable, edge.id,
+                        ks.forward_rate, ks.reverse_rate)]
 
                 ks_code += ['sum = 0']
                 for node in nodes:
@@ -521,11 +524,15 @@ class SimulationBuilder(LEMSBase):
                     ks_code += ['self.{0}.{1} /= sum'.format(node, ks.state_variable)]
 
                 for node in nodes:
-                    ks_code += ['self.{0}.{1}_shadow = self.{0}.{1}'.format(node, ks.state_variable)]
+                    ks_code += [('self.{0}.{1}_shadow = '
+                                 'self.{0}.{1}').format(node,
+                                                        ks.state_variable)]
 
             except Exception as e:
                 raise SimBuildError(("Unable to construct kinetic scheme '{0}' "
-                                     "for component '{1}' - {2}").format(ks.name, component.id, str(e)))
+                                     "for component '{1}' - {2}").format(ks.name,
+                                                                         component.id,
+                                                                         str(e)))
 
         runnable.add_method('update_kinetic_scheme' + suffix, ['self', 'dt'],
                             ks_code)
@@ -889,22 +896,30 @@ class SimulationBuilder(LEMSBase):
 
         bits = select.split('[*]')
 
+        code = ['self.{0} = {1}'.format(result, acc_start)]
+        code += ['self.{0}_shadow = {1}'.format(result, acc_start)]
+
+        code += ['try:']
+
         if len(bits) == 1:
             target = select
-            code = ["self.{0} = {1}".format(result, target)]
-            code += ["self.{0}_shadow = {1}".format(result, target)]
+            code += ['    self.{0} = {1}'.format(result, target)]
+            code += ['    self.{0}_shadow = {1}'.format(result, target)]
         elif len(bits) == 2:
             array = bits[0]
             ref = bits[1]
 
-            code = ['acc = {0}'.format(acc_start)]
-            code += ['for o in self.{0}:'.format(array)]
-            code += ['    acc = acc {0} o{1}'.format(reduce_op, ref)]
-            code += ['self.{0} = acc'.format(result)]
-            code += ['self.{0}_shadow = acc'.format(result)]
+            code += ['    acc = {0}'.format(acc_start)]
+            code += ['    for o in self.{0}:'.format(array)]
+            code += ['        acc = acc {0} o{1}'.format(reduce_op, ref)]
+            code += ['    self.{0} = acc'.format(result)]
+            code += ['    self.{0}_shadow = acc'.format(result)]
         else:
             raise SimbuildError("Invalid reduce target - '{0}'".format(select))
 
+        code += ['except:']
+        code += ['    pass']
+        
         return code
 
     def add_recording_behavior(self, component, runnable):
@@ -980,7 +995,8 @@ def order_derived_variables(regime):
         raise SimBuildError(("Unable to find ordering for derived "
                              "variables in '{0}'").format(context.name))
 
-    return ordering + dvsnoexp
+    #return ordering + dvsnoexp
+    return dvsnoexp + ordering
 
 def is_var_in_exp_tree(var, exp_tree):
     node = exp_tree

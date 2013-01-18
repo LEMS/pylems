@@ -144,6 +144,19 @@ class Runnable(Reflective):
         self.__dict__[name] = []
 
     def add_attachment(self, runnable):
+        component_type = runnable.component.context.lookup_component_type(
+            runnable.component.component_type)
+
+        for ctype in component_type.types:
+            if ctype in self.attachments:
+                name = self.attachments[ctype]
+                runnable.id = runnable.id + str(len(self.__dict__[name]))
+                self.__dict__[name].append(runnable)
+
+                return
+
+        raise SimBuildError('Unable to find appropriate attachment')
+        return
         name = self.attachments[runnable.component.component_type]
         runnable.id = runnable.id + str(len(self.__dict__[name]))
         self.__dict__[name].append(runnable)
@@ -334,12 +347,22 @@ class Runnable(Reflective):
         if self.time_completed == 0:
             self.run_startup_event_handlers(self)
 
+        #if self.id == 'n':
+        #    print 'HELLO0a', self.id
+        #    print 'HELLO0b', self.alpha, self.beta
+        #    print 'HELLO0c', self.forwardRate.r, self.reverseRate.r
+
         self.run_preprocessing_event_handlers(self)
         self.update_shadow_variables()
 
         self.update_derived_variables(self)
         self.update_shadow_variables()
 
+        #if self.id == 'n':
+        #    print 'HELLO1a', self.id
+        #    print 'HELLO1b', self.alpha, self.beta
+        #    print 'HELLO1c', self.forwardRate.r, self.reverseRate.r
+            
         self.update_state_variables(self, dt)
         self.update_shadow_variables()
 
