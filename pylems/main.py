@@ -69,7 +69,7 @@ def run(source_file, options, xsl_pp_cb):
 
         print('Building simulation')
         sim = SimulationBuilder(model).build()
-        sim.dump()
+        #sim.dump()
         #sys.exit(0)
 
         print('Running simulation')
@@ -77,8 +77,14 @@ def run(source_file, options, xsl_pp_cb):
         #sys.exit(0)
 
         if not options.nogui:
-            import matplotlib.pyplot as plt
+            #import matplotlib.pyplot as plt
+            #import matplotlib.figure as figure
+            import pylab
             import numpy
+
+            fig_count = 0
+
+            displays = {}
 
             print('Plotting graphs')
             rq = []
@@ -103,16 +109,28 @@ def run(source_file, options, xsl_pp_cb):
                             y[i] = yv / recording.numeric_scale
                             i = i + 1
 
-                        p = plt.subplot(111)
-                        p.plot(x, y, color=recording.color,label=recording.quantity)
-            plt.show()
+                        if recording.title in displays:
+                            fig = displays[recording.title]
+                        else:
+                            fig_count = fig_count + 1
+                            fig = fig_count
+                            displays[recording.title] = fig
+
+                            pylab.figure(fig)
+                            pylab.title(recording.title)
+
+
+                        pylab.figure(fig)
+                        pylab.subplot(111)
+                        pylab.plot(x, y, color=recording.color,label=recording.quantity)
+            pylab.show()
 
 
     except ParseError as e:
         print('Caught ParseError - ' + str(e))
     except ModelError as e:
         print('Caught ModelError - ' + str(e))
-    except SimBuildError as e:
-        print('Caught SimBuildError - ' + str(e))
+        #except SimBuildError as e:
+        #print('Caught SimBuildError - ' + str(e))
     except SimError as e:
         print('Caught SimError - ' + str(e))

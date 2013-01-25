@@ -228,14 +228,14 @@ class Runnable(Reflective):
             else:
                 return childobj.resolve_path(new_path)
 
-    def add_variable_recorder(self, recorder):
-        self.add_variable_recorder2(recorder, recorder.quantity)
+    def add_variable_recorder(self, display, recorder):
+        self.add_variable_recorder2(display, recorder, recorder.quantity)
 
-    def add_variable_recorder2(self, recorder, path):
+    def add_variable_recorder2(self, display, recorder, path):
         if path[0] == '/':
-            self.parent.add_variable_recorder2(recorder, path)
+            self.parent.add_variable_recorder2(display, recorder, path)
         elif path.find('../') == 0:
-            self.parent.add_variable_recorder2(recorder, path[3:])
+            self.parent.add_variable_recorder2(display, recorder, path[3:])
         elif path.find('/') >= 1:
             (child, new_path) = path.split('/', 1)
 
@@ -250,14 +250,14 @@ class Runnable(Reflective):
             if child in self.children:
                 childobj = self.children[child]
                 if idx == -1:
-                    childobj.add_variable_recorder2(recorder, new_path)
+                    childobj.add_variable_recorder2(display, recorder, new_path)
                 else:
-                    childobj.array[idx].add_variable_recorder2(recorder, new_path)
+                    childobj.array[idx].add_variable_recorder2(display, recorder, new_path)
             else:
                 raise SimBuildError('Unable to find child \'{0}\' in '
                                     '\'{1}\''.format(child, self.id))
         else:
-            self.recorded_variables[path] = Recording(recorder)
+            self.recorded_variables[path] = Recording(display, recorder)
 
 
     def configure_time(self, time_step, time_total):
@@ -347,10 +347,8 @@ class Runnable(Reflective):
         if self.time_completed == 0:
             self.run_startup_event_handlers(self)
 
-        #if self.id == 'n':
-        #    print 'HELLO0a', self.id
-        #    print 'HELLO0b', self.alpha, self.beta
-        #    print 'HELLO0c', self.forwardRate.r, self.reverseRate.r
+        #if self.id == 'hhpop__hhcell__0':
+        #    print 'HELLO1a', self.v
 
         self.run_preprocessing_event_handlers(self)
         self.update_shadow_variables()
@@ -358,13 +356,11 @@ class Runnable(Reflective):
         self.update_derived_variables(self)
         self.update_shadow_variables()
 
-        #if self.id == 'n':
-        #    print 'HELLO1a', self.id
-        #    print 'HELLO1b', self.alpha, self.beta
-        #    print 'HELLO1c', self.forwardRate.r, self.reverseRate.r
-            
         self.update_state_variables(self, dt)
         self.update_shadow_variables()
+
+        #if self.id == 'hhpop__hhcell__0':
+        #    print 'HELLO2a', self.v)
 
         self.run_postprocessing_event_handlers(self)
         self.update_shadow_variables()

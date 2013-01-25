@@ -68,6 +68,26 @@ class Record(LEMSBase):
 
         self.numeric_scale = None
 
+class DataDisplay(LEMSBase):
+    """
+    Stores specification for a data display.
+    """
+
+    def __init__(self, title, data_region):
+        """
+        Constuctor.
+
+        See instance variable documentation for information on parameters.
+        """
+
+        self.title = title
+        """ Title for the display.
+        @type: string """
+
+        self.data_region = data_region
+        """ Display position
+        @type: string """
+
 class DataWriter(LEMSBase):
     """
     Stores specification for a data writer.
@@ -175,7 +195,7 @@ class Simulation(LEMSBase):
         if title in self.data_displays:
             raise ModelError("Redefinition of data display '{0}'".format(title))
 
-        self.data_displays[title] = data_region
+        self.data_displays[title] = DataDisplay(title, data_region)
 
     def add_data_writer(self, path, file_path):
         """
@@ -204,3 +224,4 @@ class Simulation(LEMSBase):
         merge_dict(self.runs, other.runs)
         merge_dict(self.records, other.records)
         merge_dict(self.data_displays, other.data_displays)
+        merge_dict(self.data_writers, other.data_writers)

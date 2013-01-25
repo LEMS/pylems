@@ -13,7 +13,7 @@ class Recording(LEMSBase):
       Stores details of a variable recording across a single simulation run.
       """
 
-      def __init__(self, recorder):
+      def __init__(self, display, recorder):
             self.quantity = recorder.quantity
 
             self.scale = recorder.scale
@@ -21,6 +21,10 @@ class Recording(LEMSBase):
             self.color = recorder.color
 
             self.numeric_scale = recorder.numeric_scale
+
+            self.title = display.title if display else ''
+
+            self.data_region = display.data_region if display else ''
 
             self.values = []
 
