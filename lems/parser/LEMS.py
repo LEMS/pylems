@@ -203,7 +203,8 @@ class LEMSParser(Parser):
                                             'eventconnection',
                                             'foreach',
                                             'multiinstantiate']
-        self.valid_children['simulation'] = ['record', 'run', 'datadisplay',]
+        self.valid_children['simulation'] = ['record', 'run',
+                                             'datadisplay', 'datawriter']
 
         self.tag_parse_table = dict()
         self.tag_parse_table['assertion'] = self.parse_assertion
@@ -216,6 +217,7 @@ class LEMSParser(Parser):
         self.tag_parse_table['componenttype'] = self.parse_component_type
         self.tag_parse_table['constant'] = self.parse_constant
         self.tag_parse_table['datadisplay'] = self.parse_data_display
+        self.tag_parse_table['datawriter'] = self.parse_data_writer
         self.tag_parse_table['derivedparameter'] = self.parse_derived_parameter
         self.tag_parse_table['derivedvariable'] = self.parse_derived_variable
         self.tag_parse_table['dimension'] = self.parse_dimension
@@ -703,6 +705,30 @@ class LEMSParser(Parser):
             data_region = None
 
         self.current_simulation.add_data_display(title, data_region)
+
+    def parse_data_writer(self, node):
+        """
+        Parses <DataWriter>
+
+        @param node: Node containing the <DataWriter> element
+        @type node: xml.etree.Element
+        """
+
+        if self.current_simulation == None:
+            self.raise_error('<DataWriter> must be defined inside a ' +
+                             'simulation specification')
+
+        if 'path' in node.lattrib:
+            path = node.lattrib['path']
+        else:
+            self.raise_error('A data writer must have a path')
+
+        if 'filename' in node.lattrib:
+            file_path = node.lattrib['filename']
+        else:
+            self.raise_error('A data writer must have a file name')
+
+        self.current_simulation.add_data_writer(path, file_path)
 
     def parse_derived_parameter(self, node):
         """
@@ -1308,12 +1334,14 @@ class LEMSParser(Parser):
         if 'scale' in node.lattrib:
             scale = node.lattrib['scale']
         else:
-            self.raise_error('\'scale\' attribute required for <Record>')
+            scale = "1"
+            #self.raise_error('\'scale\' attribute required for <Record>')
 
         if 'color' in node.lattrib:
             color  = node.lattrib['color']
         else:
-            self.raise_error('\'color\' attribute required for <Record>')
+            color = "#000000"
+            #self.raise_error('\'color\' attribute required for <Record>')
 
         self.current_simulation.add_record(quantity, scale, color)
 

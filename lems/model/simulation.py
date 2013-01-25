@@ -21,19 +21,7 @@ class Run(LEMSBase):
         """
         Constructor.
 
-        @param component: Name of the target component to be run according to
-        the specification given for an independent state variable.
-        @type component: string
-
-        @param variable: The name of an independent state variable according
-        to which the target component will be run.
-        @type variable: string
-
-        @param increment: Increment of the state variable on each step.
-        @type increment: string
-
-        @param total: Final value of the state variable.
-        @type total: string
+        See instance variable documentation for information on parameters.
         """
 
         self.component = component
@@ -60,11 +48,46 @@ class Record(LEMSBase):
     """
 
     def __init__(self, quantity, scale, color):
+        """
+        Constructor.
+
+        See instance variable documentation for information on parameters.
+        """
+
         self.quantity = quantity
+        """ Path to the quantity to be recorded.
+        @type: string """
+
         self.scale = scale
+        """ Text parameter to be used for scaling the quantity before display.
+        @type: string """
+
         self.color = color
+        """ Text parameter to be used to specify the color for display.
+        @type: string """
 
         self.numeric_scale = None
+
+class DataWriter(LEMSBase):
+    """
+    Stores specification for a data writer.
+    """
+
+    def __init__(self, path, file_path):
+        """
+        Constuctor.
+
+        See instance variable documentation for information on parameters.
+        """
+
+        self.path = path
+        """ Path to the quantity to be saved to file.
+        @type: string """
+
+        self.file_path = file_path
+        """ Text parameter to be used for the path to the file for
+        saving this quantity
+        @type: string """
 
 class Simulation(LEMSBase):
     """
@@ -78,15 +101,19 @@ class Simulation(LEMSBase):
 
         self.runs = {}
         """ Dictionary of runs in this dynamics regime.
-        @type: dict(string -> lems.model.dynamics.Run) """
+        @type: dict(string -> lems.model.simulation.Run) """
 
         self.records = {}
         """ Dictionary of recorded variables in this dynamics regime.
-        @type: dict(string -> lems.model.dynamics.Record """
+        @type: dict(string -> lems.model.simulation.Record """
 
         self.data_displays = {}
         """ Dictionary of data displays mapping titles to regions.
         @type: dict(string -> string) """
+
+        self.data_writers = {}
+        """ Dictionary of recorded variables to data writers.
+        @type: dict(string -> lems.model.simulation.DataWriter """
 
     def add_run(self, component, variable, increment, total):
         """
@@ -149,6 +176,22 @@ class Simulation(LEMSBase):
             raise ModelError("Redefinition of data display '{0}'".format(title))
 
         self.data_displays[title] = data_region
+
+    def add_data_writer(self, path, file_path):
+        """
+        Adds a data writer to this simulation section.
+
+        @param title: Path to the quantity.
+        @type title: string
+
+        @param file_path: Path to the file to be used for recording the quantity.
+        @type file_path: string
+        """
+
+        if path in self.data_writers:
+            raise ModelError("Redefinition of data writer '{0}'".format(path))
+
+        self.data_writers[path] = DataWriter(path, file_path)
 
     def merge(self, other):
         """
