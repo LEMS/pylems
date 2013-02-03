@@ -323,29 +323,41 @@ class Model(Contextual):
 
         simulation = context.simulation
 
-        # Resolve record statements
+        # Resolve <Record> statements
         for idx in simulation.records:
             record = simulation.records[idx]
 
-            if record.quantity in context.parameters and \
-               record.scale in context.parameters and \
-               record.color in context.parameters:
+            if record.quantity in context.parameters:
                 qp = context.parameters[record.quantity]
-                sp = context.parameters[record.scale]
-                cp = context.parameters[record.color]
+                record.quantity = qp.value
 
                 if qp.dimension != '__path__':
                     self.raise_error('<Record>: The quantity to be recorded'
                                      'must be a path',
                                      context)
-                if cp.dimension != '__text__':
-                    self.raise_error('<Record>: The color to be used must be '
-                                     'a reference to a text variable',
-                                     context)
-                record.quantity = qp.value
-                record.scale = sp.value
-                record.color = cp.value
-                record.numeric_scale = sp.numeric_value
+
+                if record.scale in context.parameters and \
+                  record.color in context.parameters:
+                  sp = context.parameters[record.scale]
+                  cp = context.parameters[record.color]
+
+                  if cp.dimension != '__text__':
+                      self.raise_error('<Record>: The color to be used must be '
+                                       'a reference to a text variable',
+                                       context)
+                  record.scale = sp.value
+                  record.color = cp.value
+                  record.numeric_scale = sp.numeric_value
+
+        # Resolve <DataDisplay> statements
+        for idx in simulation.data_displays:
+            display = simulation.data_displays[idx]
+
+            if display.title in context.parameters:
+                p = context.parameters[display.title]
+                display.title = p.value
+
+
 
     def resolve_regime(self, context, regime):
         """
@@ -691,9 +703,18 @@ class Model(Contextual):
         if simulation.data_displays:
             s += prefix + 'Data displays:\n'
             for t in simulation.data_displays:
-                r = simulation.data_displays[t]
+                d = simulation.data_displays[t]
                 s += '{0}{1} {2}\n'.format(prefix + Model.tab,
-                                                   t, r)
+                                                   d.title,
+                                                   d.data_region)
+
+        if simulation.data_writers:
+            s += prefix + 'Data writers:\n'
+            for p in simulation.data_writers:
+                w = simulation.data_writers[p]
+                s += '{0}{1} {2}\n'.format(prefix + Model.tab,
+                                                   w.path,
+                                                   w.file_path)
 
         return s
 

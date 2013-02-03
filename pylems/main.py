@@ -15,6 +15,11 @@ from lems.base.errors import ParseError,ModelError,SimBuildError,SimError
 from lems.parser.LEMS import LEMSParser
 from lems.sim.build import SimulationBuilder
 
+from lems.model.simulation import DataOutput
+
+import pylab
+import numpy
+
 xsl_preprocessor_file = 'canonical.xsl'
 
 def main(argv):
@@ -65,72 +70,88 @@ def run(source_file, options, xsl_pp_cb):
         print('Resolving model')
         model.resolve_model()
         #print model
-        #sys.exit(0)
 
         print('Building simulation')
         sim = SimulationBuilder(model).build()
         #sim.dump()
-        #sys.exit(0)
 
         print('Running simulation')
         sim.run()
-        #sys.exit(0)
 
-        if not options.nogui:
-            #import matplotlib.pyplot as plt
-            #import matplotlib.figure as figure
-            import pylab
-            import numpy
-
-            fig_count = 0
-
-            displays = {}
-
-            print('Plotting graphs')
-            rq = []
-            for rn in sim.runnables:
-                rq.append(sim.runnables[rn])
-
-            while rq != []:
-                runnable = rq[0]
-                rq = rq[1:]
-                for c in runnable.children:
-                    rq.append(runnable.children[c])
-                for child in runnable.array:
-                    rq.append(child)
-                if runnable.recorded_variables:
-                    for variable in runnable.recorded_variables:
-                        recording = runnable.recorded_variables[variable]
-                        x = numpy.empty(len(recording.values))
-                        y = numpy.empty(len(recording.values))
-                        i = 0
-                        for (xv, yv) in recording.values:
-                            x[i] = xv
-                            y[i] = yv / recording.numeric_scale
-                            i = i + 1
-
-                        if recording.title in displays:
-                            fig = displays[recording.title]
-                        else:
-                            fig_count = fig_count + 1
-                            fig = fig_count
-                            displays[recording.title] = fig
-
-                            pylab.figure(fig)
-                            pylab.title(recording.title)
-
-
-                        pylab.figure(fig)
-                        pylab.subplot(111)
-                        pylab.plot(x, y, color=recording.color,label=recording.quantity)
-            pylab.show()
-
+        process_simulation_output(sim, options)
 
     except ParseError as e:
         print('Caught ParseError - ' + str(e))
     except ModelError as e:
         print('Caught ModelError - ' + str(e))
-        #except SimBuildError as e:
+    #except SimBuildError as e:
         #print('Caught SimBuildError - ' + str(e))
     except SimError as e:
         print('Caught SimError - ' + str(e))
+
+fig_count = 0
+
+def process_simulation_output(sim, options):
+    global fig_count
+    if not options.nogui:
+        print('Processing results')
+        rq = []
+        for rn in sim.runnables:
+            rq.append(sim.runnables[rn])
+
+        while rq != []:
+            runnable = rq[0]
+            rq = rq[1:]
+            for c in runnable.children:
+                rq.append(runnable.children[c])
+            for child in runnable.array:
+                rq.append(child)
+
+            if runnable.recorded_variables:
+                for recording in runnable.recorded_variables:
+                    if recording.data_output.type == DataOutput.DISPLAY:
+                        plot_recording(recording)
+                    elif recording.data_output.type == DataOutput.FILE:
+                        save_recording(recording)
+                    else:
+                        raise Exception("Invalid output type")
+
+    if fig_count > 0:
+        pylab.show()
+
+
+displays = {}
+
+def plot_recording(recording):
+    global fig_count
+
+    data_output = recording.data_output
+    recorder = recording.recorder
+
+    x = numpy.empty(len(recording.values))
+    y = numpy.empty(len(recording.values))
+    i = 0
+    for (xv, yv) in recording.values:
+        x[i] = xv
+        y[i] = yv / recorder.numeric_scale
+        i = i + 1
+
+    if data_output.title in displays:
+        fig = displays[data_output.title]
+    else:
+        fig_count = fig_count + 1
+        fig = fig_count
+        displays[data_output.title] = fig
+
+        pylab.figure(fig)
+        pylab.title(data_output.title)
+
+
+    pylab.figure(fig)
+    pylab.subplot(111)
+    pylab.plot(x, y,
+               color=recorder.color,
+               label=recorder.quantity)
+
+def save_recording(recording):
+    pass

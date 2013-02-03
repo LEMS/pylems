@@ -39,7 +39,7 @@ class SimulationBuilder(LEMSBase):
 
         self.current_record_target = None
 
-        self.current_display = None
+        self.current_data_output = None
 
 
     def build(self):
@@ -87,8 +87,20 @@ class SimulationBuilder(LEMSBase):
             runnable = Runnable(id_, component, parent)
 
         context = component.context
+        simulation = context.simulation
+        
         record_target_backup = self.current_record_target
-        display_backup = self.current_display
+        data_output_backup = self.current_data_output
+
+        do = None
+        for d in simulation.data_displays:
+            do = simulation.data_displays[d]
+        if do == None:
+            for d in simulation.data_writers:
+                do = simulation.data_writers[d]
+
+        if do != None:
+            self.current_data_output = do
 
         for pn in context.parameters:
             p = context.parameters[pn]
@@ -182,7 +194,7 @@ class SimulationBuilder(LEMSBase):
 
         self.add_recording_behavior(component, runnable)
 
-        self.display = display_backup
+        self.current_data_output = data_output_backup
         self.current_record_target = record_target_backup
 
         return runnable
@@ -942,15 +954,12 @@ class SimulationBuilder(LEMSBase):
         context = component.context
         simulation = context.simulation
 
-        for dt in simulation.data_displays:
-            self.current_display = simulation.data_displays[dt]
-
         for rn in simulation.records:
             rec = simulation.records[rn]
             if self.current_record_target == None:
                 raise SimBuildError('No target available for '
                                     'recording variables')
-            self.current_record_target.add_variable_recorder(self.current_display, rec)
+            self.current_record_target.add_variable_recorder(self.current_data_output, rec)
 
 ############################################################
 

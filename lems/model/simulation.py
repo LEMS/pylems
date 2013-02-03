@@ -68,7 +68,26 @@ class Record(LEMSBase):
 
         self.numeric_scale = None
 
-class DataDisplay(LEMSBase):
+class DataOutput(LEMSBase):
+    """
+    Generic data output specification class.
+    """
+
+    DISPLAY = 0
+    FILE = 1
+
+    def __init__(self, type_):
+        """
+        Constuctor.
+
+        See instance variable documentation for information on parameters.
+        """
+
+        self.type = type_
+        """ Type of output.
+        @type: string """
+
+class DataDisplay(DataOutput):
     """
     Stores specification for a data display.
     """
@@ -80,6 +99,8 @@ class DataDisplay(LEMSBase):
         See instance variable documentation for information on parameters.
         """
 
+        DataOutput.__init__(self, DataOutput.DISPLAY)
+
         self.title = title
         """ Title for the display.
         @type: string """
@@ -88,7 +109,7 @@ class DataDisplay(LEMSBase):
         """ Display position
         @type: string """
 
-class DataWriter(LEMSBase):
+class DataWriter(DataOutput):
     """
     Stores specification for a data writer.
     """
@@ -100,6 +121,8 @@ class DataWriter(LEMSBase):
         See instance variable documentation for information on parameters.
         """
 
+        DataOutput.__init__(self, DataOutput.FILE)
+        
         self.path = path
         """ Path to the quantity to be saved to file.
         @type: string """
@@ -117,6 +140,8 @@ class Simulation(LEMSBase):
     def __init__(self):
         """
         Constructor.
+
+        See instance variable documentation for information on parameters.
         """
 
         self.runs = {}

@@ -110,7 +110,7 @@ class Runnable(Reflective):
 
         self.children = {}
 
-        self.recorded_variables = {}
+        self.recorded_variables = []
 
         self.event_out_ports = []
         self.event_in_ports = []
@@ -228,14 +228,14 @@ class Runnable(Reflective):
             else:
                 return childobj.resolve_path(new_path)
 
-    def add_variable_recorder(self, display, recorder):
-        self.add_variable_recorder2(display, recorder, recorder.quantity)
+    def add_variable_recorder(self, data_output, recorder):
+        self.add_variable_recorder2(data_output, recorder, recorder.quantity)
 
-    def add_variable_recorder2(self, display, recorder, path):
+    def add_variable_recorder2(self, data_output, recorder, path):
         if path[0] == '/':
-            self.parent.add_variable_recorder2(display, recorder, path)
+            self.parent.add_variable_recorder2(data_output, recorder, path)
         elif path.find('../') == 0:
-            self.parent.add_variable_recorder2(display, recorder, path[3:])
+            self.parent.add_variable_recorder2(data_output, recorder, path[3:])
         elif path.find('/') >= 1:
             (child, new_path) = path.split('/', 1)
 
@@ -250,14 +250,18 @@ class Runnable(Reflective):
             if child in self.children:
                 childobj = self.children[child]
                 if idx == -1:
-                    childobj.add_variable_recorder2(display, recorder, new_path)
+                    childobj.add_variable_recorder2(data_output,
+                                                    recorder,
+                                                    new_path)
                 else:
-                    childobj.array[idx].add_variable_recorder2(display, recorder, new_path)
+                    childobj.array[idx].add_variable_recorder2(data_output,
+                                                               recorder,
+                                                               new_path)
             else:
                 raise SimBuildError('Unable to find child \'{0}\' in '
                                     '\'{1}\''.format(child, self.id))
         else:
-            self.recorded_variables[path] = Recording(display, recorder)
+            self.recorded_variables.append(Recording(path, data_output, recorder))
 
 
     def configure_time(self, time_step, time_total):
@@ -395,9 +399,9 @@ class Runnable(Reflective):
 
 
     def record_variables(self):
-        for variable in self.recorded_variables:
-            self.recorded_variables[variable].add_value(\
-                self.time_completed, self.__dict__[variable])
+        for recording in self.recorded_variables:
+            recording.add_value(self.time_completed,
+                               self.__dict__[recording.variable])
 
     def push_state(self):
         vars = []

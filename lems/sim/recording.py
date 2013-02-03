@@ -9,24 +9,18 @@ Recording class(es).
 from lems.base.base import LEMSBase
 
 class Recording(LEMSBase):
-      """
-      Stores details of a variable recording across a single simulation run.
-      """
+    """
+    Stores details of a variable recording across a single simulation run.
+    """
 
-      def __init__(self, display, recorder):
-            self.quantity = recorder.quantity
+    def __init__(self, variable, data_output, recorder):
+        self.variable = variable
+        
+        self.data_output = data_output
 
-            self.scale = recorder.scale
+        self.recorder = recorder
 
-            self.color = recorder.color
+        self.values = []
 
-            self.numeric_scale = recorder.numeric_scale
-
-            self.title = display.title if display else ''
-
-            self.data_region = display.data_region if display else ''
-
-            self.values = []
-
-      def add_value(self, time, value):
-            self.values.append((time, value))
+    def add_value(self, time, value):
+        self.values.append((time, value))
