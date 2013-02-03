@@ -126,7 +126,7 @@ class Runnable(Reflective):
         self.regimes = {}
 
     def add_child(self, id_, runnable):
-        #self.children[id] = runnable
+        self.children[id_] = runnable
         self.children[runnable.id] = runnable
 
         self.__dict__[id_] = runnable

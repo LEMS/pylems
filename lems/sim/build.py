@@ -88,7 +88,7 @@ class SimulationBuilder(LEMSBase):
 
         context = component.context
         simulation = context.simulation
-        
+
         record_target_backup = self.current_record_target
         data_output_backup = self.current_data_output
 
@@ -277,6 +277,8 @@ class SimulationBuilder(LEMSBase):
                                                       receiver_template.id)
 
                     target.add_attachment(receiver)
+                    target.add_child(receiver_template.id, receiver)
+                    print 'HELLO0', target.id, receiver_template.id
                     target = receiver
 
                 source_port = context.lookup_text_parameter(event.source_port)

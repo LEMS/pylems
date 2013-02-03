@@ -55,6 +55,9 @@ nmlex1:
 nmlex2:
 	./runlems.py ../NeuroML2/NeuroML2CoreTypes/LEMS_NML2_Ex2_Izh.xml
 
+nmlex3:
+	./runlems.py ../NeuroML2/NeuroML2CoreTypes/LEMS_NML2_Ex3_Net.xml
+
 run:	example9
 
 bench:
