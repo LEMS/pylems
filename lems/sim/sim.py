@@ -120,10 +120,10 @@ class Simulation(LEMSBase):
         if r.array:
             for c in r.array:
                 self.dump_runnable(c, prefix + '  ')
-        if r.children:
+        if r.uchildren:
             print('{0} Children'.format(prefix))
-            for cn in r.children:
-                self.dump_runnable(r.children[cn], prefix + '  ')
+            for cn in r.uchildren:
+                self.dump_runnable(r.uchildren[cn], prefix + '  ')
 
     def dump(self):
         print('Runnables:')

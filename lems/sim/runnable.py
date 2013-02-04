@@ -132,8 +132,10 @@ class Runnable(Reflective):
         self.regimes = {}
 
     def add_child(self, id_, runnable):
-        self.children[runnable.id] = runnable
         self.uchildren[runnable.uid] = runnable
+        
+        self.children[id_] = runnable
+        self.children[runnable.id] = runnable
 
         self.__dict__[id_] = runnable
         self.__dict__[runnable.id] = runnable
@@ -276,10 +278,10 @@ class Runnable(Reflective):
         for c in self.array:
             c.configure_time(self.time_step, self.time_total)
 
-        for type_ in self.attachments:
-            components = self.__dict__[self.attachments[type_]]
-            for component in components:
-                component.configure_time(self.time_step, self.time_total)
+        ## for type_ in self.attachments:
+        ##     components = self.__dict__[self.attachments[type_]]
+        ##     for component in components:
+        ##         component.configure_time(self.time_step, self.time_total)
 
 
     def reset_time(self):
@@ -291,10 +293,10 @@ class Runnable(Reflective):
         for c in self.array:
             c.reset_time()
 
-        for type_ in self.attachments:
-            components = self.__dict__[self.attachments[type_]]
-            for component in components:
-                component.reset_time()
+        ## for type_ in self.attachments:
+        ##     components = self.__dict__[self.attachments[type_]]
+        ##     for component in components:
+        ##         component.reset_time()
 
     def single_step(self, dt):
         #return self.single_step2(dt)
@@ -339,10 +341,10 @@ class Runnable(Reflective):
         for child in self.array:
             child.single_step(dt)
 
-        for type_ in self.attachments:
-            components = self.__dict__[self.attachments[type_]]
-            for component in components:
-                component.single_step(dt)
+        ## for type_ in self.attachments:
+        ##     components = self.__dict__[self.attachments[type_]]
+        ##     for component in components:
+        ##         component.single_step(dt)
 
         if self.new_regime != '':
             self.current_regime = self.new_regime

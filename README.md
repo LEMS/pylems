@@ -4,6 +4,7 @@
 runlems.py <LEMS file>
 
 ## Examples
+### LEMS examples
 + example1 -- Running
 + example2 -- Running
 + example3 -- Running
@@ -13,3 +14,9 @@ runlems.py <LEMS file>
 + example7 -- Running
 + example8 -- Running
 + example9 -- Not running
+
+### NeuroML examples
++ Example 0 -- Running
++ Example 1 -- Running
++ Example 2 -- Running
++ Example 3 -- Not running
