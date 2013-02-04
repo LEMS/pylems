@@ -69,11 +69,11 @@ def run(source_file, options, xsl_pp_cb):
 
         print('Resolving model')
         model.resolve_model()
-        print model
+        #print model
 
         print('Building simulation')
         sim = SimulationBuilder(model).build()
-        sim.dump()
+        #sim.dump()
 
         print('Running simulation')
         sim.run()
@@ -128,6 +128,7 @@ def plot_recording(recording):
     data_output = recording.data_output
     recorder = recording.recorder
 
+    print len(recording.values)
     x = numpy.empty(len(recording.values))
     y = numpy.empty(len(recording.values))
     i = 0
@@ -143,15 +144,17 @@ def plot_recording(recording):
         fig = fig_count
         displays[data_output.title] = fig
 
-        pylab.figure(fig)
+        f = pylab.figure(fig)
         pylab.title(data_output.title)
 
 
     pylab.figure(fig)
-    pylab.subplot(111)
+    p = pylab.subplot(111)
+    p.patch.set_facecolor('#7f7f7f')
     pylab.plot(x, y,
                color=recorder.color,
                label=recorder.quantity)
+
 
 def save_recording(recording):
     pass

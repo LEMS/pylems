@@ -93,8 +93,13 @@ class Regime:
         self.update_kinetic_scheme = None
 
 class Runnable(Reflective):
+    uid_count = 0
+
     def __init__(self, id_, component, parent = None):
         Reflective.__init__(self)
+
+        self.uid = Runnable.uid_count
+        Runnable.uid_count += 1
 
         self.id = id_
         self.component = component
@@ -109,6 +114,7 @@ class Runnable(Reflective):
         self.state_stack = Stack()
 
         self.children = {}
+        self.uchildren = {}
 
         self.recorded_variables = []
 
@@ -126,8 +132,8 @@ class Runnable(Reflective):
         self.regimes = {}
 
     def add_child(self, id_, runnable):
-        self.children[id_] = runnable
         self.children[runnable.id] = runnable
+        self.uchildren[runnable.uid] = runnable
 
         self.__dict__[id_] = runnable
         self.__dict__[runnable.id] = runnable
@@ -156,10 +162,6 @@ class Runnable(Reflective):
                 return
 
         raise SimBuildError('Unable to find appropriate attachment')
-        return
-        name = self.attachments[runnable.component.component_type]
-        runnable.id = runnable.id + str(len(self.__dict__[name]))
-        self.__dict__[name].append(runnable)
 
     def add_event_in_port(self, port):
         self.event_in_ports.append(port)
@@ -268,8 +270,8 @@ class Runnable(Reflective):
         self.time_step = time_step
         self.time_total = time_total
 
-        for cn in self.children:
-            self.children[cn].configure_time(self.time_step, self.time_total)
+        for cn in self.uchildren:
+            self.uchildren[cn].configure_time(self.time_step, self.time_total)
 
         for c in self.array:
             c.configure_time(self.time_step, self.time_total)
@@ -283,8 +285,8 @@ class Runnable(Reflective):
     def reset_time(self):
         self.time_completed = 0
 
-        for cid in self.children:
-            self.children[cid].reset_time()
+        for cid in self.uchildren:
+            self.uchildren[cid].reset_time()
 
         for c in self.array:
             c.reset_time()
@@ -331,8 +333,8 @@ class Runnable(Reflective):
             sys.exit(0)
 
     def single_step2(self, dt):
-        for cid in self.children:
-            self.children[cid].single_step(dt)
+        for cid in self.uchildren:
+            self.uchildren[cid].single_step(dt)
 
         for child in self.array:
             child.single_step(dt)
@@ -351,9 +353,6 @@ class Runnable(Reflective):
         if self.time_completed == 0:
             self.run_startup_event_handlers(self)
 
-        #if self.id == 'hhpop__hhcell__0':
-        #    print 'HELLO1a', self.v
-
         self.run_preprocessing_event_handlers(self)
         self.update_shadow_variables()
 
@@ -362,9 +361,6 @@ class Runnable(Reflective):
 
         self.update_state_variables(self, dt)
         self.update_shadow_variables()
-
-        #if self.id == 'hhpop__hhcell__0':
-        #    print 'HELLO2a', self.v)
 
         self.run_postprocessing_event_handlers(self)
         self.update_shadow_variables()
@@ -391,11 +387,11 @@ class Runnable(Reflective):
 
         self.record_variables()
 
-        self.time_completed += dt#self.time_step
+        self.time_completed += dt
         if self.time_completed >= self.time_total:
             return 0
         else:
-            return dt#self.time_step
+            return dt
 
 
     def record_variables(self):
@@ -410,8 +406,8 @@ class Runnable(Reflective):
                      self.__dict__[varname + '_shadow']]
         self.state_stack.push(vars)
 
-        for cid in self.children:
-            self.children[cid].push_state()
+        for cid in self.uchildren:
+            self.uchildren[cid].push_state()
 
         for c in self.array:
             c.push_state()
@@ -423,8 +419,8 @@ class Runnable(Reflective):
             self.__dict_[varname + '_shadow'] = vars[1]
             vars = vars[2:]
 
-        for cid in self.children:
-            self.children[cid].pop_state()
+        for cid in self.uchildren:
+            self.uchildren[cid].pop_state()
 
         for c in self.array:
             c.pop_state()

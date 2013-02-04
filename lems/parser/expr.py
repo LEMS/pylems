@@ -255,7 +255,11 @@ class ExprParser(LEMSBase):
                     token += ps[i]
                     i += 1
             elif ps[i].isdigit():
-                while i < len(ps) and (ps[i].isdigit() or ps[i] == '.'):
+                while i < len(ps) and (ps[i].isdigit() or
+                                       ps[i] == '.' or
+                                       ps[i] == 'e' or
+                                       ps[i] == '+' or
+                                       ps[i] == '-'):
                     token += ps[i]
                     i += 1
             elif ps[i] == '.':

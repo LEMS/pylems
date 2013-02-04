@@ -273,12 +273,10 @@ class SimulationBuilder(LEMSBase):
                     receiver_template = self.build_runnable(receiver_component,
                                                             target)
                     receiver = copy.deepcopy(receiver_template)
-                    receiver.id = "{0}__{1}__".format(component.id,
-                                                      receiver_template.id)
+                    #receiver.id = "{0}__{1}__".format(component.id,
+                    #                                  receiver_template.id)
 
                     target.add_attachment(receiver)
-                    target.add_child(receiver_template.id, receiver)
-                    print 'HELLO0', target.id, receiver_template.id
                     target = receiver
 
                 source_port = context.lookup_text_parameter(event.source_port)
