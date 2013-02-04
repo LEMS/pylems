@@ -80,7 +80,7 @@ class LEMSParser(Parser):
         else:
             self.current_component_type = self.component_type_stack[0]
 
-    def __init__(self, xslt_preprocessor_callback = None, include_dirs = []):
+    def __init__(self, xslt_preprocessor_callback = None, include_dirs = [], alternate_root_element_tags = []):
         """
         Constructor.
 
@@ -162,6 +162,11 @@ class LEMSParser(Parser):
         self.xml_root = None
         """ Root element of current XML file
         @type: xml.etree.Element """
+
+        self.alternate_root_element_tags = alternate_root_element_tags
+        """ List of alternate tag names to <LEMS> that can be accepted
+        as a root element name.
+        @type: list(string) """
 
     def init_parser(self):
         """
@@ -1701,8 +1706,8 @@ class LEMSParser(Parser):
 
         self.xml_root = node
 
-        if node.tag.lower() != 'lems':
-            print node.tag, node.attrib
+        if node.tag.lower() != 'lems' and node.tag.lower() not in self.alternate_root_element_tags:
+            print node.tag.lower(), self.alternate_root_element_tags, node.attrib['type']
             self.raise_error('Not a LEMS file')
 
         self.xml_node_stack = [node] + self.xml_node_stack

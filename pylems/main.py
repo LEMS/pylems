@@ -42,7 +42,6 @@ def main(argv):
 def make_xsl_preprocessor_callback(options):
     for xsl_include_dir in options.xsl_include_dirs:
         xslpath = xsl_include_dir + '/' + xsl_preprocessor_file
-        print xsl_include_dir,xslpath
         try:
             xsl = xml2.parse(xslpath)
             xslt = xml2.XSLT(xsl)
@@ -62,7 +61,8 @@ def make_xsl_preprocessor_callback(options):
 def run(source_file, options, xsl_pp_cb):
     try:
         print('Parsing model file')
-        parser = LEMSParser(xsl_pp_cb, options.include_dirs)
+        parser = LEMSParser(xsl_pp_cb, options.include_dirs,
+                            ['neuroml'])
         parser.parse_file(source_file)
         model = parser.get_model()
         #print model
