@@ -641,6 +641,23 @@ class SimulationBuilder(LEMSBase):
         else:
             return op
 
+    def convert_func(self, func):
+        """
+        Converts NeuroML arithmetic/logical functions to python equivalents.
+
+        @param func: NeuroML function
+        @type func: string
+
+
+        @return: Python operator
+        @rtype: string
+        """
+
+        if func == 'ln':
+            return 'log'
+        else:
+            return func
+
     def build_expression_from_tree(self, runnable, context, regime, tree_node):
         """
         Recursively builds a Python expression from a parsed expression tree.
@@ -692,7 +709,7 @@ class SimulationBuilder(LEMSBase):
                 return tree_node.value
         elif tree_node.type == ExprNode.FUNC1:
             return '({0}({1}))'.format(\
-                tree_node.func,
+                self.convert_func(tree_node.func),
                 self.build_expression_from_tree(runnable,
                                                 context,
                                                 regime,

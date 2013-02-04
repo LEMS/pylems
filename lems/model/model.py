@@ -441,14 +441,16 @@ class Model(Contextual):
         if component.extends:
             self.resolve_extended_component(context, component)
         self.resolve_component_from_type(context, component)
-        for pn in component.context.parameters:
-            p = component.context.parameters[pn]
-            if p.dimension == '__dimension_inherited__':
-                self.raise_error(("The dimension for parameter '{0}' in "
-                                  "component '{1}' ({2}) could not be resolved").\
-                                 format(pn, component.id,
-                                        component.component_type),
-                                 component.context)
+
+        # GG: Reenable this once the NeuroML definitions are fixed.
+        ## for pn in component.context.parameters:
+        ##     p = component.context.parameters[pn]
+        ##     if p.dimension == '__dimension_inherited__':
+        ##         self.raise_error(("The dimension for parameter '{0}' in "
+        ##                           "component '{1}' ({2}) could not be resolved").\
+        ##                          format(pn, component.id,
+        ##                                 component.component_type),
+        ##                          component.context)
 
         # Resolve dynamics
         for dpn in component.context.dynamics_profiles:

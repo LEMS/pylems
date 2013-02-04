@@ -1,8 +1,8 @@
 all:	lems-code lems-doc
 
-JLEMSPATH = ../LEMS
+JLEMSPATH = ../jLEMS
 TIME = /usr/bin/time -f '%E s'
-BENCHFILE = examples/sawtooth_bench.xml
+BENCHFILE = ../NeuroML2/NeuroML2CoreTypes/LEMS_NML2_Ex2_Izh.xml
 
 lems-code:
 

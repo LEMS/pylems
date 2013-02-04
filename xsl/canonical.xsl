@@ -1,12 +1,19 @@
 <xsl:stylesheet version="1.0" 
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-	xmlns:lems="http://www.neuroml.org/lems/0.6">
+	xmlns:lems="http://www.neuroml.org/lems/0.6"
+	xmlns:neuroml="http://www.neuroml.org/schema/neuroml2">
 
   <xsl:output method="xml" omit-xml-declaration="no" indent="yes" version="1.0"/>
   
   <xsl:preserve-space elements="*"/>
  
  
+ 	<xsl:template match="neuroml:neuroml">
+ 		<neuroml>
+ 			<xsl:apply-templates/>
+ 		</neuroml>
+ 	</xsl:template>
+
  	<xsl:template match="lems:Lems">
  		<Lems>
  			<xsl:apply-templates/>
