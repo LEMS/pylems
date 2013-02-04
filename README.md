@@ -15,7 +15,7 @@ runlems.py <LEMS file>
 + example8 -- Running
 + example9 -- Not running
 
-### NeuroML examples
+### NeuroML examples (https://github.com/NeuroML/NeuroML2/tree/master/NeuroML2CoreTypes/LEMS_NML2_Ex*)
 + Example 0 -- Running
 + Example 1 -- Running
 + Example 2 -- Running

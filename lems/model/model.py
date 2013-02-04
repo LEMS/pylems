@@ -444,8 +444,8 @@ class Model(Contextual):
         for pn in component.context.parameters:
             p = component.context.parameters[pn]
             if p.dimension == '__dimension_inherited__':
-                self.raise_error(('The dimension for parameter {0} in '
-                                  'component {1} ({2}) could not be resolved').\
+                self.raise_error(("The dimension for parameter '{0}' in "
+                                  "component '{1}' ({2}) could not be resolved").\
                                  format(pn, component.id,
                                         component.component_type),
                                  component.context)
