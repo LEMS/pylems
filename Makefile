@@ -1,6 +1,7 @@
 all:	lems-code lems-doc
 
 JLEMSPATH = ../jLEMS
+JLEMSBIN = lemsio
 TIME = /usr/bin/time -f '%E s'
 BENCHFILE = ../NeuroML2/NeuroML2CoreTypes/LEMS_NML2_Ex2_Izh.xml
 
@@ -61,8 +62,8 @@ nmlex3:
 run:	example9
 
 bench:
-	#@echo "Java"
-	#env LEMS_HOME=${JLEMSPATH} ${TIME} ${JLEMSPATH}/lems ${JLEMSPATH}/${BENCHFILE} -nogui > /dev/null
+	@echo "Java"
+	env LEMS_HOME=${JLEMSPATH} ${TIME} ${JLEMSPATH}/${JLEMSBIN} ${BENCHFILE} -nogui 2>&1 > /dev/null
 
 	@echo "CPython 2 (no optimizations)"
 	@${TIME} python runlems.py -nogui ${BENCHFILE} > /dev/null

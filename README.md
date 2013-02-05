@@ -19,4 +19,4 @@ runlems.py <LEMS file>
 + Example 0 -- Running
 + Example 1 -- Running
 + Example 2 -- Running
-+ Example 3 -- Not running
++ Example 3 -- Almost works (initial conditions) after disabling some model resolution checks.

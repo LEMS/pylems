@@ -94,9 +94,9 @@ def parse_cmdline_options(argv):
                 if len(argv) > 0:
                     params.append(argv[0])
                 else:
-                   raise Exception("Option '{0}' needs {1} parameters".format(
-                       option, options_param_count[option]))
-            argv = argv[1:]
+                    raise Exception("Option '{0}' needs {1} parameters".format(
+                        option, options_param_count[option]))
+                argv = argv[1:]
 
         if option == '-I' or option == '-include':
             options.add_include_directory(params[0])
