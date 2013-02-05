@@ -102,7 +102,7 @@ def parse_cmdline_options(argv):
             options.add_include_directory(params[0])
         elif option == '-XI' or option == '-xsl-include':
             options.add_xsl_include_directory(params[0])
-        elif options == '-nogui':
+        elif option == '-nogui':
             options.nogui = True
         else:
             options.add_source_file(option)

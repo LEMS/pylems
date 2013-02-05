@@ -61,8 +61,8 @@ nmlex3:
 run:	example9
 
 bench:
-	@echo "Java"
-	@${TIME} ${JLEMSPATH}/lems ${JLEMSPATH}/${BENCHFILE} -nogui > /dev/null
+	#@echo "Java"
+	#env LEMS_HOME=${JLEMSPATH} ${TIME} ${JLEMSPATH}/lems ${JLEMSPATH}/${BENCHFILE} -nogui > /dev/null
 
 	@echo "CPython 2 (no optimizations)"
 	@${TIME} python runlems.py -nogui ${BENCHFILE} > /dev/null
