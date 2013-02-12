@@ -1,4 +1,4 @@
-# PyLEMS - A LEMS simulator written in Python
+# PyLEMS - A LEMS/NeuroML simulator written in Python
 
 ## Usage
 runlems.py <LEMS file>
