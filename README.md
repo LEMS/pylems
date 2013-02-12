@@ -23,12 +23,12 @@ runlems.py [-I/-include \<Model file include path\>] [-XI/-xsl-include \<XSL pre
 + Example 2 -- Running
 + Example 3 -- Almost works (initial conditions) after disabling some model resolution checks.
 + Example 4 -- Not working
-+ Example 5 -- Not running ([Issue 5](https://github.com/lisphacker/pylems/issues/5))
++ Example 5 -- Not running (XPath)
 + Example 6 -- Not running ([Issue 5](https://github.com/lisphacker/pylems/issues/5))
 + Example 7 -- Not running ([Issue 5](https://github.com/lisphacker/pylems/issues/5))
 + Example 8 -- Not running ([Issue 5](https://github.com/lisphacker/pylems/issues/5))
 + Example 9 -- Not working
-+ Example 10 -- Not running (Loops forever while building simulation - lems.sim.build.order_derived_variables)
++ Example 10 -- Not working. Too many spikes.
 + Example 11 -- Not running (Symbol parsing error?)
 + Example 12 -- XML preprecessing error in lxml
 + Example 13 -- Not running (XPath)

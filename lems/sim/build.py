@@ -16,6 +16,8 @@ from lems.parser.expr import ExprNode
 from lems.model.dynamics import EventHandler,Action
 from lems.sim.runnable import Regime
 
+import sys
+
 class SimulationBuilder(LEMSBase):
     """
     Simulation builder class.
@@ -417,7 +419,15 @@ class SimulationBuilder(LEMSBase):
 
         # Process derived variables
         derived_variable_code = []
-        derived_variables_ordering = order_derived_variables(regime)
+        try:
+            derived_variables_ordering = order_derived_variables(regime)
+        except:
+            print
+            print 'HELLO0', runnable.id, component.id, component.component_type
+            print 'HELLO1a', regime.state_variables
+            print 'HELLO1b', regime.derived_variables
+            print 'HELLO1c'
+            sys.exit(0)
         for dvn in derived_variables_ordering: #regime.derived_variables:
             dv = regime.derived_variables[dvn]
             runnable.add_derived_variable(dv.name)
@@ -1009,13 +1019,13 @@ def order_derived_variables(regime):
     count = maxcount
 
     while count > 0 and dvs != []:
-        count - count - 1
+        count = count - 1
 
         for dv1 in dvs:
             exp_tree = regime.derived_variables[dv1].expression_tree
             found = False
             for dv2 in dvs:
-                if is_var_in_exp_tree(dv2, exp_tree):
+                if dv1 != dv2 and is_var_in_exp_tree(dv2, exp_tree):
                     found = True
             if not found:
                 ordering.append(dv1)
@@ -1024,6 +1034,7 @@ def order_derived_variables(regime):
                 break
 
     if count == 0:
+        print 'HELLO5', ordering, dvs, dvsnoexp
         raise SimBuildError(("Unable to find ordering for derived "
                              "variables in '{0}'").format(context.name))
 
