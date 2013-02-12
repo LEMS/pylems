@@ -5,18 +5,42 @@
   4. Implement LEMS API over lems.model.* (NeuroML API?)
      + Interface with libNeuroML and Pyramidal to export Neuron MOD files
      + Export C files (Interface? Steve Marsh’s project?)
+  5. Assertions.
+  6. XPath implementation.
+  7. Simple LEMS API for creating, reading and writing LEMS model files.
+
 
 
 * Examples
-** example1 -- Running
-** example2 -- Running
-** example3 -- Running
-** example4 -- Running
-** example5 -- Not running
-** example6 -- Running
-** example7 -- Running
-** example8 -- Running
-+ example9 -- Not running
+** LEMS examples
+*** example1 -- Running
+*** example2 -- Running
+*** example3 -- Running
+*** example4 -- Running
+*** example5 -- Not running
+*** example6 -- Running
+*** example7 -- Running
+*** example8 -- Running
+*** example9 -- Not running
+** NeuroML examples
+*** Example 0 -- Running
+*** Example 1 -- Running
+*** Example 2 -- Running
+*** Example 3 -- Almost works (initial conditions) after disabling some model resolution checks.
+*** Example 4 -- Not working
+*** Example 5 -- Not running ([[https://github.com/lisphacker/pylems/issues/5][Issue 5]])
+*** Example 6 -- Not running ([[https://github.com/lisphacker/pylems/issues/5][Issue 5]]))
+*** Example 7 -- Not running ([[https://github.com/lisphacker/pylems/issues/5][Issue 5]]))
+*** Example 8 -- Not running ([[https://github.com/lisphacker/pylems/issues/5][Issue 5]]))
+*** Example 9 -- Not working
+*** Example 10 -- Not running (Loops forever while building simulation - lems.sim.build.order_derived_variables)
+*** Example 11 -- Not running (Symbol parsing error?)
+*** Example 12 -- XML preprecessing error in lxml
+*** Example 13 -- Not running (XPath)
+*** Example 14 -- No model!
+*** Example 15 -- Not running (Perhaps related to [[https://github.com/lisphacker/pylems/issues/5][Issue 5]])
+
+
 
 
 * LEMS elements that do not work

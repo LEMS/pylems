@@ -36,7 +36,6 @@ def main(argv):
               'or -xsl-include to specifiy additional include directories')
         sys.exit(-1)
 
-    print 'OPTIONS:', options.__dict__
     for source_file in options.source_files:
         run(source_file, options, xsl_pp_cb)
 
