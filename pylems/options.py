@@ -1,7 +1,7 @@
 """
 @author: Gautham Ganapathy
-@organization: Textensor (http://textensor.com)
-@contact: gautham@textensor.com, gautham@lisphacker.org
+@organization: LEMS (http://neuroml.org/lems/, https://github.com/organizations/LEMS)
+@contact: gautham@lisphacker.org
 """
 
 class Options:
