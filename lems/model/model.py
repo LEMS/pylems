@@ -131,9 +131,6 @@ class Model(Contextual):
             self.raise_error('Parameter {0} not initialized'.format(\
                 parameter.name), context)
 
-        if parameter.value == '3.0 S_per_m2':
-            print 'HELLO0', parameter.value
-
         bitsnum = re.split('[_a-zA-Z]+', parameter.value)
         bitsalpha = re.split('[^_a-zA-Z]+', parameter.value)
 
@@ -149,10 +146,6 @@ class Model(Contextual):
             if i < len(bitsnum):
                 s += bitsnum[i].strip()
         
-        if parameter.value == '3.0 S_per_m2':
-            print 'HELLO1', bitsnum, bitsalpha
-            print 'HELLO2', n, s
-
         #number = float(re.split('[_a-zA-Z]+', parameter.value)[0].strip())
         #sym = re.split('[^_a-zA-Z]+', parameter.value)[1].strip()
 
