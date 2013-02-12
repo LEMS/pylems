@@ -226,8 +226,8 @@ class Simulation(LEMSBase):
         """
         Adds a data writer to this simulation section.
 
-        @param title: Path to the quantity.
-        @type title: string
+        @param path: Path to the quantity.
+        @type path: string
 
         @param file_path: Path to the file to be used for recording the quantity.
         @type file_path: string

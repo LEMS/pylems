@@ -835,10 +835,10 @@ class SimulationBuilder(LEMSBase):
         """
         Build OnEntry start handler code.
 
-        @param on_start: OnStart start handler object
-        @type on_start: lems.model.dynamics.OnStart
+        @param on_entry: OnEntry start handler object
+        @type on_entry: lems.model.dynamics.OnEntry
 
-        @return: Generated OnStart code
+        @return: Generated OnEntry code
         @rtype: list(string)
         """
 
