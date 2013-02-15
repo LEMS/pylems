@@ -2,9 +2,12 @@
 
 * Usage
 runlems.py [<options>] <LEMS/NeuroML file>
+
 ** Options
   - -I/-include <path - Adds a directory to the model file include search path
   - -XI/-xsl-include <path> - Adds a directory to the XSL preprocessor include path
+
+
 
 * Tasks
   - Implement flattening
@@ -47,7 +50,8 @@ runlems.py [<options>] <LEMS/NeuroML file>
     - Example 12 -- XML preprecessing error in lxml
     - Example 13 -- Not running (XPath)
     - Example 14 -- No model!
-    - Example 15 -- Not running (Perhaps related to [[https://github.com/LEMS/pylems/issues/5][Issue 5]])
+    - Example 15 -- Not running (XPath)
+
 
 
 * LEMS elements that do not work
