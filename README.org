@@ -1,9 +1,10 @@
 * PyLEMS - A LEMS/NeuroML simulator written in Python
 
 * Usage
-runlems.py [-I/-include <Model file include path>] [-XI/-xsl-include <XSL preprocessor include path>] <LEMS/NeuroML file>
-
-
+runlems.py [<options>] <LEMS/NeuroML file>
+** Options
+  - -I/-include <path - Adds a directory to the model file include search path
+  - -XI/-xsl-include <path> - Adds a directory to the XSL preprocessor include path
 
 * Tasks
   - Implement flattening
