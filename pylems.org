@@ -35,18 +35,18 @@ runlems.py [-I/-include \<Model file include path\>] [-XI/-xsl-include \<XSL pre
   ** Example 1 -- Running
   ** Example 2 -- Running
   ** Example 3 -- Almost works (initial conditions) after disabling some model resolution checks.
-  ** Example 4 -- Not working
+  ** Example 4 -- Not working (I'm working on this)
   ** Example 5 -- Not running (XPath)
-  ** Example 6 -- Not running ([[https://github.com/lisphacker/pylems/issues/5][Issue 5]]))
-  ** Example 7 -- Not running ([[https://github.com/lisphacker/pylems/issues/5][Issue 5]]))
-  ** Example 8 -- Not running ([[https://github.com/lisphacker/pylems/issues/5][Issue 5]]))
+  ** Example 6 -- Not running
+  ** Example 7 -- Not running
+  ** Example 8 -- Not running
   ** Example 9 -- Not working
   ** Example 10 -- Not working. Too many spikes.
   ** Example 11 -- Not running (Symbol parsing error?)
   ** Example 12 -- XML preprecessing error in lxml
   ** Example 13 -- Not running (XPath)
   ** Example 14 -- No model!
-  ** Example 15 -- Not running (Perhaps related to [[https://github.com/lisphacker/pylems/issues/5][Issue 5]])
+  ** Example 15 -- Not running (Perhaps related to [[https://github.com/LEMS/pylems/issues/5][Issue 5]])
 
 
 * LEMS elements that do not work
