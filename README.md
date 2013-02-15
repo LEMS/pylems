@@ -1,5 +1,5 @@
 * PyLEMS - A LEMS/NeuroML simulator written in Python
-
+-----
 * Usage
 runlems.py [<options>] <LEMS/NeuroML file>
 
@@ -52,7 +52,7 @@ runlems.py [<options>] <LEMS/NeuroML file>
     - Example 14 -- No model!
     - Example 15 -- Not running (XPath)
 
-
+      
 
 * LEMS elements that do not work
   - XPath based parameters - DerivedParameter, PathParameter
