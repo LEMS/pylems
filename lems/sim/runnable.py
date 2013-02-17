@@ -33,6 +33,7 @@ class Reflective(object):
         self.instance_variables = []
         self.derived_variables = []
         self.array = []
+        self.methods = {}
 
     #@classmethod
     def add_method(self, method_name, parameter_list, statements):
@@ -58,6 +59,13 @@ class Reflective(object):
         #setattr(cls, method_name, __generated_function__)
         self.__dict__[method_name] = l['__generated_function__']
         del l['__generated_function__']
+
+        if not (statements == []):
+            print self.id, self.component.id, self.component.component_type
+            print method_name
+            print code_string
+            print
+            print
 
     def add_instance_variable(self, variable, initial_value):
         self.instance_variables.append(variable)
@@ -341,11 +349,6 @@ class Runnable(Reflective):
         for child in self.array:
             child.single_step(dt)
 
-        ## for type_ in self.attachments:
-        ##     components = self.__dict__[self.attachments[type_]]
-        ##     for component in components:
-        ##         component.single_step(dt)
-
         if self.new_regime != '':
             self.current_regime = self.new_regime
             self.new_regime = ''
@@ -371,9 +374,6 @@ class Runnable(Reflective):
             regime = self.regimes[self.current_regime]
 
             regime.update_kinetic_scheme(self, dt)
-
-            #if self.time_completed == 0:
-            #    self.run_startup_event_handlers(self)
 
             regime.run_preprocessing_event_handlers(self)
             self.update_shadow_variables()

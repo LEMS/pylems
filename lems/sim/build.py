@@ -419,15 +419,7 @@ class SimulationBuilder(LEMSBase):
 
         # Process derived variables
         derived_variable_code = []
-        try:
-            derived_variables_ordering = order_derived_variables(regime)
-        except:
-            print
-            print 'HELLO0', runnable.id, component.id, component.component_type
-            print 'HELLO1a', regime.state_variables
-            print 'HELLO1b', regime.derived_variables
-            print 'HELLO1c'
-            sys.exit(0)
+        derived_variables_ordering = order_derived_variables(regime)
         for dvn in derived_variables_ordering: #regime.derived_variables:
             dv = regime.derived_variables[dvn]
             runnable.add_derived_variable(dv.name)

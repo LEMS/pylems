@@ -17,6 +17,7 @@ runlems.py [\<options\>] \<LEMS/NeuroML file\>
   - Export C files (Interface? Steve Marsh’s project?)
 - Assertions.
 - XPath implementation.
+- Implement Runnables from Component types instead of expanded typeless Components (Required for efficient C/C++ code generation)
 
 
 
