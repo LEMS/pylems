@@ -1,4 +1,4 @@
-# PyLEMS - A LEMS/NeuroML simulator written in Python
+# PyLEMS - A [LEMS](http://neuroml.org/lems/)/[NeuroML2](http://neuroml.org/neuroml2.php) simulator written in Python
 
 ## Usage
 runlems.py [\<options\>] \<LEMS/NeuroML file\>
