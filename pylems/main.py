@@ -84,8 +84,8 @@ def run(source_file, options, xsl_pp_cb):
         print('Caught ParseError - ' + str(e))
     except ModelError as e:
         print('Caught ModelError - ' + str(e))
-    #except SimBuildError as e:
-        #print('Caught SimBuildError - ' + str(e))
+    except SimBuildError as e:
+        print('Caught SimBuildError - ' + str(e))
     except SimError as e:
         print('Caught SimError - ' + str(e))
 
