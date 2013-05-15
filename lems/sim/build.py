@@ -17,6 +17,7 @@ from lems.model.dynamics import EventHandler,Action
 from lems.sim.runnable import Regime
 
 import sys
+from pprint import pprint
 
 class SimulationBuilder(LEMSBase):
     """
@@ -157,11 +158,22 @@ class SimulationBuilder(LEMSBase):
 
         self.process_simulation_specs(component, runnable, context.simulation)
 
+            
         #for cn in context.components:
         for cn in context.components_ordering:
             child = context.components[cn]
             child_runnable = self.build_runnable(child, runnable)
             runnable.add_child(child.id, child_runnable)
+
+            try:
+                child_typeobj = child_runnable.component.context.lookup_component_type(
+                    child_runnable.component.component_type)
+                for cdn in context.child_defs:
+                    if cdn in child_typeobj.types:
+                        runnable.add_child_typeref(cdn, child_runnable)
+            except:
+                pass
+            
 
             for cdn in context.children_defs:
                 cdt = context.children_defs[cdn]
@@ -278,7 +290,8 @@ class SimulationBuilder(LEMSBase):
                     receiver.id = "{0}__{1}__".format(component.id,
                                                       receiver_template.id)
 
-                    target.add_attachment(receiver)
+                    receiver_container = context.lookup_text_parameter(event.receiver_container)
+                    target.add_attachment(receiver, receiver_container)
                     target.add_child(receiver_template.id, receiver)
                     target = receiver
 
@@ -1026,7 +1039,6 @@ def order_derived_variables(regime):
                 break
 
     if count == 0:
-        print 'HELLO5', ordering, dvs, dvsnoexp
         raise SimBuildError(("Unable to find ordering for derived "
                              "variables in '{0}'").format(context.name))
 

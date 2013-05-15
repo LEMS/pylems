@@ -16,6 +16,7 @@ import sys
 
 from math import *
 
+import pprint
 #import math
 
 #class Ex1(Exception):
@@ -59,13 +60,6 @@ class Reflective(object):
         #setattr(cls, method_name, __generated_function__)
         self.__dict__[method_name] = l['__generated_function__']
         del l['__generated_function__']
-
-        if not (statements == []):
-            print self.id, self.component.id, self.component.component_type
-            print method_name
-            print code_string
-            print
-            print
 
     def add_instance_variable(self, variable, initial_value):
         self.instance_variables.append(variable)
@@ -150,28 +144,44 @@ class Runnable(Reflective):
 
         runnable.configure_time(self.time_step, self.time_total)
 
+        runnable.parent = self
+
+    def add_child_typeref(self, typename, runnable):
+        self.__dict__[typename] = runnable
+
     def add_child_to_group(self, group_name, child):
         if group_name not in self.__dict__:
             self.__dict__[group_name] = []
         self.__dict__[group_name].append(child)
+        child.parent = self
 
     def make_attachment(self, type_, name):
         self.attachments[type_] = name
         self.__dict__[name] = []
 
-    def add_attachment(self, runnable):
+    def add_attachment(self, runnable, container = None):
         component_type = runnable.component.context.lookup_component_type(
             runnable.component.component_type)
 
         for ctype in component_type.types:
             if ctype in self.attachments:
                 name = self.attachments[ctype]
+                if container != None and container != name:
+                    continue
+                
+                if name not in self.__dict__:
+                    raise SimBuildError('Cannot attach {0} to {1} in {2}'.format(
+                        runnable.id, name, self.id))
+                                                                                 
                 runnable.id = runnable.id + str(len(self.__dict__[name]))
+
                 self.__dict__[name].append(runnable)
+                runnable.parent = self
 
                 return
 
-        raise SimBuildError('Unable to find appropriate attachment')
+        raise SimBuildError('Unable to find appropriate attachment for {0} in {1}'.format(
+            runnable.id, self.id))
 
     def add_event_in_port(self, port):
         self.event_in_ports.append(port)
@@ -269,6 +279,20 @@ class Runnable(Reflective):
                     childobj.array[idx].add_variable_recorder2(data_output,
                                                                recorder,
                                                                new_path)
+            elif child in self.component.context.child_defs:
+                childobj = None
+                for cid in self.children:
+                    c = self.children[cid]
+                    typeobj = c.component.context.lookup_component_type(c.component.component_type)
+                    if child in typeobj.types:
+                        childobj = c
+                if childobj:
+                    childobj.add_variable_recorder2(data_output,
+                                                    recorder,
+                                                    new_path)
+                else:                    
+                    raise SimBuildError('Unable to find child \'{0}\' in '
+                                        '\'{1}\''.format(child, self.id))
             else:
                 raise SimBuildError('Unable to find child \'{0}\' in '
                                     '\'{1}\''.format(child, self.id))
