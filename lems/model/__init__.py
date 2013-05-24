@@ -1,14 +1,5 @@
 """
-PyLEMS command line startup script.
-
 @author: Gautham Ganapathy
 @organization: LEMS (http://neuroml.org/lems/, https://github.com/organizations/LEMS)
 @contact: gautham@lisphacker.org
 """
-
-#! /usr/bin/env python3
-
-from lems.run import main
-
-if __name__ == '__main__':
-    main()
