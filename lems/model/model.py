@@ -7,16 +7,39 @@ Model storage.
 """
 
 from lems.base import LEMSBase
+from lems.parser import LEMSFileParser
 
 class Model(LEMSBase):
+    """
+    Stores a model.
+    """
+    
     def __init__(self):
-        self.dimensions = {}
-        self.units = {}
-        self.component_types = {}
-        self.components = {}
+        """
+        Constructor.
+        """
+        
+        self.dimensions = dict()
+        """ Dictionary of dimensions defined in the model.
+        @type: dict(str -> lems.model.fundamental.Dimension """
+        
+        self.units = dict()
+        """ Dictionary of units defined in the model.
+        @type: dict(str -> lems.model.fundamental.Unit """
+        
+        self.component_types = dict()
+        """ Dictionary of component types defined in the model.
+        @type: dict(str -> lems.model.component.ComponentType) """
+        
+        self.components = dict()
+        """ Dictionary of root components defined in the model.
+        @type: dict(str -> lems.model.component.Component) """
+        
         self.include_directories = ['.']
+        """ List of include directories to search for included LEMS files.
+        @type: list(str) """
 
-    def add_dimension(self, dimensions):
+    def add_dimension(self, dimension):
         pass  
 
     def add_unit(self, unit):
@@ -35,4 +58,12 @@ class Model(LEMSBase):
         self.include_directories.append(path)
 
     def include_file(self, path):
+        pass
+
+    def import_from_file(self, filepath):
+        parser = LEMSFileParser(self)
+        with open(filepath) as f:
+            parser.parse(f.read())
+        
+    def export_to_file(self, filepath):
         pass

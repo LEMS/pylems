@@ -8,10 +8,13 @@ Command line simulation driver.
 
 import argparse
 
-from lems.api import Model
+from lems.model.model import Model
 from lems.parser import LEMSFileParser
 
 def process_args():
+    """ 
+    Parse command-line arguments.
+    """
     parser = argparse.ArgumentParser()
 
     parser.add_argument('-I', type=str,
@@ -24,10 +27,10 @@ def process_args():
     return parser.parse_args()
     
 def main():
+    """
+    Program entry point.
+    """
     args = process_args()
 
     model = Model()
-    parser = LEMSFileParser(model)
-
-    with open(args.lems_file) as f:
-        parser.parse(f.read())
+    model.import_from_file(args.lems_file)

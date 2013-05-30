@@ -7,6 +7,5 @@ PyLEMS API module.
 """
 
 from lems.model.fundamental import Unit,Dimension
-from lems.model.parameter import Parameter
-from lems.model.component import ComponentType,Component
+from lems.model.component import Parameter,ComponentType,Component
 from lems.model.model import Model
