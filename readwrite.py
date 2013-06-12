@@ -1,8 +1,9 @@
 #! /usr/bin/env python
 """
-@author: Gautham Ganapathy
-@organization: Textensor (http://textensor.com)
-@contact: gautham@textensor.com, gautham@lisphacker.org
+@author: Padraig Gleeson
+
+An example to illustrate reading/printing contents of LEMS documents through pylems
+
 """
 
 import sys
