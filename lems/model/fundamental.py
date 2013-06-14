@@ -13,7 +13,7 @@ class Dimension(LEMSBase):
     Stores a dimension in terms of the seven fundamental SI units.
     """
     
-    def __init__(self, name, **params):
+    def __init__(self, name, description = '', **params):
         """
         Constructor.
 
@@ -56,6 +56,10 @@ class Dimension(LEMSBase):
         self.j = params['j'] if 'j' in params else 0
         """ Power for the luminous intensity dimension.
         @type: int """
+
+        self.description = description
+        """ Description of this dimension.
+        @type: str """
         
 
 class Unit(LEMSBase):
@@ -63,7 +67,7 @@ class Unit(LEMSBase):
     Stores a unit definition.
     """
     
-    def __init__(self, name, symbol, dimension, power = 0, scale = 0, offset = 0):
+    def __init__(self, name, symbol, dimension, power = 0, scale = 0, offset = 0, description = ''):
         """
         Constructor.
 
@@ -93,3 +97,8 @@ class Unit(LEMSBase):
         self.offset = offset
         """ Offset for non-zero units.
         @type: float """
+
+        self.description = description
+        """ Description of this unit.
+        @type: str """
+        

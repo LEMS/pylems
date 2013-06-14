@@ -1,12 +1,12 @@
 """
-Exception classes.
+Error classes.
 
 @author: Gautham Ganapathy
 @organization: LEMS (http://neuroml.org/lems/, https://github.com/organizations/LEMS)
 @contact: gautham@lisphacker.org
 """
 
-class LEMSException(Exception):
+class LEMSError(Exception):
     """
     Base exception class.
     """
@@ -50,9 +50,16 @@ class LEMSException(Exception):
         
         return self.message
 
-class ParseException(LEMSException):
+class ParseError(LEMSError):
     """
-    Exception to signal errors found during parsing.
+    Error to signal errors found during parsing.
+    """
+
+    pass
+
+class ModelError(LEMSError):
+    """
+    Error to signal errors in creating the model.
     """
 
     pass

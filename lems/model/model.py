@@ -6,8 +6,12 @@ Model storage.
 @contact: gautham@lisphacker.org
 """
 
+import os
+from os.path import dirname
+
 from lems.base import LEMSBase
 from lems.parser import LEMSFileParser
+from lems.errors import ModelError
 
 class Model(LEMSBase):
     """
@@ -18,6 +22,10 @@ class Model(LEMSBase):
         """
         Constructor.
         """
+        
+        self.targets = list()
+        """ List of targets to be run on startup.
+        @type: list(str) """
         
         self.dimensions = dict()
         """ Dictionary of dimensions defined in the model.
@@ -34,34 +42,91 @@ class Model(LEMSBase):
         self.components = dict()
         """ Dictionary of root components defined in the model.
         @type: dict(str -> lems.model.component.Component) """
-        
-        self.include_directories = ['.']
+
+        self.include_directories = []
         """ List of include directories to search for included LEMS files.
         @type: list(str) """
 
+    def add_target(self, target):
+        """
+        Adds a simulation target to the model.
+
+        @param target: Name of the component to be added as a
+        simulation target.
+        @type target: str
+        """
+        
+        self.targets.append(target)
+        
     def add_dimension(self, dimension):
-        pass  
+        """
+        Adds a dimension to the model.
+
+        @param dimension: Dimension to be added.
+        @type dimension: lems.model.fundamental.Dimension
+        """
+
+        self.dimensions[dimension.name] = dimension
 
     def add_unit(self, unit):
-        pass
+        """
+        Adds a unit to the model.
+
+        @param unit: Unit to be added.
+        @type unit: lems.model.fundamental.Unit
+        """
+
+        self.units[unit.symbol] = unit
 
     def add_component_type(self, component_type):
-        pass
+        """
+        Adds a component type to the model.
+
+        @param component_type: Component type to be added.
+        @type component_type: lems.model.fundamental.ComponentType
+        """
+
+        self.component_types[component_type.name] = component_type
 
     def add_component(self, component):
-        pass
+        """
+        Adds a component to the model.
+
+        @param component: Component to be added.
+        @type component: lems.model.fundamental.Component
+        """
+
+        self.component_types[component_type.name] = component_type
 
     def add_simulation(self, simulation):
+        pass
+
+    def add_target(self, target):
         pass
 
     def add_include_directory(self, path):
         self.include_directories.append(path)
 
-    def include_file(self, path):
-        pass
+    def include_file(self, path, include_dirs = []):
+        inc_dirs = include_dirs if include_dirs else self.include_dirs
 
+        parser = LEMSFileParser(self, inc_dirs)
+        if os.access(path, os.F_OK):
+           parser.parse(open(path).read()) 
+           return
+        else:
+            for inc_dir in inc_dirs:
+                new_path = (inc_dir + '/' + path)
+                if os.access(new_path, os.F_OK):
+                    parser.parse(open(new_path).read())
+                    return
+        raise Exception('Unable to open ' + path)
+            
     def import_from_file(self, filepath):
-        parser = LEMSFileParser(self)
+        inc_dirs = self.include_directories.copy()
+        inc_dirs.append(dirname(filepath))
+                        
+        parser = LEMSFileParser(self, inc_dirs)
         with open(filepath) as f:
             parser.parse(f.read())
         
