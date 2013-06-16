@@ -65,7 +65,50 @@ class Exposure(LEMSBase):
         """ Description of this exposure.
         @type: str """
 
+class Requirement(LEMSBase):
+    """
+    Stores a requirement specification.
+    """
+
+    def __init__(self, name, dimension):
+        """
+        Constructor.
+
+        See instance variable documentation for more details on parameters.
+        """
+        
+        self.name = name
+        """ Name of the requirement.
+        @type: str """
+         
+        self.dimension = dimension
+        """ Physical dimension of the requirement.
+        @type: str """
+
+class Children:
+    """
+    Stores children specification.
+    """
     
+    def __init__(self, name, type_, multiple = False):
+        """
+        Constructor.
+
+        See instance variable documentation for more details on parameters.
+        """
+        
+        self.name = name
+        """ Name of the children.
+        @type: str """
+         
+        self.type = type_
+        """ Component type of the children.
+        @type: str """
+
+        self.multiple = multiple
+        """ Single child / multiple children.
+        @type: bool """
+
 class ComponentType(LEMSBase):
     """
     Stores a component type declaration.
@@ -90,13 +133,21 @@ class ComponentType(LEMSBase):
         """ Description of this component type.
         @type: str """
         
-        self.parameters = dict()
-        """ Dictionary of parameters in this component type.
+        self.parameters = Map()
+        """ Map of parameters in this component type.
         @type: dict(str -> lems.model.component.Parameter) """
 
-        self.exposures = dict()
-        """ Dictionary of exposures in this component type.
+        self.exposures = Map()
+        """ Map of exposures in this component type.
         @type: dict(str -> lems.model.component.Exposure) """
+
+        self.requirements = Map()
+        """ Map of requirements.
+        @type: dict(str -> lems.model.component.Requirement) """
+
+        self.children = Map()
+        """ Map of children.
+        @type: dict(str -> lems.model.component.Children """
 
         self.dynamics = Dynamics()
         """ Behavioural dynamics object.
@@ -114,13 +165,33 @@ class ComponentType(LEMSBase):
 
     def add_exposure(self, exposure):
         """
-        Adds a paramter to this component type.
+        Adds a exposure to this component type.
 
         @param exposure: Exposure to be added.
         @type exposure: lems.model.component.Exposure
         """
 
         self.exposures[exposure.name] = exposure
+
+    def add_requirement(self, requirement):
+        """
+        Adds a requirement to this component type.
+
+        @param requirement: Requirement to be added.
+        @type requirement: lems.model.component.Requirement
+        """
+
+        self.requirements[requirement.name] = requirement
+
+    def add_children(self, children):
+        """
+        Adds children to this component type.
+
+        @param children: Children to be added.
+        @type children: lems.model.component.Children
+        """
+
+        self.children[children.name] = children
 
 class Component(LEMSBase):
     """

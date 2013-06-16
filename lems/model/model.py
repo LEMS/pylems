@@ -27,20 +27,20 @@ class Model(LEMSBase):
         """ List of targets to be run on startup.
         @type: list(str) """
         
-        self.dimensions = dict()
+        self.dimensions = Map()
         """ Dictionary of dimensions defined in the model.
         @type: dict(str -> lems.model.fundamental.Dimension """
         
-        self.units = dict()
-        """ Dictionary of units defined in the model.
+        self.units = Map()
+        """ Map of units defined in the model.
         @type: dict(str -> lems.model.fundamental.Unit """
         
-        self.component_types = dict()
-        """ Dictionary of component types defined in the model.
+        self.component_types = Map()
+        """ Map of component types defined in the model.
         @type: dict(str -> lems.model.component.ComponentType) """
         
-        self.components = dict()
-        """ Dictionary of root components defined in the model.
+        self.components = Map()
+        """ Map of root components defined in the model.
         @type: dict(str -> lems.model.component.Component) """
 
         self.include_directories = []
