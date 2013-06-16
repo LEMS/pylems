@@ -7,6 +7,7 @@ Parameter, ComponentType and Component class definitions.
 """
 
 from lems.base import LEMSBase
+from lems.util import Map
 from lems.model.dynamics import Dynamics
 
 class Parameter(LEMSBase):
@@ -39,6 +40,51 @@ class Parameter(LEMSBase):
 
         self.description = description
         """ Description of this parameter.
+        @type: str """
+
+class Fixed(Parameter):
+    """
+    Stores a fixed parameter specification.
+    """
+    
+    def __init__(self, parameter, value, description = ''):
+        """
+        Constructor.
+
+        See instance variable documentation for more details on parameters.
+        """
+
+        Parameter.__init__(self, parameter, '__dimension_inherited__', description)
+        
+        self.fixed = True
+        self.fixed_value = value
+
+class Constant(LEMSBase):
+    """
+    Stores a constant specification.
+    """
+    
+    def __init__(self, name, value, dimension = None, description = ''):
+        """
+        Constructor.
+
+        See instance variable documentation for more details on parameters.
+        """
+        
+        self.name = name
+        """ Name of the constant.
+        @type: str """
+
+        self.value = value
+        """ Value of the constant.
+        @type: str """
+
+        self.dimension = dimension
+        """ Physical dimensions of the constant.
+        @type: str """
+
+        self.description = description
+        """ Description of the constant.
         @type: str """
 
 class Exposure(LEMSBase):
@@ -109,6 +155,50 @@ class Children:
         """ Single child / multiple children.
         @type: bool """
 
+class Text(LEMSBase):
+    """
+    Stores a text entry specification.
+    """
+
+    def __init__(self, name, description = ''):
+        """
+        Constructor.
+
+        See instance variable documentation for more details on parameters.
+        """
+        
+        self.name = name
+        """ Name of the text entry.
+        @type: str """
+         
+        self.description = description
+        """ Description of the text entry.
+        @type: str """
+
+class Link(LEMSBase):
+    """
+    Stores a link specification.
+    """
+
+    def __init__(self, name, type_, description = ''):
+        """
+        Constructor.
+
+        See instance variable documentation for more details on parameters.
+        """
+        
+        self.name = name
+        """ Name of the link entry.
+        @type: str """
+
+        self.type = type_
+        """ Type of the link.
+        @type: str """
+         
+        self.description = description
+        """ Description of the link.
+        @type: str """
+
 class ComponentType(LEMSBase):
     """
     Stores a component type declaration.
@@ -137,6 +227,10 @@ class ComponentType(LEMSBase):
         """ Map of parameters in this component type.
         @type: dict(str -> lems.model.component.Parameter) """
 
+        self.constants = Map()
+        """ Map of constants in this component type.
+        @type: dict(str -> lems.model.component.Constant) """
+
         self.exposures = Map()
         """ Map of exposures in this component type.
         @type: dict(str -> lems.model.component.Exposure) """
@@ -148,6 +242,14 @@ class ComponentType(LEMSBase):
         self.children = Map()
         """ Map of children.
         @type: dict(str -> lems.model.component.Children """
+
+        self.texts = Map()
+        """ Map of text entries.
+        @type: dict(str -> lems.model.component.Text """
+
+        self.links = Map()
+        """ Map of links.
+        @type: dict(str -> lems.model.component.Link """
 
         self.dynamics = Dynamics()
         """ Behavioural dynamics object.
@@ -162,6 +264,16 @@ class ComponentType(LEMSBase):
         """
 
         self.parameters[parameter.name] = parameter
+
+    def add_constant(self, constant):
+        """
+        Adds a paramter to this component type.
+
+        @param constant: Constant to be added.
+        @type constant: lems.model.component.Constant
+        """
+
+        self.constants[constant.name] = constant
 
     def add_exposure(self, exposure):
         """
@@ -192,6 +304,26 @@ class ComponentType(LEMSBase):
         """
 
         self.children[children.name] = children
+
+    def add_text(self, text):
+        """
+        Adds text to this component type.
+
+        @param text: Text to be added.
+        @type text: lems.model.component.Text
+        """
+
+        self.texts[text.name] = text
+
+    def add_link(self, link):
+        """
+        Adds a link to this component type.
+
+        @param link: Link to be added.
+        @type link: lems.model.component.Link
+        """
+
+        self.links[link.name] = link
 
 class Component(LEMSBase):
     """

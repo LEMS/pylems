@@ -121,11 +121,11 @@ class LEMSFileParser(LEMSBase):
         #self.tag_parse_table['attachments'] = self.parse_attachments
         self.tag_parse_table['child'] = self.parse_child
         #self.tag_parse_table['childinstance'] = self.parse_child_instance
-        #self.tag_parse_table['children'] = self.parse_children
+        self.tag_parse_table['children'] = self.parse_children
         #self.tag_parse_table['component'] = self.parse_component
         #self.tag_parse_table['componentreference'] = self.parse_component_reference
         self.tag_parse_table['componenttype'] = self.parse_component_type
-        #self.tag_parse_table['constant'] = self.parse_constant
+        self.tag_parse_table['constant'] = self.parse_constant
         #self.tag_parse_table['datadisplay'] = self.parse_data_display
         #self.tag_parse_table['datawriter'] = self.parse_data_writer
         #self.tag_parse_table['derivedparameter'] = self.parse_derived_parameter
@@ -136,16 +136,16 @@ class LEMSFileParser(LEMSBase):
         #self.tag_parse_table['eventout'] = self.parse_event_out
         #self.tag_parse_table['eventport'] = self.parse_event_port
         self.tag_parse_table['exposure'] = self.parse_exposure
-        #self.tag_parse_table['fixed'] = self.parse_fixed
+        self.tag_parse_table['fixed'] = self.parse_fixed
         #self.tag_parse_table['foreach'] = self.parse_foreach
         self.tag_parse_table['include'] = self.parse_include
         #self.tag_parse_table['kineticscheme'] = self.parse_kinetic_scheme
-        #self.tag_parse_table['link'] = self.parse_link
+        self.tag_parse_table['link'] = self.parse_link
         #self.tag_parse_table['multiinstantiate'] = self.parse_multi_instantiate
         #self.tag_parse_table['oncondition'] = self.parse_on_condition
         #self.tag_parse_table['onentry'] = self.parse_on_entry
         #self.tag_parse_table['onevent'] = self.parse_on_event
-        #self.tag_parse_table['onstart'] = self.parse_on_start
+        self.tag_parse_table['onstart'] = self.parse_on_start
         self.tag_parse_table['parameter'] = self.parse_parameter
         #self.tag_parse_table['path'] = self.parse_path
         #self.tag_parse_table['record'] = self.parse_record
@@ -154,11 +154,11 @@ class LEMSFileParser(LEMSBase):
         #self.tag_parse_table['run'] = self.parse_run
         #self.tag_parse_table['show'] = self.parse_show
         #self.tag_parse_table['simulation'] = self.parse_simulation
-        #self.tag_parse_table['stateassignment'] = self.parse_state_assignment
+        self.tag_parse_table['stateassignment'] = self.parse_state_assignment
         self.tag_parse_table['statevariable'] = self.parse_state_variable
         #self.tag_parse_table['structure'] = self.parse_structure
         self.tag_parse_table['target'] = self.parse_target
-        #self.tag_parse_table['text'] = self.parse_text
+        self.tag_parse_table['text'] = self.parse_text
         self.tag_parse_table['timederivative'] = self.parse_time_derivative
         #self.tag_parse_table['transition'] = self.parse_transition
         self.tag_parse_table['unit'] = self.parse_unit
@@ -197,7 +197,7 @@ class LEMSFileParser(LEMSBase):
             if ctagl in self.tag_parse_table:
                 self.tag_parse_table[ctagl](child)
             else:
-                raise ParseError("Unrecognized tag '{0}'", ctagl)
+                self.raise_error("Unrecognized tag '{0}'", ctagl)
                 #self.parse_component_by_typename(child, child.tag)
 
             self.xml_node_stack = self.xml_node_stack[1:]
@@ -378,23 +378,17 @@ class LEMSFileParser(LEMSBase):
         @type node: xml.etree.Element
         """
 
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Children definitions can only be made in ' +
-                             'a component type')
-
         if 'name' in node.lattrib:
             name = node.lattrib['name']
         else:
-            self.raise_error('<Children> must specify a name for the ' +
-                             'reference.')
+            self.raise_error('<Children> must specify a name.')
 
         if 'type' in node.lattrib:
-            type = node.lattrib['type']
+            type_ = node.lattrib['type']
         else:
-            self.raise_error('<Children> must specify a type for the ' +
-                             'reference.')
+            self.raise_error("Children '{0}' must specify a type.", name)
 
-        self.current_context.add_children_def(name, type)
+        self.current_component_type.add_children(Children(name, type_, True))
 
     def parse_component_by_typename(self, node, type):
         """
@@ -563,34 +557,28 @@ class LEMSFileParser(LEMSBase):
 
         @param node: Node containing the <Constant> element
         @type node: xml.etree.Element
-
-        @raise ParseError: Raised when the constant does not have a name.
-        @raise ParseError: Raised when the constant does not have a
-        dimension.
         """
-
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Constants can only be defined in ' +
-                             'a component type')
 
         try:
             name = node.lattrib['name']
         except:
-            self.raise_error('Constant must have a name')
+            self.raise_error('<Constant> must specify a name.')
 
-        try:
-            dimension = node.lattrib['dimension']
-        except:
-            dimension = None
+        dimension = node.lattrib.get('dimension', None)
 
         try:
             value = node.lattrib['value']
         except:
-            self.raise_error('Constant must have a value')
+            self.raise_error("Constant '{0}' must have a value.", name)
 
-        constant = Parameter(name, dimension, True, value)
+        description = node.lattrib.get('description', '')
 
-        self.current_context.add_parameter(constant)
+        constant = Constant(name, value, dimension, description)
+
+        if self.current_component_type:
+            self.current_component_type.add_constant(constant)
+        else:
+            self.model.add_constant(constant)
 
     def parse_data_display(self, node):
         """
@@ -861,24 +849,21 @@ class LEMSFileParser(LEMSBase):
 
         @param node: Node containing the <Fixed> element
         @type node: xml.etree.Element
-
-        @raise ParseError: Raised when
         """
 
         try:
             parameter = node.lattrib['parameter']
         except:
-            self.raise_error('Parameter to be fixed must be specified')
+            self.raise_error('<Fixed> must specify a parameter to be fixed.')
 
         try:
             value = node.lattrib['value']
         except:
-            self.raise_error('Value to be fixed must be specified')
+            self.raise_error("Fixed paramter '{0}'must specify a value.", parameter)
 
-        if self.current_context.lookup_parameter(parameter) == None:
-            self.current_context.add_parameter(Parameter(
-                parameter, '__dimension_inherited__'))
-        self.current_context.lookup_parameter(parameter).fix_value(value)
+        description = node.lattrib.get('description', '')
+        
+        self.current_component_type.add_parameter(Parameter(parameter, value, description))
 
     def parse_foreach(self, node):
         """
@@ -991,21 +976,19 @@ class LEMSFileParser(LEMSBase):
         @type node: xml.etree.Element
         """
 
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Link variables can only be defined in ' +
-                             'a component type')
-
         if 'name' in node.lattrib:
             name = node.lattrib['name']
         else:
-            self.raise_error('A name must be provided for <Link>')
+            self.raise_error('<Link> must specify a name')
 
         if 'type' in node.lattrib:
-            type = node.lattrib['type']
+            type_ = node.lattrib['type']
         else:
-            type = None
+            self.raise_error("Link '{0}' must specify a type", name)
 
-        self.current_context.add_link_var(name, type)
+        description = node.lattrib.get('description', '')
+
+        self.current_component_type.add_link(Link(name, type_, description))
 
     def parse_multi_instantiate(self, node):
         """
@@ -1113,17 +1096,12 @@ class LEMSFileParser(LEMSBase):
         @type node: xml.etree.Element
         """
 
-        if self.current_regime == None:
-            self.raise_error('<OnEvent> must be defined inside a ' +
-                             'dynamics profile or regime')
-
         event_handler = OnStart()
 
-        self.current_event_handler = event_handler
         self.current_regime.add_event_handler(event_handler)
 
+        self.current_event_handler = event_handler
         self.process_nested_tags(node)
-
         self.current_event_handler = None
 
     def parse_parameter(self, node):
@@ -1334,21 +1312,16 @@ class LEMSFileParser(LEMSBase):
         @type node: xml.etree.Element
         """
 
-        if self.current_event_handler == None:
-            self.raise_error('<StateAssignment> must be defined inside an ' +
-                             'event handler in a dynamics profile or regime')
-
         if 'variable' in node.lattrib:
             variable = node.lattrib['variable']
         else:
-            self.raise_error('\'variable\' attribute not provided for ' +
-                             '<StateAssignment>')
+            self.raise_error('<StateAssignment> must specify a variable name')
 
         if 'value' in node.lattrib:
             value = node.lattrib['value']
         else:
-            self.raise_error('\'value\' attribute not provided for ' +
-                             '<StateAssignment>')
+            self.raise_error("State assignment for '{0}' must specify a value.",
+                             variable)
 
         action = StateAssignment(variable, value)
 
@@ -1420,21 +1393,17 @@ class LEMSFileParser(LEMSBase):
         @type node: xml.etree.Element
         """
 
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Text variables can only be defined in ' +
-                             'a component type')
-
         if 'name' in node.lattrib:
             name = node.lattrib['name']
         else:
-            self.raise_error('A name must be provided for <Text>')
+            self.raise_error('<Text> must specify a name')
 
-        if 'value' in node.lattrib:
-            value = node.lattrib['value']
+        if 'description' in node.lattrib:
+            description = node.lattrib['description']
         else:
-            value = None
+            description = None
 
-        self.current_context.add_text_var(name, value)
+        self.current_component_type.add_text(Text(name, description))
 
     def parse_time_derivative(self, node):
         """

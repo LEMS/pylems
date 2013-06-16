@@ -86,13 +86,161 @@ class TimeDerivative(LEMSBase):
         """
 
         self.variable = variable
-        """ Name of the variable for which the time derivative is being specified..
+        """ Name of the variable for which the time derivative is being specified.
         @type: str """
 
         self.value = value
         """ Derivative expression.
         @type: str """
         
+class Action(LEMSBase):
+    """
+    Base class for event handler actions.
+    """
+
+    pass
+
+class StateAssignment(Action):
+    """
+    State assignment specification.
+    """
+
+    def __init__(self, variable, value):
+        """
+        Constructor.
+
+        See instance variable documentation for more info on parameters.
+        """
+
+        Action.__init__(self)
+
+        self.variable = variable
+        """ Name of the variable for which the time derivative is being specified.
+        @type: str """
+
+        self.value = value
+        """ Derivative expression.
+        @type: str """
+
+class EventOut(Action):
+    """
+    Event transmission specification.
+    """
+
+    def __init__(self, port):
+        """
+        Constructor.
+        
+        See instance variable documentation for more details on parameters.
+        """
+        
+        Action.__init__(self)
+
+        self.port = port
+        """ Port on which the event comes in.
+        @type: str """
+        
+class Transition(Action):
+    """
+    Regime transition specification.
+    """
+
+    def __init__(self, regime):
+        """
+        Constructor.
+        
+        See instance variable documentation for more details on parameters.
+        """
+        
+        Action.__init__(self)
+
+        self.regime = regime
+        """ Regime to transition to.
+        @type: str """
+
+class EventHandler(LEMSBase):
+    """
+    Base class for event handlers.
+    """
+
+    def __init__(self):
+        """
+        Constructor.
+        """
+
+        self.actions = list()
+        """ List of actions to be performed in response to this event.
+        @type: list(lems.model.dynamics.Action) """
+
+    def add_action(self, action):
+        """
+        Adds an action to this event handler.
+
+        @param action: Action to be added.
+        @type: action: lems.model.dynamics.Action
+        """
+
+        self.actions.append(action)
+
+class OnStart(EventHandler):
+    """
+    Specification for event handler called upon initialization of the component.
+    """
+
+    def __init__(self):
+        """
+        Constructor.
+        """
+        
+        EventHandler.__init__(self)
+
+class OnCondition(EventHandler):
+    """
+    Specification for event handler called upon satisfying a given condition.
+    """
+
+    def __init__(self, test):
+        """
+        Constructor.
+        
+        See instance variable documentation for more details on parameters.
+        """
+        
+        EventHandler.__init__(self)
+
+        self.test = test
+        """ Condition to be tested for.
+        @type: str """
+
+class OnEvent(EventHandler):
+    """
+    Specification for event handler called upon receiving en event sent by another component.
+    """
+
+    def __init__(self, port):
+        """
+        Constructor.
+        
+        See instance variable documentation for more details on parameters.
+        """
+        
+        EventHandler.__init__(self)
+
+        self.port = port
+        """ Port on which the event comes in.
+        @type: str """
+
+class OnEntry(EventHandler):
+    """
+    Specification for event handler called upon entry into a new behavior regime.
+    """
+
+    def __init__(self, port):
+        """
+        Constructor.
+        """
+        
+        EventHandler.__init__(self)
 
 class Regime(LEMSBase):
     """
@@ -115,6 +263,10 @@ class Regime(LEMSBase):
         self.time_derivatives = Map()
         """ Map of time derivatives in this behavior regime.
         @type: dict(str -> lems.model.dynamics.TimeDerivative) """
+
+        self.event_handlers = list()
+        """ List of event handlers in this behaviour regime.
+        @type: list(lems.model.dynamics.EventHandler) """
 
     def add_state_variable(self, sv):
         """
@@ -145,7 +297,16 @@ class Regime(LEMSBase):
         """
 
         self.time_derivatives[td.variable] = td
-        
+
+    def add_event_handler(self, eh):
+        """
+        Adds an event handler to this behavior regime.
+
+        @param eh: Event handler.
+        @type eh: lems.model.dynamics.EventHandler
+        """
+
+        self.event_handlers.append(eh)
 
 class Dynamics(Regime):
     """

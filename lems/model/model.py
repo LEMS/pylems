@@ -10,6 +10,7 @@ import os
 from os.path import dirname
 
 from lems.base import LEMSBase
+from lems.util import Map
 from lems.parser import LEMSFileParser
 from lems.errors import ModelError
 
@@ -42,6 +43,10 @@ class Model(LEMSBase):
         self.components = Map()
         """ Map of root components defined in the model.
         @type: dict(str -> lems.model.component.Component) """
+
+        self.constants = Map()
+        """ Map of constants in this component type.
+        @type: dict(str -> lems.model.component.Constant) """
 
         self.include_directories = []
         """ List of include directories to search for included LEMS files.
@@ -97,6 +102,16 @@ class Model(LEMSBase):
         """
 
         self.component_types[component_type.name] = component_type
+
+    def add_constant(self, constant):
+        """
+        Adds a paramter to this component type.
+
+        @param constant: Constant to be added.
+        @type constant: lems.model.component.Constant
+        """
+
+        self.constants[constant.name] = constant
 
     def add_simulation(self, simulation):
         pass

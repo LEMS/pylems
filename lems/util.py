@@ -15,12 +15,12 @@ class Map(dict, LEMSBase):
     Same as dict, but iterates over values.
     """
     
-    def __init__(self):
+    def __init__(self, *params, **key_params):
         """
         Constructor.
         """
         
-        dict.__init__(self)
+        dict.__init__(self, *params, **key_params)
 
     def __iter__(self):
         """
