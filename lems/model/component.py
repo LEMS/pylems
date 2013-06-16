@@ -199,6 +199,31 @@ class Link(LEMSBase):
         """ Description of the link.
         @type: str """
 
+class EventPort(LEMSBase):
+    """
+    Stores an event port specification.
+    """
+
+    def __init__(self, name, direction, description = ''):
+        """
+        Constructor.
+
+        See instance variable documentation for more details on parameters.
+        """
+        
+        self.name = name
+        """ Name of the event port.
+        @type: str """
+
+        self.direction = direction
+        """ Direction - IN/OUT .
+        @type: str """
+         
+        self.description = description
+        """ Description of the event port.
+        @type: str """
+
+        
 class ComponentType(LEMSBase):
     """
     Stores a component type declaration.
@@ -250,6 +275,10 @@ class ComponentType(LEMSBase):
         self.links = Map()
         """ Map of links.
         @type: dict(str -> lems.model.component.Link """
+
+        self.event_ports = Map()
+        """ Map of event ports.
+        @type: dict(str -> lems.model.component.EventPort """
 
         self.dynamics = Dynamics()
         """ Behavioural dynamics object.
@@ -324,6 +353,16 @@ class ComponentType(LEMSBase):
         """
 
         self.links[link.name] = link
+
+    def add_event_port(self, event_port):
+        """
+        Adds a event port to this component type.
+
+        @param event_port: Event port to be added.
+        @type event_port: lems.model.component.EventPort
+        """
+
+        self.event_ports[event_port.name] = event_port
 
 class Component(LEMSBase):
     """

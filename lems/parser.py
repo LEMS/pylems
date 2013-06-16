@@ -134,7 +134,7 @@ class LEMSFileParser(LEMSBase):
         self.tag_parse_table['dynamics'] = self.parse_dynamics
         #self.tag_parse_table['eventconnection'] = self.parse_event_connection
         #self.tag_parse_table['eventout'] = self.parse_event_out
-        #self.tag_parse_table['eventport'] = self.parse_event_port
+        self.tag_parse_table['eventport'] = self.parse_event_port
         self.tag_parse_table['exposure'] = self.parse_exposure
         self.tag_parse_table['fixed'] = self.parse_fixed
         #self.tag_parse_table['foreach'] = self.parse_foreach
@@ -791,28 +791,24 @@ class LEMSFileParser(LEMSBase):
         @type node: xml.etree.Element
         """
 
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Event ports can only be defined in ' +
-                             'a component type')
-
         if 'name' in node.lattrib:
             name = node.lattrib['name']
         else:
-            self.raise_error(('<EventPort> must specify a name for the '
-                              'event port'))
+            self.raise_error(('<EventPort> must specify a name.'))
 
         if 'direction' in node.lattrib:
             direction = node.lattrib['direction']
         else:
-            self.raise_error(('<EventPort> must specify a direction for the '
-                              'event port'))
+            self.raise_error("Event port '{0}' must specify a direction.")
 
         direction = direction.lower()
         if direction != 'in' and direction != 'out':
             self.raise_error(('Event port direction must be \'in\' '
                               'or \'out\''))
 
-        self.current_context.add_event_port(name, direction)
+        description = node.lattrib.get('description', '')
+        
+        self.current_component_type.add_event_port(EventPort(name, direction, description))
 
     def parse_exposure(self, node):
         """
