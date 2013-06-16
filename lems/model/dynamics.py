@@ -242,6 +242,52 @@ class OnEntry(EventHandler):
         
         EventHandler.__init__(self)
 
+class KineticScheme(LEMSBase):
+    """
+    Kinetic scheme specifications.
+    """
+
+    def __init__(self, name, nodes, state_variable, 
+                 edges, edge_source, edge_target,
+                 forward_rate, reverse_rate):
+        """
+        Constructor.
+        
+        See instance variable documentation for more details on parameters.
+        """
+
+        self.name = name
+        """ Name of the kinetic scheme.
+        @type: str """
+
+        self.nodes = nodes
+        """ Nodes to be used for the kinetic scheme.
+        @type: str """
+
+        self.state_variable = state_variable
+        """ State variable updated by the kinetic scheme.
+        @type: str """
+
+        self.edges = edges
+        """ Edges to be used for the kinetic scheme.
+        @type: str """
+
+        self.edge_source = edge_source
+        """ Attribute that defines the source of the transition.
+        @type: str """
+
+        self.edge_target = edge_target
+        """ Attribute that defines the target of the transition.
+        @type: str """
+
+        self.forward_rate = forward_rate
+        """ Name of the forward rate exposure.
+        @type: str """
+
+        self.reverse_rate = reverse_rate
+        """ Name of the reverse rate exposure.
+        @type: str """
+
 class Regime(LEMSBase):
     """
     Stores a single behavioral regime for a component type.
@@ -267,6 +313,10 @@ class Regime(LEMSBase):
         self.event_handlers = list()
         """ List of event handlers in this behaviour regime.
         @type: list(lems.model.dynamics.EventHandler) """
+
+        self.kinetic_schemes = Map()
+        """ Map of kinetic schemes in this behavior regime.
+        @type: dict(str -> lems.model.dynamics.KineticScheme) """
 
     def add_state_variable(self, sv):
         """
@@ -307,6 +357,16 @@ class Regime(LEMSBase):
         """
 
         self.event_handlers.append(eh)
+
+    def add_kinetic_scheme(self, ks):
+        """
+        Adds a kinetic scheme to this behavior regime.
+
+        @param td: Kinetic scheme.
+        @type td: lems.model.dynamics.KineticScheme
+        """
+
+        self.kinetic_schemes[ks.name] = ks
 
 class Dynamics(Regime):
     """

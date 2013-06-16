@@ -139,7 +139,7 @@ class LEMSFileParser(LEMSBase):
         self.tag_parse_table['fixed'] = self.parse_fixed
         #self.tag_parse_table['foreach'] = self.parse_foreach
         self.tag_parse_table['include'] = self.parse_include
-        #self.tag_parse_table['kineticscheme'] = self.parse_kinetic_scheme
+        self.tag_parse_table['kineticscheme'] = self.parse_kinetic_scheme
         self.tag_parse_table['link'] = self.parse_link
         #self.tag_parse_table['multiinstantiate'] = self.parse_multi_instantiate
         #self.tag_parse_table['oncondition'] = self.parse_on_condition
@@ -920,53 +920,49 @@ class LEMSFileParser(LEMSBase):
         @type node: xml.etree.Element
         """
 
-        if self.current_regime == None:
-            self.raise_error('<KineticScheme> must be defined inside a ' +
-                             'dynamics profile or regime')
-
         if 'name' in node.lattrib:
             name = node.lattrib['name']
         else:
-            self.raise_error('A name must be provided for <KineticScheme>')
+            self.raise_error('<KineticScheme> must specify a name.')
 
         if 'nodes' in node.lattrib:
             nodes = node.lattrib['nodes']
         else:
-            self.raise_error("The 'nodes' must be provided for <KineticScheme>")
+            self.raise_error("Kinetic scheme '{0}' must specify nodes.", name)
 
         if 'statevariable' in node.lattrib:
             state_variable = node.lattrib['statevariable']
         else:
-            self.raise_error("The 'stateVariable' must be provided for <KineticScheme>")
+            self.raise_error("Kinetic scheme '{0}' must specify a state variable.", name)
 
         if 'edges' in node.lattrib:
             edges = node.lattrib['edges']
         else:
-            self.raise_error("The 'edges' must be provided for <KineticScheme>")
+            self.raise_error("Kinetic scheme '{0}' must specify edges.", name)
 
         if 'edgesource' in node.lattrib:
             edge_source = node.lattrib['edgesource']
         else:
-            self.raise_error("The 'edgeSource' must be provided for <KineticScheme>")
+            self.raise_error("Kinetic scheme '{0}' must specify the edge source attribute.", name)
 
         if 'edgetarget' in node.lattrib:
             edge_target = node.lattrib['edgetarget']
         else:
-            self.raise_error("The 'edgeTarget' must be provided for <KineticScheme>")
+            self.raise_error("Kinetic scheme '{0}' must specify the edge target attribute.", name)
 
         if 'forwardrate' in node.lattrib:
             forward_rate = node.lattrib['forwardrate']
         else:
-            self.raise_error("The 'forwardRate' must be provided for <KineticScheme>")
+            self.raise_error("Kinetic scheme '{0}' must specify the forward rate attribute.", name)
 
         if 'reverserate' in node.lattrib:
             reverse_rate = node.lattrib['reverserate']
         else:
-            self.raise_error("The 'reverseRate' must be provided for <KineticScheme>")
+            self.raise_error("Kinetic scheme '{0}' must specify the reverse rate attribute", name)
 
-        self.current_regime.add_kinetic_scheme(name, nodes, state_variable,
-                                               edges, edge_source, edge_target,
-                                               forward_rate, reverse_rate)
+        self.current_regime.add_kinetic_scheme(KineticScheme(name, nodes, state_variable,
+                                                             edges, edge_source, edge_target,
+                                                             forward_rate, reverse_rate))
 
     def parse_link(self, node):
         """
