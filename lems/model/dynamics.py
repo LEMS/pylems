@@ -1,5 +1,5 @@
 """
-Behavioral dynamics.
+Behavioral dynamics of component types.
 
 @author: Gautham Ganapathy
 @organization: LEMS (http://neuroml.org/lems/, https://github.com/organizations/LEMS)
@@ -235,7 +235,7 @@ class OnEntry(EventHandler):
     Specification for event handler called upon entry into a new behavior regime.
     """
 
-    def __init__(self, port):
+    def __init__(self):
         """
         Constructor.
         """
@@ -288,14 +288,16 @@ class KineticScheme(LEMSBase):
         """ Name of the reverse rate exposure.
         @type: str """
 
-class Regime(LEMSBase):
+class Behavioral(LEMSBase):
     """
-    Stores a single behavioral regime for a component type.
+    Store dynamic behavioral attrubutes.
     """
 
     def __init__(self):
         """
         Constructor.
+        
+        See instance variable documentation for more details on parameters.
         """
 
         self.state_variables = Map()
@@ -368,7 +370,29 @@ class Regime(LEMSBase):
 
         self.kinetic_schemes[ks.name] = ks
 
-class Dynamics(Regime):
+class Regime(Behavioral):
+    """
+    Stores a single behavioral regime for a component type.
+    """
+
+    def __init__(self, name, initial = False):
+        """
+        Constructor.
+        
+        See instance variable documentation for more details on parameters.
+        """
+
+        Behavioral.__init__(self)
+        
+        self.name = name
+        """ Name of this behavior regime.
+        @type: str """
+
+        self.initial = initial
+        """ Initial behavior regime.
+        @type: bool """
+        
+class Dynamics(Behavioral):
     """
     Stores behavioral dynamics specification for a component type.
     """
@@ -378,4 +402,17 @@ class Dynamics(Regime):
         Constructor.
         """
         
-        Regime.__init__(self)
+        Behavioral.__init__(self)
+
+        self.regimes = Map()
+        """ Map of behavior regimes.
+        @type: Map(str -> lems.model.dynamics.Regime) """
+
+    def add_regime(self, regime):
+        """
+        Adds a behavior regime to this dynamics object.
+
+        @param regime: Behavior regime to be added.
+        @type regime: lems.model.dynamics.Regime """
+
+        self.regimes[regime.name] = regime

@@ -9,6 +9,8 @@ Parameter, ComponentType and Component class definitions.
 from lems.base import LEMSBase
 from lems.util import Map
 from lems.model.dynamics import Dynamics
+from lems.model.structure import Structure
+from lems.model.simulation import Simulation
 
 class Parameter(LEMSBase):
     """
@@ -199,6 +201,26 @@ class Link(LEMSBase):
         """ Description of the link.
         @type: str """
 
+class Path(LEMSBase):
+    """
+    Stores a path entry specification.
+    """
+
+    def __init__(self, name, description = ''):
+        """
+        Constructor.
+
+        See instance variable documentation for more details on parameters.
+        """
+        
+        self.name = name
+        """ Name of the path entry.
+        @type: str """
+         
+        self.description = description
+        """ Description of the path entry.
+        @type: str """
+
 class EventPort(LEMSBase):
     """
     Stores an event port specification.
@@ -223,6 +245,51 @@ class EventPort(LEMSBase):
         """ Description of the event port.
         @type: str """
 
+class ComponentReference(LEMSBase):
+    """
+    Stores a component reference.
+    """
+
+    def __init__(self, name, type_):
+        """
+        Constructor.
+
+        See instance variable documentation for more details on parameters.
+        """
+
+        self.name = name
+        """ Name of the component reference.
+        @type: str """
+
+        self.type = type_
+        """ Type of the component reference.
+        @type: str """
+
+class Attachments(LEMSBase):
+    """
+    Stores an attachment type specification.
+    """
+
+    def __init__(self, name, type_, description = ''):
+        """
+        Constructor.
+
+        See instance variable documentation for more details on parameters.
+        """
+
+        self.name = name
+        """ Name of the attachment collection.
+        @type: str """
+
+        self.type = type_
+        """ Type of attachment.
+        @type: str """
+
+        self.description = description
+        """ Description about the attachment.
+        @type: str """
+
+    
         
 class ComponentType(LEMSBase):
     """
@@ -250,39 +317,59 @@ class ComponentType(LEMSBase):
         
         self.parameters = Map()
         """ Map of parameters in this component type.
-        @type: dict(str -> lems.model.component.Parameter) """
+        @type: Map(str -> lems.model.component.Parameter) """
 
         self.constants = Map()
         """ Map of constants in this component type.
-        @type: dict(str -> lems.model.component.Constant) """
+        @type: Map(str -> lems.model.component.Constant) """
 
         self.exposures = Map()
         """ Map of exposures in this component type.
-        @type: dict(str -> lems.model.component.Exposure) """
+        @type: Map(str -> lems.model.component.Exposure) """
 
         self.requirements = Map()
         """ Map of requirements.
-        @type: dict(str -> lems.model.component.Requirement) """
+        @type: Map(str -> lems.model.component.Requirement) """
 
         self.children = Map()
         """ Map of children.
-        @type: dict(str -> lems.model.component.Children """
+        @type: Map(str -> lems.model.component.Children """
 
         self.texts = Map()
         """ Map of text entries.
-        @type: dict(str -> lems.model.component.Text """
+        @type: Map(str -> lems.model.component.Text """
 
         self.links = Map()
         """ Map of links.
-        @type: dict(str -> lems.model.component.Link """
+        @type: Map(str -> lems.model.component.Link """
+
+        self.paths = Map()
+        """ Map of path entries.
+        @type: Map(str -> lems.model.component.Path """
 
         self.event_ports = Map()
         """ Map of event ports.
-        @type: dict(str -> lems.model.component.EventPort """
+        @type: Map(str -> lems.model.component.EventPort """
+
+        self.component_references = Map()
+        """ Map of component references.
+        @type: Map(str -> lems.model.component.ComponentReference) """
+
+        self.attachments = Map()
+        """ Map of attachment type specifications.
+        @type: Map(str -> lems.model.component.Attachments) """
 
         self.dynamics = Dynamics()
         """ Behavioural dynamics object.
         @type: lems.model.dynamics.Dynamics """
+
+        self.structure = Structure()
+        """ Structural properties object.
+        @type: lems.model.structure.Structure """
+
+        self.simulation = Simulation()
+        """ Simulation attributes.
+        @type: lems.model.simulation.Simulation """
 
     def add_parameter(self, parameter):
         """
@@ -336,7 +423,7 @@ class ComponentType(LEMSBase):
 
     def add_text(self, text):
         """
-        Adds text to this component type.
+        Adds a text to this component type.
 
         @param text: Text to be added.
         @type text: lems.model.component.Text
@@ -354,6 +441,16 @@ class ComponentType(LEMSBase):
 
         self.links[link.name] = link
 
+    def add_path(self, path):
+        """
+        Adds a path to this component type.
+
+        @param path: Path to be added.
+        @type path: lems.model.component.Path
+        """
+
+        self.paths[path.name] = path
+
     def add_event_port(self, event_port):
         """
         Adds a event port to this component type.
@@ -364,16 +461,73 @@ class ComponentType(LEMSBase):
 
         self.event_ports[event_port.name] = event_port
 
+    def add_component_reference(self, component_reference):
+        """
+        Adds a component reference to this component type.
+
+        @param component_reference: Component reference to be added.
+        @type component_reference: lems.model.component.ComponentReference
+        """
+
+        self.component_references[component_reference.name] = component_reference
+
+    def add_attachments(self, attachments):
+        """
+        Adds an attachments type specification to this component type.
+
+        @param attachments: Attachments specification to be added.
+        @type attachments: lems.model.component.ComponentReference
+        """
+
+        self.attachments[attachments.name] = attachments
+
 class Component(LEMSBase):
     """
     Stores a component instantiation.
     """
 
-    def __init(self, description = ''):
+    def __init__(self, id_, type_):
         """
         Constructor.
+
+        See instance variable documentation for more details on parameters.
         """
 
-        self.description = description
-        """ Description of this component.
+        self.id = id_
+        """ ID of the component.
         @type: str """
+
+        self.type = type_
+        """ Type of the component.
+        @type: str """
+
+        self.parameters = dict()
+        """ Dictionary of parameter values.
+        @type: str """
+
+        self.children = list()
+        """ List of child components.
+        @type: list(lems.model.component.Component) """
+
+    def set_parameter(self, parameter, value):
+        """
+        Set a parameter.
+
+        @param parameter: Parameter to be set.
+        @type parameter: str
+
+        @param value: Value to be set to.
+        @type value: str
+        """
+
+        self.parameters[parameter] = value
+
+    def add_child(self, child):
+        """
+        Adds a child component.
+
+        @param child: Child component to be added.
+        @type child: lems.model.component.Component
+        """
+
+        self.children.append(child)

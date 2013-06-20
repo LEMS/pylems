@@ -14,6 +14,8 @@ from lems.errors import ParseError
 from lems.model.fundamental import *
 from lems.model.component import *
 from lems.model.dynamics import *
+from lems.model.structure import *
+from lems.model.simulation import *
 
 def get_nons_tag_from_node(node):
     tag = node.tag
@@ -96,15 +98,11 @@ class LEMSFileParser(LEMSBase):
                                                 'text', 'attachments',
                                                 'constant', 'derivedparameter']
         self.valid_children['dynamics'] = ['derivedvariable',
-                                           'oncondition', 'onentry',
+                                           'oncondition',
                                            'onevent', 'onstart',
                                            'statevariable', 'timederivative',
                                            'kineticscheme', 'regime']
-        self.valid_children['regime'] = ['derivedvariable',
-                                         'oncondition', 'onentry',
-                                         'onevent', 'onstart',
-                                         'statevariable', 'timederivative',
-                                         'kineticscheme', 'transition']
+        self.valid_children['regime'] = ['oncondition', 'onentry', 'timederivative']
         self.valid_children['oncondition'] = ['eventout', 'stateassignment']
         self.valid_children['onentry'] = ['eventout', 'stateassignment']
         self.valid_children['onevent'] = ['eventout', 'stateassignment']
@@ -118,22 +116,22 @@ class LEMSFileParser(LEMSBase):
 
         self.tag_parse_table = dict()
         #self.tag_parse_table['assertion'] = self.parse_assertion
-        #self.tag_parse_table['attachments'] = self.parse_attachments
+        self.tag_parse_table['attachments'] = self.parse_attachments
         self.tag_parse_table['child'] = self.parse_child
-        #self.tag_parse_table['childinstance'] = self.parse_child_instance
+        self.tag_parse_table['childinstance'] = self.parse_child_instance
         self.tag_parse_table['children'] = self.parse_children
         #self.tag_parse_table['component'] = self.parse_component
-        #self.tag_parse_table['componentreference'] = self.parse_component_reference
+        self.tag_parse_table['componentreference'] = self.parse_component_reference
         self.tag_parse_table['componenttype'] = self.parse_component_type
         self.tag_parse_table['constant'] = self.parse_constant
-        #self.tag_parse_table['datadisplay'] = self.parse_data_display
-        #self.tag_parse_table['datawriter'] = self.parse_data_writer
+        self.tag_parse_table['datadisplay'] = self.parse_data_display
+        self.tag_parse_table['datawriter'] = self.parse_data_writer
         #self.tag_parse_table['derivedparameter'] = self.parse_derived_parameter
         self.tag_parse_table['derivedvariable'] = self.parse_derived_variable
         self.tag_parse_table['dimension'] = self.parse_dimension
         self.tag_parse_table['dynamics'] = self.parse_dynamics
-        #self.tag_parse_table['eventconnection'] = self.parse_event_connection
-        #self.tag_parse_table['eventout'] = self.parse_event_out
+        self.tag_parse_table['eventconnection'] = self.parse_event_connection
+        self.tag_parse_table['eventout'] = self.parse_event_out
         self.tag_parse_table['eventport'] = self.parse_event_port
         self.tag_parse_table['exposure'] = self.parse_exposure
         self.tag_parse_table['fixed'] = self.parse_fixed
@@ -141,34 +139,38 @@ class LEMSFileParser(LEMSBase):
         self.tag_parse_table['include'] = self.parse_include
         self.tag_parse_table['kineticscheme'] = self.parse_kinetic_scheme
         self.tag_parse_table['link'] = self.parse_link
-        #self.tag_parse_table['multiinstantiate'] = self.parse_multi_instantiate
-        #self.tag_parse_table['oncondition'] = self.parse_on_condition
-        #self.tag_parse_table['onentry'] = self.parse_on_entry
-        #self.tag_parse_table['onevent'] = self.parse_on_event
+        self.tag_parse_table['multiinstantiate'] = self.parse_multi_instantiate
+        self.tag_parse_table['oncondition'] = self.parse_on_condition
+        self.tag_parse_table['onentry'] = self.parse_on_entry
+        self.tag_parse_table['onevent'] = self.parse_on_event
         self.tag_parse_table['onstart'] = self.parse_on_start
         self.tag_parse_table['parameter'] = self.parse_parameter
-        #self.tag_parse_table['path'] = self.parse_path
-        #self.tag_parse_table['record'] = self.parse_record
-        #self.tag_parse_table['regime'] = self.parse_regime
+        self.tag_parse_table['path'] = self.parse_path
+        self.tag_parse_table['record'] = self.parse_record
+        self.tag_parse_table['regime'] = self.parse_regime
         self.tag_parse_table['requirement'] = self.parse_requirement
-        #self.tag_parse_table['run'] = self.parse_run
+        self.tag_parse_table['run'] = self.parse_run
         #self.tag_parse_table['show'] = self.parse_show
-        #self.tag_parse_table['simulation'] = self.parse_simulation
+        self.tag_parse_table['simulation'] = self.parse_simulation
         self.tag_parse_table['stateassignment'] = self.parse_state_assignment
         self.tag_parse_table['statevariable'] = self.parse_state_variable
-        #self.tag_parse_table['structure'] = self.parse_structure
+        self.tag_parse_table['structure'] = self.parse_structure
         self.tag_parse_table['target'] = self.parse_target
         self.tag_parse_table['text'] = self.parse_text
         self.tag_parse_table['timederivative'] = self.parse_time_derivative
-        #self.tag_parse_table['transition'] = self.parse_transition
+        self.tag_parse_table['transition'] = self.parse_transition
         self.tag_parse_table['unit'] = self.parse_unit
-        #self.tag_parse_table['with'] = self.parse_with
+        self.tag_parse_table['with'] = self.parse_with
 
         self.xml_node_stack = []
 
         self.current_component_type = None
         self.current_dynamics = None
         self.current_regime = None
+        self.current_event_handler = None
+        self.current_structure = None
+        self.current_simulation = None
+        self.current_component = None
         
         def counter():
             count = 1
@@ -197,8 +199,7 @@ class LEMSFileParser(LEMSBase):
             if ctagl in self.tag_parse_table:
                 self.tag_parse_table[ctagl](child)
             else:
-                self.raise_error("Unrecognized tag '{0}'", ctagl)
-                #self.parse_component_by_typename(child, child.tag)
+                self.parse_component_by_typename(child, child.tag)
 
             self.xml_node_stack = self.xml_node_stack[1:]
 
@@ -312,23 +313,19 @@ class LEMSFileParser(LEMSBase):
         @type node: xml.etree.Element
         """
 
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Attachments can only be made in ' +
-                             'a component type')
-
         if 'name' in node.lattrib:
             name = node.lattrib['name']
         else:
-            self.raise_error('<Attachments> must specify a name for the ' +
-                             'attachment.')
+            self.raise_error('<Attachments> must specify a name.')
 
         if 'type' in node.lattrib:
             type_ = node.lattrib['type']
         else:
-            self.raise_error('<Attachment> must specify a type for the ' +
-                             'attachment.')
+            self.raise_error("Attachment '{0}' must specify a type.",
+                             name)
 
-        self.current_context.add_attachment(name, type_)
+        description = node.lattrib.get('description', '')
+        self.current_component_type.add_attachments(Attachments(name, type_, description))
 
     def parse_child(self, node):
         """
@@ -358,17 +355,12 @@ class LEMSFileParser(LEMSBase):
         @type node: xml.etree.Element
         """
 
-        if self.current_structure == None:
-            self.raise_error('Child instantiations can only be made within ' +
-                             'a structure definition')
-
         if 'component' in node.lattrib:
             component = node.lattrib['component']
         else:
-            self.raise_error('<ChildInstance> must specify a component '
-                             'reference')
+            self.raise_error('<ChildInstance> must specify a component reference')
 
-        self.current_structure.add_single_child_def(component)
+        self.current_structure.add_child_instance(ChildInstance(component))
 
     def parse_children(self, node):
         """
@@ -403,48 +395,29 @@ class LEMSFileParser(LEMSBase):
         @raise ParseError: Raised when the component does not have an id.
         """
 
-        raise Exception(("Component initialized using typename "
-                         "'{0}' as the XML tag").format(node.tag))
-
-        if self.current_context.context_type == Context.GLOBAL:
-            # Global component instatiation
-            if 'id' in node.lattrib:
-                id_ = node.lattrib['id']
-            else:
-                self.raise_error('Component must have an id')
-
-            type = node.tag
-
-            component = Component(id_, self.current_context, type, None)
-
-            self.current_context.add_component(component)
-
+        if 'id' in node.lattrib:
+            id_ = node.lattrib['id']
         else:
-            # Child instantiation
+            #self.raise_error('Component must have an id')
+            id_ = self.model.make_id()
 
-            if 'id' in node.lattrib:
-                id_ = node.lattrib['id']
-                type = node.tag
-            else:
-                id_ = node.tag
-                if 'type' in node.lattrib:
-                    type = node.lattrib['type']
-                else:
-                    type = '__type_inherited__'
+        type_ = node.tag
 
-            component = Component(id_, self.current_context, type)
+        component = Component(id_, type_)
 
-            self.current_context.add_child(component)
+        if self.current_component:
+            self.current_component.add_child(component)
+        else:
+            self.model.add_component(component)
 
         for key in node.attrib:
-            if key.lower() not in ['extends', 'id', 'type']:
-                param = Parameter(key, '__dimension_inherited__')
-                param.set_value(node.attrib[key])
-                component.add_parameter(param)
+            if key.lower() not in ['id', 'type']:
+                component.set_parameter(key, node.attrib[key])
 
-        self.push_context(component.context)
+        old_component = self.current_component
+        self.current_component = component
         self.process_nested_tags(node)
-        self.pop_context()
+        self.current_component = old_component
 
     def parse_component(self, node):
         """
@@ -461,41 +434,26 @@ class LEMSFileParser(LEMSBase):
             id_ = self.model.make_id()
 
         if 'type' in node.lattrib:
-            type = node.lattrib['type']
+            type_ = node.lattrib['type']
         else:
-            type = None
+                self.raise_error("Component {0} must have a type.",
+                                 id_)
 
-        if type == None:
-            if 'extends' in node.lattrib:
-                extends = node.lattrib['extends']
-            else:
-                self.raise_error('Component must have a type or must ' +
-                                 'extend another component')
+        component = Component(id_, type_)
+
+        if self.current_component:
+            self.current_component.add_child(component)
         else:
-            extends = None
-
-        if 'child' in node.lattrib:
-            child = node.lattrib['child']
-            id_ = child
-        else:
-            child = None
-
-        component = Component(id_, self.current_context, type, extends)
-
-        if child:
-            self.current_context.add_child(component)
-        else:
-            self.current_context.add_component(component)
-
+            self.model.add_component(component)
+                
         for key in node.attrib:
-            if key.lower() not in ['extends', 'id', 'type', 'child']:
-                param = Parameter(key, '__dimension_inherited__')
-                param.set_value(node.attrib[key])
-                component.add_parameter(param)
+            if key.lower() not in ['id', 'type']:
+                component.set_parameter(key, node.attrib[key])
 
-        self.push_context(component.context)
+        old_component = self.current_component
+        self.current_component = component
         self.process_nested_tags(node)
-        self.pop_context()
+        self.current_component = old_component
 
     def parse_component_reference(self, node):
         """
@@ -505,10 +463,6 @@ class LEMSFileParser(LEMSBase):
         @type node: xml.etree.Element
         """
 
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Component references can only be defined in ' +
-                             'a component type')
-
         if 'name' in node.lattrib:
             name = node.lattrib['name']
         else:
@@ -516,12 +470,12 @@ class LEMSFileParser(LEMSBase):
                              'reference.')
 
         if 'type' in node.lattrib:
-            type = node.lattrib['type']
+            type_ = node.lattrib['type']
         else:
             self.raise_error('<ComponentReference> must specify a type for the ' +
                              'reference.')
 
-        self.current_context.add_component_ref(name, type)
+        self.current_component_type.add_component_reference(ComponentReference(name, type_))
 
     def parse_component_type(self, node):
         """
@@ -588,21 +542,17 @@ class LEMSFileParser(LEMSBase):
         @type node: xml.etree.Element
         """
 
-        if self.current_simulation == None:
-            self.raise_error('<DataDisplay> must be defined inside a ' +
-                             'simulation specification')
-
         if 'title' in node.lattrib:
             title = node.lattrib['title']
         else:
-            self.raise_error('A data display must have a title')
+            self.raise_error('<DataDisplay> must have a title.')
 
         if 'dataregion' in node.lattrib:
             data_region = node.lattrib['dataregion']
         else:
             data_region = None
 
-        self.current_simulation.add_data_display(title, data_region)
+        self.current_simulation.add_data_display(DataDisplay(title, data_region))
 
     def parse_data_writer(self, node):
         """
@@ -612,21 +562,18 @@ class LEMSFileParser(LEMSBase):
         @type node: xml.etree.Element
         """
 
-        if self.current_simulation == None:
-            self.raise_error('<DataWriter> must be defined inside a ' +
-                             'simulation specification')
-
         if 'path' in node.lattrib:
             path = node.lattrib['path']
         else:
-            self.raise_error('A data writer must have a path')
+            self.raise_error('<DataWriter> must specify a path.')
 
         if 'filename' in node.lattrib:
             file_path = node.lattrib['filename']
         else:
-            self.raise_error('A data writer must have a file name')
+            self.raise_error("Data writer for '{0}' must specify a filename.",
+                             path)
 
-        self.current_simulation.add_data_writer(path, file_path)
+        self.current_simulation.add_data_writer(DataWriter(path, file_path))
 
     def parse_derived_parameter(self, node):
         """
@@ -719,9 +666,6 @@ class LEMSFileParser(LEMSBase):
         @type node: xml.etree.Element
         """
 
-        if self.current_component_type == None:
-            self.raise_error('Dynamics must be defined inside a component type')
-
         self.current_dynamics = self.current_component_type.dynamics
         self.current_regime = self.current_dynamics
         self.process_nested_tags(node)
@@ -736,15 +680,10 @@ class LEMSFileParser(LEMSBase):
         @type node: xml.etree.Element
         """
 
-        if self.current_event_handler == None:
-            self.raise_error('<EventOut> must be defined inside an ' +
-                             'event handler in a dynamics profile or regime')
-
-        if 'port' in node.lattrib:
+        try:
             port = node.lattrib['port']
-        else:
-            self.raise_error('\'port\' attribute not provided for ' +
-                             '<StateAssignment>')
+        except:
+            self.raise_error('<EventOut> must be specify a port.')
 
         action = EventOut(port)
 
@@ -758,30 +697,24 @@ class LEMSFileParser(LEMSBase):
         @type node: xml.etree.Element
         """
 
-        if self.current_structure == None:
-            self.raise_error('<EventConnection> must be defined inside a ' +
-                             'structure definition')
-
         if 'from' in node.lattrib:
             from_ = node.lattrib['from']
         else:
-            self.raise_error('\'from\' attribute not provided for ' +
-                             '<EventConnection>')
+            self.raise_error('<EventConnection> must provide a source (from) component reference.')
 
         if 'to' in node.lattrib:
             to = node.lattrib['to']
         else:
-            self.raise_error('\'to\' attribute not provided for ' +
-                             '<EventConnection>')
+            self.raise_error('<EventConnection> must provide a target (to) component reference.')
 
         source_port = node.lattrib.get('sourceport', '')
         target_port = node.lattrib.get('targetport', '')
         receiver = node.lattrib.get('receiver', '')
         receiver_container = node.lattrib.get('receivercontainer', '')
 
-        self.current_structure.add_event_connection(from_, to,
-                                                    source_port, target_port,
-                                                    receiver, receiver_container)
+        self.current_structure.add_event_connection(EventConnection(from_, to,
+                                                                    source_port, target_port,
+                                                                    receiver, receiver_container))
 
     def parse_event_port(self, node):
         """
@@ -990,22 +923,18 @@ class LEMSFileParser(LEMSBase):
         @type node: xml.etree.Element
         """
 
-        if self.current_structure == None:
-            self.raise_error('Child instantiations can only be made within ' +
-                             'a structure definition')
-
         if 'component' in node.lattrib:
             component = node.lattrib['component']
         else:
-            self.raise_error('<MultiInstantiate> must specify a component '
-                             'reference')
+            self.raise_error('<MultiInstantiate> must specify a component reference.')
 
         if 'number' in node.lattrib:
             number = node.lattrib['number']
         else:
-            self.raise_error('<MultiInstantiate> must specify a number')
+            self.raise_error("Multi instantiation of '{0}' must specify a parameter specifying the number.",
+                             component)
 
-        self.current_structure.add_multi_child_def(component, number)
+        self.current_structure.add_multi_instantiate(MultiInstantiate(component, number))
 
     def parse_on_condition(self, node):
         """
@@ -1015,24 +944,19 @@ class LEMSFileParser(LEMSBase):
         @type node: xml.etree.Element
         """
 
-        if self.current_regime == None:
-            self.raise_error('<OnCondition> must be defined inside a ' +
-                             'dynamics profile or regime')
-
-        if 'test' in node.lattrib:
+        try:
             test = node.lattrib['test']
-        else:
-            self.raise_error('Test expression required for <OnCondition>')
-
+        except:
+            self.raise_error('<OnCondition> must specify a test.')
+            
         event_handler = OnCondition(test)
 
-        self.current_event_handler = event_handler
         self.current_regime.add_event_handler(event_handler)
 
+        self.current_event_handler = event_handler
         self.process_nested_tags(node)
-
         self.current_event_handler = None
-
+        
     def parse_on_entry(self, node):
         """
         Parses <OnEntry>
@@ -1040,10 +964,6 @@ class LEMSFileParser(LEMSBase):
         @param node: Node containing the <OnEntry> element
         @type node: xml.etree.Element
         """
-
-        if self.current_regime == None:
-            self.raise_error('<OnEntry> must be defined inside a ' +
-                             'dynamics profile or regime')
 
         event_handler = OnEntry()
 
@@ -1062,22 +982,17 @@ class LEMSFileParser(LEMSBase):
         @type node: xml.etree.Element
         """
 
-        if self.current_regime == None:
-            self.raise_error('<OnEvent> must be defined inside a ' +
-                             'dynamics profile or regime')
-
-        if 'port' in node.lattrib:
+        try:
             port = node.lattrib['port']
-        else:
-            self.raise_error('Port name required for <OnCondition>')
-
+        except:
+            self.raise_error('<OnEvent> must specify a port.')
+            
         event_handler = OnEvent(port)
 
-        self.current_event_handler = event_handler
         self.current_regime.add_event_handler(event_handler)
 
+        self.current_event_handler = event_handler
         self.process_nested_tags(node)
-
         self.current_event_handler = None
 
     def parse_on_start(self, node):
@@ -1135,21 +1050,14 @@ class LEMSFileParser(LEMSBase):
         @type node: xml.etree.Element
         """
 
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Path variables can only be defined in ' +
-                             'a component type')
-
         if 'name' in node.lattrib:
             name = node.lattrib['name']
         else:
-            self.raise_error('A name must be provided for <Path>')
+            self.raise_error('<Path> must specify a name.')
 
-        if 'value' in node.lattrib:
-            value = node.lattrib['value']
-        else:
-            value = None
+        description = node.lattrib.get('description', '')
 
-        self.current_context.add_path_var(name, value)
+        self.current_component_type.add_path(Path(name, description))
 
     def parse_record(self, node):
         """
@@ -1166,21 +1074,19 @@ class LEMSFileParser(LEMSBase):
         if 'quantity' in node.lattrib:
             quantity = node.lattrib['quantity']
         else:
-            self.raise_error('\'quantity\' attribute required for <Record>')
+            self.raise_error('<Record> must specify a quantity.')
 
         if 'scale' in node.lattrib:
             scale = node.lattrib['scale']
         else:
-            scale = "1"
-            #self.raise_error('\'scale\' attribute required for <Record>')
+            scale = '1'
 
         if 'color' in node.lattrib:
             color  = node.lattrib['color']
         else:
             color = "#000000"
-            #self.raise_error('\'color\' attribute required for <Record>')
 
-        self.current_simulation.add_record(quantity, scale, color)
+        self.current_simulation.add_record(Record(quantity, scale, color))
 
     def parse_regime(self, node):
         """
@@ -1189,9 +1095,6 @@ class LEMSFileParser(LEMSBase):
         @param node: Node containing the <Behaviour> element
         @type node: xml.etree.Element
         """
-
-        if self.current_dynamics_profile is None:
-            self.raise_error('Regime must be defined inside a dynamics profile')
 
         if 'name' in node.lattrib:
             name = node.lattrib['name']
@@ -1203,9 +1106,10 @@ class LEMSFileParser(LEMSBase):
         else:
             initial = False
 
+        regime = Regime(name, initial)
         old_regime = self.current_regime
-        self.current_dynamics_profile.add_regime(name, initial)
-        self.current_regime = self.current_dynamics_profile.regimes[name]
+        self.current_dynamics.add_regime(regime)
+        self.current_regime = regime
 
         self.process_nested_tags(node)
 
@@ -1239,10 +1143,6 @@ class LEMSFileParser(LEMSBase):
         @type node: xml.etree.Element
         """
 
-        if self.current_simulation == None:
-            self.raise_error('<Run> must be defined inside a ' +
-                             'simulation specification')
-
         if 'component' in node.lattrib:
             component = node.lattrib['component']
         else:
@@ -1265,7 +1165,7 @@ class LEMSFileParser(LEMSBase):
             self.raise_error('<Run> must specify a final value for the ' +
                              'state variable')
 
-        self.current_simulation.add_run(component, variable, increment, total)
+        self.current_simulation.add_run(Run(component, variable, increment, total))
 
     def parse_show(self, node):
         """
@@ -1285,16 +1185,11 @@ class LEMSFileParser(LEMSBase):
         @type node: xml.etree.Element
         """
 
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Simulation must be defined inside a ' +
-                             'component type')
-
-        old_simulation = self.current_simulation
-        self.current_simulation = self.current_context.simulation
+        self.current_simulation = self.current_component_type.simulation
 
         self.process_nested_tags(node)
 
-        self.current_simulation = old_simulation
+        self.current_simulation = None
 
     def parse_state_assignment(self, node):
         """
@@ -1356,16 +1251,9 @@ class LEMSFileParser(LEMSBase):
         @type node: xml.etree.Element
         """
 
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Structure must be defined inside a ' +
-                             'component type')
-
-        old_structure = self.current_structure
-        self.current_structure = self.current_context.structure
-
+        self.current_structure = self.current_component_type.structure
         self.process_nested_tags(node)
-
-        self.current_structure = old_structure
+        self.current_structure = None
 
     def parse_target(self, node):
         """
@@ -1388,12 +1276,9 @@ class LEMSFileParser(LEMSBase):
         if 'name' in node.lattrib:
             name = node.lattrib['name']
         else:
-            self.raise_error('<Text> must specify a name')
+            self.raise_error('<Text> must specify a name.')
 
-        if 'description' in node.lattrib:
-            description = node.lattrib['description']
-        else:
-            description = None
+        description = node.lattrib.get('description', '')
 
         self.current_component_type.add_text(Text(name, description))
 
@@ -1436,15 +1321,10 @@ class LEMSFileParser(LEMSBase):
         @type node: xml.etree.Element
         """
 
-        if self.current_event_handler == None:
-            self.raise_error('<Transition> must be defined inside an ' +
-                             'event handler in a dynamics profile or regime')
-
         if 'regime' in node.lattrib:
             regime = node.lattrib['regime']
         else:
-            self.raise_error('\'regime\' attribute not provided for ' +
-                             '<Transition>')
+            self.raise_error('<Transition> mut specify a regime.')
 
         action = Transition(regime)
 
@@ -1484,20 +1364,16 @@ class LEMSFileParser(LEMSBase):
         @type node: xml.etree.Element
         """
 
-        if self.current_structure == None:
-            self.raise_error('<With> can only be made within ' +
-                             'a structure definition')
-
         if 'instance' in node.lattrib:
-            target = node.lattrib['instance']
+            instance = node.lattrib['instance']
         else:
             self.raise_error('<With> must specify a reference to target'
                              'instance')
 
         if 'as' in node.lattrib:
-            name = node.lattrib['as']
+            as_ = node.lattrib['as']
         else:
             self.raise_error('<With> must specify a name for the '
                              'target instance')
 
-        self.current_structure.add_with(name, target)
+        self.current_structure.add_with(With(instance, as_))

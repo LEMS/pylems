@@ -101,7 +101,7 @@ class Model(LEMSBase):
         @type component: lems.model.fundamental.Component
         """
 
-        self.component_types[component_type.name] = component_type
+        self.components[component.id] = component
 
     def add_constant(self, constant):
         """
