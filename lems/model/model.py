@@ -10,7 +10,7 @@ import os
 from os.path import dirname
 
 from lems.base import LEMSBase
-from lems.util import Map
+from lems.util import Map, make_id
 from lems.parser import LEMSFileParser
 from lems.errors import ModelError
 

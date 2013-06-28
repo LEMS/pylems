@@ -17,6 +17,10 @@ from lems.model.dynamics import *
 from lems.model.structure import *
 from lems.model.simulation import *
 
+from lems.util import make_id
+
+from pprint import pprint
+
 def get_nons_tag_from_node(node):
     tag = node.tag
     bits = tag.split('}')
@@ -181,7 +185,7 @@ class LEMSFileParser(LEMSBase):
         self.id_counter = counter()
 
         
-    def process_nested_tags(self, node):
+    def process_nested_tags(self, node, tag = ''):
         """
         Process child tags.
 
@@ -191,12 +195,17 @@ class LEMSFileParser(LEMSBase):
         @raise ParseError: Raised when an unexpected nested tag is found.
         """
 
+        if tag == '':
+            t = node.ltag
+        else:
+            t = tag.lower()
+        
         for child in node.children:
             self.xml_node_stack = [child] + self.xml_node_stack
 
             ctagl = child.ltag
 
-            if ctagl in self.tag_parse_table:
+            if ctagl in self.tag_parse_table and ctagl in self.valid_children[t]:
                 self.tag_parse_table[ctagl](child)
             else:
                 self.parse_component_by_typename(child, child.tag)
@@ -382,7 +391,7 @@ class LEMSFileParser(LEMSBase):
 
         self.current_component_type.add_children(Children(name, type_, True))
 
-    def parse_component_by_typename(self, node, type):
+    def parse_component_by_typename(self, node, type_):
         """
         Parses components defined directly by component name.
 
@@ -399,7 +408,7 @@ class LEMSFileParser(LEMSBase):
             id_ = node.lattrib['id']
         else:
             #self.raise_error('Component must have an id')
-            id_ = self.model.make_id()
+            id_ = make_id()
 
         type_ = node.tag
 
@@ -416,7 +425,7 @@ class LEMSFileParser(LEMSBase):
 
         old_component = self.current_component
         self.current_component = component
-        self.process_nested_tags(node)
+        self.process_nested_tags(node, 'component')
         self.current_component = old_component
 
     def parse_component(self, node):
@@ -431,7 +440,7 @@ class LEMSFileParser(LEMSBase):
             id_ = node.lattrib['id']
         else:
             #self.raise_error('Component must have an id')
-            id_ = self.model.make_id()
+            id_ = make_id()
 
         if 'type' in node.lattrib:
             type_ = node.lattrib['type']

@@ -28,3 +28,10 @@ class Map(dict, LEMSBase):
         """
         
         return iter(self.values())
+
+id_counter = 0
+
+def make_id():
+    global id_counter
+    id_counter = id_counter + 1
+    return '__id_{0}__'.format(id_counter)
