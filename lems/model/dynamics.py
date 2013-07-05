@@ -182,6 +182,18 @@ class EventHandler(LEMSBase):
 
         self.actions.append(action)
 
+    def add(self, child):
+        """
+        Adds a typed child object to the event handler.
+
+        @param child: Child object to be added.
+        """
+
+        if isinstance(child, Action):
+            self.add_action(child)
+        else:
+            raise ModelError('Unsupported child element')
+        
 class OnStart(EventHandler):
     """
     Specification for event handler called upon initialization of the component.
@@ -370,6 +382,26 @@ class Behavioral(LEMSBase):
 
         self.kinetic_schemes[ks.name] = ks
 
+    def add(self, child):
+        """
+        Adds a typed child object to the behavioral object.
+
+        @param child: Child object to be added.
+        """
+
+        if isinstance(child, StateVariable):
+            self.add_state_variable(child)
+        elif isinstance(child, DerivedVariable):
+            self.add_derived_variable(child)
+        elif isinstance(child, TimeDerivative):
+            self.add_time_derivative(child)
+        elif isinstance(child, EventHandler):
+            self.add_event_handler(child)
+        elif isinstance(child, KineticScheme):
+            self.add_kinetic_scheme(child)
+        else:
+            raise ModelError('Unsupported child element')
+        
 class Regime(Behavioral):
     """
     Stores a single behavioral regime for a component type.
@@ -416,3 +448,16 @@ class Dynamics(Behavioral):
         @type regime: lems.model.dynamics.Regime """
 
         self.regimes[regime.name] = regime
+
+    def add(self, child):
+        """
+        Adds a typed child object to the dynamics object.
+
+        @param child: Child object to be added.
+        """
+
+        if isinstance(child, Regime):
+            self.add_regime(child)
+        else:
+            Behavioural.add(self, child)
+        

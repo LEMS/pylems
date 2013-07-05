@@ -165,9 +165,25 @@ class Structure(LEMSBase):
         Adds a child multi-instantiation specification.
 
         @param mi: Child multi-instantiation specification.
-        @type mi: lems.model.structure.ChildInstance
+        @type mi: lems.model.structure.MultiInstantiate
         """
 
         self.multi_instantiates.append(mi)
 
-        
+    def add(self, child):
+        """
+        Adds a typed child object to the structure object.
+
+        @param child: Child object to be added.
+        """
+
+        if isinstance(child, With):
+            self.add_with(child)
+        elif isinstance(child, EventConnection):
+            self.add_event_connection(child)
+        elif isinstance(child, ChildInstance):
+            self.add_child_instance(child)
+        elif isinstance(child, MultiInstantiate):
+            self.add_multi_instantiate(child)
+        else:
+            raise ModelError('Unsupported child element')

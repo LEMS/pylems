@@ -105,7 +105,7 @@ class Model(LEMSBase):
 
     def add_constant(self, constant):
         """
-        Adds a paramter to this component type.
+        Adds a paramter to the model.
 
         @param constant: Constant to be added.
         @type constant: lems.model.component.Constant
@@ -113,11 +113,25 @@ class Model(LEMSBase):
 
         self.constants[constant.name] = constant
 
-    def add_simulation(self, simulation):
-        pass
+    def add(self, child):
+        """
+        Adds a typed child object to the model.
 
-    def add_target(self, target):
-        pass
+        @param child: Child object to be added.
+        """
+
+        if isinstance(child, Dimension):
+            self.add_dimension(child)
+        elif isinstance(child, Unit):
+            seld.add_unit(child)
+        elif isinstance(child, ComponentType):
+            self.add_component_type(child)
+        elif isinstance(child, Component):
+            self.add_component(child)
+        elif isinstance(child, Constant):
+            self.add_constant(child)
+        else:
+            raise ModelError('Unsupported child element')
 
     def add_include_directory(self, path):
         self.include_directories.append(path)

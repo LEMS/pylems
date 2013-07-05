@@ -187,3 +187,22 @@ class Simulation(LEMSBase):
         """
 
         self.data_writers[data_writer.path] = data_writer
+
+    def add(self, child):
+        """
+        Adds a typed child object to the simulation spec.
+
+        @param child: Child object to be added.
+        """
+
+        if isinstance(child, Run):
+            self.add_run(child)
+        elif isinstance(child, Record):
+            self.add_record(child)
+        elif isinstance(child, DataDisplay):
+            self.add_data_display(child)
+        elif isinstance(child, DataWriter):
+            self.add_data_writer(child)
+        else:
+            raise ModelError('Unsupported child element')
+        

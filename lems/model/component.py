@@ -476,11 +476,43 @@ class ComponentType(LEMSBase):
         Adds an attachments type specification to this component type.
 
         @param attachments: Attachments specification to be added.
-        @type attachments: lems.model.component.ComponentReference
+        @type attachments: lems.model.component.Attachments
         """
 
         self.attachments[attachments.name] = attachments
 
+    def add(self, child):
+        """
+        Adds a typed child object to the component type.
+
+        @param child: Child object to be added.
+        """
+
+        if isinstance(child, Parameter):
+            self.add_dimension(parameter)
+        elif isinstance(child, Constant):
+            self.add_constant(child)
+        elif isinstance(child, Exposure):
+            self.add_exposure(child)
+        elif isinstance(child, Requirement):
+            self.add_requirement(child)
+        elif isinstance(child, children):
+            self.add_children(child)
+        elif isinstance(child, Text):
+            self.add_text(child)
+        elif isinstance(child, Link):
+            self.add_link(child)
+        elif isinstance(child, Path):
+            self.add_path(child)
+        elif isinstance(child, EventPort):
+            self.add_event_port(child)
+        elif isinstance(child, ComponentReference):
+            self.add_component_reference(child)
+        elif isinstance(child, Attachments):
+            self.add_attachments(child)
+        else:
+            raise ModelError('Unsupported child element')
+            
 class Component(LEMSBase):
     """
     Stores a component instantiation.
@@ -531,3 +563,16 @@ class Component(LEMSBase):
         """
 
         self.children.append(child)
+
+    def add(self, child):
+        """
+        Adds a typed child object to the component.
+
+        @param child: Child object to be added.
+        """
+
+        if isinstance(child, Component):
+            self.add_child(child)
+        else:
+            raise ModelError('Unsupported child element')
+        
