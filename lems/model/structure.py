@@ -8,6 +8,7 @@ Structural properties of component types.
 
 from lems.base import LEMSBase
 from lems.util import Map
+from lems.errors import ModelError
 
 class With(LEMSBase):
     """

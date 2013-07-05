@@ -8,6 +8,8 @@ Parameter, ComponentType and Component class definitions.
 
 from lems.base import LEMSBase
 from lems.util import Map
+from lems.errors import ModelError
+
 from lems.model.dynamics import Dynamics
 from lems.model.structure import Structure
 from lems.model.simulation import Simulation

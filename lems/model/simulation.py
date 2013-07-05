@@ -7,6 +7,7 @@ Simulation specification classes.
 """
 
 from lems.base import LEMSBase
+from lems.errors import ModelError
 
 class Run(LEMSBase):
     """

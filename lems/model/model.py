@@ -14,6 +14,9 @@ from lems.util import Map, make_id
 from lems.parser import LEMSFileParser
 from lems.errors import ModelError
 
+from lems.model.fundamental import Dimension,Unit
+from lems.model.component import Component,ComponentType,Constant
+
 class Model(LEMSBase):
     """
     Stores a model.
@@ -134,9 +137,26 @@ class Model(LEMSBase):
             raise ModelError('Unsupported child element')
 
     def add_include_directory(self, path):
+        """
+        Adds a directory to the include file search path.
+
+        @param path: Directory to be added.
+        @type path: str
+        """
+        
         self.include_directories.append(path)
 
     def include_file(self, path, include_dirs = []):
+        """
+        Includes a file into the current model.
+
+        @param path: Path to the file to be included.
+        @type path: str
+
+        @param include_dirs: Optional alternate include search path.
+        @type include_dirs: list(str)
+        """
+        
         inc_dirs = include_dirs if include_dirs else self.include_dirs
 
         parser = LEMSFileParser(self, inc_dirs)
@@ -152,6 +172,13 @@ class Model(LEMSBase):
         raise Exception('Unable to open ' + path)
             
     def import_from_file(self, filepath):
+        """
+        Import a model from a file.
+
+        @param filepath: File to be imported.
+        @type filepath: str
+        """
+        
         inc_dirs = self.include_directories.copy()
         inc_dirs.append(dirname(filepath))
                         
@@ -160,4 +187,11 @@ class Model(LEMSBase):
             parser.parse(f.read())
         
     def export_to_file(self, filepath):
+        """
+        Export this model to a file.
+
+        @param filepath: File to be exported to.
+        @type filepath: str
+        """
+        
         pass
