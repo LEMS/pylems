@@ -91,6 +91,10 @@ class Constant(LEMSBase):
         """ Description of the constant.
         @type: str """
 
+        self.numeric_value = 0
+        """ Numeric value of the constant.
+        @type: float """
+
 class Exposure(LEMSBase):
     """
     Stores a exposure specification.

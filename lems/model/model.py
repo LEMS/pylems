@@ -256,8 +256,6 @@ class Model(LEMSBase):
             self.merge_component_types(component_type, base_ct)
             component_type.extends = None
 
-        
-
     def merge_component_types(self, ct, base_ct):
         """
         Merge various maps in the given component type from a base 
