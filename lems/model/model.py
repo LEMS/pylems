@@ -10,12 +10,14 @@ import os
 from os.path import dirname
 
 from lems.base import LEMSBase
-from lems.util import Map, make_id
+from lems.util import Map, make_id, merge_maps, merge_lists
 from lems.parser import LEMSFileParser
 from lems.errors import ModelError
 
 from lems.model.fundamental import Dimension,Unit
 from lems.model.component import Component,ComponentType,Constant
+
+import xml.etree.ElementTree as xe
 
 class Model(LEMSBase):
     """
@@ -186,12 +188,109 @@ class Model(LEMSBase):
         with open(filepath) as f:
             parser.parse(f.read())
         
-    def export_to_file(self, filepath):
+    def export_to_file(self, filepath, level_prefix = '  '):
         """
-        Export this model to a file.
+        Exports this model to a file.
 
         @param filepath: File to be exported to.
         @type filepath: str
         """
+
+        xmlstr = '<Lems>\n'
+
+        for target in self.targets:
+            xmlstr += level_prefix + '<Target component="{0}"/>\n'.format(target)
+
+        """
+        for dimension in self.dimensions:
+            xmlstr += dimension.toxml()
+            
+        for unit in self.units:
+            xmlstr += unit.toxml()
+            
+        for component_type in self.component_types:
+            xmlstr += component_type.toxml()
+            
+        for component in self.components:
+            xmlstr += component.toxml()
+            
+        for constant in self.constants:
+            xmlstr += constant.toxml()
+        """    
+        xmlstr += '</Lems>'
+
+        print(xmlstr)
+
+
+    def resolve(self):
+        """
+        Resolves references in this model.
+        """
+
+        model = self.copy()
         
-        pass
+        for ct in model.component_types:
+            model.resolve_component_type(ct)
+
+        return model
+
+    def resolve_component_type(self, component_type):
+        """
+        Resolves references in the specified component type.
+
+        @param component_type: Component type to be resolved.
+        @type component_type: lems.model.component.ComponentType
+        """
+
+        # Resolve component type from base types if present.
+        if component_type.extends:
+            try:
+                base_ct = self.component_types[component_type.extends]
+            except:
+                raise ModelError("Component type '{0}' trying to extend unknown component type '{1}'",
+                                 component_type.name, component_type.extends)
+
+            self.resolve_component_type(base_ct)
+            self.merge_component_types(component_type, base_ct)
+            component_type.extends = None
+
+        
+
+    def merge_component_types(self, ct, base_ct):
+        """
+        Merge various maps in the given component type from a base 
+        component type.
+
+        @param ct: Component type to be resolved.
+        @type ct: lems.model.component.ComponentType
+
+        @param base_ct: Component type to be resolved.
+        @type base_ct: lems.model.component.ComponentType
+        """
+
+        merge_maps(ct.parameters, base_ct.parameters)
+        merge_maps(ct.constants, base_ct.constants)
+        merge_maps(ct.exposures, base_ct.exposures)
+        merge_maps(ct.requirements, base_ct.requirements)
+        merge_maps(ct.children, base_ct.children)
+        merge_maps(ct.texts, base_ct.texts)
+        merge_maps(ct.links, base_ct.links)
+        merge_maps(ct.paths, base_ct.paths)
+        merge_maps(ct.event_ports, base_ct.event_ports)
+        merge_maps(ct.component_references, base_ct.component_references)
+        merge_maps(ct.attachments, base_ct.attachments)
+
+        merge_maps(ct.dynamics.state_variables, base_ct.dynamics.state_variables)
+        merge_maps(ct.dynamics.derived_variables, base_ct.dynamics.derived_variables)
+        merge_maps(ct.dynamics.time_derivatives, base_ct.dynamics.time_derivatives)
+        merge_lists(ct.dynamics.event_handlers, base_ct.dynamics.event_handlers)
+        merge_maps(ct.dynamics.kinetic_schemes, base_ct.dynamics.kinetic_schemes)
+        
+        merge_lists(ct.structure.event_connections, base_ct.structure.event_connections)
+        merge_lists(ct.structure.child_instances, base_ct.structure.child_instances)
+        merge_lists(ct.structure.multi_instantiates, base_ct.structure.multi_instantiates)
+
+        merge_maps(ct.simulation.runs, base_ct.simulation.runs)
+        merge_maps(ct.simulation.records, base_ct.simulation.records)
+        merge_maps(ct.simulation.data_displays, base_ct.simulation.data_displays)
+        merge_maps(ct.simulation.data_writers, base_ct.simulation.data_writers)

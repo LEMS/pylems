@@ -514,7 +514,7 @@ class ComponentType(LEMSBase):
             self.add_attachments(child)
         else:
             raise ModelError('Unsupported child element')
-            
+
 class Component(LEMSBase):
     """
     Stores a component instantiation.

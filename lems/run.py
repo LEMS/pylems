@@ -9,6 +9,7 @@ Command line simulation driver.
 import argparse
 
 from lems.model.model import Model
+
 from lems.parser import LEMSFileParser
 
 def process_args():
@@ -34,3 +35,5 @@ def main():
 
     model = Model()
     model.import_from_file(args.lems_file)
+
+    resolved_model = model.resolve()

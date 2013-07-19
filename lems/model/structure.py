@@ -68,6 +68,11 @@ class EventConnection(LEMSBase):
         """ Name of the child component grouping to add the receiver to.
         @type: str """
 
+    def __eq__(self, o):
+        return (self.from_ == o.from_ and self.to == o.to and
+                self.source_port == o.source_port and self.target_port == o.target_port)
+
+
 class ChildInstance(LEMSBase):
     """
     Stores a child instantiation specification.
@@ -84,6 +89,9 @@ class ChildInstance(LEMSBase):
         """ Name of the component reference to be used for instantiation.
         @type: str """
         
+    def __eq__(self, o):
+        return self.component == o.component
+
 class MultiInstantiate(LEMSBase):
     """
     Stores a child multi-instantiation specification.
@@ -105,6 +113,9 @@ class MultiInstantiate(LEMSBase):
         reference is to be instantiated.
         @type: str"""
         
+    def __eq__(self, o):
+        return self.component == o.component and self.number == o.number
+
 class Structure(LEMSBase):
     """
     Stores structural properties of a component type.

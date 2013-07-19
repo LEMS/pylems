@@ -8,6 +8,7 @@ Simulation specification classes.
 
 from lems.base import LEMSBase
 from lems.errors import ModelError
+from lems.util import Map
 
 class Run(LEMSBase):
     """
@@ -131,19 +132,19 @@ class Simulation(LEMSBase):
         Constructor.
         """
 
-        self.runs = {}
+        self.runs = Map()
         """ Map of runs in this dynamics regime.
         @type: Map(string -> lems.model.simulation.Run) """
 
-        self.records = {}
+        self.records = Map()
         """ Map of recorded variables in this dynamics regime.
         @type: Map(string -> lems.model.simulation.Record """
 
-        self.data_displays = {}
+        self.data_displays = Map()
         """ Map of data displays mapping titles to regions.
         @type: Map(string -> string) """
 
-        self.data_writers = {}
+        self.data_writers = Map()
         """ Map of recorded variables to data writers.
         @type: Map(string -> lems.model.simulation.DataWriter """
 

@@ -6,5 +6,12 @@ PyLEMS base class.
 @contact: gautham@lisphacker.org
 """
 
+import copy
+
 class LEMSBase(object):
-    pass
+    """
+    Base object for PyLEMS.
+    """
+
+    def copy(self):
+        return copy.deepcopy(self)
