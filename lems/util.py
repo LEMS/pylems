@@ -36,7 +36,7 @@ def make_id():
     id_counter = id_counter + 1
     return '__id_{0}__'.format(id_counter)
 
-def merge_maps(self, m, base):
+def merge_maps(m, base):
     """
     Merge in undefined map entries from given map.
     
@@ -47,11 +47,11 @@ def merge_maps(self, m, base):
     @type base: lems.util.Map
     """
     
-    for k in base.keys:
+    for k in base.keys():
         if k not in m:
             m[k] = base[k]
 
-def merge_lists(self, l, base):
+def merge_lists(l, base):
     """
     Merge in undefined list entries from given list.
     
@@ -62,7 +62,7 @@ def merge_lists(self, l, base):
     @type base: list
     """
     
-    for k in base:
+    for i in base:
         if i not in l:
             l.append(i)
 

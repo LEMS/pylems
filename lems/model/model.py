@@ -242,6 +242,8 @@ class Model(LEMSBase):
         @type component_type: lems.model.component.ComponentType
         """
 
+        #print(component_type.name, component_type.extends)
+        
         # Resolve component type from base types if present.
         if component_type.extends:
             try:

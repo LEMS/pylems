@@ -507,7 +507,12 @@ class LEMSFileParser(LEMSBase):
         else:
             extends = None
 
-        component_type = ComponentType(name, extends)
+        if 'description' in node.lattrib:
+            description = node.lattrib['description']
+        else:
+            description = ''
+
+        component_type = ComponentType(name, description, extends)
         self.model.add_component_type(component_type)
 
         self.current_component_type = component_type
