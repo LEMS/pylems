@@ -8,7 +8,8 @@ Behavioral dynamics of component types.
 
 from lems.base.base import LEMSBase
 from lems.base.map import Map
-from lems.base.errors import ModelError
+from lems.base.errors import ModelError,ParseError
+from lems.parser.expr import ExprParser
 
 class StateVariable(LEMSBase):
     """
@@ -74,6 +75,18 @@ class DerivedVariable(LEMSBase):
         """ Requried or not.
         @type: str """
 
+        self.expression_tree = None
+        """ Parse tree for the time derivative expression.
+        @type: lems.parser.expr.ExprNode """
+
+        if self.value != None:
+            try:
+                self.expression_tree = ExprParser(self.value).parse()
+            except:
+                raise ParseError("Parse error when parsing value expression "
+                                 "'{0}' for derived variable {1}",
+                                 self.value, self.name)
+
 class TimeDerivative(LEMSBase):
     """
     Store the specification of a time derivative specifcation.
@@ -93,6 +106,17 @@ class TimeDerivative(LEMSBase):
         self.value = value
         """ Derivative expression.
         @type: str """
+
+        self.expression_tree = None
+        """ Parse tree for the time derivative expression.
+        @type: lems.parser.expr.ExprNode """
+        
+        try:
+            self.expression_tree = ExprParser(value).parse()
+        except:
+            raise ParseError("Parse error when parsing value expression "
+                             "'{0}' for state variable {1}",
+                             self.value, self.variable)
         
 class Action(LEMSBase):
     """

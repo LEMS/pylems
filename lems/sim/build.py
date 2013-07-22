@@ -13,7 +13,7 @@ from lems.base.errors import SimBuildError
 from lems.sim.runnable import Runnable
 from lems.sim.sim import Simulation
 from lems.parser.expr import ExprNode
-from lems.model.dynamics import EventHandler,Action
+from lems.model.dynamics import Dynamics,Regime,EventHandler,Action
 from lems.sim.runnable import Regime
 
 import sys
@@ -126,94 +126,64 @@ class SimulationBuilder(LEMSBase):
             else:
                 runnable.add_event_out_port(ep.name)
 
-        if context.selected_dynamics_profile:
-            dynamics = context.selected_dynamics_profile
-            self.add_dynamics_1(component, runnable,
-                                dynamics.default_regime, dynamics.default_regime)
+        dynamics = component_type.dynamics
+        self.add_dynamics_1(component, runnable, dynamics, dynamics)
 
-            for rn in dynamics.regimes:
-                regime = dynamics.regimes[rn]
-                self.add_dynamics_1(component, runnable, regime, dynamics.default_regime)
+        for regime in dynamics.regimes:
+            self.add_dynamics_1(component, runnable, regime, dynamics)
 
-                if regime.initial:
-                    runnable.current_regime = regime.name
+            if regime.initial:
+                runnable.current_regime = regime.name
 
-                if rn not in runnable.regimes:
-                    runnable.add_regime(Regime(rn))
-                r = runnable.regimes[rn]
-                suffix = '_regime_' + rn
+            if rn not in runnable.regimes:
+                runnable.add_regime(Regime(rn))
+            r = runnable.regimes[rn]
+            suffix = '_regime_' + rn
 
-                r.update_state_variables = runnable.__dict__['update_state_variables'
+            r.update_state_variables = runnable.__dict__['update_state_variables'
+                                                         + suffix]
+            r.update_derived_variables = runnable.__dict__['update_derived_variables'
+                                                           + suffix]
+            r.run_startup_event_handlers = runnable.__dict__['run_startup_event_handlers'
                                                              + suffix]
-                r.update_derived_variables = runnable.__dict__['update_derived_variables'
-                                                               + suffix]
-                r.run_startup_event_handlers = runnable.__dict__['run_startup_event_handlers'
-                                                                 + suffix]
-                r.run_preprocessing_event_handlers = runnable.__dict__['run_preprocessing_event_handlers'
-                                                                       + suffix]
-                r.run_postprocessing_event_handlers = runnable.__dict__['run_postprocessing_event_handlers'
-                                                                        + suffix]
-        else:
-            runnable.add_method('update_state_variables', ['self', 'dt'],
-                                [])
-            runnable.add_method('update_derived_variables', ['self'],
-                                [])
-            runnable.add_method('run_startup_event_handlers', ['self'],
-                                [])
-            runnable.add_method('run_preprocessing_event_handlers', ['self'],
-                                [])
-            runnable.add_method('run_postprocessing_event_handlers', ['self'],
-                                [])
+            r.run_preprocessing_event_handlers = runnable.__dict__['run_preprocessing_event_handlers'
+                                                                   + suffix]
+            r.run_postprocessing_event_handlers = runnable.__dict__['run_postprocessing_event_handlers'
+                                                                    + suffix]
 
-        self.process_simulation_specs(component, runnable, context.simulation)
+        self.process_simulation_specs(component, runnable, component_type.simulation)
 
             
         #for cn in context.components:
-        for cn in context.components_ordering:
-            child = context.components[cn]
+        for child in component.children:
             child_runnable = self.build_runnable(child, runnable)
             runnable.add_child(child.id, child_runnable)
 
-            try:
-                child_typeobj = child_runnable.component.context.lookup_component_type(
-                    child_runnable.component.component_type)
-                for cdn in context.child_defs:
-                    if cdn in child_typeobj.types:
-                        runnable.add_child_typeref(cdn, child_runnable)
-            except:
-                pass
-            
+            child_typeobj = self.model.component_types[child.type]
+            for children in component_type.children:
+                if children.type in child_typeobj.types:
+                    runnable.add_child_typeref(children.name, child_runnable)
+                if children.multiple:
+                    runnable.add_child_to_group(children.name, child_runnable)
 
-            for cdn in context.children_defs:
-                cdt = context.children_defs[cdn]
-                #if cdt == child.component_type:
-                if child.is_type(cdt):
-                    runnable.add_child_to_group(cdn, child_runnable)
+        for attachment in component_type.attachments:
+            runnable.make_attachment(attachment.type, attachment.name)
 
-        for type_ in context.attachments:
-            name = context.attachments[type_]
-            runnable.make_attachment(type_, name)
+        self.build_structure(component, runnable, component_type.structure)
 
-        self.build_structure(component, runnable, context.structure)
+        dynamics = component_type.dynamics
+        self.add_dynamics_2(component, runnable,
+                            dynamics, dynamics)
+        for regime in dynamics.regimes:
+            self.add_dynamics_2(component, runnable, regime, dynamics)
 
-        if context.selected_dynamics_profile:
-            dynamics = context.selected_dynamics_profile
-            self.add_dynamics_2(component, runnable,
-                                dynamics.default_regime, dynamics.default_regime)
-            for rn in dynamics.regimes:
-                regime = dynamics.regimes[rn]
-                self.add_dynamics_2(component, runnable, regime, dynamics.default_regime)
+            if rn not in runnable.regimes:
+                runnable.add_regime(Regime(rn))
+            r = runnable.regimes[rn]
+            suffix = '_regime_' + rn
 
-                if rn not in runnable.regimes:
-                    runnable.add_regime(Regime(rn))
-                r = runnable.regimes[rn]
-                suffix = '_regime_' + rn
-
-                r.update_kinetic_scheme = runnable.__dict__['update_kinetic_scheme'
-                                                            + suffix]
-        else:
-            runnable.add_method('update_kinetic_scheme', ['self', 'dt'],
-                                [])
+            r.update_kinetic_scheme = runnable.__dict__['update_kinetic_scheme'
+                                                        + suffix]
 
         self.add_recording_behavior(component, runnable)
 
@@ -238,19 +208,18 @@ class SimulationBuilder(LEMSBase):
         @type structure: lems.model.structure.Structure
         """
 
-        context = component.context
+        component_type = self.model.component_types[component.type]
 
         # Process single-child instantiations
         for c in structure.single_child_defs:
-            if c in context.component_refs:
-                cref = context.component_refs[c]
-                child = context.lookup_component(cref)
+            if c in component_type.component_references:
+                cref = component_type.component_references[c]
+                child = self.model.components[cref]
                 child_runnable = self.build_runnable(child, runnable)
                 runnable.add_child(c, child_runnable)
 
-                for cdn in context.children_defs:
-                    cdt = context.children_defs[cdn]
-                    if cdt == child.component_type:
+                for children in component_type.children:
+                    if children.type == child.type:
                         runnable.add_child_to_group(cdn, child_runnable)
 
             else:
@@ -378,7 +347,7 @@ class SimulationBuilder(LEMSBase):
                 source_port, lambda: target.inc_event_in(target_port))
 
 
-    def add_dynamics_1(self, component, runnable, regime, default_regime):
+    def add_dynamics_1(self, component, runnable, regime, dynamics):
         """
         Adds dynamics to a runnable component based on the dynamics
         specifications in the component model.
@@ -395,8 +364,8 @@ class SimulationBuilder(LEMSBase):
         dynamics code in the runnable component.
         @type regime: lems.model.dynamics.Regime
 
-        @param default_regime: Shared dynamics specifications.
-        @type default_regime: lems.model.dynamics.Regime
+        @param dynamics: Shared dynamics specifications.
+        @type dynamics: lems.model.dynamics.Regime
 
         @raise SimBuildError: Raised when a time derivative expression refers
         to an undefined variable.
@@ -408,28 +377,25 @@ class SimulationBuilder(LEMSBase):
         cannot be resolved.
         """
 
-        context = component.context
-        if regime.name == '':
+        if isinstance(regime, Dynamics) or regime.name == '':
             suffix = ''
         else:
             suffix = '_regime_' + regime.name
 
-        if regime.initial:
+        if isinstance(regime, Regime) and regime.initial:
             runnable.new_regime = regime.name
 
         # Process state variables
-        for svn in regime.state_variables:
-            sv = regime.state_variables[svn]
+        for sv in regime.state_variables:
             runnable.add_instance_variable(sv.name, 0)
 
         # Process time derivatives
         time_step_code = []
-        for tdn in regime.time_derivatives:
-            if tdn not in regime.state_variables and tdn not in default_regime.state_variables:
+        for td in regime.time_derivatives:
+            if td.variable not in regime.state_variables and td.variable not in dynamics.state_variables:
                 raise SimBuildError(('Time derivative for undefined state '
                                      'variable {0}').format(tdn))
 
-            td = regime.time_derivatives[tdn]
             exp = self.build_expression_from_tree(runnable,
                                                   context,
                                                   regime,
@@ -443,7 +409,7 @@ class SimulationBuilder(LEMSBase):
         derived_variable_code = []
         derived_variables_ordering = order_derived_variables(regime)
         for dvn in derived_variables_ordering: #regime.derived_variables:
-            dv = regime.derived_variables[dvn]
+            dv = dynamics.derived_variables[dvn]
             runnable.add_derived_variable(dv.name)
             if dv.value:
                 derived_variable_code += ['self.{0} = ({1})'.format(
@@ -494,7 +460,7 @@ class SimulationBuilder(LEMSBase):
         runnable.add_method('run_postprocessing_event_handlers' + suffix, ['self'],
                             post_event_handler_code)
 
-    def add_dynamics_2(self, component, runnable, regime, default_regime):
+    def add_dynamics_2(self, component, runnable, regime, dynamics):
         """
         Adds dynamics to a runnable component based on the dynamics
         specifications in the component model.
@@ -511,8 +477,8 @@ class SimulationBuilder(LEMSBase):
         dynamics code in the runnable component.
         @type regime: lems.model.dynamics.Regime
 
-        @param default_regime: Shared dynamics specifications.
-        @type default_regime: lems.model.dynamics.Regime
+        @param dynamics: Shared dynamics specifications.
+        @type dynamics: lems.model.dynamics.Regime
 
         @raise SimBuildError: Raised when a time derivative expression refers
         to an undefined variable.
@@ -601,12 +567,26 @@ class SimulationBuilder(LEMSBase):
         cannot be resolved.
         """
 
-        context = component.context
-
+        component_type = self.model.component_types[component.type]
+        
         # Process runs
-        for rn in simulation.runs:
-            run = simulation.runs[rn]
-            c = context.lookup_component_ref(run.component)
+        for run in simulation.runs:
+
+            if run.component not in component.parameters or run.component not in component_type.component_references:
+                raise SimBuildError("Unknown run target reference '{0}' in component '{1}'",
+                                    run.component, component.id)
+
+            try:
+                cref = component.parameters[run.component]
+                c = self.model.components[cref]
+
+                time_step = self.get_numeric_value(component_type.parameters[run.increment], 
+                                                   component.parameters[run.increment])
+                time_total = self.get_numeric_value(component_type.parameters[run.total], 
+                                                    component.parameters[run.total])
+            except:
+                raise SimBuildError("Unable to resolve parameters for <Run> in component '{0}'",
+                                    component.id)
 
             if c != None:
                 #cid = c.id
@@ -622,14 +602,11 @@ class SimulationBuilder(LEMSBase):
                 self.sim.add_runnable(target)
                 self.current_record_target = target
 
-                time_step = context.lookup_parameter(run.increment)
-                time_total = context.lookup_parameter(run.total)
-                if time_step != None and time_total != None:
-                    target.configure_time(time_step.numeric_value,
-                                          time_total.numeric_value)
+                target.configure_time(time_step,
+                                      time_total)
             else:
-                raise SimBuildError(('Invalid component reference {0} in '
-                                     '<Run>').format(c.id))
+                raise SimBuildError("'Invalid run target reference '{0}'",
+                                    cref)
 
 
     def convert_op(self, op):
@@ -1077,10 +1054,10 @@ def order_derived_variables(regime):
     maxcount = 5
 
     for dv in regime.derived_variables:
-        if regime.derived_variables[dv].expression_tree == None:
-            dvsnoexp.append(dv)
+        if dv.expression_tree == None:
+            dvsnoexp.append(dv.name)
         else:
-            dvs.append(dv)
+            dvs.append(dv.name)
 
     count = maxcount
 
