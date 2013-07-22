@@ -9,10 +9,11 @@ Model storage.
 import os
 from os.path import dirname
 
-from lems.base import LEMSBase
-from lems.util import Map, make_id, merge_maps, merge_lists
-from lems.parser import LEMSFileParser
-from lems.errors import ModelError
+from lems.base.base import LEMSBase
+from lems.base.util import make_id, merge_maps, merge_lists
+from lems.base.map import Map
+from lems.parser.LEMS import LEMSFileParser
+from lems.base.errors import ModelError
 
 from lems.model.fundamental import Dimension,Unit
 from lems.model.component import Component,ComponentType,Constant

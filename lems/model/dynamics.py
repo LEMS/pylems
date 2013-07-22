@@ -6,9 +6,9 @@ Behavioral dynamics of component types.
 @contact: gautham@lisphacker.org
 """
 
-from lems.base import LEMSBase
-from lems.util import Map
-from lems.errors import ModelError
+from lems.base.base import LEMSBase
+from lems.base.map import Map
+from lems.base.errors import ModelError
 
 class StateVariable(LEMSBase):
     """

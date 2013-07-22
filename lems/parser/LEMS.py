@@ -8,8 +8,8 @@ LEMS XML file format parser.
 
 import xml.etree.ElementTree as xe
 
-from lems.base import LEMSBase
-from lems.errors import ParseError
+from lems.base.base import LEMSBase
+from lems.base.errors import ParseError
 
 from lems.model.fundamental import *
 from lems.model.component import *
@@ -17,7 +17,7 @@ from lems.model.dynamics import *
 from lems.model.structure import *
 from lems.model.simulation import *
 
-from lems.util import make_id
+from lems.base.util import make_id
 
 from pprint import pprint
 
@@ -1368,7 +1368,12 @@ class LEMSFileParser(LEMSBase):
         else:
             power = 0
 
-        self.model.add_unit(Unit(symbol, dimension, power))
+        if 'name' in node.lattrib:
+            name = int(node.lattrib['name'])
+        else:
+            name = ''
+
+        self.model.add_unit(Unit(name, symbol, dimension, power))
 
     def parse_with(self, node):
         """

@@ -17,6 +17,7 @@ from lems.model.dynamics import EventHandler,Action
 from lems.sim.runnable import Regime
 
 import sys
+import re
 from pprint import pprint
 
 class SimulationBuilder(LEMSBase):
@@ -56,10 +57,10 @@ class SimulationBuilder(LEMSBase):
         self.sim = Simulation()
 
         for component_id in self.model.targets:
-            if component_id not in self.model.context.components:
-                raise SimBuildError('Unable to find component \'{0}\' to run'\
-                                    .format(component_id))
-            component = self.model.context.components[component_id]
+            if component_id not in self.model.components:
+                raise SimBuildError("Unable to find target component '{0}'",
+                                    component_id)
+            component = self.model.components[component_id]
 
             runnable = self.build_runnable(component)
             self.sim.add_runnable(runnable)
@@ -84,13 +85,18 @@ class SimulationBuilder(LEMSBase):
         resolved.
         """
 
+        try:
+            component_type = self.model.component_types[component.type]
+        except:
+            raise SimBuildError("Unable to find component type '{0}' for component '{1}'",
+                                component.type, component.name)
+
         if id_ == None:
             runnable = Runnable(component.id, component, parent)
         else:
             runnable = Runnable(id_, component, parent)
 
-        context = component.context
-        simulation = context.simulation
+        simulation = component_type.simulation
 
         record_target_backup = self.current_record_target
         data_output_backup = self.current_data_output
@@ -105,17 +111,20 @@ class SimulationBuilder(LEMSBase):
         if do != None:
             self.current_data_output = do
 
-        for pn in context.parameters:
-            p = context.parameters[pn]
-            if p.numeric_value != None:
-                runnable.add_instance_variable(p.name, p.numeric_value)
-            elif p.dimension in ['__link__', '__text__']:
-                runnable.add_text_variable(p.name, p.value)
+        for pn in component.parameters:
+            pv = component.parameters[pn]
 
-        for port in context.event_in_ports:
-            runnable.add_event_in_port(port)
-        for port in context.event_out_ports:
-            runnable.add_event_out_port(port)
+            if pn in component_type.parameters:
+                n = self.get_numeric_value(component_type.parameters[pn], pv)
+                runnable.add_instance_variable(pn, n)
+            elif pn in component_type.links or pn in component_type.texts:
+                runnable.add_text_variable(pn, pv)
+
+        for ep in component_type.event_ports:
+            if ep.direction.lower() == 'in':
+                runnable.add_event_in_port(ep.name)
+            else:
+                runnable.add_event_out_port(ep.name)
 
         if context.selected_dynamics_profile:
             dynamics = context.selected_dynamics_profile
@@ -993,6 +1002,58 @@ class SimulationBuilder(LEMSBase):
                 raise SimBuildError('No target available for '
                                     'recording variables')
             self.current_record_target.add_variable_recorder(self.current_data_output, rec)
+
+    def get_numeric_value(self, parameter, value_str):
+        """
+        Get the numeric value for a parameter value specification.
+
+        @param parameter: Component type parameter object
+        @type parameter: lems.model.component.Parameter
+
+        @param value_str: Value string
+        @type value_str: str
+        """
+
+        bitsnum = re.split('[_a-zA-Z]+', value_str)
+        bitsalpha = re.split('[^_a-zA-Z]+', value_str)
+
+        n = float(bitsnum[0].strip())
+        bitsnum = bitsnum[1:]
+        bitsalpha = bitsalpha[1:]
+        s = ''
+
+        l = max(len(bitsnum), len(bitsalpha))
+        for i in range(l):
+            if i < len(bitsalpha):
+                s += bitsalpha[i].strip()
+            if i < len(bitsnum):
+                s += bitsnum[i].strip()
+        
+        #number = float(re.split('[_a-zA-Z]+', parameter.value)[0].strip())
+        #sym = re.split('[^_a-zA-Z]+', parameter.value)[1].strip()
+
+        number = n
+        sym = s
+
+        numeric_value = None
+
+        if sym == '':
+            numeric_value = number
+        else:
+            if sym in self.model.units:
+                unit = self.model.units[sym]
+                if parameter.dimension != unit.dimension:
+                    if parameter.dimension == '*':
+                        parameter.dimension = unit.dimension
+                    else:
+                        raise SimBuildError("Unit symbol '{0}' cannot "
+                                            "be used for dimension '{1}'",
+                                            sym, parameter.dimension)
+                numeric_value = number * (10 ** unit.power)
+            else:
+                raise SimBuildError("Unknown unit symbol '{0}'",
+                                    sym)
+        return numeric_value
 
 ############################################################
 

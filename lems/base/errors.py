@@ -50,16 +50,37 @@ class LEMSError(Exception):
         
         return self.message
 
+class StackError(LEMSError):
+    """
+    Exception class to signal errors in the Stack class.
+    """
+
+    pass
+
 class ParseError(LEMSError):
     """
-    Error to signal errors found during parsing.
+    Exception class to signal errors found during parsing.
     """
 
     pass
 
 class ModelError(LEMSError):
     """
-    Error to signal errors in creating the model.
+    Exception class to signal errors in creating the model.
+    """
+
+    pass
+
+class SimBuildError(LEMSError):
+    """
+    Exception class to signal errors in building the simulation.
+    """
+
+    pass
+
+class SimError(LEMSError):
+    """
+    Exception class to signal errors in simulation.
     """
 
     pass

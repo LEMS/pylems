@@ -7,7 +7,7 @@ Base class for runnable components.
 """
 
 from lems.base.base import LEMSBase
-from lems.base.util import Stack
+from lems.base.stack import Stack
 from lems.base.errors import SimBuildError
 from lems.sim.recording import Recording
 
