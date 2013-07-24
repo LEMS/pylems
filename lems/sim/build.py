@@ -381,6 +381,8 @@ class SimulationBuilder(LEMSBase):
         cannot be resolved.
         """
 
+        component_type = self.model.component_types[component.type]
+        
         if isinstance(regime, Dynamics) or regime.name == '':
             suffix = ''
         else:
