@@ -35,6 +35,15 @@ class StateVariable(LEMSBase):
         """ Exposure name for the state variable.
         @type: str """
 
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<StateVariable name="{0}" dimension = "{1}"'.format(self.name, self.dimension) +\
+          (' exposure="{0}"'.format(self.exposure) if self.exposure else '') +\
+          '/>'
+
 class DerivedVariable(LEMSBase):
     """
     Store the specification of a derived variable.
@@ -87,6 +96,20 @@ class DerivedVariable(LEMSBase):
                                  "'{0}' for derived variable {1}",
                                  self.value, self.name)
 
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<DerivedVariable name="{0}"'.format(self.name) +\
+          (' dimension="{0}"'.format(self.dimension) if self.dimension else '') +\
+          (' exposure="{0}"'.format(self.exposure) if self.exposure else '') +\
+          (' select="{0}"'.format(self.select) if self.select else '') +\
+          (' value="{0}"'.format(self.value) if self.value else '') +\
+          (' reduce="{0}"'.format(self.reduce) if self.reduce else '') +\
+          (' required="{0}"'.format(self.required) if self.required else '') +\
+          '/>'
+
 class TimeDerivative(LEMSBase):
     """
     Store the specification of a time derivative specifcation.
@@ -118,6 +141,18 @@ class TimeDerivative(LEMSBase):
                              "'{0}' for state variable {1}",
                              self.value, self.variable)
         
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        #s = '<TimeDerivative variable="{0}" value="{1}"/>'.format(self.variable, 'asd')#self.value)
+        s = '<A/>' #'<TimeDerivative/>'
+        print(s)
+        return s
+        #print('<TimeDerivative variable="{0}" value="{1}"/>'.format(self.variable, self.value))
+        #return '<TimeDerivative variable="{0}" value="{1}"/>'.format(self.variable, self.value)
+
 class Action(LEMSBase):
     """
     Base class for event handler actions.
@@ -146,6 +181,19 @@ class StateAssignment(Action):
         self.value = value
         """ Derivative expression.
         @type: str """
+
+        self.expression_tree = None
+        """ Parse tree for the time derivative expression.
+        @type: lems.parser.expr.ExprNode """
+
+        try:
+            self.expression_tree = ExprParser(value).parse()
+        except:
+            raise ParseError("Parse error when parsing state assignment "
+                             "value expression "
+                             "'{0}' for state variable {1}",
+                             self.value, self.variable)
+
 
 class EventOut(Action):
     """
@@ -248,6 +296,13 @@ class OnCondition(EventHandler):
         self.test = test
         """ Condition to be tested for.
         @type: str """
+
+        try:
+            self.expression_tree = ExprParser(test).parse()
+        except:
+            raise ParseError("Parse error when parsing OnCondition test '{0}'",
+                             test)
+        
 
 class OnEvent(EventHandler):
     """
@@ -427,6 +482,44 @@ class Behavioral(LEMSBase):
         else:
             raise ModelError('Unsupported child element')
         
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        if isinstance(self, Dynamics):
+            xmlstr = '<Dynamics'
+        else:
+            xmlstr = '<Regime name="{0}"'.format(self.name) +\
+              (' initial="true"' if self.initial else '')
+
+        chxmlstr = ''
+
+        for state_variable in self.state_variables:
+            chxmlstr += state_variable.toxml()
+
+        for derived_variable in self.derived_variables:
+            chxmlstr += derived_variable.toxml()
+
+        for time_derivative in self.time_derivatives:
+            chxmlstr += time_derivative.toxml()
+
+        for event_handler in self.event_handlers:
+            chxmlstr += event_handler.toxml()
+
+        for kinetic_scheme in self.kinetic_schemes:
+            chxmlstr += kinetic_scheme.toxml()
+
+        if isinstance(self, Dynamics):
+            for regime in self.regimes:
+                chxmlstr += regime.toxml()
+        if chxmlstr:
+            xmlstr += '>' + chxmlstr + '</Dynamics>'
+        else:
+            xmlstr += '/>'
+
+        return xmlstr
+                
 class Regime(Behavioral):
     """
     Stores a single behavioral regime for a component type.

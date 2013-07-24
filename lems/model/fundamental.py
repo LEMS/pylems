@@ -62,6 +62,21 @@ class Dimension(LEMSBase):
         @type: str """
         
 
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<Dimension name="{0}"'.format(self.name) +\
+          (' m = "{0}"'.format(self.m) if self.m != 0 else '') +\
+          (' l = "{0}"'.format(self.l) if self.l != 0 else '') +\
+          (' t = "{0}"'.format(self.t) if self.t != 0 else '') +\
+          (' i = "{0}"'.format(self.i) if self.i != 0 else '') +\
+          (' k = "{0}"'.format(self.k) if self.k != 0 else '') +\
+          (' n = "{0}"'.format(self.n) if self.n != 0 else '') +\
+          (' j = "{0}"'.format(self.j) if self.j != 0 else '') +\
+          '/>'
+          
 class Unit(LEMSBase):
     """
     Stores a unit definition.
@@ -102,3 +117,17 @@ class Unit(LEMSBase):
         """ Description of this unit.
         @type: str """
         
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<Unit' +\
+          (' name = "{0}"'.format(self.name) if self.name else '') +\
+          (' symbol = "{0}"'.format(self.symbol) if self.symbol else '') +\
+          (' dimension = "{0}"'.format(self.dimension) if self.dimension else '') +\
+          (' power = "{0}"'.format(self.power) if self.power else '') +\
+          (' scale = "{0}"'.format(self.scale) if self.scale else '') +\
+          (' offset = "{0}"'.format(self.offset) if self.offset else '') +\
+          (' description = "{0}"'.format(self.description) if self.description else '') +\
+          '/>'

@@ -18,7 +18,7 @@ from lems.base.errors import ModelError
 from lems.model.fundamental import Dimension,Unit
 from lems.model.component import Component,ComponentType,Constant
 
-import xml.etree.ElementTree as xe
+import xml.dom.minidom as minidom
 
 class Model(LEMSBase):
     """
@@ -197,17 +197,19 @@ class Model(LEMSBase):
         @type filepath: str
         """
 
-        xmlstr = '<Lems>\n'
+        xmlstr = '<Lems>'
 
         for target in self.targets:
-            xmlstr += level_prefix + '<Target component="{0}"/>\n'.format(target)
+            xmlstr += '<Target component="{0}"/>'.format(target)
 
-        """
         for dimension in self.dimensions:
             xmlstr += dimension.toxml()
             
         for unit in self.units:
             xmlstr += unit.toxml()
+            
+        for constant in self.constants:
+            xmlstr += constant.toxml()
             
         for component_type in self.component_types:
             xmlstr += component_type.toxml()
@@ -215,12 +217,12 @@ class Model(LEMSBase):
         for component in self.components:
             xmlstr += component.toxml()
             
-        for constant in self.constants:
-            xmlstr += constant.toxml()
-        """    
         xmlstr += '</Lems>'
 
+        xmlstr = minidom.parseString(xmlstr).toprettyxml('  ', '\n',)
         print(xmlstr)
+
+        
 
 
     def resolve(self):
@@ -255,6 +257,7 @@ class Model(LEMSBase):
 
             self.resolve_component_type(base_ct)
             self.merge_component_types(component_type, base_ct)
+            component_type.types = set.union(component_type.types, base_ct.types)
             component_type.extends = None
 
     def merge_component_types(self, ct, base_ct):

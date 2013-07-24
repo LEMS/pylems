@@ -686,23 +686,6 @@ class LEMSFileParser(LEMSBase):
         self.current_regime = None
         self.current_dynamics = None
 
-    def parse_event_out(self, node):
-        """
-        Parses <EventOut>
-
-        @param node: Node containing the <EventOut> element
-        @type node: xml.etree.Element
-        """
-
-        try:
-            port = node.lattrib['port']
-        except:
-            self.raise_error('<EventOut> must be specify a port.')
-
-        action = EventOut(port)
-
-        self.current_event_handler.add_action(action)
-
     def parse_event_connection(self, node):
         """
         Parses <EventConnection>
@@ -729,6 +712,23 @@ class LEMSFileParser(LEMSBase):
         self.current_structure.add_event_connection(EventConnection(from_, to,
                                                                     source_port, target_port,
                                                                     receiver, receiver_container))
+
+    def parse_event_out(self, node):
+        """
+        Parses <EventOut>
+
+        @param node: Node containing the <EventOut> element
+        @type node: xml.etree.Element
+        """
+
+        try:
+            port = node.lattrib['port']
+        except:
+            self.raise_error('<EventOut> must be specify a port.')
+
+        action = EventOut(port)
+
+        self.current_event_handler.add_action(action)
 
     def parse_event_port(self, node):
         """

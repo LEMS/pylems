@@ -13,7 +13,7 @@ from lems.base.errors import SimBuildError
 from lems.sim.runnable import Runnable
 from lems.sim.sim import Simulation
 from lems.parser.expr import ExprNode
-from lems.model.dynamics import Dynamics,Regime,EventHandler,Action
+from lems.model.dynamics import *
 from lems.sim.runnable import Regime
 
 import sys
@@ -232,11 +232,12 @@ class SimulationBuilder(LEMSBase):
         for mi in structure.multi_instantiates:
             if mi.component in component_type.component_references:
                 cref = component.parameters[mi.component]
+                n = int(component.parameters[mi.number])
                 base_comp = self.model.components[cref]
                 template = self.build_runnable(base_comp,
                                            runnable)
 
-                for i in range(mi.number):
+                for i in range(n):
                     instance = copy.deepcopy(template)
                     instance.id = "{0}__{1}__{2}".format(component.id,
                                                          template.id,
@@ -248,7 +249,7 @@ class SimulationBuilder(LEMSBase):
                         mi.component, runnable.id))
 
         # Process foreach statements
-        if structure.foreach:
+        if structure.for_each:
             self.build_foreach(component, runnable, structure)
 
         # Process event connections
@@ -382,6 +383,7 @@ class SimulationBuilder(LEMSBase):
         """
 
         component_type = self.model.component_types[component.type]
+        context = None
         
         if isinstance(regime, Dynamics) or regime.name == '':
             suffix = ''
@@ -444,12 +446,12 @@ class SimulationBuilder(LEMSBase):
         post_event_handler_code = []
         startup_event_handler_code = []
         for eh in regime.event_handlers:
-            if eh.type == EventHandler.ON_START:
+            if isinstance(eh, OnStart):
                 startup_event_handler_code += self.build_event_handler(runnable,
                                                                        context,
                                                                        regime,
                                                                        eh)
-            elif eh.type == EventHandler.ON_CONDITION:
+            elif isinstance(eh, OnCondition):
                 post_event_handler_code += self.build_event_handler(runnable,
                                                                     context,
                                                                     regime,
@@ -496,8 +498,10 @@ class SimulationBuilder(LEMSBase):
         cannot be resolved.
         """
 
-        context = component.context
-        if regime.name == '':
+        component_type = self.model.component_types[component.type]
+        context = None
+        
+        if isinstance(regime, Dynamics) or regime.name == '':
             suffix = ''
         else:
             suffix = '_regime_' + regime.name
@@ -686,13 +690,14 @@ class SimulationBuilder(LEMSBase):
         @rtype: string
         """
 
-        default_regime = context.selected_dynamics_profile.default_regime
-
+        component_type = self.model.component_types[runnable.component.type]
+        dynamics = component_type.dynamics
+        
         if tree_node.type == ExprNode.VALUE:
             if tree_node.value[0].isalpha():
                 if tree_node.value == 't':
                     return 'self.time_completed'
-                elif tree_node.value in context.requirements:
+                elif tree_node.value in component_type.requirements:
                     var_prefix = 'self'
                     v = tree_node.value
 
@@ -708,7 +713,7 @@ class SimulationBuilder(LEMSBase):
 
                     return '{0}.{1}'.format(var_prefix, v)
                 elif (tree_node.value in regime.derived_variables or
-                      tree_node.value in default_regime.derived_variables):
+                      tree_node.value in dynamics.derived_variables):
                     return 'self.{0}'.format(tree_node.value)
                 else:
                     return 'self.{0}_shadow'.format(tree_node.value)
@@ -744,13 +749,13 @@ class SimulationBuilder(LEMSBase):
         @rtype: list(string)
         """
 
-        if event_handler.type == EventHandler.ON_CONDITION:
+        if isinstance(event_handler, OnCondition):
             return self.build_on_condition(runnable, context, regime, event_handler)
-        elif event_handler.type == EventHandler.ON_EVENT:
+        elif isinstance(event_handler, OnEvent):
             return self.build_on_event(runnable, context, regime, event_handler)
-        elif event_handler.type == EventHandler.ON_START:
+        elif isinstance(event_handler, OnStart):
             return self.build_on_start(runnable, context, regime, event_handler)
-        elif event_handler.type == EventHandler.ON_ENTRY:
+        elif isinstance(event_handler, OnEntry):
             return self.build_on_entry(runnable, context, regime, event_handler)
         else:
             return []
@@ -862,11 +867,11 @@ class SimulationBuilder(LEMSBase):
         @rtype: string
         """
 
-        if action.type == Action.STATE_ASSIGNMENT:
+        if isinstance(action, StateAssignment):
             return self.build_state_assignment(runnable, context, regime, action)
-        if action.type == Action.EVENT_OUT:
+        if isinstance(action, EventOut):
             return self.build_event_out(action)
-        if action.type == Action.TRANSITION:
+        if isinstance(action, Transition):
             return self.build_transition(action)
         else:
             return ['pass']
@@ -976,8 +981,8 @@ class SimulationBuilder(LEMSBase):
         found.
         """
 
-        context = component.context
-        simulation = context.simulation
+        component_type = self.model.component_types[component.type]
+        simulation = component_type.simulation
 
         for rn in simulation.records:
             rec = simulation.records[rn]

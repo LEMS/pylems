@@ -15,3 +15,6 @@ class LEMSBase(object):
 
     def copy(self):
         return copy.deepcopy(self)
+
+    def toxml(self):
+        return ''

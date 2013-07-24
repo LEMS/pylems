@@ -116,6 +116,13 @@ class MultiInstantiate(LEMSBase):
     def __eq__(self, o):
         return self.component == o.component and self.number == o.number
 
+class ForEach(LEMSBase):
+    """
+    ForEach specification.
+    """
+
+    pass
+        
 class Structure(LEMSBase):
     """
     Stores structural properties of a component type.
@@ -141,6 +148,10 @@ class Structure(LEMSBase):
         self.multi_instantiates = list()
         """ List of child multi-instantiations.
         @type: list(lems.model.structure.MultiInstantiate) """
+
+        self.for_each = list()
+        """ List of for each specs.
+        @type: list(lems.model.structure.ForEach) """
 
     def add_with(self, with_):
         """
@@ -182,6 +193,16 @@ class Structure(LEMSBase):
 
         self.multi_instantiates.append(mi)
 
+    def add_for_each(self, fe):
+        """
+        Adds a for-each specification.
+
+        @param fe: For-each specification.
+        @type fe: lems.model.structure.ForEach
+        """
+
+        self.for_each.append(fe)
+
     def add(self, child):
         """
         Adds a typed child object to the structure object.
@@ -197,5 +218,7 @@ class Structure(LEMSBase):
             self.add_child_instance(child)
         elif isinstance(child, MultiInstantiate):
             self.add_multi_instantiate(child)
+        elif isinstance(child, ForEach):
+            self.add_for_each(child)
         else:
             raise ModelError('Unsupported child element')

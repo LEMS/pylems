@@ -46,6 +46,15 @@ class Parameter(LEMSBase):
         """ Description of this parameter.
         @type: str """
 
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<{0} name="{1}" dimension="{2}"'.format('Fixed' if self.fixed else 'Parameter', self.name, self.dimension) +\
+          (' description = "{0}"'.format(self.description) if self.description else '') +\
+          '/>'
+
 class Fixed(Parameter):
     """
     Stores a fixed parameter specification.
@@ -95,6 +104,19 @@ class Constant(LEMSBase):
         """ Numeric value of the constant.
         @type: float """
 
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<Constant' +\
+          (' name = "{0}"'.format(self.name) if self.name else '') +\
+          (' value = "{0}"'.format(self.value) if self.value else '') +\
+          (' dimension = "{0}"'.format(self.dimension) if self.dimension else '') +\
+          (' description = "{0}"'.format(self.description) if self.description else '') +\
+          '/>'
+        
+
 class Exposure(LEMSBase):
     """
     Stores a exposure specification.
@@ -119,6 +141,15 @@ class Exposure(LEMSBase):
         """ Description of this exposure.
         @type: str """
 
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<Exposure name="{0}" dimension="{1}"'.format(self.name, self.dimension) +\
+          (' description = "{0}"'.format(self.description) if self.description else '') +\
+          '/>'
+
 class Requirement(LEMSBase):
     """
     Stores a requirement specification.
@@ -139,7 +170,14 @@ class Requirement(LEMSBase):
         """ Physical dimension of the requirement.
         @type: str """
 
-class Children:
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<Requirement name="{0}" dimension="{1}"/>'.format(self.name, self.dimension)
+
+class Children(LEMSBase):
     """
     Stores children specification.
     """
@@ -163,6 +201,13 @@ class Children:
         """ Single child / multiple children.
         @type: bool """
 
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<{2} name="{0}" type="{1}"/>'.format(self.name, self.type, 'Children' if self.multiple else 'Child')
+
 class Text(LEMSBase):
     """
     Stores a text entry specification.
@@ -183,6 +228,15 @@ class Text(LEMSBase):
         """ Description of the text entry.
         @type: str """
 
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<Text name="{0}"'.format(self.name) +\
+          (' description = "{0}"'.format(self.description) if self.description else '') +\
+          '/>'
+        
 class Link(LEMSBase):
     """
     Stores a link specification.
@@ -207,6 +261,16 @@ class Link(LEMSBase):
         """ Description of the link.
         @type: str """
 
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<Link name="{0}" type="{1}"'.format(self.name, self.type) +\
+          (' description = "{0}"'.format(self.description) if self.description else '') +\
+          '/>'
+
+        
 class Path(LEMSBase):
     """
     Stores a path entry specification.
@@ -227,6 +291,15 @@ class Path(LEMSBase):
         """ Description of the path entry.
         @type: str """
 
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<Path name="{0}"'.format(self.name) +\
+          (' description = "{0}"'.format(self.description) if self.description else '') +\
+          '/>'
+        
 class EventPort(LEMSBase):
     """
     Stores an event port specification.
@@ -243,14 +316,27 @@ class EventPort(LEMSBase):
         """ Name of the event port.
         @type: str """
 
+        d = direction.lower()
+        if d != 'in' and d != 'out':
+            raise ModelError("Invalid direction '{0}' in event port '{1}'".format(direction, name))
+         
         self.direction = direction
         """ Direction - IN/OUT .
         @type: str """
-         
+
         self.description = description
         """ Description of the event port.
         @type: str """
 
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<EventPort name="{0}" direction="{1}"'.format(self.name, self.direction.upper()) +\
+          (' description = "{0}"'.format(self.description) if self.description else '') +\
+          '/>'
+        
 class ComponentReference(LEMSBase):
     """
     Stores a component reference.
@@ -271,6 +357,13 @@ class ComponentReference(LEMSBase):
         """ Type of the component reference.
         @type: str """
 
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<ComponentReference name="{0}" type="{1}"/>'.format(self.name, self.type)
+        
 class Attachments(LEMSBase):
     """
     Stores an attachment type specification.
@@ -295,7 +388,14 @@ class Attachments(LEMSBase):
         """ Description about the attachment.
         @type: str """
 
-    
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<Attachments name="{0}" type="{1}"'.format(self.name, self.type) +\
+          (' description = "{0}"'.format(self.description) if self.description else '') +\
+          '/>'
         
 class ComponentType(LEMSBase):
     """
@@ -339,19 +439,19 @@ class ComponentType(LEMSBase):
 
         self.children = Map()
         """ Map of children.
-        @type: Map(str -> lems.model.component.Children """
+        @type: Map(str -> lems.model.component.Children) """
 
         self.texts = Map()
         """ Map of text entries.
-        @type: Map(str -> lems.model.component.Text """
+        @type: Map(str -> lems.model.component.Text) """
 
         self.links = Map()
         """ Map of links.
-        @type: Map(str -> lems.model.component.Link """
+        @type: Map(str -> lems.model.component.Link) """
 
         self.paths = Map()
         """ Map of path entries.
-        @type: Map(str -> lems.model.component.Path """
+        @type: Map(str -> lems.model.component.Path) """
 
         self.event_ports = Map()
         """ Map of event ports.
@@ -377,6 +477,10 @@ class ComponentType(LEMSBase):
         """ Simulation attributes.
         @type: lems.model.simulation.Simulation """
 
+        self.types = set([name])
+        """ Set of compatible component types.
+        @type: set(str) """
+        
     def add_parameter(self, parameter):
         """
         Adds a paramter to this component type.
@@ -519,6 +623,61 @@ class ComponentType(LEMSBase):
         else:
             raise ModelError('Unsupported child element')
 
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        xmlstr = '<ComponentType name="{0}"'.format(self.name) +\
+          (' extends="{0}"'.format(self.extends) if self.extends else '') +\
+          (' description="{0}"'.format(self.description) if self.description else '')
+
+        chxmlstr = ''
+
+        for parameter in self.parameters:
+            chxmlstr += parameter.toxml()
+
+        for constant in self.constants:
+            chxmlstr += constant.toxml()
+            
+        for exposure in self.exposures:
+            chxmlstr += exposure.toxml()
+            
+        for requirement in self.requirements:
+            chxmlstr += requirement.toxml()
+            
+        for children in self.children:
+            chxmlstr += children.toxml()
+            
+        for text in self.texts:
+            chxmlstr += text.toxml()
+            
+        for link in self.links:
+            chxmlstr += link.toxml()
+            
+        for path in self.paths:
+            chxmlstr += path.toxml()
+            
+        for event_port in self.event_ports:
+            chxmlstr += event_port.toxml()
+            
+        for component_reference in self.component_references:
+            chxmlstr += component_reference.toxml()
+            
+        for attachment in self.attachments:
+            chxmlstr += attachment.toxml()
+
+        chxmlstr += self.dynamics.toxml()
+        chxmlstr += self.structure.toxml()
+        chxmlstr += self.simulation.toxml()
+            
+        if chxmlstr:
+            xmlstr += '>' + chxmlstr + '</ComponentType>'
+        else:
+            xmlstr += '/>'
+
+        return xmlstr
+        
 class Component(LEMSBase):
     """
     Stores a component instantiation.
@@ -582,3 +741,22 @@ class Component(LEMSBase):
         else:
             raise ModelError('Unsupported child element')
         
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        xmlstr = '<Component id="{0}" type="{1}"'.format(self.id, self.type)
+
+        for (k, v) in self.parameters.items():
+            xmlstr += ' {0}="{1}"'.format(k, v)
+
+        if self.children:
+            xmlstr += '>'
+            for child in self.children:
+                xmlstr += child.toxml()
+            xmlstr += '</Component>'
+        else:
+            xmlstr += '/>'
+
+        return xmlstr
