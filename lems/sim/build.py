@@ -211,37 +211,41 @@ class SimulationBuilder(LEMSBase):
         component_type = self.model.component_types[component.type]
 
         # Process single-child instantiations
-        for c in structure.single_child_defs:
-            if c in component_type.component_references:
-                cref = component_type.component_references[c]
+        for ch in structure.child_instances:
+            if ch.component in component_type.component_references:
+                cref = component_type.component_references[ch.component]
                 child = self.model.components[cref]
                 child_runnable = self.build_runnable(child, runnable)
                 runnable.add_child(c, child_runnable)
 
                 for children in component_type.children:
                     if children.type == child.type:
-                        runnable.add_child_to_group(cdn, child_runnable)
+                        runnable.add_child_to_group(children.name, child_runnable)
 
             else:
                 raise SimBuildError('Unable to find component ref \'{0}\' '
                                     'under \'{1}\''.format(\
-                        c, runnable.id))
+                        ch.component, runnable.id))
 
 
         # Process multi-child instatiantions
-        for cparam in structure.multi_child_defs:
-            sparam = structure.multi_child_defs[cparam]
-            c1 = component
-            c2 = context.lookup_component(cparam)
-            template = self.build_runnable(context.lookup_component(cparam),
+        for mi in structure.multi_instantiates:
+            if mi.component in component_type.component_references:
+                cref = component.parameters[mi.component]
+                base_comp = self.model.components[cref]
+                template = self.build_runnable(base_comp,
                                            runnable)
 
-            for i in range(sparam):
-                instance = copy.deepcopy(template)
-                instance.id = "{0}__{1}__{2}".format(component.id,
-                                                   template.id,
-                                                   i)
-                runnable.array.append(instance)
+                for i in range(mi.number):
+                    instance = copy.deepcopy(template)
+                    instance.id = "{0}__{1}__{2}".format(component.id,
+                                                         template.id,
+                                                         i)
+                    runnable.array.append(instance)
+            else:
+                raise SimBuildError('Unable to find component ref \'{0}\' '
+                                    'under \'{1}\''.format(\
+                        mi.component, runnable.id))
 
         # Process foreach statements
         if structure.foreach:
