@@ -92,9 +92,9 @@ class SimulationBuilder(LEMSBase):
                                 component.type, component.name)
 
         if id_ == None:
-            runnable = Runnable(component.id, component, parent)
+            runnable = Runnable(component.id, component, component_type, parent)
         else:
-            runnable = Runnable(id_, component, parent)
+            runnable = Runnable(id_, component, component_type, parent)
 
         simulation = component_type.simulation
 
@@ -103,10 +103,10 @@ class SimulationBuilder(LEMSBase):
 
         do = None
         for d in simulation.data_displays:
-            do = simulation.data_displays[d]
+            do = d
         if do == None:
             for d in simulation.data_writers:
-                do = simulation.data_writers[d]
+                do = d
 
         if do != None:
             self.current_data_output = do
@@ -162,7 +162,7 @@ class SimulationBuilder(LEMSBase):
             child_typeobj = self.model.component_types[child.type]
             for children in component_type.children:
                 if children.type in child_typeobj.types:
-                    runnable.add_child_typeref(children.name, child_runnable)
+                    runnable.add_child_typeref(children.type, child_runnable)
                 if children.multiple:
                     runnable.add_child_to_group(children.name, child_runnable)
 
@@ -984,8 +984,7 @@ class SimulationBuilder(LEMSBase):
         component_type = self.model.component_types[component.type]
         simulation = component_type.simulation
 
-        for rn in simulation.records:
-            rec = simulation.records[rn]
+        for rec in simulation.records:
             if self.current_record_target == None:
                 raise SimBuildError('No target available for '
                                     'recording variables')

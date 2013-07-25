@@ -97,7 +97,7 @@ class Regime:
 class Runnable(Reflective):
     uid_count = 0
 
-    def __init__(self, id_, component, parent = None):
+    def __init__(self, id_, component, component_type, parent = None):
         Reflective.__init__(self)
 
         self.uid = Runnable.uid_count
@@ -105,6 +105,7 @@ class Runnable(Reflective):
 
         self.id = id_
         self.component = component
+        self.component_type = component_type
         self.parent = parent
 
         self.time_step = 0
@@ -351,9 +352,9 @@ class Runnable(Reflective):
                 name = "{0}.{1}".format(r.id, name)
 
             print("Error in '{0} ({2})': {1}".format(name, e,
-                                                     self.component.component_type))
+                                                     self.component_type))
             print(type(e))
-            keys = self.__dict__.keys()
+            keys = list(self.__dict__.keys())
             keys.sort()
             for k in keys:
                 print('{0} -> {1}'.format(k, self.__dict__[k]))
@@ -457,3 +458,6 @@ class Runnable(Reflective):
                 self.__dict__[var + '_shadow'] = self.__dict__[var]
             for var in self.derived_variables:
                 self.__dict__[var + '_shadow'] = self.__dict__[var]
+
+    def __lt__(self, other):
+        return self.id < other.id

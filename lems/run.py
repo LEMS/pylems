@@ -36,7 +36,7 @@ def main():
     model = Model()
     model.import_from_file(args.lems_file)
 
-    #resolved_model = model.resolve()
+    resolved_model = model.resolve()
 
-    #sim = SimulationBuilder(resolved_model).build()
-    model.export_to_file('/home/gautham/tmp/out.xml')
+    sim = SimulationBuilder(resolved_model).build()
+    sim.run()
