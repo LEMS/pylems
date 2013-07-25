@@ -41,6 +41,16 @@ class Run(LEMSBase):
         """ Final value of the state variable.
         @type: str """
 
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<Run component="{0}" variable="{1}" increment="{2}" total="{3}"/>'.format(self.component,
+                                                                                          self.variable,
+                                                                                          self.increment,
+                                                                                          self.total)
+
 class Record(LEMSBase):
     """
     Stores the parameters of a <Record> statement.
@@ -64,6 +74,15 @@ class Record(LEMSBase):
         self.color = color
         """ Text parameter to be used to specify the color for display.
         @type: str """
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<Record quantity="{0}" scale="{1}" color="{2}"/>'.format(self.quantity,
+                                                                         self.scale,
+                                                                         self.color)
 
 class DataOutput(LEMSBase):
     """
@@ -98,6 +117,14 @@ class DataDisplay(DataOutput):
         self.data_region = data_region
         """ Display position
         @type: string """
+        
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<DataDisplay title="{0}" dataRegion="{1}"/>'.format(self.title,
+                                                                    self.data_region)
 
 class DataWriter(DataOutput):
     """
@@ -121,6 +148,14 @@ class DataWriter(DataOutput):
         """ Text parameter to be used for the path to the file for
         saving this quantity
         @type: string """
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<DataWriter path="{0}" filePath="{1}"/>'.format(self.path,
+                                                                self.file_path)
 
 class Simulation(LEMSBase):
     """
@@ -208,3 +243,28 @@ class Simulation(LEMSBase):
         else:
             raise ModelError('Unsupported child element')
         
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        chxmlstr = ''
+
+        for run in self.runs:
+            chxmlstr += run.toxml()
+
+        for record in self.records:
+            chxmlstr += record.toxml()
+
+        for data_display in self.data_displays:
+            chxmlstr += data_display.toxml()
+
+        for data_writer in self.data_writers:
+            chxmlstr += data_writer.toxml()
+
+        if chxmlstr:
+            xmlstr = '<Simulation>' + chxmlstr + '</Simulation>'
+        else:
+            xmlstr = ''
+
+        return xmlstr
