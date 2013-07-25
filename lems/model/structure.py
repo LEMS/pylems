@@ -30,6 +30,13 @@ class With(LEMSBase):
         """ Alternative name.
         @type: str """
 
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<With instance="{0}" as="{1}"/>'.format(self.instance, self.as_)
+
 class EventConnection(LEMSBase):
     """
     Stores an event connection specification.
@@ -73,6 +80,20 @@ class EventConnection(LEMSBase):
                 self.source_port == o.source_port and self.target_port == o.target_port)
 
 
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<EventConnection' +\
+          (' from="{0}"'.format(self.from_) if self.from_ else '') +\
+          (' to="{0}"'.format(self.to) if self.to else '') +\
+          (' sourcePort="{0}"'.format(self.source_port) if self.source_port else '') +\
+          (' targetPort="{0}"'.format(self.target_port) if self.target_port else '') +\
+          (' receiver="{0}"'.format(self.receiver) if self.receiver else '') +\
+          (' receiverContainer="{0}"'.format(self.receiver_container) if self.receiver_container else '') +\
+          '/>'
+
 class ChildInstance(LEMSBase):
     """
     Stores a child instantiation specification.
@@ -91,6 +112,13 @@ class ChildInstance(LEMSBase):
         
     def __eq__(self, o):
         return self.component == o.component
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<ChildInstance component="{0}"/>'.format(self.component)
 
 class MultiInstantiate(LEMSBase):
     """
@@ -115,6 +143,13 @@ class MultiInstantiate(LEMSBase):
         
     def __eq__(self, o):
         return self.component == o.component and self.number == o.number
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<MultiInstantiate component="{0}" number="{1}"/>'.format(self.component, self.number)
 
 class ForEach(LEMSBase):
     """
@@ -222,3 +257,33 @@ class Structure(LEMSBase):
             self.add_for_each(child)
         else:
             raise ModelError('Unsupported child element')
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        chxmlstr = ''
+
+        for with_ in self.withs:
+            chxmlstr += with_.toxml()
+
+        for event_connection in self.event_connections:
+            chxmlstr += event_connection.toxml()
+
+        for child_instance in self.child_instances:
+            chxmlstr += child_instance.toxml()
+
+        for multi_instantiate in self.multi_instantiates:
+            chxmlstr += multi_instantiate.toxml()
+
+        for for_each in self.for_each:
+            chxmlstr += for_each.toxml()
+
+        if chxmlstr:
+            xmlstr = '<Structure>' + chxmlstr + '</Structure>'
+        else:
+            xmlstr = ''
+
+        return xmlstr
+

@@ -114,7 +114,8 @@ class LEMSFileParser(LEMSBase):
         self.valid_children['structure'] = ['childinstance',
                                             'eventconnection',
                                             'foreach',
-                                            'multiinstantiate']
+                                            'multiinstantiate',
+                                            'with']
         self.valid_children['simulation'] = ['record', 'run',
                                              'datadisplay', 'datawriter']
 

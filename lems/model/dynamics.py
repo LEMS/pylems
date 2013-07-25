@@ -146,12 +146,7 @@ class TimeDerivative(LEMSBase):
         Exports this object into a LEMS XML object
         """
 
-        #s = '<TimeDerivative variable="{0}" value="{1}"/>'.format(self.variable, 'asd')#self.value)
-        s = '<A/>' #'<TimeDerivative/>'
-        print(s)
-        return s
-        #print('<TimeDerivative variable="{0}" value="{1}"/>'.format(self.variable, self.value))
-        #return '<TimeDerivative variable="{0}" value="{1}"/>'.format(self.variable, self.value)
+        return '<TimeDerivative variable="{0}" value="{1}"/>'.format(self.variable, self.value)
 
 class Action(LEMSBase):
     """
@@ -194,6 +189,13 @@ class StateAssignment(Action):
                              "'{0}' for state variable {1}",
                              self.value, self.variable)
 
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<StateAssignment variable="{0}" value="{1}"/>'.format(self.variable, self.value)
+
 
 class EventOut(Action):
     """
@@ -213,6 +215,13 @@ class EventOut(Action):
         """ Port on which the event comes in.
         @type: str """
         
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<EventOut port="{0}"/>'.format(self.port)
+
 class Transition(Action):
     """
     Regime transition specification.
@@ -230,6 +239,13 @@ class Transition(Action):
         self.regime = regime
         """ Regime to transition to.
         @type: str """
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<Transition regime="{0}"/>'.format(self.regime)
 
 class EventHandler(LEMSBase):
     """
@@ -279,6 +295,25 @@ class OnStart(EventHandler):
         
         EventHandler.__init__(self)
 
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        xmlstr = '<OnStart'
+
+        chxmlstr = ''
+
+        for action in self.actions:
+            chxmlstr += action.toxml()
+
+        if chxmlstr:
+            xmlstr += '>' + chxmlstr + '</OnStart>'
+        else:
+            xmlstr += '/>'
+
+        return xmlstr
+
 class OnCondition(EventHandler):
     """
     Specification for event handler called upon satisfying a given condition.
@@ -303,6 +338,24 @@ class OnCondition(EventHandler):
             raise ParseError("Parse error when parsing OnCondition test '{0}'",
                              test)
         
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        xmlstr = '<OnCondition test="{0}"'.format(self.test)
+
+        chxmlstr = ''
+
+        for action in self.actions:
+            chxmlstr += action.toxml()
+
+        if chxmlstr:
+            xmlstr += '>' + chxmlstr + '</OnCondition>'
+        else:
+            xmlstr += '/>'
+
+        return xmlstr
 
 class OnEvent(EventHandler):
     """
@@ -322,6 +375,25 @@ class OnEvent(EventHandler):
         """ Port on which the event comes in.
         @type: str """
 
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        xmlstr = '<OnEvent port="{0}"'.format(self.port)
+
+        chxmlstr = ''
+
+        for action in self.actions:
+            chxmlstr += action.toxml()
+
+        if chxmlstr:
+            xmlstr += '>' + chxmlstr + '</OnEvent>'
+        else:
+            xmlstr += '/>'
+
+        return xmlstr
+
 class OnEntry(EventHandler):
     """
     Specification for event handler called upon entry into a new behavior regime.
@@ -333,6 +405,25 @@ class OnEntry(EventHandler):
         """
         
         EventHandler.__init__(self)
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        xmlstr = '<OnEntry'
+
+        chxmlstr = ''
+
+        for action in self.actions:
+            chxmlstr += action.toxml()
+
+        if chxmlstr:
+            xmlstr += '>' + chxmlstr + '</OnEntry>'
+        else:
+            xmlstr += '/>'
+
+        return xmlstr
 
 class KineticScheme(LEMSBase):
     """
@@ -379,6 +470,28 @@ class KineticScheme(LEMSBase):
         self.reverse_rate = reverse_rate
         """ Name of the reverse rate exposure.
         @type: str """
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return ('<KineticScheme '
+                'name="{0}" '
+                'nodes="{1}" '
+                'edges="{2}" '
+                'stateVariable="{3}" '
+                'edgeSource="{4}" '
+                'edgeTarget="{5}" '
+                'forwardRate="{6}" '
+                'reverseRate="{7}"/>').format(self.name,
+                                              self.nodes,
+                                              self.edges,
+                                              self.state_variable,
+                                              self.edge_source,
+                                              self.edge_target,
+                                              self.forward_rate,
+                                              self.reverse_rate)
 
 class Behavioral(LEMSBase):
     """
@@ -513,8 +626,9 @@ class Behavioral(LEMSBase):
         if isinstance(self, Dynamics):
             for regime in self.regimes:
                 chxmlstr += regime.toxml()
+                
         if chxmlstr:
-            xmlstr += '>' + chxmlstr + '</Dynamics>'
+            xmlstr += '>' + chxmlstr + ('</Dynamics>' if isinstance(self, Dynamics) else '</Regime>')
         else:
             xmlstr += '/>'
 

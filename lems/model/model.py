@@ -222,6 +222,9 @@ class Model(LEMSBase):
         xmlstr = minidom.parseString(xmlstr).toprettyxml('  ', '\n',)
         print(xmlstr)
 
+        with open(filepath, 'w') as f:
+            f.write(xmlstr)
+            
         
 
 
