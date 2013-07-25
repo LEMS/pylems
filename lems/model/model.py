@@ -129,7 +129,7 @@ class Model(LEMSBase):
         if isinstance(child, Dimension):
             self.add_dimension(child)
         elif isinstance(child, Unit):
-            seld.add_unit(child)
+            self.add_unit(child)
         elif isinstance(child, ComponentType):
             self.add_component_type(child)
         elif isinstance(child, Component):
@@ -219,14 +219,10 @@ class Model(LEMSBase):
             
         xmlstr += '</Lems>'
 
-        xmlstr = minidom.parseString(xmlstr).toprettyxml('  ', '\n',)
-        print(xmlstr)
+        xmlstr = minidom.parseString(xmlstr).toprettyxml(level_prefix, '\n',)
 
         with open(filepath, 'w') as f:
             f.write(xmlstr)
-            
-        
-
 
     def resolve(self):
         """

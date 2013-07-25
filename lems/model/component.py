@@ -599,7 +599,7 @@ class ComponentType(LEMSBase):
         """
 
         if isinstance(child, Parameter):
-            self.add_dimension(parameter)
+            self.add_parameter(child)
         elif isinstance(child, Constant):
             self.add_constant(child)
         elif isinstance(child, Exposure):

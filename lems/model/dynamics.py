@@ -600,12 +600,6 @@ class Behavioral(LEMSBase):
         Exports this object into a LEMS XML object
         """
 
-        if isinstance(self, Dynamics):
-            xmlstr = '<Dynamics'
-        else:
-            xmlstr = '<Regime name="{0}"'.format(self.name) +\
-              (' initial="true"' if self.initial else '')
-
         chxmlstr = ''
 
         for state_variable in self.state_variables:
@@ -626,11 +620,21 @@ class Behavioral(LEMSBase):
         if isinstance(self, Dynamics):
             for regime in self.regimes:
                 chxmlstr += regime.toxml()
-                
-        if chxmlstr:
-            xmlstr += '>' + chxmlstr + ('</Dynamics>' if isinstance(self, Dynamics) else '</Regime>')
+
+        if isinstance(self, Dynamics):
+            xmlprefix = 'Dynamics'
+            xmlsuffix = 'Dynamics'
+            xmlempty = ''
         else:
-            xmlstr += '/>'
+            xmlprefix = 'Regime name="{0}"'.format(self.name) +\
+              (' initial="true"' if self.initial else '')
+            xmlsuffix = 'Regime'
+            xmlempty = '<{0}/>',format(xmlprefix)
+
+        if chxmlstr:
+            xmlstr = '<{0}>'.format(xmlprefix) + chxmlstr + '</{0}>'.format(xmlsuffix)
+        else:
+            xmlstr = xmlempty
 
         return xmlstr
                 
