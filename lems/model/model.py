@@ -183,7 +183,7 @@ class Model(LEMSBase):
         @type filepath: str
         """
         
-        inc_dirs = self.include_directories.copy()
+        inc_dirs = self.include_directories[:]
         inc_dirs.append(dirname(filepath))
                         
         parser = LEMSFileParser(self, inc_dirs)
@@ -225,7 +225,7 @@ class Model(LEMSBase):
             
         xmlstr += '</Lems>'
 
-        print(xmlstr)
+        #print(xmlstr)
 
         xmlstr = minidom.parseString(xmlstr).toprettyxml(level_prefix, '\n',)
 
