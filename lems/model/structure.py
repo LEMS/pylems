@@ -196,7 +196,7 @@ class Structure(LEMSBase):
         @type with_: lems.model.structure.With
         """
 
-        self.withs[with_.instance] = with_
+        self.withs[with_.as_] = with_
         
     def add_event_connection(self, ec):
         """

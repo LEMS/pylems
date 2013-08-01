@@ -16,9 +16,11 @@ from lems.parser.LEMS import LEMSFileParser
 from lems.base.errors import ModelError
 
 from lems.model.fundamental import Dimension,Unit
-from lems.model.component import Component,ComponentType,Constant
+from lems.model.component import Constant,ComponentType,Component,FatComponent
 
 import xml.dom.minidom as minidom
+
+import re
 
 class Model(LEMSBase):
     """
@@ -49,6 +51,10 @@ class Model(LEMSBase):
         self.components = Map()
         """ Map of root components defined in the model.
         @type: dict(str -> lems.model.component.Component) """
+
+        self.fat_components = Map()
+        """ Map of root fattened components defined in the model.
+        @type: dict(str -> lems.model.component.FatComponent) """
 
         self.constants = Map()
         """ Map of constants in this component type.
@@ -109,6 +115,16 @@ class Model(LEMSBase):
 
         self.components[component.id] = component
 
+    def add_fat_component(self, fat_component):
+        """
+        Adds a fattened component to the model.
+
+        @param fat_component: Fattened component to be added.
+        @type fat_component: lems.model.fundamental.Fat_component
+        """
+
+        self.fat_components[fat_component.id] = fat_component
+
     def add_constant(self, constant):
         """
         Adds a paramter to the model.
@@ -134,6 +150,8 @@ class Model(LEMSBase):
             self.add_component_type(child)
         elif isinstance(child, Component):
             self.add_component(child)
+        elif isinstance(child, FatComponent):
+            self.add_fat_component(child)
         elif isinstance(child, Constant):
             self.add_constant(child)
         else:
@@ -234,6 +252,15 @@ class Model(LEMSBase):
         for ct in model.component_types:
             model.resolve_component_type(ct)
 
+        for c in model.components:
+            if c.id not in model.fat_components:
+                model.add(model.fatten_component(c))
+
+        for c in ct.constants:
+            c2 = c.copy()
+            c2.numeric_value = model.get_numeric_value(c2.value, c2.dimension)
+            model.add(c2)
+            
         return model
 
     def resolve_component_type(self, component_type):
@@ -244,8 +271,6 @@ class Model(LEMSBase):
         @type component_type: lems.model.component.ComponentType
         """
 
-        #print(component_type.name, component_type.extends)
-        
         # Resolve component type from base types if present.
         if component_type.extends:
             try:
@@ -297,3 +322,155 @@ class Model(LEMSBase):
         merge_maps(ct.simulation.records, base_ct.simulation.records)
         merge_maps(ct.simulation.data_displays, base_ct.simulation.data_displays)
         merge_maps(ct.simulation.data_writers, base_ct.simulation.data_writers)
+
+    def fatten_component(self, c):
+        """
+        Fatten a component but resolving all references into the corresponding component type.
+
+        @param c: Lean component to be fattened.
+        @type c: lems.model.component.Component
+
+        @return: Fattened component.
+        @rtype: lems.model.component.FatComponent
+        """
+
+        try:
+            ct = self.component_types[c.type]
+        except:
+            raise ModelError("Unable to resolve type '{0}' for component '{1}'",
+                             c.type, c.id)
+        
+        fc = FatComponent(c.id, c.type)
+
+        ### Resolve parameters
+        for parameter in ct.parameters:
+            if parameter.name in c.parameters:
+                p = parameter.copy()
+                p.value = c.parameters[parameter.name]
+                p.numeric_value = self.get_numeric_value(p.value, p.dimension)
+                fc.add_parameter(p)
+            else:
+                raise ModelError("Parameter '{0}' not initialized for component '{1}'",
+                                 parameter.name, c.id)
+
+        ### Resolve constants
+        for constant in ct.constants:
+            constant2 = constant.copy()
+            constant2.numeric_value = self.get_numeric_value(constant2.value, constant2.dimension)
+            fc.add(constant2)
+
+        ### Resolve texts
+        for text in ct.texts:
+            t = text.copy()
+            t.value = c.parameters[text.name] if text.name in c.parameters else ''
+            fc.add(t)
+                
+        ### Resolve texts
+        for link in ct.links:
+            if link.name in c.parameters:
+                l = link.copy()
+                l.value = c.parameters[link.name]
+                fc.add(l)
+            else:
+                raise ModelError("Link parameter '{0}' not initialized for component '{1}'",
+                                 link.name, c.id)
+                
+        ### Resolve paths
+        for path in ct.paths:
+            if path.name in c.parameters:
+                p = path.copy()
+                p.value = c.parameters[path.name]
+                fc.add(p)
+            else:
+                raise ModelError("Path parameter '{0}' not initialized for component '{1}'",
+                                 path.name, c.id)
+
+        ### Resolve component references.
+        for cref in ct.component_references:
+            if cref.name in c.parameters:
+                cref2 = cref.copy()
+                cid = c.parameters[cref.name]
+
+                if cid not in self.fat_components:
+                    self.add(self.fatten_component(self.components[cid]))
+
+                cref2.referenced_component = self.fat_components[cid]
+                fc.add(cref2)
+            else:
+                raise ModelError("Component reference '{0}' not initialized for component '{1}'",
+                                 cref.name, c.id)
+            
+        merge_maps(fc.exposures, ct.exposures)
+        merge_maps(fc.requirements, ct.requirements)
+        merge_maps(fc.children, ct.children)
+        merge_maps(fc.texts, ct.texts)
+        merge_maps(fc.links, ct.links)
+        merge_maps(fc.paths, ct.paths)
+        merge_maps(fc.event_ports, ct.event_ports)
+        merge_maps(fc.attachments, ct.attachments)
+
+        fc.dynamics = ct.dynamics.copy()
+        fc.structure = ct.structure.copy()
+        fc.simulation = ct.simulation.copy()
+
+        fc.types = ct.types
+
+        ### Resolve children
+        for child in c.children:
+            fc.add(self.fatten_component(child))
+
+        return fc
+
+    def get_numeric_value(self, value_str, dimension = None):
+        """
+        Get the numeric value for a parameter value specification.
+
+        @param value_str: Value string
+        @type value_str: str
+
+        @param dimension: Dimension of the value
+        @type dimension: str
+        """
+
+        bitsnum = re.split('[_a-zA-Z]+', value_str)
+        bitsalpha = re.split('[^_a-zA-Z]+', value_str)
+
+        n = float(bitsnum[0].strip())
+        bitsnum = bitsnum[1:]
+        bitsalpha = bitsalpha[1:]
+        s = ''
+
+        l = max(len(bitsnum), len(bitsalpha))
+        for i in range(l):
+            if i < len(bitsalpha):
+                s += bitsalpha[i].strip()
+            if i < len(bitsnum):
+                s += bitsnum[i].strip()
+        
+        #number = float(re.split('[_a-zA-Z]+', parameter.value)[0].strip())
+        #sym = re.split('[^_a-zA-Z]+', parameter.value)[1].strip()
+
+        number = n
+        sym = s
+
+        numeric_value = None
+
+        if sym == '':
+            numeric_value = number
+        else:
+            if sym in self.units:
+                unit = self.units[sym]
+
+                if dimension:
+                    if dimension != unit.dimension and dimension != '*':
+                        raise SimBuildError("Unit symbol '{0}' cannot "
+                                            "be used for dimension '{1}'",
+                                            sym, dimension)
+                else:
+                    dimension = unit.dimension
+
+                numeric_value = number * (10 ** unit.power)
+            else:
+                raise SimBuildError("Unknown unit symbol '{0}'",
+                                    sym)
+        return numeric_value

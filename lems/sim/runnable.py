@@ -97,7 +97,7 @@ class Regime:
 class Runnable(Reflective):
     uid_count = 0
 
-    def __init__(self, id_, component, component_type, parent = None):
+    def __init__(self, id_, component, parent = None):
         Reflective.__init__(self)
 
         self.uid = Runnable.uid_count
@@ -105,7 +105,6 @@ class Runnable(Reflective):
 
         self.id = id_
         self.component = component
-        self.component_type = component_type
         self.parent = parent
 
         self.time_step = 0

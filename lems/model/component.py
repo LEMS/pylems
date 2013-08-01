@@ -42,6 +42,14 @@ class Parameter(LEMSBase):
         """ Value if fixed.
         @type: str """
 
+        self.value = None
+        """ Value of the parameter.
+        @type: str """
+
+        self.numeric_value = None
+        """ Resolved numeric value.
+        @type: float """
+
         self.description = description
         """ Description of this parameter.
         @type: str """
@@ -100,7 +108,7 @@ class Constant(LEMSBase):
         """ Description of the constant.
         @type: str """
 
-        self.numeric_value = 0
+        self.numeric_value = None
         """ Numeric value of the constant.
         @type: float """
 
@@ -228,6 +236,10 @@ class Text(LEMSBase):
         """ Description of the text entry.
         @type: str """
 
+        self.value = None
+        """ Value of the text entry.
+        @type: str """
+
     def toxml(self):
         """
         Exports this object into a LEMS XML object
@@ -261,6 +273,10 @@ class Link(LEMSBase):
         """ Description of the link.
         @type: str """
 
+        self.value = None
+        """ Value of the link.
+        @type: str """
+
     def toxml(self):
         """
         Exports this object into a LEMS XML object
@@ -289,6 +305,10 @@ class Path(LEMSBase):
          
         self.description = description
         """ Description of the path entry.
+        @type: str """
+
+        self.value = None
+        """ Value of the path entry.
         @type: str """
 
     def toxml(self):
@@ -357,6 +377,10 @@ class ComponentReference(LEMSBase):
         """ Type of the component reference.
         @type: str """
 
+        self.referenced_component = None
+        """ Component being referenced.
+        @type: FatComponent """
+
     def toxml(self):
         """
         Exports this object into a LEMS XML object
@@ -396,30 +420,18 @@ class Attachments(LEMSBase):
         return '<Attachments name="{0}" type="{1}"'.format(self.name, self.type) +\
           (' description = "{0}"'.format(self.description) if self.description else '') +\
           '/>'
-        
-class ComponentType(LEMSBase):
+
+class Fat(LEMSBase):
     """
-    Stores a component type declaration.
+    Stores common elements for a component type / fat component.
     """
 
-    def __init__(self, name, description = '', extends = None):
+    def __init__(self):
         """
         Constructor.
 
         See instance variable documentation for more details on parameters.
         """
-        
-        self.name = name
-        """ Name of the component type.
-        @type: str """
-         
-        self.extends = extends
-        """ Base component type.
-        @type: str """
-
-        self.description = description
-        """ Description of this component type.
-        @type: str """
         
         self.parameters = Map()
         """ Map of parameters in this component type.
@@ -477,7 +489,7 @@ class ComponentType(LEMSBase):
         """ Simulation attributes.
         @type: lems.model.simulation.Simulation """
 
-        self.types = set([name])
+        self.types = set()
         """ Set of compatible component types.
         @type: set(str) """
         
@@ -606,7 +618,7 @@ class ComponentType(LEMSBase):
             self.add_exposure(child)
         elif isinstance(child, Requirement):
             self.add_requirement(child)
-        elif isinstance(child, children):
+        elif isinstance(child, Children):
             self.add_children(child)
         elif isinstance(child, Text):
             self.add_text(child)
@@ -623,6 +635,34 @@ class ComponentType(LEMSBase):
         else:
             raise ModelError('Unsupported child element')
 
+class ComponentType(Fat):
+    """
+    Stores a component type declaration.
+    """
+
+    def __init__(self, name, description = '', extends = None):
+        """
+        Constructor.
+
+        See instance variable documentation for more details on parameters.
+        """
+
+        Fat.__init__(self)
+    
+        self.name = name
+        """ Name of the component type.
+        @type: str """
+         
+        self.extends = extends
+        """ Base component type.
+        @type: str """
+
+        self.description = description
+        """ Description of this component type.
+        @type: str """
+
+        self.types.add(name)
+        
     def toxml(self):
         """
         Exports this object into a LEMS XML object
@@ -677,7 +717,7 @@ class ComponentType(LEMSBase):
             xmlstr += '/>'
 
         return xmlstr
-        
+
 class Component(LEMSBase):
     """
     Stores a component instantiation.
@@ -760,3 +800,51 @@ class Component(LEMSBase):
             xmlstr += '/>'
 
         return xmlstr
+
+class FatComponent(Fat):
+    """
+    Stores a resolved component.
+    """
+
+    def __init__(self, id_, type_):
+        """
+        Constructor.
+
+        See instance variable documentation for more details on parameters.
+        """
+
+        Fat.__init__(self)
+
+        self.id = id_
+        """ ID of the component.
+        @type: str """
+
+        self.type = type_
+        """ Type of the component.
+        @type: str """
+
+        self.child_components = list()
+        """ List of child components.
+        @type: lems.model.component.FatComponent """
+
+    def add_child_component(self, child_component):
+        """
+        Adds a child component to this fat component.
+
+        @param child_component: Child component to be added.
+        @type child_component: lems.model.component.FatComponent
+        """
+
+        self.child_components.append(child_component)
+
+    def add(self, child):
+        """
+        Adds a typed child object to the component type.
+
+        @param child: Child object to be added.
+        """
+
+        if isinstance(child, FatComponent):
+            self.add_child_component(child)
+        else:
+            Fat.add(self, child)

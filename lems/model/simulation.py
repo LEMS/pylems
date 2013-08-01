@@ -75,6 +75,10 @@ class Record(LEMSBase):
         """ Text parameter to be used to specify the color for display.
         @type: str """
 
+        self.numeric_scale = 0
+        """ Numeric value.
+        @type: float """
+
     def toxml(self):
         """
         Exports this object into a LEMS XML object

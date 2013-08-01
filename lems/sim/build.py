@@ -60,7 +60,7 @@ class SimulationBuilder(LEMSBase):
             if component_id not in self.model.components:
                 raise SimBuildError("Unable to find target component '{0}'",
                                     component_id)
-            component = self.model.components[component_id]
+            component = self.model.fat_components[component_id]
 
             runnable = self.build_runnable(component)
             self.sim.add_runnable(runnable)
@@ -73,7 +73,7 @@ class SimulationBuilder(LEMSBase):
         it to the simulation.
 
         @param component: Component specification
-        @type component: lems.model.component.Component
+        @type component: lems.model.component.FatComponent
 
         @param parent: Parent runnable component.
         @type parent: lems.sim.runnable.Runnable
@@ -85,18 +85,12 @@ class SimulationBuilder(LEMSBase):
         resolved.
         """
 
-        try:
-            component_type = self.model.component_types[component.type]
-        except:
-            raise SimBuildError("Unable to find component type '{0}' for component '{1}'",
-                                component.type, component.name)
-
         if id_ == None:
-            runnable = Runnable(component.id, component, component_type, parent)
+            runnable = Runnable(component.id, component, parent)
         else:
-            runnable = Runnable(id_, component, component_type, parent)
+            runnable = Runnable(id_, component, parent)
 
-        simulation = component_type.simulation
+        simulation = component.simulation
 
         record_target_backup = self.current_record_target
         data_output_backup = self.current_data_output
@@ -111,22 +105,22 @@ class SimulationBuilder(LEMSBase):
         if do != None:
             self.current_data_output = do
 
-        for pn in component.parameters:
-            pv = component.parameters[pn]
+        for parameter in component.parameters:
+            runnable.add_instance_variable(parameter.name, parameter.numeric_value)
 
-            if pn in component_type.parameters:
-                n = self.get_numeric_value(component_type.parameters[pn], pv)
-                runnable.add_instance_variable(pn, n)
-            elif pn in component_type.links or pn in component_type.texts:
-                runnable.add_text_variable(pn, pv)
+        for text in component.texts:
+            runnable.add_text_variable(text.name, text.value)
+            
+        for link in component.links:
+            runnable.add_text_variable(link.name, link.value)
 
-        for ep in component_type.event_ports:
+        for ep in component.event_ports:
             if ep.direction.lower() == 'in':
                 runnable.add_event_in_port(ep.name)
             else:
                 runnable.add_event_out_port(ep.name)
 
-        dynamics = component_type.dynamics
+        dynamics = component.dynamics
         self.add_dynamics_1(component, runnable, dynamics, dynamics)
 
         for regime in dynamics.regimes:
@@ -151,11 +145,11 @@ class SimulationBuilder(LEMSBase):
             r.run_postprocessing_event_handlers = runnable.__dict__['run_postprocessing_event_handlers'
                                                                     + suffix]
 
-        self.process_simulation_specs(component, runnable, component_type.simulation)
+        self.process_simulation_specs(component, runnable, component.simulation)
 
             
         #for cn in context.components:
-        for child in component.children:
+        for child in component.child_components:
             child_runnable = self.build_runnable(child, runnable)
             runnable.add_child(child.id, child_runnable)
 
@@ -198,7 +192,7 @@ class SimulationBuilder(LEMSBase):
         specifications in the component model.
 
         @param component: Component model containing structure specifications.
-        @type component: lems.model.component.Component
+        @type component: lems.model.component.FatComponent
 
         @param runnable: Runnable component to which structure is to be added.
         @type runnable: lems.sim.runnable.Runnable
@@ -208,15 +202,16 @@ class SimulationBuilder(LEMSBase):
         @type structure: lems.model.structure.Structure
         """
 
-        component_type = self.model.component_types[component.type]
-
         # Process single-child instantiations
         for ch in structure.child_instances:
             if ch.component in component_type.component_references:
                 cref = component_type.component_references[ch.component]
-                child = self.model.components[cref]
+                #child = self.model.components[cref]
+                
+                cname = component.parameters[cref.name]
+                child = self.model.components[cname]
                 child_runnable = self.build_runnable(child, runnable)
-                runnable.add_child(c, child_runnable)
+                runnable.add_child(child_runnable.id, child_runnable)
 
                 for children in component_type.children:
                     if children.type == child.type:
@@ -256,6 +251,12 @@ class SimulationBuilder(LEMSBase):
         for event in structure.event_connections:
             if True:
             #try:
+            
+                print('###1', runnable.id, component.id, component_type.name)
+                print('###2', structure.withs)
+                print('###2', event.__dict__)
+
+                
                 source_pathvar = structure.with_mappings[event.source_path]
                 target_pathvar = structure.with_mappings[event.target_path]
 
@@ -306,7 +307,7 @@ class SimulationBuilder(LEMSBase):
         Iterate over ForEach constructs and process nested elements.
 
         @param component: Component model containing structure specifications.
-        @type component: lems.model.component.Component
+        @type component: lems.model.component.FatComponent
 
         @param runnable: Runnable component to which structure is to be added.
         @type runnable: lems.sim.runnable.Runnable
@@ -360,7 +361,7 @@ class SimulationBuilder(LEMSBase):
         This method builds dynamics necessary for building child components.
 
         @param component: Component model containing dynamics specifications.
-        @type component: lems.model.component.Component
+        @type component: lems.model.component.FatComponent
 
         @param runnable: Runnable component to which dynamics is to be added.
         @type runnable: lems.sim.runnable.Runnable
@@ -382,7 +383,6 @@ class SimulationBuilder(LEMSBase):
         cannot be resolved.
         """
 
-        component_type = self.model.component_types[component.type]
         context = None
         
         if isinstance(regime, Dynamics) or regime.name == '':
@@ -476,7 +476,7 @@ class SimulationBuilder(LEMSBase):
         This method builds dynamics dependent on child components.
 
         @param component: Component model containing dynamics specifications.
-        @type component: lems.model.component.Component
+        @type component: lems.model.component.FatComponent
 
         @param runnable: Runnable component to which dynamics is to be added.
         @type runnable: lems.sim.runnable.Runnable
@@ -498,7 +498,6 @@ class SimulationBuilder(LEMSBase):
         cannot be resolved.
         """
 
-        component_type = self.model.component_types[component.type]
         context = None
         
         if isinstance(regime, Dynamics) or regime.name == '':
@@ -558,7 +557,7 @@ class SimulationBuilder(LEMSBase):
         dynamics specifications in the component model.
 
         @param component: Component model containing dynamics specifications.
-        @type component: lems.model.component.Component
+        @type component: lems.model.component.FatComponent
 
         @param runnable: Runnable component to which dynamics is to be added.
         @type runnable: lems.sim.runnable.Runnable
@@ -577,23 +576,12 @@ class SimulationBuilder(LEMSBase):
         cannot be resolved.
         """
 
-        component_type = self.model.component_types[component.type]
-        
         # Process runs
         for run in simulation.runs:
-
-            if run.component not in component.parameters or run.component not in component_type.component_references:
-                raise SimBuildError("Unknown run target reference '{0}' in component '{1}'",
-                                    run.component, component.id)
-
             try:
-                cref = component.parameters[run.component]
-                c = self.model.components[cref]
-
-                time_step = self.get_numeric_value(component_type.parameters[run.increment], 
-                                                   component.parameters[run.increment])
-                time_total = self.get_numeric_value(component_type.parameters[run.total], 
-                                                    component.parameters[run.total])
+                c = component.component_references[run.component].referenced_component
+                time_step = component.parameters[run.increment].numeric_value
+                time_total = component.parameters[run.total].numeric_value
             except:
                 raise SimBuildError("Unable to resolve parameters for <Run> in component '{0}'",
                                     component.id)
@@ -972,9 +960,7 @@ class SimulationBuilder(LEMSBase):
         the dynamics specifications in the component model.
 
         @param component: Component model containing dynamics specifications.
-        @type component: lems.model.component.Component
-
-        @param runnable: Runnable component to which dynamics is to be added.
+        @type component: lems.model.component.FatComponent runnable: Runnable component to which dynamics is to be added.
         @type runnable: lems.sim.runnable.Runnable
 
         @raise SimBuildError: Raised when a target for recording could not be
@@ -988,59 +974,17 @@ class SimulationBuilder(LEMSBase):
             if self.current_record_target == None:
                 raise SimBuildError('No target available for '
                                     'recording variables')
-            self.current_record_target.add_variable_recorder(self.current_data_output, rec)
 
-    def get_numeric_value(self, parameter, value_str):
-        """
-        Get the numeric value for a parameter value specification.
+            rec2 = rec.copy()
+            rec2.quantity = component.parameters[rec.quantity]
+            
+            if rec.scale in component.parameters:
+                rec2.numeric_scale = self.get_numeric_value(component.parameters[rec.scale])
 
-        @param parameter: Component type parameter object
-        @type parameter: lems.model.component.Parameter
-
-        @param value_str: Value string
-        @type value_str: str
-        """
-
-        bitsnum = re.split('[_a-zA-Z]+', value_str)
-        bitsalpha = re.split('[^_a-zA-Z]+', value_str)
-
-        n = float(bitsnum[0].strip())
-        bitsnum = bitsnum[1:]
-        bitsalpha = bitsalpha[1:]
-        s = ''
-
-        l = max(len(bitsnum), len(bitsalpha))
-        for i in range(l):
-            if i < len(bitsalpha):
-                s += bitsalpha[i].strip()
-            if i < len(bitsnum):
-                s += bitsnum[i].strip()
-        
-        #number = float(re.split('[_a-zA-Z]+', parameter.value)[0].strip())
-        #sym = re.split('[^_a-zA-Z]+', parameter.value)[1].strip()
-
-        number = n
-        sym = s
-
-        numeric_value = None
-
-        if sym == '':
-            numeric_value = number
-        else:
-            if sym in self.model.units:
-                unit = self.model.units[sym]
-                if parameter.dimension != unit.dimension:
-                    if parameter.dimension == '*':
-                        parameter.dimension = unit.dimension
-                    else:
-                        raise SimBuildError("Unit symbol '{0}' cannot "
-                                            "be used for dimension '{1}'",
-                                            sym, parameter.dimension)
-                numeric_value = number * (10 ** unit.power)
-            else:
-                raise SimBuildError("Unknown unit symbol '{0}'",
-                                    sym)
-        return numeric_value
+            if rec.color in component.parameters:
+                rec2.color = component.parameters[rec.color]
+                
+            self.current_record_target.add_variable_recorder(self.current_data_output, rec2)
 
 ############################################################
 

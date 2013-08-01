@@ -107,10 +107,10 @@ class LEMSFileParser(LEMSBase):
                                            'statevariable', 'timederivative',
                                            'kineticscheme', 'regime']
         self.valid_children['regime'] = ['oncondition', 'onentry', 'timederivative']
-        self.valid_children['oncondition'] = ['eventout', 'stateassignment']
-        self.valid_children['onentry'] = ['eventout', 'stateassignment']
-        self.valid_children['onevent'] = ['eventout', 'stateassignment']
-        self.valid_children['onstart'] = ['eventout', 'stateassignment']
+        self.valid_children['oncondition'] = ['eventout', 'stateassignment', 'transition']
+        self.valid_children['onentry'] = ['eventout', 'stateassignment', 'transition']
+        self.valid_children['onevent'] = ['eventout', 'stateassignment', 'transition']
+        self.valid_children['onstart'] = ['eventout', 'stateassignment', 'transition']
         self.valid_children['structure'] = ['childinstance',
                                             'eventconnection',
                                             'foreach',
@@ -411,7 +411,10 @@ class LEMSFileParser(LEMSBase):
             #self.raise_error('Component must have an id')
             id_ = make_id()
 
-        type_ = node.tag
+        if 'type' in node.lattrib:
+            type_ = node.lattrib['type']
+        else:
+            type_ = node.tag
 
         component = Component(id_, type_)
 
@@ -1322,13 +1325,6 @@ class LEMSFileParser(LEMSBase):
         self.current_regime.add_time_derivative(TimeDerivative(variable, value))
 
     def parse_transition(self, node):
-        """
-        Parses <Transition>
-
-        @param node: Node containing the <Transition> element
-        @type node: xml.etree.Element
-        """
-
         """
         Parses <Transition>
 
