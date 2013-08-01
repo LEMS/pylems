@@ -20,6 +20,9 @@ iaf1.add(lems.Parameter('refractoryPeriod', 'time'))
 iaf1.add(lems.Parameter('capacitance', 'capacitance'))
 
 model.add(lems.Component('celltype_a', 'iaf1'))
-          
-model.export_to_file('/tmp/model.xml')
+
+fn = '/tmp/model.xml'
+model.export_to_file(fn)
+
+print("Written generated LEMS to %s"%fn)
 

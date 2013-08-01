@@ -122,8 +122,11 @@ class Unit(LEMSBase):
         Exports this object into a LEMS XML object
         """
 
+        # Probably name should be removed altogether until its usage is decided, see
+        # https://github.com/LEMS/LEMS/issues/4
+        #  '''(' name = "{0}"'.format(self.name) if self.name else '') +\'''
+
         return '<Unit' +\
-          (' name = "{0}"'.format(self.name) if self.name else '') +\
           (' symbol = "{0}"'.format(self.symbol) if self.symbol else '') +\
           (' dimension = "{0}"'.format(self.dimension) if self.dimension else '') +\
           (' power = "{0}"'.format(self.power) if self.power else '') +\
