@@ -26,6 +26,7 @@ class Model(LEMSBase):
     """
     Stores a model.
     """
+    target_lems_version = '0.7.1'
     
     def __init__(self):
         """
@@ -200,7 +201,7 @@ class Model(LEMSBase):
         @type filepath: str
         """
         
-        inc_dirs = self.include_directories.copy()
+        inc_dirs = self.include_directories[:]
         inc_dirs.append(dirname(filepath))
                         
         parser = LEMSFileParser(self, inc_dirs)
@@ -214,8 +215,13 @@ class Model(LEMSBase):
         @param filepath: File to be exported to.
         @type filepath: str
         """
+        namespaces = 'xmlns="http://www.neuroml.org/lems/%s" ' + \
+                     'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' + \
+                     'xsi:schemaLocation="http://www.neuroml.org/lems/%s https://raw.github.com/LEMS/LEMS/master/Schemas/LEMS/LEMS_v%s.xsd"'
 
-        xmlstr = '<Lems>'
+        namespaces = namespaces%(self.target_lems_version,self.target_lems_version,self.target_lems_version)
+
+        xmlstr = '<Lems %s>'%namespaces
 
         for target in self.targets:
             xmlstr += '<Target component="{0}"/>'.format(target)
@@ -236,6 +242,8 @@ class Model(LEMSBase):
             xmlstr += component.toxml()
             
         xmlstr += '</Lems>'
+
+        #print(xmlstr)
 
         xmlstr = minidom.parseString(xmlstr).toprettyxml(level_prefix, '\n',)
 

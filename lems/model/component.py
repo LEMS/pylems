@@ -680,32 +680,32 @@ class ComponentType(Fat):
         for constant in self.constants:
             chxmlstr += constant.toxml()
             
-        for exposure in self.exposures:
-            chxmlstr += exposure.toxml()
-            
-        for requirement in self.requirements:
-            chxmlstr += requirement.toxml()
-            
         for children in self.children:
             chxmlstr += children.toxml()
             
-        for text in self.texts:
-            chxmlstr += text.toxml()
-            
         for link in self.links:
             chxmlstr += link.toxml()
-            
-        for path in self.paths:
-            chxmlstr += path.toxml()
-            
-        for event_port in self.event_ports:
-            chxmlstr += event_port.toxml()
             
         for component_reference in self.component_references:
             chxmlstr += component_reference.toxml()
             
         for attachment in self.attachments:
             chxmlstr += attachment.toxml()
+            
+        for event_port in self.event_ports:
+            chxmlstr += event_port.toxml()
+            
+        for exposure in self.exposures:
+            chxmlstr += exposure.toxml()
+            
+        for requirement in self.requirements:
+            chxmlstr += requirement.toxml()
+            
+        for path in self.paths:
+            chxmlstr += path.toxml()
+            
+        for text in self.texts:
+            chxmlstr += text.toxml()
 
         chxmlstr += self.dynamics.toxml()
         chxmlstr += self.structure.toxml()
