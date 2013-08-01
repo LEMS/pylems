@@ -99,7 +99,7 @@ class ChildInstance(LEMSBase):
     Stores a child instantiation specification.
     """
 
-    def __init__(self, component):
+    def __init__(self, component, referenced_component = None):
         """
         Constructor.
         
@@ -109,6 +109,10 @@ class ChildInstance(LEMSBase):
         self.component = component
         """ Name of the component reference to be used for instantiation.
         @type: str """
+
+        self.referenced_component = referenced_component
+        """ Target component being referenced after resolution.
+        @type: lems.model.component.FatComponent """
         
     def __eq__(self, o):
         return self.component == o.component

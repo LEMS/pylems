@@ -1094,15 +1094,8 @@ class LEMSFileParser(LEMSBase):
         else:
             self.raise_error('<Record> must specify a quantity.')
 
-        if 'scale' in node.lattrib:
-            scale = node.lattrib['scale']
-        else:
-            scale = '1'
-
-        if 'color' in node.lattrib:
-            color  = node.lattrib['color']
-        else:
-            color = "#000000"
+        scale = node.lattrib.get('scale', None)
+        color  = node.lattrib.get('color', None)
 
         self.current_simulation.add_record(Record(quantity, scale, color))
 

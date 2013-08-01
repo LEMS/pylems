@@ -147,25 +147,24 @@ class SimulationBuilder(LEMSBase):
 
         self.process_simulation_specs(component, runnable, component.simulation)
 
-            
-        #for cn in context.components:
         for child in component.child_components:
             child_runnable = self.build_runnable(child, runnable)
             runnable.add_child(child.id, child_runnable)
 
-            child_typeobj = self.model.component_types[child.type]
-            for children in component_type.children:
-                if children.type in child_typeobj.types:
+            for children in component.children:
+                if children.type in component.types:
                     runnable.add_child_typeref(children.type, child_runnable)
                 if children.multiple:
                     runnable.add_child_to_group(children.name, child_runnable)
+                else:
+                    runnable.add_child_typeref(children.name, child_runnable)
 
-        for attachment in component_type.attachments:
+        for attachment in component.attachments:
             runnable.make_attachment(attachment.type, attachment.name)
 
-        self.build_structure(component, runnable, component_type.structure)
+        self.build_structure(component, runnable, component.structure)
 
-        dynamics = component_type.dynamics
+        dynamics = component.dynamics
         self.add_dynamics_2(component, runnable,
                             dynamics, dynamics)
         for regime in dynamics.regimes:
@@ -204,92 +203,58 @@ class SimulationBuilder(LEMSBase):
 
         # Process single-child instantiations
         for ch in structure.child_instances:
-            if ch.component in component_type.component_references:
-                cref = component_type.component_references[ch.component]
-                #child = self.model.components[cref]
-                
-                cname = component.parameters[cref.name]
-                child = self.model.components[cname]
-                child_runnable = self.build_runnable(child, runnable)
-                runnable.add_child(child_runnable.id, child_runnable)
+            child_runnable = self.build_runnable(ch.referenced_component, runnable)
+            runnable.add_child(child_runnable.id, child_runnable)
 
-                for children in component_type.children:
-                    if children.type == child.type:
-                        runnable.add_child_to_group(children.name, child_runnable)
-
-            else:
-                raise SimBuildError('Unable to find component ref \'{0}\' '
-                                    'under \'{1}\''.format(\
-                        ch.component, runnable.id))
-
-
+            runnable.add_child_typeref(ch.component, child_runnable)
+            
         # Process multi-child instatiantions
         for mi in structure.multi_instantiates:
-            if mi.component in component_type.component_references:
-                cref = component.parameters[mi.component]
-                n = int(component.parameters[mi.number])
-                base_comp = self.model.components[cref]
-                template = self.build_runnable(base_comp,
+            template = self.build_runnable(mi.component,
                                            runnable)
 
-                for i in range(n):
-                    instance = copy.deepcopy(template)
-                    instance.id = "{0}__{1}__{2}".format(component.id,
-                                                         template.id,
-                                                         i)
-                    runnable.array.append(instance)
-            else:
-                raise SimBuildError('Unable to find component ref \'{0}\' '
-                                    'under \'{1}\''.format(\
-                        mi.component, runnable.id))
+            for i in range(mi.number):
+                instance = copy.deepcopy(template)
+                instance.id = "{0}__{1}__{2}".format(component.id,
+                                                     template.id,
+                                                     i)
+                runnable.array.append(instance)
 
         # Process foreach statements
         if structure.for_each:
             self.build_foreach(component, runnable, structure)
 
         # Process event connections
-        for event in structure.event_connections:
+        for ec in structure.event_connections:
             if True:
             #try:
             
-                print('###1', runnable.id, component.id, component_type.name)
-                print('###2', structure.withs)
-                print('###2', event.__dict__)
-
                 
-                source_pathvar = structure.with_mappings[event.source_path]
-                target_pathvar = structure.with_mappings[event.target_path]
+                source = runnable.parent.resolve_path(ec.from_)
+                target = runnable.parent.resolve_path(ec.to)
 
-                source_path = context.lookup_path_parameter(source_pathvar)
-                target_path = context.lookup_path_parameter(target_pathvar)
-
-                source = runnable.parent.resolve_path(source_path)
-                target = runnable.parent.resolve_path(target_path)
-
-                if event.receiver:
-                    receiver_component = context.lookup_component_ref(event.receiver)
-                    receiver_template = self.build_runnable(receiver_component,
+                if ec.receiver:
+                    receiver_template = self.build_runnable(ec.receiver,
                                                             target)
                     receiver = copy.deepcopy(receiver_template)
                     receiver.id = "{0}__{1}__".format(component.id,
                                                       receiver_template.id)
 
-                    receiver_container = context.lookup_text_parameter(event.receiver_container)
-                    target.add_attachment(receiver, receiver_container)
+                    target.add_attachment(receiver, ec.receiver_container)
                     target.add_child(receiver_template.id, receiver)
                     target = receiver
 
-                source_port = context.lookup_text_parameter(event.source_port)
-                target_port = context.lookup_text_parameter(event.target_port)
+                source_port = ec.source_port
+                target_port = ec.target_port
 
-                if source_port == None:
+                if not source_port:
                     if len(source.event_out_ports) == 1:
                         source_port = source.event_out_ports[0]
                     else:
                         raise SimBuildError(("No source event port "
                                              "uniquely identifiable"
                                              " in '{0}'").format(source.id))
-                if target_port == None:
+                if not target_port:
                     if len(target.event_in_ports) == 1:
                         target_port = target.event_in_ports[0]
                     else:
@@ -578,33 +543,14 @@ class SimulationBuilder(LEMSBase):
 
         # Process runs
         for run in simulation.runs:
-            try:
-                c = component.component_references[run.component].referenced_component
-                time_step = component.parameters[run.increment].numeric_value
-                time_total = component.parameters[run.total].numeric_value
-            except:
-                raise SimBuildError("Unable to resolve parameters for <Run> in component '{0}'",
-                                    component.id)
+            cid = run.component.id + '_' + component.id
 
-            if c != None:
-                #cid = c.id
-                #if c.id in self.sim.runnables:
-                #    idx = 2
-                #    cid = c.id + '_' + str(idx)
-                #    while cid in self.sim.runnables:
-                #        idx = idx + 1
-                #        cid = c.id + '_' + str(idx)
-                cid = c.id + '_' + component.id
+            target = self.build_runnable(run.component, runnable, cid)
+            self.sim.add_runnable(target)
+            self.current_record_target = target
 
-                target = self.build_runnable(c, runnable, cid)
-                self.sim.add_runnable(target)
-                self.current_record_target = target
-
-                target.configure_time(time_step,
-                                      time_total)
-            else:
-                raise SimBuildError("'Invalid run target reference '{0}'",
-                                    cref)
+            target.configure_time(run.increment,
+                                  run.total)
 
 
     def convert_op(self, op):
@@ -967,24 +913,10 @@ class SimulationBuilder(LEMSBase):
         found.
         """
 
-        component_type = self.model.component_types[component.type]
-        simulation = component_type.simulation
+        simulation = component.simulation
 
         for rec in simulation.records:
-            if self.current_record_target == None:
-                raise SimBuildError('No target available for '
-                                    'recording variables')
-
-            rec2 = rec.copy()
-            rec2.quantity = component.parameters[rec.quantity]
-            
-            if rec.scale in component.parameters:
-                rec2.numeric_scale = self.get_numeric_value(component.parameters[rec.scale])
-
-            if rec.color in component.parameters:
-                rec2.color = component.parameters[rec.color]
-                
-            self.current_record_target.add_variable_recorder(self.current_data_output, rec2)
+            self.current_record_target.add_variable_recorder(self.current_data_output, rec)
 
 ############################################################
 

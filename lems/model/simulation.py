@@ -56,7 +56,7 @@ class Record(LEMSBase):
     Stores the parameters of a <Record> statement.
     """
 
-    def __init__(self, quantity, scale = '1', color = '#000000'):
+    def __init__(self, quantity, scale = None, color = None):
         """
         Constructor.
 
@@ -74,10 +74,6 @@ class Record(LEMSBase):
         self.color = color
         """ Text parameter to be used to specify the color for display.
         @type: str """
-
-        self.numeric_scale = 0
-        """ Numeric value.
-        @type: float """
 
     def toxml(self):
         """

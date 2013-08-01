@@ -160,13 +160,10 @@ class Runnable(Reflective):
         self.__dict__[name] = []
 
     def add_attachment(self, runnable, container = None):
-        component_type = runnable.component.context.lookup_component_type(
-            runnable.component.component_type)
-
-        for ctype in component_type.types:
+        for ctype in runnable.component.types:
             if ctype in self.attachments:
                 name = self.attachments[ctype]
-                if container != None and container != name:
+                if container is not None and container != name:
                     continue
                 
                 if name not in self.__dict__:
@@ -350,8 +347,9 @@ class Runnable(Reflective):
                 r = r.parent
                 name = "{0}.{1}".format(r.id, name)
 
-            print("Error in '{0} ({2})': {1}".format(name, e,
-                                                     self.component_type))
+            print("Error in '{0} ({1})': {2}".format(name,
+                                                     self.component.type, 
+                                                     e))
             print(type(e))
             keys = list(self.__dict__.keys())
             keys.sort()

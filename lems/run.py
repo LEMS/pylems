@@ -76,7 +76,7 @@ def process_simulation_output(sim, options):
                     elif isinstance(recording.data_output, DataWriter):
                         save_recording(recording)
                     else:
-                        raise Exception("Invalid output type")
+                        raise Exception("Invalid output type - " + str(type(recording.data_output)))
 
     if fig_count > 0:
         pylab.show()
@@ -95,7 +95,7 @@ def plot_recording(recording):
     i = 0
     for (xv, yv) in recording.values:
         x[i] = xv
-        y[i] = yv / recorder.numeric_scale
+        y[i] = yv / recorder.scale
         i = i + 1
 
     if data_output.title in displays:

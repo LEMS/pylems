@@ -17,6 +17,8 @@ from lems.base.errors import ModelError
 
 from lems.model.fundamental import Dimension,Unit
 from lems.model.component import Constant,ComponentType,Component,FatComponent
+from lems.model.simulation import Run,Record,DataDisplay,DataWriter
+from lems.model.structure import With,EventConnection,ChildInstance,MultiInstantiate,ForEach
 
 import xml.dom.minidom as minidom
 
@@ -418,8 +420,8 @@ class Model(LEMSBase):
         merge_maps(fc.attachments, ct.attachments)
 
         fc.dynamics = ct.dynamics.copy()
-        fc.structure = ct.structure.copy()
-        fc.simulation = ct.simulation.copy()
+        self.resolve_structure(fc, ct)
+        self.resolve_simulation(fc, ct)
 
         fc.types = ct.types
 
@@ -429,6 +431,99 @@ class Model(LEMSBase):
 
         return fc
 
+    def resolve_structure(self, fc, ct):
+        """
+        Resolve structure specifications.
+        """
+
+        for w in ct.structure.withs:
+            try:
+                w2 = With(fc.paths[w.instance].value,
+                          w.as_)
+            except:
+                raise ModelError("Unable to resolve With parameters for "
+                                 "'{0}' in component '{1}'",
+                                 w.as_, fc.id)
+            fc.structure.add(w2)
+            
+        for ev in ct.structure.event_connections:
+            try:
+                ev2 = EventConnection(fc.structure.withs[ev.from_].instance,
+                                      fc.structure.withs[ev.to].instance,
+                                      fc.texts[ev.source_port].value if ev.source_port else '',
+                                      fc.texts[ev.target_port].value if ev.target_port else '',
+                                      fc.component_references[ev.receiver].referenced_component if ev.receiver else None,
+                                      fc.texts[ev.receiver_container].value if ev.receiver_container else '')
+            except:
+                raise ModelError("Unable to resolve event connection parameters in component '{0}'",
+                                 fc.id)
+            fc.structure.add(ev2)
+                
+        for ch in ct.structure.child_instances:
+            try:
+                ch2 = ChildInstance(ch.component,
+                                    fc.component_references[ch.component].referenced_component)
+            except:
+                raise ModelError("Unable to resolve child instance parameters for "
+                                 "'{0}' in component '{1}'",
+                                 ch.component, fc.id)
+            fc.structure.add(ch2)
+
+        for mi in ct.structure.multi_instantiates:
+            try:
+                mi2 = MultiInstantiate(fc.component_references[mi.component].referenced_component,
+                                       int(fc.parameters[mi.number].numeric_value))
+            except:
+                raise ModelError("Unable to resolve multi-instantiate parameters for "
+                                 "'{0}' in component '{1}'",
+                                 mi.component, fc.id)
+            fc.structure.add(mi2)
+
+    def resolve_simulation(self, fc, ct):
+        """
+        Resolve simulation specifications.
+        """
+
+        for run in ct.simulation.runs:
+            try:
+                run2 = Run(fc.component_references[run.component].referenced_component,
+                           run.variable,
+                           fc.parameters[run.increment].numeric_value,
+                           fc.parameters[run.total].numeric_value)
+            except:
+                raise ModelError("Unable to resolve simulation run parameters in component '{0}'",
+                                 fc.id)
+            fc.simulation.add(run2)
+
+        for record in ct.simulation.records:
+            try:
+                record2 = Record(fc.paths[record.quantity].value,
+                                 fc.parameters[record.scale].numeric_value if record.scale else 1,
+                                 fc.texts[record.color].value if record.color else '#000000')
+            except:
+                raise ModelError("Unable to resolve simulation record parameters in component '{0}'",
+                                 fc.id)
+            fc.simulation.add(record2)
+
+        for dd in ct.simulation.data_displays:
+            try:
+                dd2 = DataDisplay(fc.texts[dd.title].value,
+                                  '')
+            except:
+                raise ModelError("Unable to resolve simulation display parameters in component '{0}'",
+                                 fc.id)
+            fc.simulation.add(dd2)
+                
+        for dw in ct.simulation.data_writers:
+            try:
+                dw2 = DataWriter(fc.texts[dw.path].value,
+                                 fc.texts[dw.file_path].value)
+            except:
+                raise ModelError("Unable to resolve simulation writer parameters in component '{0}'",
+                                 fc.id)
+            fc.simulation.add(dw2)
+                
+            
     def get_numeric_value(self, value_str, dimension = None):
         """
         Get the numeric value for a parameter value specification.
