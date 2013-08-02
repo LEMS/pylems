@@ -7,3 +7,5 @@
 import logging
 
 logger = logging.getLogger('LEMS')
+
+__version__ = '0.2'

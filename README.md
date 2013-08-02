@@ -1,3 +1,7 @@
+*Note: this rewrite branch is in the process of major refactoring.*
+*Much of the information below is not up to date*
+*See python scripts in examples directory for current functionality*
+
 # PyLEMS - A LEMS/NeuroML simulator written in Python
 
 ## Usage
