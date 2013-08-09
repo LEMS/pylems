@@ -16,21 +16,32 @@ import json
 def to_si(unit_str):
     return str(model.get_numeric_value(unit_str))
 
-def clean_condition(cond):
-    cond = cond.replace('.eq.', '==')
-    cond = cond.replace('.geq.', '>=')
-    cond = cond.replace('.gt.', '>')
-    cond = cond.replace('.lt.', '<')
-    cond = cond.replace('.leq.', '<=')
-    return cond
+def comp2sign(cond):
+    ret = '???'
+    if cond in ('gt', 'geq'):
+        ret = '+'
+    elif cond in ('lt', 'leq'):
+        ret = '-'
+    elif cond == 'eq':
+        ret = '0'
+    return ret
+
+def inequality_to_condition(ineq):
+    import re
+    r = re.compile("(.+)(?:\.([gleqt]+)\.)(.+)")
+    s = r.search(ineq)
+    expr =  ''.join([s.group(1).strip(), ' - (',  s.group(3).strip() + ')'])
+    sign = comp2sign(s.group(2))
+    return (expr, sign)
     
 
 model = Model()
 
-lems_file = '../NeuroML2/NeuroML2CoreTypes/LEMS_NML2_Ex9_FN.xml'
 
-if len(sys.argv) == 2:
+try:
     lems_file = sys.argv[1] 
+except:
+    lems_file = '../NeuroML2/NeuroML2CoreTypes/LEMS_NML2_Ex9_FN.xml'
 
 print('Importing LEMS file from: %s'%lems_file)
 model.import_from_file(lems_file)
@@ -101,8 +112,9 @@ for child in net_comp.children:
             if isinstance(eh, OnCondition):
                 ev = {}
                 ev['name'] = 'condition_%i'%count_cond
-                ev['condition'] =  clean_condition(eh.test)
-                ev['direction'] = '+'
+                (cond, dir) = inequality_to_condition(eh.test)
+                ev['condition'] = cond
+                ev['direction'] = dir 
                 effect = {}
                 state_effects = {}
                 for action in eh.actions:
