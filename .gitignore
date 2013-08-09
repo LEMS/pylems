@@ -5,3 +5,4 @@ doc
 *.pyo
 .project
 .pydevproject
+comp_*

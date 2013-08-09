@@ -35,12 +35,17 @@ class StateVariable(LEMSBase):
         """ Exposure name for the state variable.
         @type: str """
 
+    def __str__(self):
+        return 'StateVariable name="{0}" dimension="{1}"'.format(self.name, self.dimension) +\
+          (' exposure="{0}"'.format(self.exposure) if self.exposure else '') 
+
+
     def toxml(self):
         """
         Exports this object into a LEMS XML object
         """
 
-        return '<StateVariable name="{0}" dimension = "{1}"'.format(self.name, self.dimension) +\
+        return '<StateVariable name="{0}" dimension="{1}"'.format(self.name, self.dimension) +\
           (' exposure="{0}"'.format(self.exposure) if self.exposure else '') +\
           '/>'
 
@@ -261,6 +266,10 @@ class EventHandler(LEMSBase):
         """ List of actions to be performed in response to this event.
         @type: list(lems.model.dynamics.Action) """
 
+    def __str__(self):
+        istr = 'EventHandler...'
+        return istr
+
     def add_action(self, action):
         """
         Adds an action to this event handler.
@@ -294,6 +303,13 @@ class OnStart(EventHandler):
         """
         
         EventHandler.__init__(self)
+
+    def __str__(self):
+        istr = 'OnStart: ['
+        for action in self.actions:
+            istr += str(action)
+        istr += ']'
+        return str(istr)
 
     def toxml(self):
         """
@@ -338,6 +354,10 @@ class OnCondition(EventHandler):
             raise ParseError("Parse error when parsing OnCondition test '{0}'",
                              test)
         
+    def __str__(self):
+        istr = 'OnCondition...'
+        return istr
+
     def toxml(self):
         """
         Exports this object into a LEMS XML object
@@ -374,6 +394,10 @@ class OnEvent(EventHandler):
         self.port = port
         """ Port on which the event comes in.
         @type: str """
+
+    def __str__(self):
+        istr = 'OnEvent...'
+        return istr
 
     def toxml(self):
         """

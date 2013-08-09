@@ -662,6 +662,9 @@ class ComponentType(Fat):
         @type: str """
 
         self.types.add(name)
+
+    def __str__():
+        print('ComponentType, name: {0}'.format(self.name))
         
     def toxml(self):
         """
@@ -745,6 +748,10 @@ class Component(LEMSBase):
         self.children = list()
         """ List of child components.
         @type: list(lems.model.component.Component) """
+
+
+    def __str__(self):
+        return 'Component, id: {0}, type: {1}, parameters: {2}'.format(self.id, self.type, self.parameters)
 
     def set_parameter(self, parameter, value):
         """

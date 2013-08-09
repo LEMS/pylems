@@ -29,6 +29,7 @@ class Model(LEMSBase):
     Stores a model.
     """
     target_lems_version = '0.7.1'
+    schema_location = 'https://raw.github.com/LEMS/LEMS/master/Schemas/LEMS/LEMS_v%s.xsd'%target_lems_version
     
     def __init__(self):
         """
@@ -219,9 +220,9 @@ class Model(LEMSBase):
         """
         namespaces = 'xmlns="http://www.neuroml.org/lems/%s" ' + \
                      'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' + \
-                     'xsi:schemaLocation="http://www.neuroml.org/lems/%s https://raw.github.com/LEMS/LEMS/master/Schemas/LEMS/LEMS_v%s.xsd"'
+                     'xsi:schemaLocation="http://www.neuroml.org/lems/%s %s"'
 
-        namespaces = namespaces%(self.target_lems_version,self.target_lems_version,self.target_lems_version)
+        namespaces = namespaces%(self.target_lems_version,self.target_lems_version,self.schema_location)
 
         xmlstr = '<Lems %s>'%namespaces
 

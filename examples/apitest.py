@@ -24,5 +24,12 @@ model.add(lems.Component('celltype_a', 'iaf1'))
 fn = '/tmp/model.xml'
 model.export_to_file(fn)
 
+print("----------------------------------------------")
+print(open(fn,'r').read())
+print("----------------------------------------------")
+
 print("Written generated LEMS to %s"%fn)
 
+from utils import validateLEMS
+
+validateLEMS(fn)
