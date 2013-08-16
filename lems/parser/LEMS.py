@@ -1359,7 +1359,7 @@ class LEMSFileParser(LEMSBase):
             power = 0
 
         if 'name' in node.lattrib:
-            name = int(node.lattrib['name'])
+            name = node.lattrib['name']
         else:
             name = ''
 
