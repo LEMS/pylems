@@ -14,7 +14,8 @@ from lems.parser.LEMS import LEMSFileParser
 from lems.sim.build import SimulationBuilder
 from lems.model.simulation import DataDisplay,DataWriter
 
-import pylab
+#import pylab
+import matplotlib.pyplot as pylab
 import numpy
 
 def process_args():
@@ -47,6 +48,7 @@ def main():
     resolved_model = model.resolve()
 
     sim = SimulationBuilder(resolved_model).build()
+    #sim.dump()
     sim.run()
 
     process_simulation_output(sim, args)

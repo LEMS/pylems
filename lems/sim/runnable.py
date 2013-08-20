@@ -61,6 +61,9 @@ class Reflective(object):
         self.__dict__[method_name] = l['__generated_function__']
         del l['__generated_function__']
 
+        #print(code_string.replace('__generated_function__', 
+        #                          '{0}.{1}'.format(self.component.type, method_name)))
+
     def add_instance_variable(self, variable, initial_value):
         self.instance_variables.append(variable)
 
@@ -276,12 +279,12 @@ class Runnable(Reflective):
                     childobj.array[idx].add_variable_recorder2(data_output,
                                                                recorder,
                                                                new_path)
-            elif child in self.component.context.child_defs:
+            elif child in self.component.children:
+                cdef = self.component.children[child]
                 childobj = None
                 for cid in self.children:
                     c = self.children[cid]
-                    typeobj = c.component.context.lookup_component_type(c.component.component_type)
-                    if child in typeobj.types:
+                    if cdef.type in c.component.types:
                         childobj = c
                 if childobj:
                     childobj.add_variable_recorder2(data_output,

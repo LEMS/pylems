@@ -226,44 +226,43 @@ class SimulationBuilder(LEMSBase):
 
         # Process event connections
         for ec in structure.event_connections:
-            if True:
-            #try:
-            
-                
-                source = runnable.parent.resolve_path(ec.from_)
-                target = runnable.parent.resolve_path(ec.to)
+            source = runnable.parent.resolve_path(ec.from_)
+            target = runnable.parent.resolve_path(ec.to)
 
-                if ec.receiver:
-                    receiver_template = self.build_runnable(ec.receiver,
+            if ec.receiver:
+                receiver_template = self.build_runnable(ec.receiver,
                                                             target)
-                    receiver = copy.deepcopy(receiver_template)
-                    receiver.id = "{0}__{1}__".format(component.id,
-                                                      receiver_template.id)
+                receiver = copy.deepcopy(receiver_template)
+                receiver.id = "{0}__{1}__".format(component.id,
+                                                  receiver_template.id)
 
-                    target.add_attachment(receiver, ec.receiver_container)
-                    target.add_child(receiver_template.id, receiver)
-                    target = receiver
+                target.add_attachment(receiver, ec.receiver_container)
+                target.add_child(receiver_template.id, receiver)
+                target = receiver
 
-                source_port = ec.source_port
-                target_port = ec.target_port
+            print(source.id, target.id, receiver.id if ec.receiver else None)
+            print(source.event_in_ports, source.event_out_ports)
+            print(target.event_in_ports, target.event_out_ports)
 
-                if not source_port:
-                    if len(source.event_out_ports) == 1:
-                        source_port = source.event_out_ports[0]
-                    else:
-                        raise SimBuildError(("No source event port "
-                                             "uniquely identifiable"
-                                             " in '{0}'").format(source.id))
-                if not target_port:
-                    if len(target.event_in_ports) == 1:
-                        target_port = target.event_in_ports[0]
-                    else:
-                        raise SimBuildError(("No destination event port "
-                                             "uniquely identifiable "
-                                             "in '{0}'").format(target.id))
-                    #except Exception as e:
-                    #raise e
-
+            print(source, target)
+            
+            source_port = ec.source_port
+            target_port = ec.target_port
+            
+            if not source_port:
+                if len(source.event_out_ports) == 1:
+                    source_port = source.event_out_ports[0]
+                else:
+                    raise SimBuildError(("No source event port "
+                                         "uniquely identifiable"
+                                         " in '{0}'").format(source.id))
+            if not target_port:
+                if len(target.event_in_ports) == 1:
+                    target_port = target.event_in_ports[0]
+                else:
+                    raise SimBuildError(("No destination event port "
+                                         "uniquely identifiable "
+                                         "in '{0}'").format(target.id))
             source.register_event_out_callback(\
                 source_port, lambda: target.inc_event_in(target_port))
 
@@ -281,8 +280,6 @@ class SimulationBuilder(LEMSBase):
         structure code in the runnable component.
         @type foreach: lems.model.structure.ForEach
         """
-
-        context = component.context
 
         # Process foreach statements
         for fe in foreach.foreach:
@@ -348,8 +345,6 @@ class SimulationBuilder(LEMSBase):
         cannot be resolved.
         """
 
-        context = None
-        
         if isinstance(regime, Dynamics) or regime.name == '':
             suffix = ''
         else:
@@ -370,7 +365,6 @@ class SimulationBuilder(LEMSBase):
                                      'variable {0}').format(tdn))
 
             exp = self.build_expression_from_tree(runnable,
-                                                  context,
                                                   regime,
                                                   td.expression_tree)
             time_step_code += ['self.{0} += dt * ({1})'.format(td.variable,
@@ -388,7 +382,6 @@ class SimulationBuilder(LEMSBase):
                 derived_variable_code += ['self.{0} = ({1})'.format(
                         dv.name,
                         self.build_expression_from_tree(runnable,
-                                                        context,
                                                         regime,
                                                         dv.expression_tree))]
             elif dv.select:
@@ -413,17 +406,14 @@ class SimulationBuilder(LEMSBase):
         for eh in regime.event_handlers:
             if isinstance(eh, OnStart):
                 startup_event_handler_code += self.build_event_handler(runnable,
-                                                                       context,
                                                                        regime,
                                                                        eh)
             elif isinstance(eh, OnCondition):
                 post_event_handler_code += self.build_event_handler(runnable,
-                                                                    context,
                                                                     regime,
                                                                     eh)
             else:
                 pre_event_handler_code += self.build_event_handler(runnable,
-                                                                   context,
                                                                    regime,
                                                                    eh)
         runnable.add_method('run_startup_event_handlers' + suffix, ['self'],
@@ -463,8 +453,6 @@ class SimulationBuilder(LEMSBase):
         cannot be resolved.
         """
 
-        context = None
-        
         if isinstance(regime, Dynamics) or regime.name == '':
             suffix = ''
         else:
@@ -603,15 +591,12 @@ class SimulationBuilder(LEMSBase):
         else:
             return func
 
-    def build_expression_from_tree(self, runnable, context, regime, tree_node):
+    def build_expression_from_tree(self, runnable, regime, tree_node):
         """
         Recursively builds a Python expression from a parsed expression tree.
 
         @param runnable: Runnable object to which this expression would be added.
         @type runnable: lems.sim.runnable.Runnable
-
-        @param context: Context from which variables are to be resolved.
-        @type context: lems.model.context.Context
 
         @param regime: Dynamics regime being built.
         @type regime: lems.model.dynamics.Regime
@@ -657,22 +642,19 @@ class SimulationBuilder(LEMSBase):
             return '({0}({1}))'.format(\
                 self.convert_func(tree_node.func),
                 self.build_expression_from_tree(runnable,
-                                                context,
                                                 regime,
                                                 tree_node.param))
         else:
             return '({0}) {1} ({2})'.format(\
                 self.build_expression_from_tree(runnable,
-                                                context,
                                                 regime,
                                                 tree_node.left),
                 self.convert_op(tree_node.op),
                 self.build_expression_from_tree(runnable,
-                                                context,
                                                 regime,
                                                 tree_node.right))
 
-    def build_event_handler(self, runnable, context, regime, event_handler):
+    def build_event_handler(self, runnable, regime, event_handler):
         """
         Build event handler code.
 
@@ -684,17 +666,17 @@ class SimulationBuilder(LEMSBase):
         """
 
         if isinstance(event_handler, OnCondition):
-            return self.build_on_condition(runnable, context, regime, event_handler)
+            return self.build_on_condition(runnable, regime, event_handler)
         elif isinstance(event_handler, OnEvent):
-            return self.build_on_event(runnable, context, regime, event_handler)
+            return self.build_on_event(runnable, regime, event_handler)
         elif isinstance(event_handler, OnStart):
-            return self.build_on_start(runnable, context, regime, event_handler)
+            return self.build_on_start(runnable, regime, event_handler)
         elif isinstance(event_handler, OnEntry):
-            return self.build_on_entry(runnable, context, regime, event_handler)
+            return self.build_on_entry(runnable, regime, event_handler)
         else:
             return []
 
-    def build_on_condition(self, runnable, context, regime, on_condition):
+    def build_on_condition(self, runnable, regime, on_condition):
         """
         Build OnCondition event handler code.
 
@@ -709,18 +691,17 @@ class SimulationBuilder(LEMSBase):
 
         on_condition_code += ['if {0}:'.format(\
             self.build_expression_from_tree(runnable,
-                                            context,
                                             regime,
                                             on_condition.expression_tree))]
 
         for action in on_condition.actions:
-            code = self.build_action(runnable, context, regime, action)
+            code = self.build_action(runnable, regime, action)
             for line in code:
                 on_condition_code += ['    ' + line]
 
         return on_condition_code
 
-    def build_on_event(self, runnable, context, regime, on_event):
+    def build_on_event(self, runnable, regime, on_event):
         """
         Build OnEvent event handler code.
 
@@ -738,7 +719,7 @@ class SimulationBuilder(LEMSBase):
                           'while count > 0:',
                           '    count -= 1']
         for action in on_event.actions:
-            code = self.build_action(runnable, context, regime, action)
+            code = self.build_action(runnable, regime, action)
             for line in code:
                 on_event_code += ['    ' + line]
 
@@ -747,7 +728,7 @@ class SimulationBuilder(LEMSBase):
 
         return on_event_code
 
-    def build_on_start(self, runnable, context, regime, on_start):
+    def build_on_start(self, runnable, regime, on_start):
         """
         Build OnStart start handler code.
 
@@ -761,13 +742,13 @@ class SimulationBuilder(LEMSBase):
         on_start_code = []
 
         for action in on_start.actions:
-            code = self.build_action(runnable, context, regime, action)
+            code = self.build_action(runnable, regime, action)
             for line in code:
                 on_start_code += ['    ' + line]
 
         return on_start_code
 
-    def build_on_entry(self, runnable, context, regime, on_entry):
+    def build_on_entry(self, runnable, regime, on_entry):
         """
         Build OnEntry start handler code.
 
@@ -784,13 +765,13 @@ class SimulationBuilder(LEMSBase):
         on_entry_code += ['    self.last_regime = self.current_regime']
 
         for action in on_entry.actions:
-            code = self.build_action(runnable, context, regime, action)
+            code = self.build_action(runnable, regime, action)
             for line in code:
                 on_entry_code += ['    ' + line]
 
         return on_entry_code
 
-    def build_action(self, runnable, context, regime, action):
+    def build_action(self, runnable, regime, action):
         """
         Build event handler action code.
 
@@ -802,7 +783,7 @@ class SimulationBuilder(LEMSBase):
         """
 
         if isinstance(action, StateAssignment):
-            return self.build_state_assignment(runnable, context, regime, action)
+            return self.build_state_assignment(runnable, regime, action)
         if isinstance(action, EventOut):
             return self.build_event_out(action)
         if isinstance(action, Transition):
@@ -810,7 +791,7 @@ class SimulationBuilder(LEMSBase):
         else:
             return ['pass']
 
-    def build_state_assignment(self, runnable, context, regime, state_assignment):
+    def build_state_assignment(self, runnable, regime, state_assignment):
         """
         Build state assignment code.
 
@@ -824,7 +805,6 @@ class SimulationBuilder(LEMSBase):
         return ['self.{0} = {1}'.format(\
             state_assignment.variable,
             self.build_expression_from_tree(runnable,
-                                            context,
                                             regime,
                                             state_assignment.expression_tree))]
 
@@ -964,7 +944,7 @@ def order_derived_variables(regime):
 
     if count == 0:
         raise SimBuildError(("Unable to find ordering for derived "
-                             "variables in '{0}'").format(context.name))
+                             "variables in regime '{0}'").format(regime.name))
 
     #return ordering + dvsnoexp
     return dvsnoexp + ordering
