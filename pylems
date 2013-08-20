@@ -1,11 +1,13 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 """
+PyLEMS command line startup script.
+
 @author: Gautham Ganapathy
 @organization: LEMS (http://neuroml.org/lems/, https://github.com/organizations/LEMS)
 @contact: gautham@lisphacker.org
 """
 
-import sys
-from pylems.main import main
+from lems.run import main
 
-main(sys.argv[1:])
+if __name__ == '__main__':
+    main()

@@ -1,138 +1,543 @@
 """
-Model storage
+Model storage.
 
 @author: Gautham Ganapathy
 @organization: LEMS (http://neuroml.org/lems/, https://github.com/organizations/LEMS)
 @contact: gautham@lisphacker.org
 """
 
-from lems.base.errors import ModelError
-from lems.model.context import Contextual
-from lems.model.parameter import Parameter
-from lems.parser.xpath import resolve_xpath
+import os
+from os.path import dirname
 
-from lems.base.util import merge_dict
+from lems.base.base import LEMSBase
+from lems.base.util import make_id, merge_maps, merge_lists
+from lems.base.map import Map
+from lems.parser.LEMS import LEMSFileParser
+from lems.base.errors import ModelError
+
+from lems.model.fundamental import Dimension,Unit
+from lems.model.component import Constant,ComponentType,Component,FatComponent
+from lems.model.simulation import Run,Record,DataDisplay,DataWriter
+from lems.model.structure import With,EventConnection,ChildInstance,MultiInstantiate,ForEach
+
+import xml.dom.minidom as minidom
 
 import re
-import copy
 
-class Model(Contextual):
+class Model(LEMSBase):
     """
-    Store the model read from a LEMS file.
+    Stores a model.
     """
-
+    target_lems_version = '0.7.1'
+    schema_location = 'https://raw.github.com/LEMS/LEMS/master/Schemas/LEMS/LEMS_v%s.xsd'%target_lems_version
+    
     def __init__(self):
         """
         Constructor.
         """
+        
+        self.targets = list()
+        """ List of targets to be run on startup.
+        @type: list(str) """
+        
+        self.dimensions = Map()
+        """ Dictionary of dimensions defined in the model.
+        @type: dict(str -> lems.model.fundamental.Dimension """
+        
+        self.units = Map()
+        """ Map of units defined in the model.
+        @type: dict(str -> lems.model.fundamental.Unit """
+        
+        self.component_types = Map()
+        """ Map of component types defined in the model.
+        @type: dict(str -> lems.model.component.ComponentType) """
+        
+        self.components = Map()
+        """ Map of root components defined in the model.
+        @type: dict(str -> lems.model.component.Component) """
 
-        super(Model, self).__init__('__model__')
+        self.fat_components = Map()
+        """ Map of root fattened components defined in the model.
+        @type: dict(str -> lems.model.component.FatComponent) """
 
-        self.targets = []
-        """ Names of simulations to run.
-        @type: string """
+        self.constants = Map()
+        """ Map of constants in this component type.
+        @type: dict(str -> lems.model.component.Constant) """
 
-        self.dimensions = None
-        """ Dictionary of references to dimensions defined in the model.
-        @type: dict(string -> lems.model.simple.Dimension) """
-
-        self.units = None
-        """ Dictionary of references to units defined in the model.
-        @type: dict(string -> lems.model.simple.Unit) """
-
-        self.context = None
-        """ Global (root) context.
-        @type: lems.model.context.Context """
-
-        self.next_free_id = -1
-        """ Number used to create a new ID.
-        @type: Integer """
-
+        self.include_directories = []
+        """ List of include directories to search for included LEMS files.
+        @type: list(str) """
 
     def add_target(self, target):
         """
-        Add the name of the component to run to the list of components to
-        run by default.
+        Adds a simulation target to the model.
 
-        @param target: Name of a simulation to run by default
-        @type target: string """
-        self.targets += [target]
-
+        @param target: Name of the component to be added as a
+        simulation target.
+        @type target: str
+        """
+        
+        self.targets.append(target)
+        
     def add_dimension(self, dimension):
         """
-        Adds a dimension to the list of defined dimensions.
+        Adds a dimension to the model.
 
-        @param dimension: Dimension to be added to the model.
-        @type dimension: lems.base.units.Dimension
-
-        @raise ModelError: Raised when the dimension is already defined.
+        @param dimension: Dimension to be added.
+        @type dimension: lems.model.fundamental.Dimension
         """
 
-        if self.dimensions == None:
-            self.dimensions = dict()
-
-        if dimension.name in self.dimensions:
-            d = self.dimensions[dimension.name]
-            if ((d.l != dimension.l) or
-                (d.m != dimension.m) or
-                (d.t != dimension.t) or
-                (d.i != dimension.i) or
-                (d.k != dimension.k) or
-                (d.c != dimension.c) or
-                (d.n != dimension.n)):
-                self.raise_error(("Incompatible redefinition of "
-                                  "dimension '{0}'").format(dimension.name),
-                                  self.context)
-        else:
-            self.dimensions[dimension.name] = dimension
+        self.dimensions[dimension.name] = dimension
 
     def add_unit(self, unit):
         """
-        Adds a unit to the list of defined units.
+        Adds a unit to the model.
 
-        @param unit: Unit to be added to the model.
-        @type unit: lems.base.units.Unit
-
-        @raise ModelError: Raised when the unit is already defined.
+        @param unit: Unit to be added.
+        @type unit: lems.model.fundamental.Unit
         """
 
-        if self.units == None:
-            self.units = dict()
+        self.units[unit.symbol] = unit
 
-        if unit.symbol in self.units:
-            u = self.units[unit.symbol]
-            if u.dimension != unit.dimension or u.power != unit.power:
-                self.raise_error(("Incompatible redefinition of "
-                                  "unit '{0}'").format(unit.symbol),
-                                  self.context)
+    def add_component_type(self, component_type):
+        """
+        Adds a component type to the model.
+
+        @param component_type: Component type to be added.
+        @type component_type: lems.model.fundamental.ComponentType
+        """
+
+        self.component_types[component_type.name] = component_type
+
+    def add_component(self, component):
+        """
+        Adds a component to the model.
+
+        @param component: Component to be added.
+        @type component: lems.model.fundamental.Component
+        """
+
+        self.components[component.id] = component
+
+    def add_fat_component(self, fat_component):
+        """
+        Adds a fattened component to the model.
+
+        @param fat_component: Fattened component to be added.
+        @type fat_component: lems.model.fundamental.Fat_component
+        """
+
+        self.fat_components[fat_component.id] = fat_component
+
+    def add_constant(self, constant):
+        """
+        Adds a paramter to the model.
+
+        @param constant: Constant to be added.
+        @type constant: lems.model.component.Constant
+        """
+
+        self.constants[constant.name] = constant
+
+    def add(self, child):
+        """
+        Adds a typed child object to the model.
+
+        @param child: Child object to be added.
+        """
+
+        if isinstance(child, Dimension):
+            self.add_dimension(child)
+        elif isinstance(child, Unit):
+            self.add_unit(child)
+        elif isinstance(child, ComponentType):
+            self.add_component_type(child)
+        elif isinstance(child, Component):
+            self.add_component(child)
+        elif isinstance(child, FatComponent):
+            self.add_fat_component(child)
+        elif isinstance(child, Constant):
+            self.add_constant(child)
         else:
-            self.units[unit.symbol] = unit
+            raise ModelError('Unsupported child element')
 
-    def resolve_parameter_value(self, parameter, context):
+    def add_include_directory(self, path):
         """
-        Resolves the numeric value of a parameter based on the given value
-        in terms of the symbols and dimensions defined in the model.
+        Adds a directory to the include file search path.
 
-        @param parameter: Parameter object to be resolved.
-        @type parameter: lems.model.parameter.Parameter
+        @param path: Directory to be added.
+        @type path: str
+        """
+        
+        self.include_directories.append(path)
 
-        @param context: Context containing the parameter
-        @type context: lems.model.context.Context
+    def include_file(self, path, include_dirs = []):
+        """
+        Includes a file into the current model.
 
-        @raise ModelError: Raised when the value of the parameter is not set.
+        @param path: Path to the file to be included.
+        @type path: str
 
-        @raise ModelError: Raised when the unit symbol does not match the
-        parameter's dimension.
+        @param include_dirs: Optional alternate include search path.
+        @type include_dirs: list(str)
+        """
+        
+        inc_dirs = include_dirs if include_dirs else self.include_dirs
 
-        @raise ModelError: Raised when the unit symbol is undefined.
+        parser = LEMSFileParser(self, inc_dirs)
+        if os.access(path, os.F_OK):
+           parser.parse(open(path).read()) 
+           return
+        else:
+            for inc_dir in inc_dirs:
+                new_path = (inc_dir + '/' + path)
+                if os.access(new_path, os.F_OK):
+                    parser.parse(open(new_path).read())
+                    return
+        raise Exception('Unable to open ' + path)
+            
+    def import_from_file(self, filepath):
+        """
+        Import a model from a file.
+
+        @param filepath: File to be imported.
+        @type filepath: str
+        """
+        
+        inc_dirs = self.include_directories[:]
+        inc_dirs.append(dirname(filepath))
+                        
+        parser = LEMSFileParser(self, inc_dirs)
+        with open(filepath) as f:
+            parser.parse(f.read())
+        
+    def export_to_file(self, filepath, level_prefix = '  '):
+        """
+        Exports this model to a file.
+
+        @param filepath: File to be exported to.
+        @type filepath: str
+        """
+        namespaces = 'xmlns="http://www.neuroml.org/lems/%s" ' + \
+                     'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' + \
+                     'xsi:schemaLocation="http://www.neuroml.org/lems/%s %s"'
+
+        namespaces = namespaces%(self.target_lems_version,self.target_lems_version,self.schema_location)
+
+        xmlstr = '<Lems %s>'%namespaces
+
+        for target in self.targets:
+            xmlstr += '<Target component="{0}"/>'.format(target)
+
+        for dimension in self.dimensions:
+            xmlstr += dimension.toxml()
+            
+        for unit in self.units:
+            xmlstr += unit.toxml()
+            
+        for constant in self.constants:
+            xmlstr += constant.toxml()
+            
+        for component_type in self.component_types:
+            xmlstr += component_type.toxml()
+            
+        for component in self.components:
+            xmlstr += component.toxml()
+            
+        xmlstr += '</Lems>'
+
+        #print(xmlstr)
+
+        xmlstr = minidom.parseString(xmlstr).toprettyxml(level_prefix, '\n',)
+
+        with open(filepath, 'w') as f:
+            f.write(xmlstr)
+
+    def resolve(self):
+        """
+        Resolves references in this model.
         """
 
-        if parameter.value == None:
-            self.raise_error('Parameter {0} not initialized'.format(\
-                parameter.name), context)
+        model = self.copy()
+        
+        for ct in model.component_types:
+            model.resolve_component_type(ct)
 
-        bitsnum = re.split('[_a-zA-Z]+', parameter.value)
-        bitsalpha = re.split('[^_a-zA-Z]+', parameter.value)
+        for c in model.components:
+            if c.id not in model.fat_components:
+                model.add(model.fatten_component(c))
+
+        for c in ct.constants:
+            c2 = c.copy()
+            c2.numeric_value = model.get_numeric_value(c2.value, c2.dimension)
+            model.add(c2)
+            
+        return model
+
+    def resolve_component_type(self, component_type):
+        """
+        Resolves references in the specified component type.
+
+        @param component_type: Component type to be resolved.
+        @type component_type: lems.model.component.ComponentType
+        """
+
+        # Resolve component type from base types if present.
+        if component_type.extends:
+            try:
+                base_ct = self.component_types[component_type.extends]
+            except:
+                raise ModelError("Component type '{0}' trying to extend unknown component type '{1}'",
+                                 component_type.name, component_type.extends)
+
+            self.resolve_component_type(base_ct)
+            self.merge_component_types(component_type, base_ct)
+            component_type.types = set.union(component_type.types, base_ct.types)
+            component_type.extends = None
+
+    def merge_component_types(self, ct, base_ct):
+        """
+        Merge various maps in the given component type from a base 
+        component type.
+
+        @param ct: Component type to be resolved.
+        @type ct: lems.model.component.ComponentType
+
+        @param base_ct: Component type to be resolved.
+        @type base_ct: lems.model.component.ComponentType
+        """
+
+        merge_maps(ct.parameters, base_ct.parameters)
+        merge_maps(ct.constants, base_ct.constants)
+        merge_maps(ct.exposures, base_ct.exposures)
+        merge_maps(ct.requirements, base_ct.requirements)
+        merge_maps(ct.children, base_ct.children)
+        merge_maps(ct.texts, base_ct.texts)
+        merge_maps(ct.links, base_ct.links)
+        merge_maps(ct.paths, base_ct.paths)
+        merge_maps(ct.event_ports, base_ct.event_ports)
+        merge_maps(ct.component_references, base_ct.component_references)
+        merge_maps(ct.attachments, base_ct.attachments)
+
+        merge_maps(ct.dynamics.state_variables, base_ct.dynamics.state_variables)
+        merge_maps(ct.dynamics.derived_variables, base_ct.dynamics.derived_variables)
+        merge_maps(ct.dynamics.time_derivatives, base_ct.dynamics.time_derivatives)
+        merge_lists(ct.dynamics.event_handlers, base_ct.dynamics.event_handlers)
+        merge_maps(ct.dynamics.kinetic_schemes, base_ct.dynamics.kinetic_schemes)
+        
+        merge_lists(ct.structure.event_connections, base_ct.structure.event_connections)
+        merge_lists(ct.structure.child_instances, base_ct.structure.child_instances)
+        merge_lists(ct.structure.multi_instantiates, base_ct.structure.multi_instantiates)
+
+        merge_maps(ct.simulation.runs, base_ct.simulation.runs)
+        merge_maps(ct.simulation.records, base_ct.simulation.records)
+        merge_maps(ct.simulation.data_displays, base_ct.simulation.data_displays)
+        merge_maps(ct.simulation.data_writers, base_ct.simulation.data_writers)
+
+    def fatten_component(self, c):
+        """
+        Fatten a component but resolving all references into the corresponding component type.
+
+        @param c: Lean component to be fattened.
+        @type c: lems.model.component.Component
+
+        @return: Fattened component.
+        @rtype: lems.model.component.FatComponent
+        """
+
+        try:
+            ct = self.component_types[c.type]
+        except:
+            raise ModelError("Unable to resolve type '{0}' for component '{1}'",
+                             c.type, c.id)
+        
+        fc = FatComponent(c.id, c.type)
+
+        ### Resolve parameters
+        for parameter in ct.parameters:
+            if parameter.name in c.parameters:
+                p = parameter.copy()
+                p.value = c.parameters[parameter.name]
+                p.numeric_value = self.get_numeric_value(p.value, p.dimension)
+                fc.add_parameter(p)
+            else:
+                raise ModelError("Parameter '{0}' not initialized for component '{1}'",
+                                 parameter.name, c.id)
+
+        ### Resolve constants
+        for constant in ct.constants:
+            constant2 = constant.copy()
+            constant2.numeric_value = self.get_numeric_value(constant2.value, constant2.dimension)
+            fc.add(constant2)
+
+        ### Resolve texts
+        for text in ct.texts:
+            t = text.copy()
+            t.value = c.parameters[text.name] if text.name in c.parameters else ''
+            fc.add(t)
+                
+        ### Resolve texts
+        for link in ct.links:
+            if link.name in c.parameters:
+                l = link.copy()
+                l.value = c.parameters[link.name]
+                fc.add(l)
+            else:
+                raise ModelError("Link parameter '{0}' not initialized for component '{1}'",
+                                 link.name, c.id)
+                
+        ### Resolve paths
+        for path in ct.paths:
+            if path.name in c.parameters:
+                p = path.copy()
+                p.value = c.parameters[path.name]
+                fc.add(p)
+            else:
+                raise ModelError("Path parameter '{0}' not initialized for component '{1}'",
+                                 path.name, c.id)
+
+        ### Resolve component references.
+        for cref in ct.component_references:
+            if cref.name in c.parameters:
+                cref2 = cref.copy()
+                cid = c.parameters[cref.name]
+
+                if cid not in self.fat_components:
+                    self.add(self.fatten_component(self.components[cid]))
+
+                cref2.referenced_component = self.fat_components[cid]
+                fc.add(cref2)
+            else:
+                raise ModelError("Component reference '{0}' not initialized for component '{1}'",
+                                 cref.name, c.id)
+            
+        merge_maps(fc.exposures, ct.exposures)
+        merge_maps(fc.requirements, ct.requirements)
+        merge_maps(fc.children, ct.children)
+        merge_maps(fc.texts, ct.texts)
+        merge_maps(fc.links, ct.links)
+        merge_maps(fc.paths, ct.paths)
+        merge_maps(fc.event_ports, ct.event_ports)
+        merge_maps(fc.attachments, ct.attachments)
+
+        fc.dynamics = ct.dynamics.copy()
+        self.resolve_structure(fc, ct)
+        self.resolve_simulation(fc, ct)
+
+        fc.types = ct.types
+
+        ### Resolve children
+        for child in c.children:
+            fc.add(self.fatten_component(child))
+
+        return fc
+
+    def resolve_structure(self, fc, ct):
+        """
+        Resolve structure specifications.
+        """
+
+        for w in ct.structure.withs:
+            try:
+                w2 = With(fc.paths[w.instance].value,
+                          w.as_)
+            except:
+                raise ModelError("Unable to resolve With parameters for "
+                                 "'{0}' in component '{1}'",
+                                 w.as_, fc.id)
+            fc.structure.add(w2)
+            
+        for ev in ct.structure.event_connections:
+            try:
+                ev2 = EventConnection(fc.structure.withs[ev.from_].instance,
+                                      fc.structure.withs[ev.to].instance,
+                                      fc.texts[ev.source_port].value if ev.source_port else '',
+                                      fc.texts[ev.target_port].value if ev.target_port else '',
+                                      fc.component_references[ev.receiver].referenced_component if ev.receiver else None,
+                                      fc.texts[ev.receiver_container].value if ev.receiver_container else '')
+            except:
+                raise ModelError("Unable to resolve event connection parameters in component '{0}'",
+                                 fc.id)
+            fc.structure.add(ev2)
+                
+        for ch in ct.structure.child_instances:
+            try:
+                ch2 = ChildInstance(ch.component,
+                                    fc.component_references[ch.component].referenced_component)
+            except:
+                raise ModelError("Unable to resolve child instance parameters for "
+                                 "'{0}' in component '{1}'",
+                                 ch.component, fc.id)
+            fc.structure.add(ch2)
+
+        for mi in ct.structure.multi_instantiates:
+            try:
+                mi2 = MultiInstantiate(fc.component_references[mi.component].referenced_component,
+                                       int(fc.parameters[mi.number].numeric_value))
+            except:
+                raise ModelError("Unable to resolve multi-instantiate parameters for "
+                                 "'{0}' in component '{1}'",
+                                 mi.component, fc.id)
+            fc.structure.add(mi2)
+
+    def resolve_simulation(self, fc, ct):
+        """
+        Resolve simulation specifications.
+        """
+
+        for run in ct.simulation.runs:
+            try:
+                run2 = Run(fc.component_references[run.component].referenced_component,
+                           run.variable,
+                           fc.parameters[run.increment].numeric_value,
+                           fc.parameters[run.total].numeric_value)
+            except:
+                raise ModelError("Unable to resolve simulation run parameters in component '{0}'",
+                                 fc.id)
+            fc.simulation.add(run2)
+
+        for record in ct.simulation.records:
+            try:
+                record2 = Record(fc.paths[record.quantity].value,
+                                 fc.parameters[record.scale].numeric_value if record.scale else 1,
+                                 fc.texts[record.color].value if record.color else '#000000')
+            except:
+                raise ModelError("Unable to resolve simulation record parameters in component '{0}'",
+                                 fc.id)
+            fc.simulation.add(record2)
+
+        for dd in ct.simulation.data_displays:
+            try:
+                dd2 = DataDisplay(fc.texts[dd.title].value,
+                                  '')
+            except:
+                raise ModelError("Unable to resolve simulation display parameters in component '{0}'",
+                                 fc.id)
+            fc.simulation.add(dd2)
+                
+        for dw in ct.simulation.data_writers:
+            try:
+                dw2 = DataWriter(fc.texts[dw.path].value,
+                                 fc.texts[dw.file_path].value)
+            except:
+                raise ModelError("Unable to resolve simulation writer parameters in component '{0}'",
+                                 fc.id)
+            fc.simulation.add(dw2)
+                
+            
+    def get_numeric_value(self, value_str, dimension = None):
+        """
+        Get the numeric value for a parameter value specification.
+
+        @param value_str: Value string
+        @type value_str: str
+
+        @param dimension: Dimension of the value
+        @type dimension: str
+        """
+
+        bitsnum = re.split('[_a-zA-Z]+', value_str)
+        bitsalpha = re.split('[^_a-zA-Z]+', value_str)
 
         n = float(bitsnum[0].strip())
         bitsnum = bitsnum[1:]
@@ -140,7 +545,7 @@ class Model(Contextual):
         s = ''
 
         l = max(len(bitsnum), len(bitsalpha))
-        for i in xrange(l):
+        for i in range(l):
             if i < len(bitsalpha):
                 s += bitsalpha[i].strip()
             if i < len(bitsnum):
@@ -152,729 +557,24 @@ class Model(Contextual):
         number = n
         sym = s
 
+        numeric_value = None
+
         if sym == '':
-            parameter.numeric_value = number
+            numeric_value = number
         else:
             if sym in self.units:
                 unit = self.units[sym]
-                if parameter.dimension != unit.dimension:
-                    if parameter.dimension == '*':
-                        parameter.dimension = unit.dimension
-                    else:
-                        self.raise_error(('Unit symbol {0} cannot '
-                                         'be used for dimension {1}').format(\
-                                             sym, parameter.dimension),
-                                         context)
-                parameter.numeric_value = number * (10 ** unit.power)
+
+                if dimension:
+                    if dimension != unit.dimension and dimension != '*':
+                        raise SimBuildError("Unit symbol '{0}' cannot "
+                                            "be used for dimension '{1}'",
+                                            sym, dimension)
+                else:
+                    dimension = unit.dimension
+
+                numeric_value = number * (10 ** unit.power)
             else:
-                self.raise_error('Unknown unit symbol {0}'.format(sym),
-                                 context)
-
-    def resolve_extended_component_type(self, context, component_type):
-        """
-        Resolves the specified component type's parameters from it's base
-        component type.
-
-        @param context: Context object containing the component type.
-        @type context: lems.model.context.Context
-
-        @param component_type: Component type to be resolved.
-        @type component_type: lems.model.component.ComponentType
-
-        @raise ModelError: Raised when the base component type cannot be
-        resolved.
-
-        @raise ModelError: Raised when a parameter in the base component type
-        is redefined in this component type.
-        """
-
-        base_type = context.lookup_component_type(component_type.extends)
-        if base_type == None:
-            self.raise_error('Base type {0} not found for component type {1}'.
-                             format(component_type.extends,
-                                    component_type.name),
-                             context)
-        if base_type.extends:
-            self.resolve_extended_component_type(context, base_type)
-
-        this_context = component_type.context
-        base_context = base_type.context
-
-        this_context.merge(base_context, self)
-
-        component_type.types = component_type.types | base_type.types
-        component_type.extends = None
-
-    def resolve_extended_component(self, context, component):
-        """
-        Resolves the specified component's parameters from it's base
-        component.
-
-        @param context: Context object containing the component.
-        @type context: lems.model.context.Context
-
-        @param component: Component to be resolved.
-        @type component: lems.model.component.Component
-
-        @raise ModelError: Raised when the base component cannot be
-        resolved.
-
-        @raise ModelError: Raised when a parameter in the base component
-        is redefined in this component.
-
-        @note: Consider changing Component.id to Component.name and merging
-        this method with resolve_extended_component_type.
-        """
-
-        base = context.lookup_component(component.extends)
-        if base == None:
-            self.raise_error('Base component {0} not found for component {1}'.
-                             format(component.extends,
-                                    component.id),
-                             context)
-        if base.extends:
-            self.resolve_extended_component(context, base)
-
-        component.component_type = base.component_type
-
-        this_context = component.context
-        base_context = base.context
-
-        this_context.merge(base_context, self)
-
-        component.extends = None
-
-    def resolve_component_structure_from_type(self,
-                                              comp_context,
-                                              type_context,
-                                              component):
-        """
-        Resolves the specified component's structure from component type.
-
-        @param comp_context: Component's context object.
-        @type comp_context: lems.model.context.Context
-
-        @param type_context: Component type's context object.
-        @type type_context: lems.model.context.Context
-
-        @param component: Component to be resolved.
-        @type component: lems.model.component.Component
-
-        @raise ModelError: Raised when the component type cannot be
-        resolved.
-        """
-
-        comp_str = comp_context.structure
-        type_str = type_context.structure
-
-        comp_str.event_connections = type_str.event_connections
-
-        for c in type_str.single_child_defs:
-            if c in comp_context.component_refs:
-                comp_str.add_single_child_def(c)
-            else:
-                raise ModelError("Trying to multi-instantiate from an "
-                                 "invalid component reference '{0}'".format(\
-                        c))
-
-        for c in type_str.multi_child_defs:
-            n = type_str.multi_child_defs[c]
-            if c in comp_context.component_refs:
-                component = comp_context.component_refs[c]
-                if n in comp_context.parameters:
-                    number = int(comp_context.parameters[n].numeric_value)
-                    comp_str.add_multi_child_def(component, number)
-                else:
-                    raise ModelError("Trying to multi-instantiate using an "
-                                     "invalid number parameter '{0}'".\
-                                     format(n))
-            else:
-                raise ModelError("Trying to multi-instantiate from an "
-                                 "invalid component reference '{0}'".format(\
-                                     c))
-
-        comp_str.foreach = type_str.foreach
-        comp_str.with_mappings = type_str.with_mappings
-
-
-    def resolve_component_from_type(self, context, component):
-        """
-        Resolves the specified component's parameters from component type.
-
-        @param context: Context object containing the component.
-        @type context: lems.model.context.Context
-
-        @param component: Component to be resolved.
-        @type component: lems.model.component.Component
-
-        @raise ModelError: Raised when the component type cannot be
-        resolved.
-        """
-
-        component_type = context.lookup_component_type(
-            component.component_type)
-
-        if component_type == None:
-            self.raise_error('Type {0} not found for component {1}'.
-                             format(component.component_type,
-                                    component.id),
-                             context)
-
-        this_context = component.context
-        type_context = component_type.context
-
-        this_context.merge(type_context, self)
-
-    def resolve_simulation(self, context):
-        """
-        Resolves simulation specifications in a component-type context.
-
-        @param context: Current context.
-        @type context: lems.model.context.Context
-
-        @raise ModelError: Raised when the quantity to be recorded is not a
-        path.
-
-        @raise ModelError: Raised when the color specified is not a text
-        entity.
-        """
-
-        simulation = context.simulation
-
-        # Resolve <Record> statements
-        for idx in simulation.records:
-            record = simulation.records[idx]
-
-            if record.quantity in context.parameters:
-                qp = context.parameters[record.quantity]
-                record.quantity = qp.value
-
-                if qp.dimension != '__path__':
-                    self.raise_error('<Record>: The quantity to be recorded'
-                                     'must be a path',
-                                     context)
-
-                if record.scale in context.parameters and \
-                  record.color in context.parameters:
-                  sp = context.parameters[record.scale]
-                  cp = context.parameters[record.color]
-
-                  if cp.dimension != '__text__':
-                      self.raise_error('<Record>: The color to be used must be '
-                                       'a reference to a text variable',
-                                       context)
-                  record.scale = sp.value
-                  record.color = cp.value
-                  record.numeric_scale = sp.numeric_value
-
-        # Resolve <DataDisplay> statements
-        for idx in simulation.data_displays:
-            display = simulation.data_displays[idx]
-
-            if display.title in context.parameters:
-                p = context.parameters[display.title]
-                display.title = p.value
-
-
-
-    def resolve_regime(self, context, regime):
-        """
-        Resolves name references in the given dynamics regime to actual
-        objects.
-
-        @param context: Current context.
-        @type context: lems.model.context.Context
-
-        @param regime: Dynamics regime to be resolved.
-        @type regime: lems.model.dynamics.Dynamics
-
-        @raise ModelError: Raised when the quantity to be recorded is not a
-        path.
-
-        @raise ModelError: Raised when the color specified is not a text
-        entity.
-        """
-
-        pass
-
-    def resolve_dynamics_profile(self, context, dynamics):
-        """
-        Resolves name references in the given dynamics profile to actual
-        objects.
-
-        @param context: Current context.
-        @type context: lems.model.context.Context
-
-        @param dynamics: Dynamics profile to be resolved.
-        @type dynamics: lems.model.dynamics.Dynamics
-        """
-
-        self.resolve_regime(context, dynamics.default_regime)
-
-        for rn in dynamics.regimes:
-            regime = dynamics.regimes[rn]
-            self.resolve_regime(context, regime)
-
-    def resolve_component_type(self, context, component_type):
-        """
-        Resolves the specified component.
-
-        @param context: Context object containing the component type.
-        @type context: lems.model.context.Context
-
-        @param component_type: Component type to be resolved.
-        @type component_type: lems.model.component.Component
-
-        """
-
-        self.resolve_context(component_type.context)
-        if component_type.extends:
-            self.resolve_extended_component_type(context, component_type)
-
-        this_context = component_type.context
-
-        for dpn in this_context.derived_parameters:
-            dp = this_context.derived_parameters[dpn]
-
-            if dp.select:
-                target = resolve_xpath(dp.select, this_context)
-            else:
-                print('TODO - Derived parameter value computation')
-
-    def resolve_component(self, context, component):
-        """
-        Resolves the specified component.
-
-        @param context: Context object containing the component.
-        @type context: lems.model.context.Context
-
-        @param component: Component to be resolved.
-        @type component: lems.model.component.Component
-
-        @raise ModelError: Raised when the dimension for a parameter cannot
-        be resolved.
-        """
-
-        self.resolve_context(component.context)
-        if component.extends:
-            self.resolve_extended_component(context, component)
-        self.resolve_component_from_type(context, component)
-
-        # GG: Reenable this once the NeuroML definitions are fixed.
-        ## for pn in component.context.parameters:
-        ##     p = component.context.parameters[pn]
-        ##     if p.dimension == '__dimension_inherited__':
-        ##         self.raise_error(("The dimension for parameter '{0}' in "
-        ##                           "component '{1}' ({2}) could not be resolved").\
-        ##                          format(pn, component.id,
-        ##                                 component.component_type),
-        ##                          component.context)
-
-        # Resolve dynamics
-        for dpn in component.context.dynamics_profiles:
-            dp = component.context.dynamics_profiles[dpn]
-            self.resolve_dynamics_profile(component.context, dp)
-
-    def resolve_child(self, context, child):
-        """
-        Resolves the specified child component.
-
-        @param context: Context object containing the component.
-        @type context: lems.model.context.Context
-
-        @param child: Child component to be resolved.
-        @type child: lems.model.component.Component
-
-        @raise ModelError: Raised when the parent component cannot be
-        resolved.
-
-        @raise ModelError: Raised when the component type for the parent
-        component cannot be resolved.
-        """
-
-        parent = context.lookup_component(context.name)
-        if parent == None:
-            self.raise_error('Unable to resolve component \'{0}\''.\
-                             format(context.name))
-        parent_type = context.lookup_component_type(parent.component_type)
-        if parent_type == None:
-            self.raise_error('Unable to resolve component type \'{0}\''.\
-                             format(parent.component_type))
-
-        ptctx = parent_type.context
-
-        if child.id in ptctx.child_defs:
-            if child.component_type == '__type_inherited__':
-                child.component_type = ptctx.child_defs[child.id]
-            #else:
-            #    print child.id, child.component_type
-            #    raise Exception('TODO')
-            context.add_component(child)
-        else:
-            for cdn in ptctx.children_defs:
-                cdt = ptctx.children_defs[cdn]
-
-                if child.id == cdt:
-                    child.component_type = cdt
-                    child.id = self.make_id()
-                    context.add_component(child)
-                    if cdn not in context.children_defs:
-                        context.add_children_def(cdn, cdt)
-                    break
-                elif child.component_type == cdt:
-                    context.add_component(child)
-                    if cdn not in context.children_defs:
-                        context.add_children_def(cdn, cdt)
-                    break
-
-    def resolve_context(self, context):
-        """
-        Resolves name references in the given context to actual objects.
-
-        @param context: Context to be resolved.
-        @type context: lems.model.context.Context
-
-        @raise ModelError: Raised when the dimension for a parameter cannot
-        be resolved.
-        """
-
-        # Resolve component-types
-        for ctn in context.component_types:
-            component_type = context.component_types[ctn]
-            self.resolve_component_type(context, component_type)
-
-        # Resolve children
-        if context.children:
-            for child in context.children:
-                self.resolve_child(context, child)
-
-        # Resolve components
-        for cid in context.components:
-            component = context.components[cid]
-            self.resolve_component(context, component)
-            self.resolve_simulation(component.context)
-
-
-    def resolve_model(self):
-        """
-        Resolves name references in the model to actual objects.
-
-        @raise ModelError: Raised when the dimension for a given unit cannot
-        be resolved.
-        """
-
-        # Verify dimensions for units
-        for symbol in self.units:
-            dimension = self.units[symbol].dimension
-            if dimension not in self.dimensions:
-                self.raise_error('Dimension {0} not defined for unit {1}'\
-                                 .format(dimension, symbol),
-                                 self.context)
-
-        # Resolve global context
-        self.resolve_context(self.context)
-
-    def raise_error(self, message, context):
-        s = 'Caught ModelError in lems'
-
-        context_name_stack = []
-        while context != None:
-            context_name_stack.insert(0, context.name)
-            context = context.parent
-
-        for context_name in context_name_stack:
-            s += '.' + context_name
-
-        s += ':\n  ' + message
-
-        raise ModelError(s)
-
-    def make_id(self):
-        self.next_free_id = self.next_free_id + 1
-        return 'id__{0}'.format(self.next_free_id)
-
-    #####################################################################33
-
-    tab = '    '
-
-    def regime2str(self, regime, prefix):
-        s = ''
-        if regime.state_variables:
-            s += prefix + Model.tab + 'State variables:\n'
-            for svn in regime.state_variables:
-                sv = regime.state_variables[svn]
-                s += prefix + Model.tab*2 + sv.name
-                if sv.exposure:
-                    s += ' (exposed as ' + sv.exposure + ')'
-                s += ': ' + sv.dimension + '\n'
-
-        if regime.time_derivatives:
-            s += prefix + Model.tab + 'Time derivatives:\n'
-            for tdv in regime.time_derivatives:
-                td = regime.time_derivatives[tdv]
-                s += prefix + Model.tab*2 + td.variable + ' = ' + td.value\
-                     + ' | ' + str(td.expression_tree) + '\n'
-
-        if regime.derived_variables:
-            s += prefix + Model.tab + 'Derived variables:\n'
-            for dvn in regime.derived_variables:
-                dv = regime.derived_variables[dvn]
-                s += prefix + Model.tab*2 + dv.name
-                if dv.value:
-                    s += ' = ' + dv.value + ' | ' + str(dv.expression_tree) + '\n'
-                elif dv.select and dv.reduce:
-                    s += ' = reduce.' + dv.reduce + ' over ' + dv.select + '\n'
-                else:
-                    s += '\n'
-
-
-        if regime.event_handlers:
-            s += prefix + Model.tab + 'Event Handlers:\n'
-            for eh in regime.event_handlers:
-                s += prefix + Model.tab*2 + str(eh) + '\n'
-                if eh.actions:
-                    s += prefix + Model.tab*3 + 'Actions:\n'
-                    for a in eh.actions:
-                        s += prefix + Model.tab*4 + str(a) + '\n'
-
-        if regime.kinetic_schemes:
-            s += prefix + Model.tab + 'Kinetic schemes:\n'
-            for ksn in regime.kinetic_schemes:
-                ks = regime.kinetic_schemes[ksn]
-                s += prefix + Model.tab*2
-                s += '{0}: ({1} {2}) ({3} {4} {5}) ({6} {7})\n'.format(
-                    ks.name,
-                    ks.nodes, ks.state_variable,
-                    ks.edges, ks.edge_source, ks.edge_target,
-                    ks.forward_rate, ks.reverse_rate)
-
-        return s
-
-    def dynamics2str(self, dynamics, prefix):
-        s = prefix
-        if dynamics.name != '':
-            s += name
-        else:
-            s += '*'
-        s += '\n'
-
-        if dynamics.default_regime:
-            s += prefix + Model.tab + 'Default regime:\n'
-            s += self.regime2str(dynamics.default_regime,
-                                 prefix + Model.tab)
-
-        return s
-
-    def structure2str(self, structure, prefix):
-        s = prefix + 'Structure:\n'
-
-        if structure.event_connections:
-            s += prefix + Model.tab + 'Event connections:\n'
-            for conn in structure.event_connections:
-                s += prefix + Model.tab*2 + '{0}:{1} -> {2}:{3}\n'.format(
-                    conn.source_path, conn.source_port,
-                    conn.target_path, conn.target_port)
-
-        if structure.single_child_defs:
-            s += prefix + Model.tab + 'Single child instantiations:\n'
-            for c in structure.single_child_defs:
-                s += prefix + Model.tab*2 + c + '\n'
-
-        if structure.multi_child_defs:
-            s += prefix + Model.tab + 'Multi child instantiations:\n'
-            for c in structure.multi_child_defs:
-                s += prefix + Model.tab*2 + '{0} * {1}\n'.format(\
-                    c, structure.multi_child_defs[c])
-
-        if structure.foreach:
-            s += prefix + Model.tab + 'ForEach:\n'
-            for fe in structure.foreach:
-                s += prefix + Model.tab*2 + 'ForEach {0} as {1}\n'.format(\
-                    fe.target, fe.name)
-                s += self.structure2str(fe, prefix + Model.tab*3)
-
-
-
-        return s
-
-    def simulation2str(self, simulation, prefix):
-        s = prefix + 'Simulation Specs:\n'
-        prefix = prefix + Model.tab
-
-        if simulation.runs:
-            s += prefix + 'Runs:\n'
-            for rn in simulation.runs:
-                r = simulation.runs[rn]
-                s += '{0}{1} {2} {3} {4}\n'.format(prefix + Model.tab,
-                                                   r.component,
-                                                   r.variable,
-                                                   r.increment,
-                                                   r.total)
-
-        if simulation.records:
-            s += prefix + 'Recordings:\n'
-            for q in simulation.records:
-                r = simulation.records[q]
-                s += '{0}{1} {2} {3}\n'.format(prefix + Model.tab,
-                                                   r.quantity,
-                                                   r.scale,
-                                                   r.color)
-
-        if simulation.data_displays:
-            s += prefix + 'Data displays:\n'
-            for t in simulation.data_displays:
-                d = simulation.data_displays[t]
-                s += '{0}{1} {2}\n'.format(prefix + Model.tab,
-                                                   d.title,
-                                                   d.data_region)
-
-        if simulation.data_writers:
-            s += prefix + 'Data writers:\n'
-            for p in simulation.data_writers:
-                w = simulation.data_writers[p]
-                s += '{0}{1} {2}\n'.format(prefix + Model.tab,
-                                                   w.path,
-                                                   w.file_path)
-
-        return s
-
-
-    def context2str(self, context, prefix):
-        s = ''
-        prefix = prefix + Model.tab
-        if context.component_types:
-            s += prefix + 'Component types:\n'
-            for tn in context.component_types:
-                t = context.component_types[tn]
-                s += prefix + Model.tab + t.name
-                if t.extends:
-                    s += ' (extends ' + t.extends + ')'
-                s += '\n'
-                s += self.context2str(t.context, prefix + Model.tab)
-
-        if context.components:
-            s += prefix + 'Components:\n'
-            for cn in context.components:
-                c = context.components[cn]
-                s += prefix + Model.tab + c.id
-                if c.component_type:
-                    s += ': ' + c.component_type + '\n'
-                else:
-                    s+= ' (extends ' + c.extends + ')' + '\n'
-                s += self.context2str(c.context, prefix + Model.tab)
-
-        if context.component_refs:
-            s += prefix + 'Component references:\n'
-            for cref in context.component_refs:
-                t = context.component_refs[cref]
-                s += prefix + Model.tab + cref + ': ' + t + '\n'
-
-        if context.child_defs:
-            s += prefix + 'Child definitions:\n'
-            for cref in context.child_defs:
-                t = context.child_defs[cref]
-                s += prefix + Model.tab + cref + ': ' + t + '\n'
-
-        if context.children_defs:
-            s += prefix + 'Children definitions:\n'
-            for cref in context.children_defs:
-                t = context.children_defs[cref]
-                s += prefix + Model.tab + cref + ': ' + t + '\n'
-
-        if context.children:
-            s += prefix + 'Children:\n'
-            for child in context.children:
-                s += prefix + Model.tab + child.id + ': ' + \
-                     child.component_type + '\n'
-                s += self.context2str(child.context, prefix + Model.tab)
-
-        if context.parameters:
-            s += prefix + 'Parameters:\n'
-            for pn in context.parameters:
-                p = context.parameters[pn]
-                s += prefix + Model.tab + p.name
-                s += ': ' + p.dimension
-                if p.value:
-                    s += ': ' + str(p.value)
-                    if p.fixed:
-                        s += ' (fixed)'
-                if p.numeric_value:
-                    s += ' - ' + str(p.numeric_value)
-                s += '\n'
-
-        if context.exposures:
-            s += prefix + 'Exposures:\n'
-            for name in context.exposures:
-                s += prefix + Model.tab + name + '\n'
-
-        if context.requirements:
-            s += prefix + 'Requirements:\n'
-            for name in context.requirements:
-                s += prefix + Model.tab + name + '\n'
-
-        if context.texts:
-            s += prefix + 'Text variables:\n'
-            for name in context.texts:
-                value = context.texts[name]
-                s += prefix + Model.tab + name
-                if value:
-                    s += ': ' + value + '\n'
-                else:
-                    s += '\n'
-
-        if context.paths:
-            s += prefix + 'Path variables:\n'
-            for name in context.paths:
-                value = context.paths[name]
-                s += prefix + Model.tab + name
-                if value:
-                    s += ': ' + value + '\n'
-                else:
-                    s += '\n'
-
-        if context.dynamics_profiles:
-            s += prefix + 'Dynamics profiles:\n'
-            for name in context.dynamics_profiles:
-                dynamics = context.dynamics_profiles[name]
-                s += self.dynamics2str(dynamics, prefix + Model.tab)
-
-        if context.event_in_ports:
-            s += prefix + 'Event in ports:\n'
-            for port in context.event_in_ports:
-                s += prefix + Model.tab + port + '\n'
-
-        if context.event_out_ports:
-            s += prefix + 'Event out ports:\n'
-            for port in context.event_out_ports:
-                s += prefix + Model.tab + port + '\n'
-
-        if context.structure:
-            s += self.structure2str(context.structure, prefix)
-
-        if context.simulation.runs or context.simulation.records or context.simulation.data_displays:
-            s += self.simulation2str(context.simulation, prefix)
-
-        return s
-
-    def __str__(self):
-        s = ''
-
-        s += 'Targets:\n'
-        for run in self.targets:
-            s += Model.tab + run + '\n'
-
-        s += 'Dimensions:\n'
-        if self.dimensions != None:
-            for d in self.dimensions:
-                s += Model.tab + d + '\n'
-
-        s += 'Units:\n'
-        if self.units != None:
-            for u in self.units:
-                s += Model.tab + u + '\n'
-
-        if self.context:
-            s += 'Global context:\n'
-            s += self.context2str(self.context, '')
-
-        return s
+                raise SimBuildError("Unknown unit symbol '{0}'",
+                                    sym)
+        return numeric_value

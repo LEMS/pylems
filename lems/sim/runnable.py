@@ -7,7 +7,7 @@ Base class for runnable components.
 """
 
 from lems.base.base import LEMSBase
-from lems.base.util import Stack
+from lems.base.stack import Stack
 from lems.base.errors import SimBuildError
 from lems.sim.recording import Recording
 
@@ -60,6 +60,9 @@ class Reflective(object):
         #setattr(cls, method_name, __generated_function__)
         self.__dict__[method_name] = l['__generated_function__']
         del l['__generated_function__']
+
+        #print(code_string.replace('__generated_function__', 
+        #                          '{0}.{1}'.format(self.component.type, method_name)))
 
     def add_instance_variable(self, variable, initial_value):
         self.instance_variables.append(variable)
@@ -160,13 +163,10 @@ class Runnable(Reflective):
         self.__dict__[name] = []
 
     def add_attachment(self, runnable, container = None):
-        component_type = runnable.component.context.lookup_component_type(
-            runnable.component.component_type)
-
-        for ctype in component_type.types:
+        for ctype in runnable.component.types:
             if ctype in self.attachments:
                 name = self.attachments[ctype]
-                if container != None and container != name:
+                if container is not None and container != name:
                     continue
                 
                 if name not in self.__dict__:
@@ -279,12 +279,12 @@ class Runnable(Reflective):
                     childobj.array[idx].add_variable_recorder2(data_output,
                                                                recorder,
                                                                new_path)
-            elif child in self.component.context.child_defs:
+            elif child in self.component.children:
+                cdef = self.component.children[child]
                 childobj = None
                 for cid in self.children:
                     c = self.children[cid]
-                    typeobj = c.component.context.lookup_component_type(c.component.component_type)
-                    if child in typeobj.types:
+                    if cdef.type in c.component.types:
                         childobj = c
                 if childobj:
                     childobj.add_variable_recorder2(data_output,
@@ -350,10 +350,11 @@ class Runnable(Reflective):
                 r = r.parent
                 name = "{0}.{1}".format(r.id, name)
 
-            print("Error in '{0} ({2})': {1}".format(name, e,
-                                                     self.component.component_type))
+            print("Error in '{0} ({1})': {2}".format(name,
+                                                     self.component.type, 
+                                                     e))
             print(type(e))
-            keys = self.__dict__.keys()
+            keys = list(self.__dict__.keys())
             keys.sort()
             for k in keys:
                 print('{0} -> {1}'.format(k, self.__dict__[k]))
@@ -457,3 +458,6 @@ class Runnable(Reflective):
                 self.__dict__[var + '_shadow'] = self.__dict__[var]
             for var in self.derived_variables:
                 self.__dict__[var + '_shadow'] = self.__dict__[var]
+
+    def __lt__(self, other):
+        return self.id < other.id

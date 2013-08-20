@@ -1,100 +1,70 @@
 """
-LEMS parser
+LEMS XML file format parser.
 
 @author: Gautham Ganapathy
 @organization: LEMS (http://neuroml.org/lems/, https://github.com/organizations/LEMS)
 @contact: gautham@lisphacker.org
 """
 
-import os.path
+import xml.etree.ElementTree as xe
 
-from lems.model.simple import Dimension,Unit
-from lems.base.parser import Parser
-from lems.model.model import Model
-from lems.base.errors import ParseError,ModelError
-from lems.model.context import Context,Contextual
-from lems.model.component import Component,ComponentType
-from lems.model.parameter import Parameter,DerivedParameter
+from lems.base.base import LEMSBase
+from lems.base.errors import ParseError
+
+from lems.model.fundamental import *
+from lems.model.component import *
 from lems.model.dynamics import *
-#Dynamics,Regime,OnCondition,OnEvent,StateAssignment
+from lems.model.structure import *
+from lems.model.simulation import *
 
-import re
-import xml.etree.ElementTree
+from lems.base.util import make_id
 
-def xmltolower(node):
-    """
-    Converts the tag and attribute names in the given XML node and
-    child nodes to lower case. To convert the entire tree, pass in the
-    root.
+from pprint import pprint
 
-    @param node: Node in an XML tree.
-    @type node: xml.etree.Element
-    """
-
-    node.lattrib = dict()
-    for key in node.attrib:
-        node.lattrib[key.lower()] = node.attrib[key]
-    for child in node:
-        xmltolower(child)
-
-def open_file(filename, xslt_preprocessor_callback):
-    xmltext = open(filename).read()
-
-    # Cleanup LEMS file
-    xmltext = re.sub('<([Ll][Ee][Mm][Ss])[^>]*>', r'<\1>', xmltext, 0, re.DOTALL)
-
-    if xslt_preprocessor_callback:
-        return xml.etree.ElementTree.XML(xslt_preprocessor_callback(xmltext))
+def get_nons_tag_from_node(node):
+    tag = node.tag
+    bits = tag.split('}')
+    if len(bits) == 1:
+        return tag
     else:
-        return xml.etree.ElementTree.XML(xmltext).getroot()
+        return bits[1]
 
-class LEMSParser(Parser):
+class LEMSXMLNode:
+    def __init__(self, pyxmlnode):
+        self.tag = get_nons_tag_from_node(pyxmlnode)
+        self.ltag = self.tag.lower()
+
+        self.attrib = dict()
+        self.lattrib = dict()
+
+        for k in pyxmlnode.attrib:
+            self.attrib[k] = pyxmlnode.attrib[k]
+            self.lattrib[k.lower()] = pyxmlnode.attrib[k]
+
+        self.children = list()
+        for pyxmlchild in pyxmlnode:
+            self.children.append(LEMSXMLNode(pyxmlchild))
+        
+        
+class LEMSFileParser(LEMSBase):
     """
-    Parser for LEMS files
+    LEMS XML file format parser class.
     """
-
-    def push_context(self, context):
-        self.context_stack = [context] + self.context_stack
-        self.current_context = context
-
-    def pop_context(self):
-        if len(self.context_stack) == 0:
-            self.raise_error('Context stack underflow')
-        self.context_stack = self.context_stack[1:]
-        if len(self.context_stack) == 0:
-            self.current_context = None
-        else:
-            self.current_context = self.context_stack[0]
-
-    def push_component_type(self, component_type):
-        self.component_type_stack = [component_type] + \
-                                    self.component_type_stack
-        self.current_component_type = component_type
-
-    def pop_component_type(self):
-        if len(self.component_type_stack) == 0:
-            self.raise_error('Component_Type stack underflow')
-        self.component_type_stack = self.component_type_stack[1:]
-        if len(self.component_type_stack) == 0:
-            self.current_component_type = None
-        else:
-            self.current_component_type = self.component_type_stack[0]
-
-    def __init__(self, xslt_preprocessor_callback = None, include_dirs = [], alternate_root_element_tags = []):
+    
+    def __init__(self, model, include_dirs = []):
         """
         Constructor.
 
-        @param xslt_preprocessor_callback: XSLT preprocessor callback.
-        @type xslt_preprocessor_callback: fn
+        See instance variable documentation for more details on parameters.
         """
 
-        self.base_path = '.'
-        """ Base path for the file being parsed
-        @type: string """
+        self.model = model
+        """ Model instance to be populated from the parsed file.
+        @type: lems.model.model.Model """
 
-        self.model = None
-        """ Model built during parsing
-        @type: lems.model.model.model """
+        self.include_dirs = include_dirs
+        """ List of directories to search for included files.
+        @type: list(str) """
 
         self.tag_parse_table = None
         """ Dictionary of xml tags to parse methods
@@ -104,78 +74,19 @@ class LEMSParser(Parser):
         """ Dictionary mapping each tag to it's list of valid child tags.
         @type: dict(string -> string) """
 
-        self.context_stack = []
-        """ Stack of contexts used for handling nested contexts.
-        @type: list(lems.model.context.Context) """
-
-        self.current_context = None
-        """ Currently active (being parsed) context.
-        @type: lems.model.context.Context """
-
-        self.component_type_stack = []
-        """ Stack of component type objects used for handling nested
-        component types.
-        @type: list(lems.model.parameter.ComponentType) """
-
-        self.current_component_type = None
-        """ Component type object being parsed.
-        @type: lems.model.parameter.ComponentType """
-
-        self.current_dynamics_profile = None
-        """ Current dynamics profile being parsed.
-        @type: lems.model.dynamics.Dynamics """
-
-        self.current_regime = None
-        """ Current dynamics regime being parsed.
-        @type: lems.model.dynamics.Regime """
-
-        self.current_event_handler = None
-        """ Current event_handler being parsed.
-        @type: lems.model.dynamics.EventHandler """
-
-        self.current_simulation = None
-        """ Current simulation section being parsed.
-        @type: lems.model.simulation.Simulation """
-
-        self.current_structure = None
-        """ Current structure being parsed.
-        @type: lems.model.structure.Structure """
-
-        self.xml_node_stack = []
-        """ XML node stack.
-        @type: list(xml.etree.Element) """
-
-        self.xslt_preprocessor_callback = xslt_preprocessor_callback
-        """ XSLT preprocessor callback.
-        @type: fn """
-
-        self.include_dirs = include_dirs
-        """ List of directories to search for include files
-        @type: list(string) """
-
-        self.included_files = []
-        """ List of files already included.
-        @type: list(string) """
-
+        self.id_counter = None
+        """ Counter generator for generating unique ids.
+        @type: generator(int) """
+        
         self.init_parser()
-
-        self.xml_root = None
-        """ Root element of current XML file
-        @type: xml.etree.Element """
-
-        self.alternate_root_element_tags = alternate_root_element_tags
-        """ List of alternate tag names to <LEMS> that can be accepted
-        as a root element name.
-        @type: list(string) """
 
     def init_parser(self):
         """
         Initializes the parser
         """
 
-        self.model = Model()
-        self.token_list = None
-        self.prev_token_lists = None
+        #self.token_list = None
+        #self.prev_token_lists = None
 
         self.valid_children = dict()
         self.valid_children['lems'] = ['component', 'componenttype',
@@ -191,39 +102,36 @@ class LEMSParser(Parser):
                                                 'text', 'attachments',
                                                 'constant', 'derivedparameter']
         self.valid_children['dynamics'] = ['derivedvariable',
-                                           'oncondition', 'onentry',
+                                           'oncondition',
                                            'onevent', 'onstart',
                                            'statevariable', 'timederivative',
                                            'kineticscheme', 'regime']
-        self.valid_children['regime'] = ['derivedvariable',
-                                         'oncondition', 'onentry',
-                                         'onevent', 'onstart',
-                                         'statevariable', 'timederivative',
-                                         'kineticscheme', 'transition']
-        self.valid_children['oncondition'] = ['eventout', 'stateassignment']
-        self.valid_children['onentry'] = ['eventout', 'stateassignment']
-        self.valid_children['onevent'] = ['eventout', 'stateassignment']
-        self.valid_children['onstart'] = ['eventout', 'stateassignment']
+        self.valid_children['regime'] = ['oncondition', 'onentry', 'timederivative']
+        self.valid_children['oncondition'] = ['eventout', 'stateassignment', 'transition']
+        self.valid_children['onentry'] = ['eventout', 'stateassignment', 'transition']
+        self.valid_children['onevent'] = ['eventout', 'stateassignment', 'transition']
+        self.valid_children['onstart'] = ['eventout', 'stateassignment', 'transition']
         self.valid_children['structure'] = ['childinstance',
                                             'eventconnection',
                                             'foreach',
-                                            'multiinstantiate']
+                                            'multiinstantiate',
+                                            'with']
         self.valid_children['simulation'] = ['record', 'run',
                                              'datadisplay', 'datawriter']
 
         self.tag_parse_table = dict()
-        self.tag_parse_table['assertion'] = self.parse_assertion
+        #self.tag_parse_table['assertion'] = self.parse_assertion
         self.tag_parse_table['attachments'] = self.parse_attachments
         self.tag_parse_table['child'] = self.parse_child
         self.tag_parse_table['childinstance'] = self.parse_child_instance
         self.tag_parse_table['children'] = self.parse_children
-        self.tag_parse_table['component'] = self.parse_component
+        #self.tag_parse_table['component'] = self.parse_component
         self.tag_parse_table['componentreference'] = self.parse_component_reference
         self.tag_parse_table['componenttype'] = self.parse_component_type
         self.tag_parse_table['constant'] = self.parse_constant
         self.tag_parse_table['datadisplay'] = self.parse_data_display
         self.tag_parse_table['datawriter'] = self.parse_data_writer
-        self.tag_parse_table['derivedparameter'] = self.parse_derived_parameter
+        #self.tag_parse_table['derivedparameter'] = self.parse_derived_parameter
         self.tag_parse_table['derivedvariable'] = self.parse_derived_variable
         self.tag_parse_table['dimension'] = self.parse_dimension
         self.tag_parse_table['dynamics'] = self.parse_dynamics
@@ -232,12 +140,11 @@ class LEMSParser(Parser):
         self.tag_parse_table['eventport'] = self.parse_event_port
         self.tag_parse_table['exposure'] = self.parse_exposure
         self.tag_parse_table['fixed'] = self.parse_fixed
-        self.tag_parse_table['foreach'] = self.parse_foreach
+        #self.tag_parse_table['foreach'] = self.parse_foreach
         self.tag_parse_table['include'] = self.parse_include
         self.tag_parse_table['kineticscheme'] = self.parse_kinetic_scheme
         self.tag_parse_table['link'] = self.parse_link
-        self.tag_parse_table['multiinstantiate'] = \
-                                                 self.parse_multi_instantiate
+        self.tag_parse_table['multiinstantiate'] = self.parse_multi_instantiate
         self.tag_parse_table['oncondition'] = self.parse_on_condition
         self.tag_parse_table['onentry'] = self.parse_on_entry
         self.tag_parse_table['onevent'] = self.parse_on_event
@@ -248,7 +155,7 @@ class LEMSParser(Parser):
         self.tag_parse_table['regime'] = self.parse_regime
         self.tag_parse_table['requirement'] = self.parse_requirement
         self.tag_parse_table['run'] = self.parse_run
-        self.tag_parse_table['show'] = self.parse_show
+        #self.tag_parse_table['show'] = self.parse_show
         self.tag_parse_table['simulation'] = self.parse_simulation
         self.tag_parse_table['stateassignment'] = self.parse_state_assignment
         self.tag_parse_table['statevariable'] = self.parse_state_variable
@@ -260,6 +167,16 @@ class LEMSParser(Parser):
         self.tag_parse_table['unit'] = self.parse_unit
         self.tag_parse_table['with'] = self.parse_with
 
+        self.xml_node_stack = []
+
+        self.current_component_type = None
+        self.current_dynamics = None
+        self.current_regime = None
+        self.current_event_handler = None
+        self.current_structure = None
+        self.current_simulation = None
+        self.current_component = None
+        
         def counter():
             count = 1
             while True:
@@ -267,12 +184,9 @@ class LEMSParser(Parser):
                 count = count + 1
 
         self.id_counter = counter()
-        """ Counter genertor for generating unique ids.
-        @type: int """
 
-    prefix = ''
-
-    def process_nested_tags(self, node):
+        
+    def process_nested_tags(self, node, tag = ''):
         """
         Process child tags.
 
@@ -282,69 +196,44 @@ class LEMSParser(Parser):
         @raise ParseError: Raised when an unexpected nested tag is found.
         """
 
-        #self.prefix += '  '
-
-        for child in node:
+        if tag == '':
+            t = node.ltag
+        else:
+            t = tag.lower()
+        
+        for child in node.children:
             self.xml_node_stack = [child] + self.xml_node_stack
 
-            ctagl = child.tag.lower()
+            ctagl = child.ltag
 
-            if ctagl in self.tag_parse_table:
+            if ctagl in self.tag_parse_table and ctagl in self.valid_children[t]:
                 self.tag_parse_table[ctagl](child)
             else:
-                raise ParseError("Unrecognized tag '{0}'".format(ctagl))
-                #self.parse_component_by_typename(child, child.tag)
+                self.parse_component_by_typename(child, child.tag)
 
             self.xml_node_stack = self.xml_node_stack[1:]
 
-        #self.prefix = self.prefix[2:]
-
-    def resolve_typename(self, typename):
+    def parse(self, xmltext):
         """
-        Resolves type name from the contex stack.
+        Parse a string containing LEMS XML text.
 
-        @param typename: Name of the type to be resolved.
-        @type typename: string
-
-        @return: Component type corresponding to the type name or None if
-        undefined.
-        @rtype: lems.model.component.ComponentType
+        @param xmltext: String containing LEMS XML formatted text.
+        @type xmltext: str
         """
+        
+        xml = LEMSXMLNode(xe.XML(xmltext))
 
-        stack = self.context_stack
-        found = False
-        while stack != [] and (not found):
-            if typename in stack[0].component_types:
-                found = True
+        if xml.ltag != 'lems':
+            raise ParseError('<Lems> expected as root element')
 
-        if found:
-            return stack[0].component_types[typename]
-        else:
-            return None
+        self.process_nested_tags(xml)
 
-    def resolve_component_name(self, component_name):
+
+    def raise_error(self, message, *params, **key_params):
         """
-        Resolves component name from the context stack.
-
-        @param component_name: Name of the component to be resolved.
-        @type component_name: string
-
-        @return: Component corresponding to the name or None if undefined.
-        @rtype: lems.model.component.Component
+        Raise a parse error.
         """
-
-        stack = self.context_stack
-        found = False
-        while stack != [] and (not found):
-            if component_name in stack[0].components:
-                found = True
-
-        if found:
-            return stack[0].components[component_name]
-        else:
-            return None
-
-    def raise_error(self, message):
+        
         s = 'Parser error in '
 
         self.xml_node_stack.reverse()
@@ -367,20 +256,53 @@ class LEMSParser(Parser):
 
         s += ':\n  ' + message
 
-        raise ParseError(s)
+        raise ParseError(s, *params, **key_params)
 
         self.xml_node_stack.reverse()
 
 
-    def get_model(self):
-        """
-        Returns the generated model.
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
+#####################################################################################
 
-        @return: The generated model.
-        @rtype: lems.model.model.Model
-        """
 
-        return self.model
+
+
 
     def parse_assertion(self, node):
         """
@@ -401,23 +323,19 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Attachments can only be made in ' +
-                             'a component type')
-
         if 'name' in node.lattrib:
             name = node.lattrib['name']
         else:
-            self.raise_error('<Attachments> must specify a name for the ' +
-                             'attachment.')
+            self.raise_error('<Attachments> must specify a name.')
 
         if 'type' in node.lattrib:
             type_ = node.lattrib['type']
         else:
-            self.raise_error('<Attachment> must specify a type for the ' +
-                             'attachment.')
+            self.raise_error("Attachment '{0}' must specify a type.",
+                             name)
 
-        self.current_context.add_attachment(name, type_)
+        description = node.lattrib.get('description', '')
+        self.current_component_type.add_attachments(Attachments(name, type_, description))
 
     def parse_child(self, node):
         """
@@ -427,23 +345,17 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Child definitions can only be made in ' +
-                             'a component type')
-
         if 'name' in node.lattrib:
             name = node.lattrib['name']
         else:
-            self.raise_error('<Child> must specify a name for the ' +
-                             'reference.')
+            self.raise_error('<Child> must specify a name.')
 
         if 'type' in node.lattrib:
             type_ = node.lattrib['type']
         else:
-            self.raise_error('<Child> must specify a type for the ' +
-                             'reference.')
+            self.raise_error("Child '{0}' must specify a type.", name)
 
-        self.current_context.add_child_def(name, type_)
+        self.current_component_type.add_children(Children(name, type_, False))
 
     def parse_child_instance(self, node):
         """
@@ -453,17 +365,12 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if self.current_structure == None:
-            self.raise_error('Child instantiations can only be made within ' +
-                             'a structure definition')
-
         if 'component' in node.lattrib:
             component = node.lattrib['component']
         else:
-            self.raise_error('<ChildInstance> must specify a component '
-                             'reference')
+            self.raise_error('<ChildInstance> must specify a component reference')
 
-        self.current_structure.add_single_child_def(component)
+        self.current_structure.add_child_instance(ChildInstance(component))
 
     def parse_children(self, node):
         """
@@ -473,25 +380,19 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Children definitions can only be made in ' +
-                             'a component type')
-
         if 'name' in node.lattrib:
             name = node.lattrib['name']
         else:
-            self.raise_error('<Children> must specify a name for the ' +
-                             'reference.')
+            self.raise_error('<Children> must specify a name.')
 
         if 'type' in node.lattrib:
-            type = node.lattrib['type']
+            type_ = node.lattrib['type']
         else:
-            self.raise_error('<Children> must specify a type for the ' +
-                             'reference.')
+            self.raise_error("Children '{0}' must specify a type.", name)
 
-        self.current_context.add_children_def(name, type)
+        self.current_component_type.add_children(Children(name, type_, True))
 
-    def parse_component_by_typename(self, node, type):
+    def parse_component_by_typename(self, node, type_):
         """
         Parses components defined directly by component name.
 
@@ -504,48 +405,32 @@ class LEMSParser(Parser):
         @raise ParseError: Raised when the component does not have an id.
         """
 
-        raise Exception(("Component initialized using typename "
-                         "'{0}' as the XML tag").format(node.tag))
-
-        if self.current_context.context_type == Context.GLOBAL:
-            # Global component instatiation
-            if 'id' in node.lattrib:
-                id_ = node.lattrib['id']
-            else:
-                self.raise_error('Component must have an id')
-
-            type = node.tag
-
-            component = Component(id_, self.current_context, type, None)
-
-            self.current_context.add_component(component)
-
+        if 'id' in node.lattrib:
+            id_ = node.lattrib['id']
         else:
-            # Child instantiation
+            #self.raise_error('Component must have an id')
+            id_ = make_id()
 
-            if 'id' in node.lattrib:
-                id_ = node.lattrib['id']
-                type = node.tag
-            else:
-                id_ = node.tag
-                if 'type' in node.lattrib:
-                    type = node.lattrib['type']
-                else:
-                    type = '__type_inherited__'
+        if 'type' in node.lattrib:
+            type_ = node.lattrib['type']
+        else:
+            type_ = node.tag
 
-            component = Component(id_, self.current_context, type)
+        component = Component(id_, type_)
 
-            self.current_context.add_child(component)
+        if self.current_component:
+            self.current_component.add_child(component)
+        else:
+            self.model.add_component(component)
 
         for key in node.attrib:
-            if key.lower() not in ['extends', 'id', 'type']:
-                param = Parameter(key, '__dimension_inherited__')
-                param.set_value(node.attrib[key])
-                component.add_parameter(param)
+            if key.lower() not in ['id', 'type']:
+                component.set_parameter(key, node.attrib[key])
 
-        self.push_context(component.context)
-        self.process_nested_tags(node)
-        self.pop_context()
+        old_component = self.current_component
+        self.current_component = component
+        self.process_nested_tags(node, 'component')
+        self.current_component = old_component
 
     def parse_component(self, node):
         """
@@ -559,44 +444,29 @@ class LEMSParser(Parser):
             id_ = node.lattrib['id']
         else:
             #self.raise_error('Component must have an id')
-            id_ = self.model.make_id()
+            id_ = make_id()
 
         if 'type' in node.lattrib:
-            type = node.lattrib['type']
+            type_ = node.lattrib['type']
         else:
-            type = None
+                self.raise_error("Component {0} must have a type.",
+                                 id_)
 
-        if type == None:
-            if 'extends' in node.lattrib:
-                extends = node.lattrib['extends']
-            else:
-                self.raise_error('Component must have a type or must ' +
-                                 'extend another component')
+        component = Component(id_, type_)
+
+        if self.current_component:
+            self.current_component.add_child(component)
         else:
-            extends = None
-
-        if 'child' in node.lattrib:
-            child = node.lattrib['child']
-            id_ = child
-        else:
-            child = None
-
-        component = Component(id_, self.current_context, type, extends)
-
-        if child:
-            self.current_context.add_child(component)
-        else:
-            self.current_context.add_component(component)
-
+            self.model.add_component(component)
+                
         for key in node.attrib:
-            if key.lower() not in ['extends', 'id', 'type', 'child']:
-                param = Parameter(key, '__dimension_inherited__')
-                param.set_value(node.attrib[key])
-                component.add_parameter(param)
+            if key.lower() not in ['id', 'type']:
+                component.set_parameter(key, node.attrib[key])
 
-        self.push_context(component.context)
+        old_component = self.current_component
+        self.current_component = component
         self.process_nested_tags(node)
-        self.pop_context()
+        self.current_component = old_component
 
     def parse_component_reference(self, node):
         """
@@ -606,10 +476,6 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Component references can only be defined in ' +
-                             'a component type')
-
         if 'name' in node.lattrib:
             name = node.lattrib['name']
         else:
@@ -617,12 +483,12 @@ class LEMSParser(Parser):
                              'reference.')
 
         if 'type' in node.lattrib:
-            type = node.lattrib['type']
+            type_ = node.lattrib['type']
         else:
             self.raise_error('<ComponentReference> must specify a type for the ' +
                              'reference.')
 
-        self.current_context.add_component_ref(name, type)
+        self.current_component_type.add_component_reference(ComponentReference(name, type_))
 
     def parse_component_type(self, node):
         """
@@ -638,19 +504,24 @@ class LEMSParser(Parser):
         try:
             name = node.lattrib['name']
         except:
-            self.raise_error('Component type must have a name')
+            self.raise_error('<ComponentType> must specify a name')
 
         if 'extends' in node.lattrib:
             extends = node.lattrib['extends']
         else:
             extends = None
 
-        component_type = ComponentType(name, self.current_context, extends)
-        self.current_context.add_component_type(component_type)
+        if 'description' in node.lattrib:
+            description = node.lattrib['description']
+        else:
+            description = ''
 
-        self.push_context(component_type.context)
+        component_type = ComponentType(name, description, extends)
+        self.model.add_component_type(component_type)
+
+        self.current_component_type = component_type
         self.process_nested_tags(node)
-        self.pop_context()
+        self.current_component_type = None
 
     def parse_constant(self, node):
         """
@@ -658,34 +529,28 @@ class LEMSParser(Parser):
 
         @param node: Node containing the <Constant> element
         @type node: xml.etree.Element
-
-        @raise ParseError: Raised when the constant does not have a name.
-        @raise ParseError: Raised when the constant does not have a
-        dimension.
         """
-
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Constants can only be defined in ' +
-                             'a component type')
 
         try:
             name = node.lattrib['name']
         except:
-            self.raise_error('Constant must have a name')
+            self.raise_error('<Constant> must specify a name.')
 
-        try:
-            dimension = node.lattrib['dimension']
-        except:
-            dimension = None
+        dimension = node.lattrib.get('dimension', None)
 
         try:
             value = node.lattrib['value']
         except:
-            self.raise_error('Constant must have a value')
+            self.raise_error("Constant '{0}' must have a value.", name)
 
-        constant = Parameter(name, dimension, True, value)
+        description = node.lattrib.get('description', '')
 
-        self.current_context.add_parameter(constant)
+        constant = Constant(name, value, dimension, description)
+
+        if self.current_component_type:
+            self.current_component_type.add_constant(constant)
+        else:
+            self.model.add_constant(constant)
 
     def parse_data_display(self, node):
         """
@@ -695,21 +560,17 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if self.current_simulation == None:
-            self.raise_error('<DataDisplay> must be defined inside a ' +
-                             'simulation specification')
-
         if 'title' in node.lattrib:
             title = node.lattrib['title']
         else:
-            self.raise_error('A data display must have a title')
+            self.raise_error('<DataDisplay> must have a title.')
 
         if 'dataregion' in node.lattrib:
             data_region = node.lattrib['dataregion']
         else:
             data_region = None
 
-        self.current_simulation.add_data_display(title, data_region)
+        self.current_simulation.add_data_display(DataDisplay(title, data_region))
 
     def parse_data_writer(self, node):
         """
@@ -719,21 +580,18 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if self.current_simulation == None:
-            self.raise_error('<DataWriter> must be defined inside a ' +
-                             'simulation specification')
-
         if 'path' in node.lattrib:
             path = node.lattrib['path']
         else:
-            self.raise_error('A data writer must have a path')
+            self.raise_error('<DataWriter> must specify a path.')
 
         if 'filename' in node.lattrib:
             file_path = node.lattrib['filename']
         else:
-            self.raise_error('A data writer must have a file name')
+            self.raise_error("Data writer for '{0}' must specify a filename.",
+                             path)
 
-        self.current_simulation.add_data_writer(path, file_path)
+        self.current_simulation.add_data_writer(DataWriter(path, file_path))
 
     def parse_derived_parameter(self, node):
         """
@@ -776,46 +634,23 @@ class LEMSParser(Parser):
 
         @param node: Node containing the <DerivedVariable> element
         @type node: xml.etree.Element
-        """
 
-        if self.current_regime == None:
-            self.raise_error('<DerivedVariable> must be defined inside a ' +
-                             'dynamics profile or regime')
+        @raise ParseError: Raised when no name of specified for the derived variable.
+        """
 
         if 'name' in node.lattrib:
             name = node.lattrib['name']
         elif 'exposure' in node.lattrib:
             name = node.lattrib['exposure']
         else:
-            self.raise_error('A derived variable must have a name')
+            self.raise_error('<DerivedVariable> musi specify a name')
 
-        if 'exposure' in node.lattrib:
-            exposure = node.lattrib['exposure']
-        else:
-            exposure = None
+        params = dict()
+        for attr_name in ['dimension', 'exposure', 'select', 'value', 'reduce', 'required']:
+            if attr_name in node.lattrib:
+                params[attr_name] = node.lattrib[attr_name]
 
-        if 'dimension' in node.lattrib:
-            dimension = node.lattrib['dimension']
-        else:
-            dimension = None
-
-        if 'value' in node.lattrib:
-            value = node.lattrib['value']
-        else:
-            value = None
-
-        if 'select' in node.lattrib:
-            select = node.lattrib['select']
-        else:
-            select = None
-
-        if 'reduce' in node.lattrib:
-            reduce = node.lattrib['reduce']
-        else:
-            reduce = None
-
-        self.current_regime.add_derived_variable(name, exposure, dimension,
-                                                 value, select, reduce)
+        self.current_regime.add_derived_variable(DerivedVariable(name, **params))
 
     def parse_dimension(self, node):
         """
@@ -828,16 +663,18 @@ class LEMSParser(Parser):
         dimension is not a signed integer.
         """
 
-        dim = list()
         try:
             name = node.lattrib['name']
-            for d in ['l', 'm', 't', 'i', 'k', 'c', 'n']:
-                dim.append(int(node.lattrib.get(d, 0)))
         except:
-            self.raise_error('Invalid dimensionality format')
+            self.raise_error('<Dimension> must specify a name')
 
-        self.model.add_dimension(Dimension(name, dim[0], dim[1], dim[2],
-                                           dim[3], dim[4], dim[4], dim[6]))
+        description = node.lattrib.get('description', '')
+
+        dim = dict()
+        for d in ['l', 'm', 't', 'i', 'k', 'c', 'n']:
+            dim[d] = int(node.lattrib.get(d, 0))
+
+        self.model.add_dimension(Dimension(name, description, **dim))
 
     def parse_dynamics(self, node):
         """
@@ -847,49 +684,11 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Dynamics must be defined inside a ' +
-                             'component type')
-
-        if 'name' in node.lattrib:
-            name = node.lattrib['name']
-        else:
-            name = ''
-
-        self.current_context.add_dynamics_profile(name)
-
-        old_dynamics_profile = self.current_dynamics_profile
-        self.current_dynamics_profile = self.current_context.selected_dynamics_profile
-
-        old_regime = self.current_regime
-        self.current_regime = self.current_dynamics_profile.default_regime
-
+        self.current_dynamics = self.current_component_type.dynamics
+        self.current_regime = self.current_dynamics
         self.process_nested_tags(node)
-
-        self.current_regime = old_regime
-        self.current_dynamics_profile = old_dynamics_profile
-
-    def parse_event_out(self, node):
-        """
-        Parses <EventOut>
-
-        @param node: Node containing the <EventOut> element
-        @type node: xml.etree.Element
-        """
-
-        if self.current_event_handler == None:
-            self.raise_error('<EventOut> must be defined inside an ' +
-                             'event handler in a dynamics profile or regime')
-
-        if 'port' in node.lattrib:
-            port = node.lattrib['port']
-        else:
-            self.raise_error('\'port\' attribute not provided for ' +
-                             '<StateAssignment>')
-
-        action = EventOut(port)
-
-        self.current_event_handler.add_action(action)
+        self.current_regime = None
+        self.current_dynamics = None
 
     def parse_event_connection(self, node):
         """
@@ -899,30 +698,41 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if self.current_structure == None:
-            self.raise_error('<EventConnection> must be defined inside a ' +
-                             'structure definition')
-
         if 'from' in node.lattrib:
             from_ = node.lattrib['from']
         else:
-            self.raise_error('\'from\' attribute not provided for ' +
-                             '<EventConnection>')
+            self.raise_error('<EventConnection> must provide a source (from) component reference.')
 
         if 'to' in node.lattrib:
             to = node.lattrib['to']
         else:
-            self.raise_error('\'to\' attribute not provided for ' +
-                             '<EventConnection>')
+            self.raise_error('<EventConnection> must provide a target (to) component reference.')
 
         source_port = node.lattrib.get('sourceport', '')
         target_port = node.lattrib.get('targetport', '')
         receiver = node.lattrib.get('receiver', '')
         receiver_container = node.lattrib.get('receivercontainer', '')
 
-        self.current_structure.add_event_connection(from_, to,
-                                                    source_port, target_port,
-                                                    receiver, receiver_container)
+        self.current_structure.add_event_connection(EventConnection(from_, to,
+                                                                    source_port, target_port,
+                                                                    receiver, receiver_container))
+
+    def parse_event_out(self, node):
+        """
+        Parses <EventOut>
+
+        @param node: Node containing the <EventOut> element
+        @type node: xml.etree.Element
+        """
+
+        try:
+            port = node.lattrib['port']
+        except:
+            self.raise_error('<EventOut> must be specify a port.')
+
+        action = EventOut(port)
+
+        self.current_event_handler.add_action(action)
 
     def parse_event_port(self, node):
         """
@@ -932,28 +742,24 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Event ports can only be defined in ' +
-                             'a component type')
-
         if 'name' in node.lattrib:
             name = node.lattrib['name']
         else:
-            self.raise_error(('<EventPort> must specify a name for the '
-                              'event port'))
+            self.raise_error(('<EventPort> must specify a name.'))
 
         if 'direction' in node.lattrib:
             direction = node.lattrib['direction']
         else:
-            self.raise_error(('<EventPort> must specify a direction for the '
-                              'event port'))
+            self.raise_error("Event port '{0}' must specify a direction.")
 
         direction = direction.lower()
         if direction != 'in' and direction != 'out':
             self.raise_error(('Event port direction must be \'in\' '
                               'or \'out\''))
 
-        self.current_context.add_event_port(name, direction)
+        description = node.lattrib.get('description', '')
+        
+        self.current_component_type.add_event_port(EventPort(name, direction, description))
 
     def parse_exposure(self, node):
         """
@@ -966,12 +772,23 @@ class LEMSParser(Parser):
         being defined in the context of a component type.
         """
 
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Exposure names can only be defined in ' +
-                             'a component type')
+        if self.current_component_type == None:
+            self.raise_error('Exposures must be defined in a component type')
 
-        if 'name' in node.lattrib:
-            self.current_context.add_exposure(node.lattrib['name'])
+        try:
+            name = node.lattrib['name']
+        except:
+            self.raise_error('<Exposure> must specify a name')
+
+        try:
+            dimension = node.lattrib['dimension']
+        except:
+            self.raise_error("Exposure '{0}' must specify a dimension",
+                             name)
+
+        description = node.lattrib.get('description', '')
+
+        self.current_component_type.add_exposure(Exposure(name, dimension, description))
 
     def parse_fixed(self, node):
         """
@@ -979,24 +796,21 @@ class LEMSParser(Parser):
 
         @param node: Node containing the <Fixed> element
         @type node: xml.etree.Element
-
-        @raise ParseError: Raised when
         """
 
         try:
             parameter = node.lattrib['parameter']
         except:
-            self.raise_error('Parameter to be fixed must be specified')
+            self.raise_error('<Fixed> must specify a parameter to be fixed.')
 
         try:
             value = node.lattrib['value']
         except:
-            self.raise_error('Value to be fixed must be specified')
+            self.raise_error("Fixed paramter '{0}'must specify a value.", parameter)
 
-        if self.current_context.lookup_parameter(parameter) == None:
-            self.current_context.add_parameter(Parameter(
-                parameter, '__dimension_inherited__'))
-        self.current_context.lookup_parameter(parameter).fix_value(value)
+        description = node.lattrib.get('description', '')
+        
+        self.current_component_type.add_parameter(Parameter(parameter, value, description))
 
     def parse_foreach(self, node):
         """
@@ -1036,35 +850,14 @@ class LEMSParser(Parser):
 
         @param node: Node containing the <Include> element
         @type node: xml.etree.Element
+
+        @raise ParseError: Raised when the file to be included is not specified. 
         """
 
         if 'file' not in node.lattrib:
-            self.raise_error('Include file must be specified.')
+            self.raise_error('<Include> must specify the file to be included.')
 
-        path = self.base_path + '/' + node.lattrib['file']
-
-        root = None
-
-        if path not in self.included_files:
-            self.included_files.append(path)
-
-            try:
-                root = open_file(path, self.xslt_preprocessor_callback)
-            except:
-                for include_dir in self.include_dirs:
-                    path = include_dir + '/' + node.lattrib['file']
-                    if path not in self.included_files:
-                        try:
-                            root = open_file(path, self.xslt_preprocessor_callback)
-                        except:
-                            pass
-
-            if root == None:
-                raise ParseError("Unable to find included file '{0}'".format(node.lattrib['file']))
-
-            xmltolower(root)
-
-            self.parse_root(root)
+        self.model.include_file(node.lattrib['file'], self.include_dirs)
 
     def parse_kinetic_scheme(self, node):
         """
@@ -1074,53 +867,49 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if self.current_regime == None:
-            self.raise_error('<KineticScheme> must be defined inside a ' +
-                             'dynamics profile or regime')
-
         if 'name' in node.lattrib:
             name = node.lattrib['name']
         else:
-            self.raise_error('A name must be provided for <KineticScheme>')
+            self.raise_error('<KineticScheme> must specify a name.')
 
         if 'nodes' in node.lattrib:
             nodes = node.lattrib['nodes']
         else:
-            self.raise_error("The 'nodes' must be provided for <KineticScheme>")
+            self.raise_error("Kinetic scheme '{0}' must specify nodes.", name)
 
         if 'statevariable' in node.lattrib:
             state_variable = node.lattrib['statevariable']
         else:
-            self.raise_error("The 'stateVariable' must be provided for <KineticScheme>")
+            self.raise_error("Kinetic scheme '{0}' must specify a state variable.", name)
 
         if 'edges' in node.lattrib:
             edges = node.lattrib['edges']
         else:
-            self.raise_error("The 'edges' must be provided for <KineticScheme>")
+            self.raise_error("Kinetic scheme '{0}' must specify edges.", name)
 
         if 'edgesource' in node.lattrib:
             edge_source = node.lattrib['edgesource']
         else:
-            self.raise_error("The 'edgeSource' must be provided for <KineticScheme>")
+            self.raise_error("Kinetic scheme '{0}' must specify the edge source attribute.", name)
 
         if 'edgetarget' in node.lattrib:
             edge_target = node.lattrib['edgetarget']
         else:
-            self.raise_error("The 'edgeTarget' must be provided for <KineticScheme>")
+            self.raise_error("Kinetic scheme '{0}' must specify the edge target attribute.", name)
 
         if 'forwardrate' in node.lattrib:
             forward_rate = node.lattrib['forwardrate']
         else:
-            self.raise_error("The 'forwardRate' must be provided for <KineticScheme>")
+            self.raise_error("Kinetic scheme '{0}' must specify the forward rate attribute.", name)
 
         if 'reverserate' in node.lattrib:
             reverse_rate = node.lattrib['reverserate']
         else:
-            self.raise_error("The 'reverseRate' must be provided for <KineticScheme>")
+            self.raise_error("Kinetic scheme '{0}' must specify the reverse rate attribute", name)
 
-        self.current_regime.add_kinetic_scheme(name, nodes, state_variable,
-                                               edges, edge_source, edge_target,
-                                               forward_rate, reverse_rate)
+        self.current_regime.add_kinetic_scheme(KineticScheme(name, nodes, state_variable,
+                                                             edges, edge_source, edge_target,
+                                                             forward_rate, reverse_rate))
 
     def parse_link(self, node):
         """
@@ -1130,21 +919,19 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Link variables can only be defined in ' +
-                             'a component type')
-
         if 'name' in node.lattrib:
             name = node.lattrib['name']
         else:
-            self.raise_error('A name must be provided for <Link>')
+            self.raise_error('<Link> must specify a name')
 
         if 'type' in node.lattrib:
-            type = node.lattrib['type']
+            type_ = node.lattrib['type']
         else:
-            type = None
+            self.raise_error("Link '{0}' must specify a type", name)
 
-        self.current_context.add_link_var(name, type)
+        description = node.lattrib.get('description', '')
+
+        self.current_component_type.add_link(Link(name, type_, description))
 
     def parse_multi_instantiate(self, node):
         """
@@ -1154,22 +941,18 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if self.current_structure == None:
-            self.raise_error('Child instantiations can only be made within ' +
-                             'a structure definition')
-
         if 'component' in node.lattrib:
             component = node.lattrib['component']
         else:
-            self.raise_error('<MultiInstantiate> must specify a component '
-                             'reference')
+            self.raise_error('<MultiInstantiate> must specify a component reference.')
 
         if 'number' in node.lattrib:
             number = node.lattrib['number']
         else:
-            self.raise_error('<MultiInstantiate> must specify a number')
+            self.raise_error("Multi instantiation of '{0}' must specify a parameter specifying the number.",
+                             component)
 
-        self.current_structure.add_multi_child_def(component, number)
+        self.current_structure.add_multi_instantiate(MultiInstantiate(component, number))
 
     def parse_on_condition(self, node):
         """
@@ -1179,24 +962,19 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if self.current_regime == None:
-            self.raise_error('<OnCondition> must be defined inside a ' +
-                             'dynamics profile or regime')
-
-        if 'test' in node.lattrib:
+        try:
             test = node.lattrib['test']
-        else:
-            self.raise_error('Test expression required for <OnCondition>')
-
+        except:
+            self.raise_error('<OnCondition> must specify a test.')
+            
         event_handler = OnCondition(test)
 
-        self.current_event_handler = event_handler
         self.current_regime.add_event_handler(event_handler)
 
+        self.current_event_handler = event_handler
         self.process_nested_tags(node)
-
         self.current_event_handler = None
-
+        
     def parse_on_entry(self, node):
         """
         Parses <OnEntry>
@@ -1204,10 +982,6 @@ class LEMSParser(Parser):
         @param node: Node containing the <OnEntry> element
         @type node: xml.etree.Element
         """
-
-        if self.current_regime == None:
-            self.raise_error('<OnEntry> must be defined inside a ' +
-                             'dynamics profile or regime')
 
         event_handler = OnEntry()
 
@@ -1226,22 +1000,17 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if self.current_regime == None:
-            self.raise_error('<OnEvent> must be defined inside a ' +
-                             'dynamics profile or regime')
-
-        if 'port' in node.lattrib:
+        try:
             port = node.lattrib['port']
-        else:
-            self.raise_error('Port name required for <OnCondition>')
-
+        except:
+            self.raise_error('<OnEvent> must specify a port.')
+            
         event_handler = OnEvent(port)
 
-        self.current_event_handler = event_handler
         self.current_regime.add_event_handler(event_handler)
 
+        self.current_event_handler = event_handler
         self.process_nested_tags(node)
-
         self.current_event_handler = None
 
     def parse_on_start(self, node):
@@ -1252,17 +1021,12 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if self.current_regime == None:
-            self.raise_error('<OnEvent> must be defined inside a ' +
-                             'dynamics profile or regime')
-
         event_handler = OnStart()
 
-        self.current_event_handler = event_handler
         self.current_regime.add_event_handler(event_handler)
 
+        self.current_event_handler = event_handler
         self.process_nested_tags(node)
-
         self.current_event_handler = None
 
     def parse_parameter(self, node):
@@ -1277,23 +1041,24 @@ class LEMSParser(Parser):
         dimension.
         """
 
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
+        if self.current_component_type == None:
             self.raise_error('Parameters can only be defined in ' +
                              'a component type')
 
         try:
             name = node.lattrib['name']
         except:
-            self.raise_error('Parameter must have a name')
+            self.raise_error('<Parameter> must specify a name')
 
         try:
             dimension = node.lattrib['dimension']
         except:
-            self.raise_error('Parameter must have a dimension')
+            self.raise_error("Parameter '{0}' has no dimension",
+                             name)
 
         parameter = Parameter(name, dimension)
 
-        self.current_context.add_parameter(parameter)
+        self.current_component_type.add_parameter(parameter)
 
     def parse_path(self, node):
         """
@@ -1303,21 +1068,14 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Path variables can only be defined in ' +
-                             'a component type')
-
         if 'name' in node.lattrib:
             name = node.lattrib['name']
         else:
-            self.raise_error('A name must be provided for <Path>')
+            self.raise_error('<Path> must specify a name.')
 
-        if 'value' in node.lattrib:
-            value = node.lattrib['value']
-        else:
-            value = None
+        description = node.lattrib.get('description', '')
 
-        self.current_context.add_path_var(name, value)
+        self.current_component_type.add_path(Path(name, description))
 
     def parse_record(self, node):
         """
@@ -1334,21 +1092,12 @@ class LEMSParser(Parser):
         if 'quantity' in node.lattrib:
             quantity = node.lattrib['quantity']
         else:
-            self.raise_error('\'quantity\' attribute required for <Record>')
+            self.raise_error('<Record> must specify a quantity.')
 
-        if 'scale' in node.lattrib:
-            scale = node.lattrib['scale']
-        else:
-            scale = "1"
-            #self.raise_error('\'scale\' attribute required for <Record>')
+        scale = node.lattrib.get('scale', None)
+        color  = node.lattrib.get('color', None)
 
-        if 'color' in node.lattrib:
-            color  = node.lattrib['color']
-        else:
-            color = "#000000"
-            #self.raise_error('\'color\' attribute required for <Record>')
-
-        self.current_simulation.add_record(quantity, scale, color)
+        self.current_simulation.add_record(Record(quantity, scale, color))
 
     def parse_regime(self, node):
         """
@@ -1357,9 +1106,6 @@ class LEMSParser(Parser):
         @param node: Node containing the <Behaviour> element
         @type node: xml.etree.Element
         """
-
-        if self.current_dynamics_profile is None:
-            self.raise_error('Regime must be defined inside a dynamics profile')
 
         if 'name' in node.lattrib:
             name = node.lattrib['name']
@@ -1371,9 +1117,10 @@ class LEMSParser(Parser):
         else:
             initial = False
 
+        regime = Regime(name, initial)
         old_regime = self.current_regime
-        self.current_dynamics_profile.add_regime(name, initial)
-        self.current_regime = self.current_dynamics_profile.regimes[name]
+        self.current_dynamics.add_regime(regime)
+        self.current_regime = regime
 
         self.process_nested_tags(node)
 
@@ -1387,21 +1134,17 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Requirements can only be defined in ' +
-                             'a component type')
-
         if 'name' in node.lattrib:
             name = node.lattrib['name']
         else:
-            self.raise_error('Name required for <Requirement>')
+            self.raise_error('<Requirement> must specify a name')
 
         if 'dimension' in node.lattrib:
             dimension = node.lattrib['dimension']
         else:
-            self.raise_error('Dimension required for <Requirement>')
+            self.raise_error("Requirement \{0}' must specify a dimension.", name)
 
-        self.current_context.add_requirement(name, dimension)
+        self.current_component_type.add_requirement(Requirement(name, dimension))
 
     def parse_run(self, node):
         """
@@ -1410,10 +1153,6 @@ class LEMSParser(Parser):
         @param node: Node containing the <Run> element
         @type node: xml.etree.Element
         """
-
-        if self.current_simulation == None:
-            self.raise_error('<Run> must be defined inside a ' +
-                             'simulation specification')
 
         if 'component' in node.lattrib:
             component = node.lattrib['component']
@@ -1437,7 +1176,7 @@ class LEMSParser(Parser):
             self.raise_error('<Run> must specify a final value for the ' +
                              'state variable')
 
-        self.current_simulation.add_run(component, variable, increment, total)
+        self.current_simulation.add_run(Run(component, variable, increment, total))
 
     def parse_show(self, node):
         """
@@ -1457,16 +1196,11 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Simulation must be defined inside a ' +
-                             'component type')
-
-        old_simulation = self.current_simulation
-        self.current_simulation = self.current_context.simulation
+        self.current_simulation = self.current_component_type.simulation
 
         self.process_nested_tags(node)
 
-        self.current_simulation = old_simulation
+        self.current_simulation = None
 
     def parse_state_assignment(self, node):
         """
@@ -1476,21 +1210,16 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if self.current_event_handler == None:
-            self.raise_error('<StateAssignment> must be defined inside an ' +
-                             'event handler in a dynamics profile or regime')
-
         if 'variable' in node.lattrib:
             variable = node.lattrib['variable']
         else:
-            self.raise_error('\'variable\' attribute not provided for ' +
-                             '<StateAssignment>')
+            self.raise_error('<StateAssignment> must specify a variable name')
 
         if 'value' in node.lattrib:
             value = node.lattrib['value']
         else:
-            self.raise_error('\'value\' attribute not provided for ' +
-                             '<StateAssignment>')
+            self.raise_error("State assignment for '{0}' must specify a value.",
+                             variable)
 
         action = StateAssignment(variable, value)
 
@@ -1508,26 +1237,22 @@ class LEMSParser(Parser):
         being defined in the context of a component type.
         """
 
-        if self.current_regime == None:
-            self.raise_error('<StateVariable> must be defined inside a ' +
-                             'dynamics profile or regime')
-
         if 'name' in node.lattrib:
             name = node.lattrib['name']
         else:
-            self.raise_error('A state variable must have a name')
+            self.raise_error('<StateVariable> must specify a name')
+
+        if 'dimension' in node.lattrib:
+            dimension = node.lattrib['dimension']
+        else:
+            self.raise_error("State variable '{0}' must specify a dimension", name)
 
         if 'exposure' in node.lattrib:
             exposure = node.lattrib['exposure']
         else:
             exposure = None
 
-        if 'dimension' in node.lattrib:
-            dimension = node.lattrib['dimension']
-        else:
-            self.raise_error('A state variable must have a dimension')
-
-        self.current_regime.add_state_variable(name, exposure, dimension)
+        self.current_regime.add_state_variable(StateVariable(name, exposure, dimension))
 
     def parse_structure(self, node):
         """
@@ -1537,16 +1262,9 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Structure must be defined inside a ' +
-                             'component type')
-
-        old_structure = self.current_structure
-        self.current_structure = self.current_context.structure
-
+        self.current_structure = self.current_component_type.structure
         self.process_nested_tags(node)
-
-        self.current_structure = old_structure
+        self.current_structure = None
 
     def parse_target(self, node):
         """
@@ -1566,21 +1284,14 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Text variables can only be defined in ' +
-                             'a component type')
-
         if 'name' in node.lattrib:
             name = node.lattrib['name']
         else:
-            self.raise_error('A name must be provided for <Text>')
+            self.raise_error('<Text> must specify a name.')
 
-        if 'value' in node.lattrib:
-            value = node.lattrib['value']
-        else:
-            value = None
+        description = node.lattrib.get('description', '')
 
-        self.current_context.add_text_var(name, value)
+        self.current_component_type.add_text(Text(name, description))
 
     def parse_time_derivative(self, node):
         """
@@ -1589,31 +1300,22 @@ class LEMSParser(Parser):
         @param node: Node containing the <TimeDerivative> element
         @type node: xml.etree.Element
 
-        @raise ParseError: Raised when the time derivative is not
-        being defined in the context of a component type.
+        @raise ParseError: Raised when the time derivative does not hava a variable
+        name of a value.
         """
 
-        if self.current_regime == None:
-            self.raise_error('<TimeDerivative> must be defined inside a ' +
-                             'dynamics profile or regime')
-
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Time derivatives can only be defined in ' +
-                             'a component type')
-
         if 'variable' in node.lattrib:
-            name = node.lattrib['variable']
+            variable = node.lattrib['variable']
         else:
-            self.raise_error('The state variable being differentiated wrt ' +
-                             'time must be specified')
+            self.raise_error('<TimeDerivative> must specify a variable.')
 
         if 'value' in node.lattrib:
             value = node.lattrib['value']
         else:
-            self.raise_error('The time derivative expression must be ' +
-                             'provided')
+            self.raise_error("Time derivative for '{0}' must specify an expression.",
+                             variable)
 
-        self.current_regime.add_time_derivative(name, value)
+        self.current_regime.add_time_derivative(TimeDerivative(variable, value))
 
     def parse_transition(self, node):
         """
@@ -1623,22 +1325,10 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        """
-        Parses <Transition>
-
-        @param node: Node containing the <Transition> element
-        @type node: xml.etree.Element
-        """
-
-        if self.current_event_handler == None:
-            self.raise_error('<Transition> must be defined inside an ' +
-                             'event handler in a dynamics profile or regime')
-
         if 'regime' in node.lattrib:
             regime = node.lattrib['regime']
         else:
-            self.raise_error('\'regime\' attribute not provided for ' +
-                             '<Transition>')
+            self.raise_error('<Transition> mut specify a regime.')
 
         action = Transition(regime)
 
@@ -1668,7 +1358,12 @@ class LEMSParser(Parser):
         else:
             power = 0
 
-        self.model.add_unit(Unit(symbol, dimension, power))
+        if 'name' in node.lattrib:
+            name = node.lattrib['name']
+        else:
+            name = ''
+
+        self.model.add_unit(Unit(name, symbol, dimension, power))
 
     def parse_with(self, node):
         """
@@ -1678,69 +1373,16 @@ class LEMSParser(Parser):
         @type node: xml.etree.Element
         """
 
-        if self.current_structure == None:
-            self.raise_error('<With> can only be made within ' +
-                             'a structure definition')
-
         if 'instance' in node.lattrib:
-            target = node.lattrib['instance']
+            instance = node.lattrib['instance']
         else:
             self.raise_error('<With> must specify a reference to target'
                              'instance')
 
         if 'as' in node.lattrib:
-            name = node.lattrib['as']
+            as_ = node.lattrib['as']
         else:
             self.raise_error('<With> must specify a name for the '
                              'target instance')
 
-        self.current_structure.add_with(name, target)
-
-    def parse_root(self, node):
-        """
-        Parse the <lems> (root) element of a LEMS file
-
-        @param node: Node containing the <LEMS> element
-        @type node: xml.etree.Element
-        """
-
-        self.xml_root = node
-
-        if node.tag.lower() != 'lems' and node.tag.lower() not in self.alternate_root_element_tags:
-            print node.tag.lower(), self.alternate_root_element_tags, node.attrib['type']
-            self.raise_error('Not a LEMS file')
-
-        self.xml_node_stack = [node] + self.xml_node_stack
-        self.process_nested_tags(node)
-        self.xml_node_stack = self.xml_node_stack[1:]
-
-    def parse_file(self, filename):
-        """
-        Parse a LEMS file and generate a LEMS model
-
-        @param filename: Path to the LEMS file to be parsed
-        @type filename: string
-        """
-
-        root = open_file(filename, self.xslt_preprocessor_callback)
-        xmltolower(root)
-
-        self.included_files.append(filename)
-
-        self.base_path = os.path.dirname(filename)
-        if self.base_path == '':
-            self.base_path = '.'
-
-        context = Context('__root_context__', self.current_context)
-        if self.model.context == None:
-            self.model.context = context
-
-        self.push_context(context)
-
-        self.parse_root(root)
-
-        self.pop_context()
-
-
-    def parse_string(self, str):
-        pass
+        self.current_structure.add_with(With(instance, as_))

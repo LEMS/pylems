@@ -1,5 +1,5 @@
 """
-Component dynamics storage.
+Behavioral dynamics of component types.
 
 @author: Gautham Ganapathy
 @organization: LEMS (http://neuroml.org/lems/, https://github.com/organizations/LEMS)
@@ -7,692 +7,717 @@ Component dynamics storage.
 """
 
 from lems.base.base import LEMSBase
+from lems.base.map import Map
 from lems.base.errors import ModelError,ParseError
 from lems.parser.expr import ExprParser
 
-from lems.base.util import merge_dict
-
 class StateVariable(LEMSBase):
     """
-    Stores the definition of a state variable.
+    Store the specification of a state variable.
     """
 
-    def __init__(self, name, exposure, dimension):
+    def __init__(self, name, dimension, exposure = None):
         """
         Constructor.
 
-        @param name: Name (internal) of the state variable.
-        @type name: string
-
-        @param exposure: Name (external) of the state variable.
-        @type exposure: string
-
-        @param dimension: Dimension of the state variable.
-        @type dimension: string
+        See instance variable documentation for more info on parameters.
         """
 
         self.name = name
-        """ Internal name of the state variable. This is the name used to
-        refer to this variable inside the <Dynamics> element.
-        @type: string """
-
-        self.exposure = exposure
-        """ Exposure name of the state variable. This is the name used to
-        refer to this variable from other objects.
-        @type: string """
+        """ Name of the state variable.
+        @type: str """
 
         self.dimension = dimension
-        """ Dimension of this state variable.
-        @type: string """
+        """ Dimension of the state variable.
+        @type: str """
 
-class TimeDerivative(LEMSBase):
-    """
-    Stores the time derivative expression for a given state variable.
-    """
+        self.exposure = exposure
+        """ Exposure name for the state variable.
+        @type: str """
 
-    def __init__(self, variable, value):
+    def __str__(self):
+        return 'StateVariable name="{0}" dimension="{1}"'.format(self.name, self.dimension) +\
+          (' exposure="{0}"'.format(self.exposure) if self.exposure else '') 
+
+
+    def toxml(self):
         """
-        Constructor.
-
-        @param variable: Name of the state variable
-        @type variable: string
-
-        @param value: Time derivative expression of the given state variable.
-        @type value: string
+        Exports this object into a LEMS XML object
         """
 
-        self.variable = variable
-        """ State variable whose time derivative is stored in this object.
-        @type: string """
-
-        self.value = value
-        """ Time derivative expression for the state variable.
-        @type: string """
-
-        try:
-            self.expression_tree = ExprParser(value).parse()
-            """ Parse tree for the time derivative expression.
-            @type: lems.parser.expr.ExprNode """
-        except:
-            raise ParseError("Parse error when parsing value expression "
-                             "'{0}' for derived variable {1}".format(\
-                                 self.value,
-                                 self.variable))
+        return '<StateVariable name="{0}" dimension="{1}"'.format(self.name, self.dimension) +\
+          (' exposure="{0}"'.format(self.exposure) if self.exposure else '') +\
+          '/>'
 
 class DerivedVariable(LEMSBase):
     """
-    Stores the definition of a derived variable.
+    Store the specification of a derived variable.
     """
 
-    def __init__(self, name, exposure, dimension, value, select, reduce):
+    def __init__(self, name, **params):
         """
         Constructor.
 
-        @param name: Name (internal) of the derived variable.
-        @type name: string
-
-        @param exposure: Name (external) of the derived variable.
-        @type exposure: string
-
-        @param dimension: Dimension of the derived variable.
-        @type dimension: string
-
-        @param value: Value expression for the derived variable.
-        @type value: string
-
-        @param select: Target component selection for reduction operations.
-        @type select: string
-
-        @param reduce: Reduce operation.
-        @type reduce: string
+        See instance variable documentation for more info on parameters.
         """
 
         self.name = name
-        """ Internal name of the derived variable. This is the name used to
-        refer to this variable inside the <Dynamics> element.
-        @type: string """
+        """ Name of the derived variable.
+        @type: str """
 
-        self.exposure = exposure
-        """ Exposure name of the derived variable. This is the name used to
-        refer to this variable from other objects.
-        @type: string """
+        self.dimension = params['dimension'] if 'dimension' in params else None
+        """ Dimension of the derived variable or None if computed.
+        @type: str """
 
-        self.dimension = dimension
-        """ Dimension of this derived variable.
-        @type: string """
+        self.exposure = params['exposure'] if 'exposure' in params else None
+        """ Exposure name for the derived variable.
+        @type: str """
 
-        self.value = value
-        """ Expression used for computing the value of the derived variable.
-        @type: string """
+        self.select = params['select'] if 'select' in params else None
+        """ Selection path/expression for the derived variable.
+        @type: str """
 
-        self.select = select
-        """ Selected target object for the reduce operation.
-        @type: string """
+        self.value = params['value'] if 'value' in params else None
+        """ Value of the derived variable.
+        @type: str """
 
-        self.reduce = reduce
-        """ Reduce operation to be applied over the selected target.
-        @type: string """
+        self.reduce = params['reduce'] if 'reduce' in params else None
+        """ Reduce method for the derived variable.
+        @type: str """
 
-        if value != None:
-            try:
-                self.expression_tree = ExprParser(value).parse()
-                """ Parse tree for the time derivative expression.
-                @type: lems.parser.expr.ExprNode """
-            except:
-                raise ParseError("Parse error when parsing value expression "
-                                 "'{0}' for derived variable {1}".format(\
-                                     self.value,
-                                     self.name))
-        else:
-            self.expression_tree = None
+        self.required = params['required'] if 'required' in params else None
+        """ Requried or not.
+        @type: str """
 
-
-class EventHandler(LEMSBase):
-    """
-    Base class for event an handler.
-    """
-
-    ON_START = 1
-    ON_ENTRY = 2
-    ON_EVENT = 3
-    ON_CONDITION = 4
-
-    def __init__(self, type):
-        """
-        Constructor.
-
-        @param type: Type of event.
-        @type type: enum(EventHandler.ONSTART, EventHandler.ON_ENTRY,
-        EventHandler.ON_EVENT and EventHandler.ON_CONDITION)
-        """
-
-        self.type = type
-        """ Type of event.
-        @type: enum(EventHandler.ONSTART, EventHandler.ON_ENTRY,
-        EventHandler.ON_EVENT and EventHandler.ON_CONDITION) """
-
-        self.actions = []
-        "List of actions to be performed on the occurence of the event."
-
-    def add_action(self, action):
-        """
-        Adds an action to the list of actions.
-
-        @param action: Action to be performed.
-        @type action: lems.model.dynamics.Action
-        """
-
-        self.actions += [action]
-
-    def check_for_event(self):
-        """
-        Check for the event. If this function returns true, the corresponding
-        event actions will be executed.
-
-        @return: Check if the event has occurred.
-        @rtype: Boolean
-
-        @note: This function must be overridden. Maybe when building the
-        simulator?
-        """
-
-        return False
-
-class OnStart(EventHandler):
-    """
-    Stores the parameters of an <OnStart> statement.
-    """
-
-    def __init__(self):
-        """
-        Constructor.
-        """
-
-        EventHandler.__init__(self, EventHandler.ON_START)
-
-    def __str__(self):
-        """ Generates a string representation of this condition."""
-
-        return 'OnStart'
-
-class OnEntry(EventHandler):
-    """
-    Stores the parameters of an <OnEntry> statement.
-    """
-
-    def __init__(self):
-        """
-        Constructor.
-        """
-
-        EventHandler.__init__(self, EventHandler.ON_ENTRY)
-
-    def __str__(self):
-        """ Generates a string representation of this condition."""
-
-        return 'OnEntry'
-
-class OnEvent(EventHandler):
-    """
-    Stores the parameters of an <OnEvent> statement.
-    """
-
-    def __init__(self, port):
-        """
-        Constructor.
-
-        @param port: The name of the event port to listen on.
-        @type port: string
-        """
-
-        EventHandler.__init__(self, EventHandler.ON_EVENT)
-
-        self.port = port
-        """ The name of the event port to listen on.
-        @type: string """
-
-    def __str__(self):
-        """ Generates a string representation of this condition."""
-
-        return 'OnEvent: ' + self.port
-
-class OnCondition(EventHandler):
-    """
-    Event handler for a condition check.
-    """
-
-    def __init__(self, test):
-        """
-        Constructor.
-
-        @param test: Test expression.
-        @type test: string
-        """
-
-        EventHandler.__init__(self, EventHandler.ON_CONDITION)
-
-        self.test = test
-        """ Test expression.
-        @type: string """
-
-        self.expression_tree = ExprParser(test).parse()
-        """ Parse tree for the test expression.
+        self.expression_tree = None
+        """ Parse tree for the time derivative expression.
         @type: lems.parser.expr.ExprNode """
 
-    def __str__(self):
-        """ Generates a string representation of this condition."""
+        if self.value != None:
+            try:
+                self.expression_tree = ExprParser(self.value).parse()
+            except:
+                raise ParseError("Parse error when parsing value expression "
+                                 "'{0}' for derived variable {1}",
+                                 self.value, self.name)
 
-        return 'OnCondition: ' + self.test + ' | ' +\
-               str(self.expression_tree)
-
-class Action(LEMSBase):
-    """
-    Base class for an event action.
-    """
-
-    STATE_ASSIGNMENT = 1
-    EVENT_OUT = 2
-    TRANSITION = 3
-
-    def __init__(self, type):
+    def toxml(self):
         """
-        Constructor.
-
-        @param type: Type of action.
-        @type type: enum(Action.STATEASSIGNMENT, Action.EVENT_OUT)
+        Exports this object into a LEMS XML object
         """
 
-        self.type = type
-        """ Type of action.
-        @type: enum(Action.STATEASSIGNMENT, Action.EVENT_OUT) """
+        return '<DerivedVariable name="{0}"'.format(self.name) +\
+          (' dimension="{0}"'.format(self.dimension) if self.dimension else '') +\
+          (' exposure="{0}"'.format(self.exposure) if self.exposure else '') +\
+          (' select="{0}"'.format(self.select) if self.select else '') +\
+          (' value="{0}"'.format(self.value) if self.value else '') +\
+          (' reduce="{0}"'.format(self.reduce) if self.reduce else '') +\
+          (' required="{0}"'.format(self.required) if self.required else '') +\
+          '/>'
 
-class StateAssignment(Action):
+class TimeDerivative(LEMSBase):
     """
-    Stores a state assignment expression.
+    Store the specification of a time derivative specifcation.
     """
 
     def __init__(self, variable, value):
         """
         Constructor.
 
-        @param variable: Name of the state variable
-        @type variable: string
-
-        @param value: Assignment expression of the given state variable.
-        @type value: string
+        See instance variable documentation for more info on parameters.
         """
 
-        Action.__init__(self, Action.STATE_ASSIGNMENT)
-
         self.variable = variable
-        """ State variable whose assignment expression is stored in this
-        object.
-        @type: string """
+        """ Name of the variable for which the time derivative is being specified.
+        @type: str """
 
         self.value = value
-        """ Assignment expression for the state variable.
-        @type: string """
+        """ Derivative expression.
+        @type: str """
 
-        self.expression_tree = ExprParser(value).parse()
-        """ Parse tree for the assignment expression.
+        self.expression_tree = None
+        """ Parse tree for the time derivative expression.
+        @type: lems.parser.expr.ExprNode """
+        
+        try:
+            self.expression_tree = ExprParser(value).parse()
+        except:
+            raise ParseError("Parse error when parsing value expression "
+                             "'{0}' for state variable {1}",
+                             self.value, self.variable)
+        
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<TimeDerivative variable="{0}" value="{1}"/>'.format(self.variable, self.value)
+
+class Action(LEMSBase):
+    """
+    Base class for event handler actions.
+    """
+
+    pass
+
+class StateAssignment(Action):
+    """
+    State assignment specification.
+    """
+
+    def __init__(self, variable, value):
+        """
+        Constructor.
+
+        See instance variable documentation for more info on parameters.
+        """
+
+        Action.__init__(self)
+
+        self.variable = variable
+        """ Name of the variable for which the time derivative is being specified.
+        @type: str """
+
+        self.value = value
+        """ Derivative expression.
+        @type: str """
+
+        self.expression_tree = None
+        """ Parse tree for the time derivative expression.
         @type: lems.parser.expr.ExprNode """
 
-    def __str__(self):
-        """ Generates a string representation of this state assigment """
+        try:
+            self.expression_tree = ExprParser(value).parse()
+        except:
+            raise ParseError("Parse error when parsing state assignment "
+                             "value expression "
+                             "'{0}' for state variable {1}",
+                             self.value, self.variable)
 
-        return self.variable + ' <- ' + self.value + ' | ' + \
-               str(self.expression_tree)
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<StateAssignment variable="{0}" value="{1}"/>'.format(self.variable, self.value)
+
 
 class EventOut(Action):
     """
-    Stores an event out operation.
+    Event transmission specification.
     """
 
     def __init__(self, port):
         """
         Constructor.
-
-        @param port: Name of a port
-        @type port: string
+        
+        See instance variable documentation for more details on parameters.
         """
-
-        Action.__init__(self, Action.EVENT_OUT)
+        
+        Action.__init__(self)
 
         self.port = port
-        """ Name of the port to which the event needs to be sent.
-        @type: string """
+        """ Port on which the event comes in.
+        @type: str """
+        
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
 
-    def __str__(self):
-        """ Generates a string representation of this state assigment """
-
-        return 'Event -> ' + self.port
+        return '<EventOut port="{0}"/>'.format(self.port)
 
 class Transition(Action):
     """
-    Stores an regime transition operation.
+    Regime transition specification.
     """
 
     def __init__(self, regime):
         """
         Constructor.
-
-        @param regime: Name of a dynamics regime
-        @type regime: string
+        
+        See instance variable documentation for more details on parameters.
         """
-
-        Action.__init__(self, Action.TRANSITION)
+        
+        Action.__init__(self)
 
         self.regime = regime
-        """ Name of the dynamics regime to switch to.
-        @type: string """
+        """ Regime to transition to.
+        @type: str """
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<Transition regime="{0}"/>'.format(self.regime)
+
+class EventHandler(LEMSBase):
+    """
+    Base class for event handlers.
+    """
+
+    def __init__(self):
+        """
+        Constructor.
+        """
+
+        self.actions = list()
+        """ List of actions to be performed in response to this event.
+        @type: list(lems.model.dynamics.Action) """
 
     def __str__(self):
-        """ Generates a string representation of this state assigment """
+        istr = 'EventHandler...'
+        return istr
 
-        return 'Regime -> ' + self.regime
+    def add_action(self, action):
+        """
+        Adds an action to this event handler.
+
+        @param action: Action to be added.
+        @type: action: lems.model.dynamics.Action
+        """
+
+        self.actions.append(action)
+
+    def add(self, child):
+        """
+        Adds a typed child object to the event handler.
+
+        @param child: Child object to be added.
+        """
+
+        if isinstance(child, Action):
+            self.add_action(child)
+        else:
+            raise ModelError('Unsupported child element')
+        
+class OnStart(EventHandler):
+    """
+    Specification for event handler called upon initialization of the component.
+    """
+
+    def __init__(self):
+        """
+        Constructor.
+        """
+        
+        EventHandler.__init__(self)
+
+    def __str__(self):
+        istr = 'OnStart: ['
+        for action in self.actions:
+            istr += str(action)
+        istr += ']'
+        return str(istr)
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        xmlstr = '<OnStart'
+
+        chxmlstr = ''
+
+        for action in self.actions:
+            chxmlstr += action.toxml()
+
+        if chxmlstr:
+            xmlstr += '>' + chxmlstr + '</OnStart>'
+        else:
+            xmlstr += '/>'
+
+        return xmlstr
+
+class OnCondition(EventHandler):
+    """
+    Specification for event handler called upon satisfying a given condition.
+    """
+
+    def __init__(self, test):
+        """
+        Constructor.
+        
+        See instance variable documentation for more details on parameters.
+        """
+        
+        EventHandler.__init__(self)
+
+        self.test = test
+        """ Condition to be tested for.
+        @type: str """
+
+        try:
+            self.expression_tree = ExprParser(test).parse()
+        except:
+            raise ParseError("Parse error when parsing OnCondition test '{0}'",
+                             test)
+        
+    def __str__(self):
+        istr = 'OnCondition...'
+        return istr
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        xmlstr = '<OnCondition test="{0}"'.format(self.test)
+
+        chxmlstr = ''
+
+        for action in self.actions:
+            chxmlstr += action.toxml()
+
+        if chxmlstr:
+            xmlstr += '>' + chxmlstr + '</OnCondition>'
+        else:
+            xmlstr += '/>'
+
+        return xmlstr
+
+class OnEvent(EventHandler):
+    """
+    Specification for event handler called upon receiving en event sent by another component.
+    """
+
+    def __init__(self, port):
+        """
+        Constructor.
+        
+        See instance variable documentation for more details on parameters.
+        """
+        
+        EventHandler.__init__(self)
+
+        self.port = port
+        """ Port on which the event comes in.
+        @type: str """
+
+    def __str__(self):
+        istr = 'OnEvent...'
+        return istr
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        xmlstr = '<OnEvent port="{0}"'.format(self.port)
+
+        chxmlstr = ''
+
+        for action in self.actions:
+            chxmlstr += action.toxml()
+
+        if chxmlstr:
+            xmlstr += '>' + chxmlstr + '</OnEvent>'
+        else:
+            xmlstr += '/>'
+
+        return xmlstr
+
+class OnEntry(EventHandler):
+    """
+    Specification for event handler called upon entry into a new behavior regime.
+    """
+
+    def __init__(self):
+        """
+        Constructor.
+        """
+        
+        EventHandler.__init__(self)
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        xmlstr = '<OnEntry'
+
+        chxmlstr = ''
+
+        for action in self.actions:
+            chxmlstr += action.toxml()
+
+        if chxmlstr:
+            xmlstr += '>' + chxmlstr + '</OnEntry>'
+        else:
+            xmlstr += '/>'
+
+        return xmlstr
 
 class KineticScheme(LEMSBase):
     """
-    Stores a kinetic scheme specification.
+    Kinetic scheme specifications.
     """
 
-    def __init__(self, name, nodes, state_variable,
+    def __init__(self, name, nodes, state_variable, 
                  edges, edge_source, edge_target,
                  forward_rate, reverse_rate):
         """
         Constructor.
-
-        See instance variable documentation for info on parameters.
+        
+        See instance variable documentation for more details on parameters.
         """
 
         self.name = name
         """ Name of the kinetic scheme.
-        @type: string """
+        @type: str """
 
         self.nodes = nodes
-        """ Name of the children collection specifying the nodes
-        for the kinetic scheme.
-        @type: string """
+        """ Nodes to be used for the kinetic scheme.
+        @type: str """
 
         self.state_variable = state_variable
-        """ Name of the state variable in the KS node specifying
-        the value of the scheme.
-        @type: string """
+        """ State variable updated by the kinetic scheme.
+        @type: str """
 
         self.edges = edges
-        """ Name of the children collection specifying the edges
-        for the kinetic scheme.
-        @type: string """
+        """ Edges to be used for the kinetic scheme.
+        @type: str """
 
         self.edge_source = edge_source
-        """ Name of the link in a KS edge pointing to the source
-        node for the edge.
-        @type: string """
+        """ Attribute that defines the source of the transition.
+        @type: str """
 
         self.edge_target = edge_target
-        """ Name of the link in a KS edge pointing to the target
-        node for the edge.
-        @type: string """
+        """ Attribute that defines the target of the transition.
+        @type: str """
 
         self.forward_rate = forward_rate
-        """ Name of the state variable in a KS edge specifying
-        forward rate for the edge.
-        @type: string """
+        """ Name of the forward rate exposure.
+        @type: str """
 
         self.reverse_rate = reverse_rate
-        """ Name of the state variable in a KS edge specifying
-        reverse rate for the edge.
-        @type: string """
+        """ Name of the reverse rate exposure.
+        @type: str """
 
-class Regime(LEMSBase):
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return ('<KineticScheme '
+                'name="{0}" '
+                'nodes="{1}" '
+                'edges="{2}" '
+                'stateVariable="{3}" '
+                'edgeSource="{4}" '
+                'edgeTarget="{5}" '
+                'forwardRate="{6}" '
+                'reverseRate="{7}"/>').format(self.name,
+                                              self.nodes,
+                                              self.edges,
+                                              self.state_variable,
+                                              self.edge_source,
+                                              self.edge_target,
+                                              self.forward_rate,
+                                              self.reverse_rate)
+
+class Behavioral(LEMSBase):
     """
-    Store a dynamics regime for a component type.
+    Store dynamic behavioral attrubutes.
+    """
+
+    def __init__(self):
+        """
+        Constructor.
+        
+        See instance variable documentation for more details on parameters.
+        """
+
+        self.state_variables = Map()
+        """ Map of state variables in this behavior regime.
+        @type: dict(str -> lems.model.dynamics.StateVariable """
+
+        self.derived_variables = Map()
+        """ Map of derived variables in this behavior regime.
+        @type: dict(str -> lems.model.dynamics.DerivedVariable """
+
+        self.time_derivatives = Map()
+        """ Map of time derivatives in this behavior regime.
+        @type: dict(str -> lems.model.dynamics.TimeDerivative) """
+
+        self.event_handlers = list()
+        """ List of event handlers in this behaviour regime.
+        @type: list(lems.model.dynamics.EventHandler) """
+
+        self.kinetic_schemes = Map()
+        """ Map of kinetic schemes in this behavior regime.
+        @type: dict(str -> lems.model.dynamics.KineticScheme) """
+
+    def add_state_variable(self, sv):
+        """
+        Adds a state variable to this behavior regime.
+
+        @param sv: State variable.
+        @type sv: lems.model.dynamics.StateVariable
+        """
+
+        self.state_variables[sv.name] = sv
+        
+    def add_derived_variable(self, dv):
+        """
+        Adds a derived variable to this behavior regime.
+
+        @param dv: Derived variable.
+        @type dv: lems.model.dynamics.DerivedVariable
+        """
+
+        self.derived_variables[dv.name] = dv
+        
+    def add_time_derivative(self, td):
+        """
+        Adds a time derivative to this behavior regime.
+
+        @param td: Time derivative.
+        @type td: lems.model.dynamics.TimeDerivative
+        """
+
+        self.time_derivatives[td.variable] = td
+
+    def add_event_handler(self, eh):
+        """
+        Adds an event handler to this behavior regime.
+
+        @param eh: Event handler.
+        @type eh: lems.model.dynamics.EventHandler
+        """
+
+        self.event_handlers.append(eh)
+
+    def add_kinetic_scheme(self, ks):
+        """
+        Adds a kinetic scheme to this behavior regime.
+
+        @param td: Kinetic scheme.
+        @type td: lems.model.dynamics.KineticScheme
+        """
+
+        self.kinetic_schemes[ks.name] = ks
+
+    def add(self, child):
+        """
+        Adds a typed child object to the behavioral object.
+
+        @param child: Child object to be added.
+        """
+
+        if isinstance(child, StateVariable):
+            self.add_state_variable(child)
+        elif isinstance(child, DerivedVariable):
+            self.add_derived_variable(child)
+        elif isinstance(child, TimeDerivative):
+            self.add_time_derivative(child)
+        elif isinstance(child, EventHandler):
+            self.add_event_handler(child)
+        elif isinstance(child, KineticScheme):
+            self.add_kinetic_scheme(child)
+        else:
+            raise ModelError('Unsupported child element')
+        
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        chxmlstr = ''
+
+        for state_variable in self.state_variables:
+            chxmlstr += state_variable.toxml()
+
+        for derived_variable in self.derived_variables:
+            chxmlstr += derived_variable.toxml()
+
+        for time_derivative in self.time_derivatives:
+            chxmlstr += time_derivative.toxml()
+
+        for event_handler in self.event_handlers:
+            chxmlstr += event_handler.toxml()
+
+        for kinetic_scheme in self.kinetic_schemes:
+            chxmlstr += kinetic_scheme.toxml()
+
+        if isinstance(self, Dynamics):
+            for regime in self.regimes:
+                chxmlstr += regime.toxml()
+
+        if isinstance(self, Dynamics):
+            xmlprefix = 'Dynamics'
+            xmlsuffix = 'Dynamics'
+            xmlempty = ''
+        else:
+            xmlprefix = 'Regime name="{0}"'.format(self.name) +\
+              (' initial="true"' if self.initial else '')
+            xmlsuffix = 'Regime'
+            xmlempty = '<{0}/>',format(xmlprefix)
+
+        if chxmlstr:
+            xmlstr = '<{0}>'.format(xmlprefix) + chxmlstr + '</{0}>'.format(xmlsuffix)
+        else:
+            xmlstr = xmlempty
+
+        return xmlstr
+                
+class Regime(Behavioral):
+    """
+    Stores a single behavioral regime for a component type.
     """
 
     def __init__(self, name, initial = False):
         """
         Constructor.
-
-        @param name: Name of the dynamics regime.
-        @type name: string
-
-        @param initial: Is this the initial regime? Default: False
-        @type initial: Boolean
+        
+        See instance variable documentation for more details on parameters.
         """
 
+        Behavioral.__init__(self)
+        
         self.name = name
-        """ Name of this ehavior regime.
-        @type: string """
+        """ Name of this behavior regime.
+        @type: str """
 
         self.initial = initial
-        """ Is this an initial regime?
-        @type: Boolean """
-
-        self.state_variables = {}
-        """ Dictionary of state variables defined in this dynamics regime.
-        @type: dict(string -> lems.model.dynamics.StateVariable) """
-
-        self.time_derivatives = {}
-        """ Dictionary of time derivatives defined in this dynamics regime.
-        @type: dict(string -> lems.model.dynamics.TimeDerivative) """
-
-        self.derived_variables = {}
-        """ Dictionary of derived variables defined in this dynamics regime.
-        @type: dict(string -> lems.model.dynamics.DerivedVariable) """
-
-        self.event_handlers = []
-        """ List of event handlers defined in this dynamics regime.
-        @type: list(EventHandler) """
-
-        self.kinetic_schemes = {}
-        """ Dictionary of kinetic schemes defined in this dynamics regime.
-        @type: dict(string -> lems.model.dynamics.KineticScheme) """
-
-    def add_state_variable(self, name, exposure, dimension):
-        """
-        Adds a state variable to the dynamics current object.
-
-        @param name: Name of the state variable.
-        @type name: string
-
-        @param exposure: Exposed name of the state variable.
-        @type exposure: string
-
-        @param dimension: Dimension ofthe state variable.
-        @type dimension: string
-
-        @raise ModelError: Raised when the state variable is already
-        defined in this dynamics regime.
-        """
-
-        if name in self.state_variables:
-            raise ModelError('Duplicate state variable ' + name)
-
-        self.state_variables[name] = StateVariable(name, exposure, dimension)
-
-    def add_time_derivative(self, variable, value):
-        """
-        Adds a state variable to the dynamics current object.
-
-        @param variable: Name of the state variable whose time derivative
-        is being specified.
-        @type variable: string
-
-        @param value: Time derivative expression.
-        @type value: string
-
-        @raise ModelError: Raised when the time derivative for this state
-        variable is already defined in this dynamics regime.
-        """
-
-        if variable in self.time_derivatives:
-            raise ModelError('Duplicate time derivative for ' + variable)
-
-        self.time_derivatives[variable] = TimeDerivative(variable, value)
-
-    def add_derived_variable(self, name, exposure, dimension,
-                             value, select, reduce):
-        """
-        Adds a derived variable to the dynamics current object.
-
-        @param name: Name of the derived variable.
-        @type name: string
-
-        @param exposure: Exposed name of the derived variable.
-        @type exposure: string
-
-        @param dimension: Dimension ofthe derived variable.
-        @type dimension: string
-
-        @param value: Value expression for the derived variable.
-        @type value: string
-
-        @param select: Target component selection for reduction operations.
-        @type select: string
-
-        @param reduce: Reduce operation.
-        @type reduce: string
-
-        @raise ModelError: Raised when the derived variable is already
-        defined in this dynamics regime.
-        """
-
-        if name in self.derived_variables:
-            raise ModelError("Duplicate derived variable '{0}'".format(name))
-
-        if value == None and select == None and reduce == None:
-            raise ModelError("Derived variable '{0}' must specify either a "
-                             "value expression or a reduce "
-                             "operation".format(name))
-
-        if value != None and (select != None or reduce != None):
-            raise ModelError("Derived variable '{0}' cannot specify both "
-                             "value expressions or select/reduce "
-                             "operations".format(name))
-
-        if select == None and reduce != None:
-            raise ModelError("Reduce target not specified for derived "
-                             "variable '{0}'".format(name))
-
-        self.derived_variables[name] = DerivedVariable(name, exposure,
-                                                       dimension, value,
-                                                       select, reduce)
-
-    def add_event_handler(self, event_handler):
-        """
-        Adds a state variable to the dynamics current object.
-
-        @param event_handler: Event handler object.
-        @type event_handler: lems.model.dynamics.EventHandler
-        """
-
-        self.event_handlers += [event_handler]
-
-    def add_kinetic_scheme(self, name, nodes, state_variable,
-                           edges, edge_source, edge_target,
-                           forward_rate, reverse_rate):
-        """
-        Constructor.
-
-        See KineticScheme documentation for info on parameters.
-
-        @raise ModelError: Raised if a kinetic scheme with the same
-        name already exists in this behavior regime.
-        """
-
-        if name in self.kinetic_schemes:
-            raise ModelError('Duplicate kinetic scheme ' + name)
-
-        self.kinetic_schemes[name] = KineticScheme(name, nodes, state_variable,
-                                                   edges, edge_source, edge_target,
-                                                   forward_rate, reverse_rate)
-
-    def merge(self, regime):
-        """
-        Merge another regime into this one.
-
-        @param regime: Regime to be merged in.
-        @type regime: lems.model.dynamics.Regime
-        """
-
-        merge_dict(self.state_variables, regime)
-        merge_dict(self.time_derivatives, regime.time_derivatives)
-        merge_dict(self.derived_variables, regime.derived_variables)
-
-        self.event_handlers += regime.event_handlers
-
-        merge_dict(self.kinetic_schemes, regime.kinetic_schemes)
-
-
-class Dynamics(LEMSBase):
+        """ Initial behavior regime.
+        @type: bool """
+        
+class Dynamics(Behavioral):
     """
-    Stores the dynamic dynamics for a component type.
+    Stores behavioral dynamics specification for a component type.
     """
 
-    def __init__(self, name):
+    def __init__(self):
         """
         Constructor.
         """
+        
+        Behavioral.__init__(self)
 
-        self.name = name
-        """ Name of this dynamics profile.
-        @type: string """
+        self.regimes = Map()
+        """ Map of behavior regimes.
+        @type: Map(str -> lems.model.dynamics.Regime) """
 
-        self.default_regime = Regime('')
-        """ Default dynamics regime for this dynamics profile. This regime
-        is used to store dynamics object not defined within a named regime.
-        @type: lems.model.dynamics.Regime """
-
-        self.current_regime = None
-        """ Currently active dynamics regime for this dynamics profile.
-        @type: lems.model.dynamics.Regime """
-
-        self.regimes = {}
-        """ Dictionary of regimes in this dynamics profile.
-        @type: dict(string -> lems.model.dynamics.Regime) """
-
-    def add_regime(self, name, initial = False):
+    def add_regime(self, regime):
         """
-        Adds a dynamics regime to the list of regimes in this dynamics
-        profile.
+        Adds a behavior regime to this dynamics object.
 
-        @param name: Name of the dynamics regime.
-        @type name: string
+        @param regime: Behavior regime to be added.
+        @type regime: lems.model.dynamics.Regime """
 
-        @param initial: Is this the initial regime? Default: False
-        @type initial: Boolean
+        self.regimes[regime.name] = regime
+
+    def add(self, child):
+        """
+        Adds a typed child object to the dynamics object.
+
+        @param child: Child object to be added.
         """
 
-        if name in self.regimes:
-            raise ModelError('Duplicate regime ' + name)
-
-        if initial:
-            for rn in self.regimes:
-                if self.regimes[rn].initial:
-                    raise('Cannot define two initial regimes in the same' +
-                          ' dynamics profile')
-
-        regime = Regime(name, initial)
-        if initial:
-            self.current_regime = regime
-
-        self.regimes[name] = regime
-
-    def merge(self, dynamics):
-        """
-        Merge another dynamics profile into this one.
-
-        @param dynamics: Dynamics profile to be merged in.
-        @type dynamics: lems.model.dynamics.Dynamics
-        """
-
-        self.default_regime.merge(dynamics.default_regime)
-
-        if not self.current_regime:
-            self.current_regime = dynamics.current_regime
-
-        for rn in dynamics.regimes:
-            if rn in self.regimes:
-                self.regimes[rn].merge(dynamics.regimes[rn])
-            else:
-                self.regimes[rn] = dynamics.regimes[rn]
+        if isinstance(child, Regime):
+            self.add_regime(child)
+        else:
+            Behavioural.add(self, child)
+        

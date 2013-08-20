@@ -1,5 +1,5 @@
 """
-Component simulation-spec storage.
+Simulation specification classes.
 
 @author: Gautham Ganapathy
 @organization: LEMS (http://neuroml.org/lems/, https://github.com/organizations/LEMS)
@@ -8,8 +8,7 @@ Component simulation-spec storage.
 
 from lems.base.base import LEMSBase
 from lems.base.errors import ModelError
-
-from lems.base.util import merge_dict
+from lems.base.map import Map
 
 class Run(LEMSBase):
     """
@@ -27,27 +26,37 @@ class Run(LEMSBase):
         self.component = component
         """ Name of the target component to be run according to the
         specification given for an independent state variable.
-        @type: string """
+        @type: str """
 
         self.variable = variable
         """ The name of an independent state variable according to which the
         target component will be run.
-        @type: string """
+        @type: str """
 
         self.increment = increment
         """ Increment of the state variable on each step.
-        @type: string """
+        @type: str """
 
         self.total = total
         """ Final value of the state variable.
-        @type: string """
+        @type: str """
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<Run component="{0}" variable="{1}" increment="{2}" total="{3}"/>'.format(self.component,
+                                                                                          self.variable,
+                                                                                          self.increment,
+                                                                                          self.total)
 
 class Record(LEMSBase):
     """
     Stores the parameters of a <Record> statement.
     """
 
-    def __init__(self, quantity, scale, color):
+    def __init__(self, quantity, scale = None, color = None):
         """
         Constructor.
 
@@ -56,36 +65,36 @@ class Record(LEMSBase):
 
         self.quantity = quantity
         """ Path to the quantity to be recorded.
-        @type: string """
+        @type: str """
 
         self.scale = scale
         """ Text parameter to be used for scaling the quantity before display.
-        @type: string """
+        @type: str """
 
         self.color = color
         """ Text parameter to be used to specify the color for display.
-        @type: string """
+        @type: str """
 
-        self.numeric_scale = None
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<Record quantity="{0}" scale="{1}" color="{2}"/>'.format(self.quantity,
+                                                                         self.scale,
+                                                                         self.color)
 
 class DataOutput(LEMSBase):
     """
     Generic data output specification class.
     """
 
-    DISPLAY = 0
-    FILE = 1
-
-    def __init__(self, type_):
+    def __init__(self):
         """
         Constuctor.
-
-        See instance variable documentation for information on parameters.
         """
 
-        self.type = type_
-        """ Type of output.
-        @type: string """
+        pass
 
 class DataDisplay(DataOutput):
     """
@@ -99,7 +108,7 @@ class DataDisplay(DataOutput):
         See instance variable documentation for information on parameters.
         """
 
-        DataOutput.__init__(self, DataOutput.DISPLAY)
+        DataOutput.__init__(self)
 
         self.title = title
         """ Title for the display.
@@ -108,6 +117,14 @@ class DataDisplay(DataOutput):
         self.data_region = data_region
         """ Display position
         @type: string """
+        
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<DataDisplay title="{0}" dataRegion="{1}"/>'.format(self.title,
+                                                                    self.data_region)
 
 class DataWriter(DataOutput):
     """
@@ -121,7 +138,7 @@ class DataWriter(DataOutput):
         See instance variable documentation for information on parameters.
         """
 
-        DataOutput.__init__(self, DataOutput.FILE)
+        DataOutput.__init__(self)
         
         self.path = path
         """ Path to the quantity to be saved to file.
@@ -132,121 +149,122 @@ class DataWriter(DataOutput):
         saving this quantity
         @type: string """
 
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<DataWriter path="{0}" filePath="{1}"/>'.format(self.path,
+                                                                self.file_path)
+
 class Simulation(LEMSBase):
     """
-    Stores the simulation-related aspects for a component type.
+    Stores the simulation-related attributes of a component-type.
     """
 
     def __init__(self):
         """
         Constructor.
-
-        See instance variable documentation for information on parameters.
         """
 
-        self.runs = {}
-        """ Dictionary of runs in this dynamics regime.
-        @type: dict(string -> lems.model.simulation.Run) """
+        self.runs = Map()
+        """ Map of runs in this dynamics regime.
+        @type: Map(string -> lems.model.simulation.Run) """
 
-        self.records = {}
-        """ Dictionary of recorded variables in this dynamics regime.
-        @type: dict(string -> lems.model.simulation.Record """
+        self.records = Map()
+        """ Map of recorded variables in this dynamics regime.
+        @type: Map(string -> lems.model.simulation.Record """
 
-        self.data_displays = {}
-        """ Dictionary of data displays mapping titles to regions.
-        @type: dict(string -> string) """
+        self.data_displays = Map()
+        """ Map of data displays mapping titles to regions.
+        @type: Map(string -> string) """
 
-        self.data_writers = {}
-        """ Dictionary of recorded variables to data writers.
-        @type: dict(string -> lems.model.simulation.DataWriter """
+        self.data_writers = Map()
+        """ Map of recorded variables to data writers.
+        @type: Map(string -> lems.model.simulation.DataWriter """
 
-    def add_run(self, component, variable, increment, total):
+    def add_run(self, run):
         """
         Adds a runnable target component definition to the list of runnable
         components stored in this context.
 
-        @param component: Name of the target component to be run.
-        @type component: string
-
-        @param variable: Name of an indendent state variable used to control
-        the target component (usually time).
-        @type variable: string
-
-        @param increment: Value by which the control variable is to be
-        incremented in each step.
-        @type increment: string
-
-        @param total: End value for the control variable.
-        @type total: string
+        @param run: Run specification
+        @type run: lems.model.simulation.Run
         """
 
-        if component in self.runs:
-            raise ModelError('Duplicate run for ' + component)
+        self.runs[run.component] = run
 
-        self.runs[component] = Run(component, variable, increment, total)
-
-    def add_record(self, quantity, scale, color):
+    def add_record(self, record):
         """
-        Adds a record objects to the list of record objects in this dynamics
+        Adds a record object to the list of record objects in this dynamics
         regime.
 
-        @param quantity: Path to the quantity to be recorded
-        @type quantity: string
-
-        @param scale: Scale of the quantity to be recorded
-        @type scale: string
-
-        @param color: Color of the quantity to be recorded as a 24-bit hex
-        RGB value (#RRGGBB)
-        @type color: string
+        @param record: Record object to be added.
+        @type record: lems.model.simulation.Record
         """
 
-        if quantity in self.records:
-            raise ModelError('Duplicate record {0}'.format(quantity))
+        self.records[record.quantity] = record
 
-        self.records[quantity] = Record(quantity, scale, color)
-
-    def add_data_display(self, title, data_region):
+    def add_data_display(self, data_display):
         """
         Adds a data display to this simulation section.
 
-        @param title: Title of the display.
-        @type title: string
-
-        @param data_region: Region of the display used for the plot.
-        @type data_region: string
+        @param data_display: Data display to be added.
+        @type data_display: lems.model.simulation.DataDisplay
         """
 
-        if title in self.data_displays:
-            raise ModelError("Redefinition of data display '{0}'".format(title))
+        self.data_displays[data_display.title] = data_display
 
-        self.data_displays[title] = DataDisplay(title, data_region)
-
-    def add_data_writer(self, path, file_path):
+    def add_data_writer(self, data_writer):
         """
         Adds a data writer to this simulation section.
 
-        @param path: Path to the quantity.
-        @type path: string
-
-        @param file_path: Path to the file to be used for recording the quantity.
-        @type file_path: string
+        @param data_writer: Data writer to be added.
+        @type data_writer: lems.model.simulation.DataWriter
         """
 
-        if path in self.data_writers:
-            raise ModelError("Redefinition of data writer '{0}'".format(path))
+        self.data_writers[data_writer.path] = data_writer
 
-        self.data_writers[path] = DataWriter(path, file_path)
-
-    def merge(self, other):
+    def add(self, child):
         """
-        Merge another set of simulation specs into this one.
+        Adds a typed child object to the simulation spec.
 
-        @param other: Simulation specs
-        @type other: lems.model.simulation.Simulation
+        @param child: Child object to be added.
         """
 
-        merge_dict(self.runs, other.runs)
-        merge_dict(self.records, other.records)
-        merge_dict(self.data_displays, other.data_displays)
-        merge_dict(self.data_writers, other.data_writers)
+        if isinstance(child, Run):
+            self.add_run(child)
+        elif isinstance(child, Record):
+            self.add_record(child)
+        elif isinstance(child, DataDisplay):
+            self.add_data_display(child)
+        elif isinstance(child, DataWriter):
+            self.add_data_writer(child)
+        else:
+            raise ModelError('Unsupported child element')
+        
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        chxmlstr = ''
+
+        for run in self.runs:
+            chxmlstr += run.toxml()
+
+        for record in self.records:
+            chxmlstr += record.toxml()
+
+        for data_display in self.data_displays:
+            chxmlstr += data_display.toxml()
+
+        for data_writer in self.data_writers:
+            chxmlstr += data_writer.toxml()
+
+        if chxmlstr:
+            xmlstr = '<Simulation>' + chxmlstr + '</Simulation>'
+        else:
+            xmlstr = ''
+
+        return xmlstr

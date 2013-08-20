@@ -8,7 +8,7 @@ Expression parser
 
 from lems.base.base import LEMSBase
 from lems.base.errors import ParseError
-from lems.base.util import Stack
+from lems.base.stack import Stack
 
 class ExprNode(LEMSBase):
     """

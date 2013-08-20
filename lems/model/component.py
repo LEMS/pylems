@@ -1,136 +1,857 @@
 """
-Types for component types and components
+Parameter, ComponentType and Component class definitions.
 
 @author: Gautham Ganapathy
 @organization: LEMS (http://neuroml.org/lems/, https://github.com/organizations/LEMS)
 @contact: gautham@lisphacker.org
 """
 
-from lems.base.errors  import ModelError
-from lems.model.context import Context,Contextual
-from lems.model.parameter import Parameter
+from lems.base.base import LEMSBase
+from lems.base.map import Map
+from lems.base.errors import ModelError
 
-class ComponentType(Contextual):
+from lems.model.dynamics import Dynamics
+from lems.model.structure import Structure
+from lems.model.simulation import Simulation
+
+class Parameter(LEMSBase):
     """
-    Stores the specification of a user-defined component type.
+    Stores a parameter declaration.
+    """
+    
+    def __init__(self, name, dimension, description = ''):
+        """
+        Constructor.
+
+        See instance variable documentation for more details on parameters.
+        """
+        
+        self.name = name
+        """ Name of the parameter.
+        @type: str """
+         
+        self.dimension = dimension
+        """ Physical dimension of the parameter.
+        @type: str """
+
+        self.fixed = False
+        """ Whether the parameter has been fixed or not.
+        @type: bool """
+        
+        self.fixed_value = None
+        """ Value if fixed.
+        @type: str """
+
+        self.value = None
+        """ Value of the parameter.
+        @type: str """
+
+        self.numeric_value = None
+        """ Resolved numeric value.
+        @type: float """
+
+        self.description = description
+        """ Description of this parameter.
+        @type: str """
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<{0} name="{1}" dimension="{2}"'.format('Fixed' if self.fixed else 'Parameter', self.name, self.dimension) +\
+          (' description = "{0}"'.format(self.description) if self.description else '') +\
+          '/>'
+
+class Fixed(Parameter):
+    """
+    Stores a fixed parameter specification.
+    """
+    
+    def __init__(self, parameter, value, description = ''):
+        """
+        Constructor.
+
+        See instance variable documentation for more details on parameters.
+        """
+
+        Parameter.__init__(self, parameter, '__dimension_inherited__', description)
+        
+        self.fixed = True
+        self.fixed_value = value
+
+class Constant(LEMSBase):
+    """
+    Stores a constant specification.
+    """
+    
+    def __init__(self, name, value, dimension = None, description = ''):
+        """
+        Constructor.
+
+        See instance variable documentation for more details on parameters.
+        """
+        
+        self.name = name
+        """ Name of the constant.
+        @type: str """
+
+        self.value = value
+        """ Value of the constant.
+        @type: str """
+
+        self.dimension = dimension
+        """ Physical dimensions of the constant.
+        @type: str """
+
+        self.description = description
+        """ Description of the constant.
+        @type: str """
+
+        self.numeric_value = None
+        """ Numeric value of the constant.
+        @type: float """
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<Constant' +\
+          (' name = "{0}"'.format(self.name) if self.name else '') +\
+          (' value = "{0}"'.format(self.value) if self.value else '') +\
+          (' dimension = "{0}"'.format(self.dimension) if self.dimension else '') +\
+          (' description = "{0}"'.format(self.description) if self.description else '') +\
+          '/>'
+        
+
+class Exposure(LEMSBase):
+    """
+    Stores a exposure specification.
     """
 
-    def __init__(self, name, context, extends = None):
+    def __init__(self, name, dimension, description = ''):
         """
-        Constructor
+        Constructor.
 
-        @param name: Name of this component type.
-        @type name: string
+        See instance variable documentation for more details on parameters.
+        """
+        
+        self.name = name
+        """ Name of the exposure.
+        @type: str """
+         
+        self.dimension = dimension
+        """ Physical dimension of the exposure.
+        @type: str """
 
-        @param context: The context in which to create this component type.
-        @type context: lems.model.context.Context
+        self.description = description
+        """ Description of this exposure.
+        @type: str """
 
-        @param extends: Base component type extended by this type.
-        @type extends: string
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
         """
 
-        Contextual.__init__(self, name, context, Context.COMPONENT_TYPE)
+        return '<Exposure name="{0}" dimension="{1}"'.format(self.name, self.dimension) +\
+          (' description = "{0}"'.format(self.description) if self.description else '') +\
+          '/>'
+
+class Requirement(LEMSBase):
+    """
+    Stores a requirement specification.
+    """
+
+    def __init__(self, name, dimension):
+        """
+        Constructor.
+
+        See instance variable documentation for more details on parameters.
+        """
+        
+        self.name = name
+        """ Name of the requirement.
+        @type: str """
+         
+        self.dimension = dimension
+        """ Physical dimension of the requirement.
+        @type: str """
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<Requirement name="{0}" dimension="{1}"/>'.format(self.name, self.dimension)
+
+class Children(LEMSBase):
+    """
+    Stores children specification.
+    """
+    
+    def __init__(self, name, type_, multiple = False):
+        """
+        Constructor.
+
+        See instance variable documentation for more details on parameters.
+        """
+        
+        self.name = name
+        """ Name of the children.
+        @type: str """
+         
+        self.type = type_
+        """ Component type of the children.
+        @type: str """
+
+        self.multiple = multiple
+        """ Single child / multiple children.
+        @type: bool """
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<{2} name="{0}" type="{1}"/>'.format(self.name, self.type, 'Children' if self.multiple else 'Child')
+
+class Text(LEMSBase):
+    """
+    Stores a text entry specification.
+    """
+
+    def __init__(self, name, description = ''):
+        """
+        Constructor.
+
+        See instance variable documentation for more details on parameters.
+        """
+        
+        self.name = name
+        """ Name of the text entry.
+        @type: str """
+         
+        self.description = description
+        """ Description of the text entry.
+        @type: str """
+
+        self.value = None
+        """ Value of the text entry.
+        @type: str """
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<Text name="{0}"'.format(self.name) +\
+          (' description = "{0}"'.format(self.description) if self.description else '') +\
+          '/>'
+        
+class Link(LEMSBase):
+    """
+    Stores a link specification.
+    """
+
+    def __init__(self, name, type_, description = ''):
+        """
+        Constructor.
+
+        See instance variable documentation for more details on parameters.
+        """
+        
+        self.name = name
+        """ Name of the link entry.
+        @type: str """
+
+        self.type = type_
+        """ Type of the link.
+        @type: str """
+         
+        self.description = description
+        """ Description of the link.
+        @type: str """
+
+        self.value = None
+        """ Value of the link.
+        @type: str """
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<Link name="{0}" type="{1}"'.format(self.name, self.type) +\
+          (' description = "{0}"'.format(self.description) if self.description else '') +\
+          '/>'
+
+        
+class Path(LEMSBase):
+    """
+    Stores a path entry specification.
+    """
+
+    def __init__(self, name, description = ''):
+        """
+        Constructor.
+
+        See instance variable documentation for more details on parameters.
+        """
+        
+        self.name = name
+        """ Name of the path entry.
+        @type: str """
+         
+        self.description = description
+        """ Description of the path entry.
+        @type: str """
+
+        self.value = None
+        """ Value of the path entry.
+        @type: str """
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<Path name="{0}"'.format(self.name) +\
+          (' description = "{0}"'.format(self.description) if self.description else '') +\
+          '/>'
+        
+class EventPort(LEMSBase):
+    """
+    Stores an event port specification.
+    """
+
+    def __init__(self, name, direction, description = ''):
+        """
+        Constructor.
+
+        See instance variable documentation for more details on parameters.
+        """
+        
+        self.name = name
+        """ Name of the event port.
+        @type: str """
+
+        d = direction.lower()
+        if d != 'in' and d != 'out':
+            raise ModelError("Invalid direction '{0}' in event port '{1}'".format(direction, name))
+         
+        self.direction = direction
+        """ Direction - IN/OUT .
+        @type: str """
+
+        self.description = description
+        """ Description of the event port.
+        @type: str """
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<EventPort name="{0}" direction="{1}"'.format(self.name, self.direction.upper()) +\
+          (' description = "{0}"'.format(self.description) if self.description else '') +\
+          '/>'
+        
+class ComponentReference(LEMSBase):
+    """
+    Stores a component reference.
+    """
+
+    def __init__(self, name, type_):
+        """
+        Constructor.
+
+        See instance variable documentation for more details on parameters.
+        """
 
         self.name = name
-        """ Name of this component type.
-        @type: string """
+        """ Name of the component reference.
+        @type: str """
 
-        self.extends = extends
-        """ Base component type extended by this type.
-        @type: string """
+        self.type = type_
+        """ Type of the component reference.
+        @type: str """
+
+        self.referenced_component = None
+        """ Component being referenced.
+        @type: FatComponent """
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<ComponentReference name="{0}" type="{1}"/>'.format(self.name, self.type)
+        
+class Attachments(LEMSBase):
+    """
+    Stores an attachment type specification.
+    """
+
+    def __init__(self, name, type_, description = ''):
+        """
+        Constructor.
+
+        See instance variable documentation for more details on parameters.
+        """
+
+        self.name = name
+        """ Name of the attachment collection.
+        @type: str """
+
+        self.type = type_
+        """ Type of attachment.
+        @type: str """
+
+        self.description = description
+        """ Description about the attachment.
+        @type: str """
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<Attachments name="{0}" type="{1}"'.format(self.name, self.type) +\
+          (' description = "{0}"'.format(self.description) if self.description else '') +\
+          '/>'
+
+class Fat(LEMSBase):
+    """
+    Stores common elements for a component type / fat component.
+    """
+
+    def __init__(self):
+        """
+        Constructor.
+
+        See instance variable documentation for more details on parameters.
+        """
+        
+        self.parameters = Map()
+        """ Map of parameters in this component type.
+        @type: Map(str -> lems.model.component.Parameter) """
+
+        self.constants = Map()
+        """ Map of constants in this component type.
+        @type: Map(str -> lems.model.component.Constant) """
+
+        self.exposures = Map()
+        """ Map of exposures in this component type.
+        @type: Map(str -> lems.model.component.Exposure) """
+
+        self.requirements = Map()
+        """ Map of requirements.
+        @type: Map(str -> lems.model.component.Requirement) """
+
+        self.children = Map()
+        """ Map of children.
+        @type: Map(str -> lems.model.component.Children) """
+
+        self.texts = Map()
+        """ Map of text entries.
+        @type: Map(str -> lems.model.component.Text) """
+
+        self.links = Map()
+        """ Map of links.
+        @type: Map(str -> lems.model.component.Link) """
+
+        self.paths = Map()
+        """ Map of path entries.
+        @type: Map(str -> lems.model.component.Path) """
+
+        self.event_ports = Map()
+        """ Map of event ports.
+        @type: Map(str -> lems.model.component.EventPort """
+
+        self.component_references = Map()
+        """ Map of component references.
+        @type: Map(str -> lems.model.component.ComponentReference) """
+
+        self.attachments = Map()
+        """ Map of attachment type specifications.
+        @type: Map(str -> lems.model.component.Attachments) """
+
+        self.dynamics = Dynamics()
+        """ Behavioural dynamics object.
+        @type: lems.model.dynamics.Dynamics """
+
+        self.structure = Structure()
+        """ Structural properties object.
+        @type: lems.model.structure.Structure """
+
+        self.simulation = Simulation()
+        """ Simulation attributes.
+        @type: lems.model.simulation.Simulation """
 
         self.types = set()
-        """ List of compatible type (base types).
-        @type: set(string) """
+        """ Set of compatible component types.
+        @type: set(str) """
+        
+    def add_parameter(self, parameter):
+        """
+        Adds a paramter to this component type.
+
+        @param parameter: Parameter to be added.
+        @type parameter: lems.model.component.Parameter
+        """
+
+        self.parameters[parameter.name] = parameter
+
+    def add_constant(self, constant):
+        """
+        Adds a paramter to this component type.
+
+        @param constant: Constant to be added.
+        @type constant: lems.model.component.Constant
+        """
+
+        self.constants[constant.name] = constant
+
+    def add_exposure(self, exposure):
+        """
+        Adds a exposure to this component type.
+
+        @param exposure: Exposure to be added.
+        @type exposure: lems.model.component.Exposure
+        """
+
+        self.exposures[exposure.name] = exposure
+
+    def add_requirement(self, requirement):
+        """
+        Adds a requirement to this component type.
+
+        @param requirement: Requirement to be added.
+        @type requirement: lems.model.component.Requirement
+        """
+
+        self.requirements[requirement.name] = requirement
+
+    def add_children(self, children):
+        """
+        Adds children to this component type.
+
+        @param children: Children to be added.
+        @type children: lems.model.component.Children
+        """
+
+        self.children[children.name] = children
+
+    def add_text(self, text):
+        """
+        Adds a text to this component type.
+
+        @param text: Text to be added.
+        @type text: lems.model.component.Text
+        """
+
+        self.texts[text.name] = text
+
+    def add_link(self, link):
+        """
+        Adds a link to this component type.
+
+        @param link: Link to be added.
+        @type link: lems.model.component.Link
+        """
+
+        self.links[link.name] = link
+
+    def add_path(self, path):
+        """
+        Adds a path to this component type.
+
+        @param path: Path to be added.
+        @type path: lems.model.component.Path
+        """
+
+        self.paths[path.name] = path
+
+    def add_event_port(self, event_port):
+        """
+        Adds a event port to this component type.
+
+        @param event_port: Event port to be added.
+        @type event_port: lems.model.component.EventPort
+        """
+
+        self.event_ports[event_port.name] = event_port
+
+    def add_component_reference(self, component_reference):
+        """
+        Adds a component reference to this component type.
+
+        @param component_reference: Component reference to be added.
+        @type component_reference: lems.model.component.ComponentReference
+        """
+
+        self.component_references[component_reference.name] = component_reference
+
+    def add_attachments(self, attachments):
+        """
+        Adds an attachments type specification to this component type.
+
+        @param attachments: Attachments specification to be added.
+        @type attachments: lems.model.component.Attachments
+        """
+
+        self.attachments[attachments.name] = attachments
+
+    def add(self, child):
+        """
+        Adds a typed child object to the component type.
+
+        @param child: Child object to be added.
+        """
+
+        if isinstance(child, Parameter):
+            self.add_parameter(child)
+        elif isinstance(child, Constant):
+            self.add_constant(child)
+        elif isinstance(child, Exposure):
+            self.add_exposure(child)
+        elif isinstance(child, Requirement):
+            self.add_requirement(child)
+        elif isinstance(child, Children):
+            self.add_children(child)
+        elif isinstance(child, Text):
+            self.add_text(child)
+        elif isinstance(child, Link):
+            self.add_link(child)
+        elif isinstance(child, Path):
+            self.add_path(child)
+        elif isinstance(child, EventPort):
+            self.add_event_port(child)
+        elif isinstance(child, ComponentReference):
+            self.add_component_reference(child)
+        elif isinstance(child, Attachments):
+            self.add_attachments(child)
+        else:
+            raise ModelError('Unsupported child element')
+
+class ComponentType(Fat):
+    """
+    Stores a component type declaration.
+    """
+
+    def __init__(self, name, description = '', extends = None):
+        """
+        Constructor.
+
+        See instance variable documentation for more details on parameters.
+        """
+
+        Fat.__init__(self)
+    
+        self.name = name
+        """ Name of the component type.
+        @type: str """
+         
+        self.extends = extends
+        """ Base component type.
+        @type: str """
+
+        self.description = description
+        """ Description of this component type.
+        @type: str """
 
         self.types.add(name)
-        if extends:
-            self.types.add(extends)
 
-    def fix_parameter(self, parameter_name, value_string, model):
+    def __str__():
+        print('ComponentType, name: {0}'.format(self.name))
+        
+    def toxml(self):
         """
-        Fixes the value of a parameter to the specified value.
-
-        @param parameter_name: Name of the parameter to be fixed.
-        @type parameter_name: string
-
-        @param value_string: Value to which the parameter needs to be fixed to.
-        For example, "30mV" or "45 kg"
-        @type string
-
-        @param model: Model object storing the current model. (Needed to find
-        the dimension for the specified symbol)
-        @type model: lems.model.model.Model
-
-        @attention: Having to pass the model in as a parameter is a temporary
-        hack. This should fixed at some point of time, once PyLEMS is able to
-        run a few example files.
-
-        @raise ModelError: Raised when the parameter does not exist in this
-        component type.
+        Exports this object into a LEMS XML object
         """
 
-        parameter = self.lookup_parameter(parameter_name)
-        if parameter == None:
-            raise ModelError('Parameter ' + value_string +
-                             ' not present in ' + self.name)
+        xmlstr = '<ComponentType name="{0}"'.format(self.name) +\
+          (' extends="{0}"'.format(self.extends) if self.extends else '') +\
+          (' description="{0}"'.format(self.description) if self.description else '')
 
-        parameter.fix_value(value_string, model)
+        chxmlstr = ''
 
-class Component(Contextual):
+        for parameter in self.parameters:
+            chxmlstr += parameter.toxml()
+
+        for constant in self.constants:
+            chxmlstr += constant.toxml()
+            
+        for children in self.children:
+            chxmlstr += children.toxml()
+            
+        for link in self.links:
+            chxmlstr += link.toxml()
+            
+        for component_reference in self.component_references:
+            chxmlstr += component_reference.toxml()
+            
+        for attachment in self.attachments:
+            chxmlstr += attachment.toxml()
+            
+        for event_port in self.event_ports:
+            chxmlstr += event_port.toxml()
+            
+        for exposure in self.exposures:
+            chxmlstr += exposure.toxml()
+            
+        for requirement in self.requirements:
+            chxmlstr += requirement.toxml()
+            
+        for path in self.paths:
+            chxmlstr += path.toxml()
+            
+        for text in self.texts:
+            chxmlstr += text.toxml()
+
+        chxmlstr += self.dynamics.toxml()
+        chxmlstr += self.structure.toxml()
+        chxmlstr += self.simulation.toxml()
+            
+        if chxmlstr:
+            xmlstr += '>' + chxmlstr + '</ComponentType>'
+        else:
+            xmlstr += '/>'
+
+        return xmlstr
+
+class Component(LEMSBase):
     """
-    Stores a single instance of a given component type.
+    Stores a component instantiation.
     """
 
-    def __init__(self, id_, context, component_type, extends = None):
+    def __init__(self, id_, type_):
         """
-        Constructor
+        Constructor.
 
-        @param id_: Id/name for this component.
-        @type id_: string
-
-        @param context: The context in which to create this component.
-        @type context: lems.model.context.Context
-
-        @param component_type: Type of component.
-        @type component_type: string
-
-        @param extends: Component extended by this one.
-        @param extends: string
-
-        @note: Atleast one of component_type or extends must be valid.
+        See instance variable documentation for more details on parameters.
         """
-
-        Contextual.__init__(self, id_, context, Context.COMPONENT)
 
         self.id = id_
-        """ Globally unique name for this component.
-        @type: string """
+        """ ID of the component.
+        @type: str """
 
-        self.component_type = component_type
-        """ Type of component.
-        @type: string """
+        self.type = type_
+        """ Type of the component.
+        @type: str """
 
-        if component_type == None and extends == None:
-            raise ModelError('Component definition requires a component type ' +
-                             'or a base component')
+        self.parameters = dict()
+        """ Dictionary of parameter values.
+        @type: str """
 
-        self.extends = extends
-        """ Name of component extended by this component..
-        @type: string """
+        self.children = list()
+        """ List of child components.
+        @type: list(lems.model.component.Component) """
 
-    def is_type(self, component_type):
+
+    def __str__(self):
+        return 'Component, id: {0}, type: {1}, parameters: {2}'.format(self.id, self.type, self.parameters)
+
+    def set_parameter(self, parameter, value):
         """
-        Check if this component is an instance of the specified component
-        type.
+        Set a parameter.
 
-        @param component_type: Name of the component type.
-        @type component_type: string
+        @param parameter: Parameter to be set.
+        @type parameter: str
 
-        @return: Returns True if this component is of the specified type,
-        otherwide False
-        @rtype: Boolean
+        @param value: Value to be set to.
+        @type value: str
         """
 
-        typeobj = self.context.lookup_component_type(self.component_type)
-        return component_type in typeobj.types
+        self.parameters[parameter] = value
+
+    def add_child(self, child):
+        """
+        Adds a child component.
+
+        @param child: Child component to be added.
+        @type child: lems.model.component.Component
+        """
+
+        self.children.append(child)
+
+    def add(self, child):
+        """
+        Adds a typed child object to the component.
+
+        @param child: Child object to be added.
+        """
+
+        if isinstance(child, Component):
+            self.add_child(child)
+        else:
+            raise ModelError('Unsupported child element')
+        
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        xmlstr = '<Component id="{0}" type="{1}"'.format(self.id, self.type)
+
+        for (k, v) in self.parameters.items():
+            xmlstr += ' {0}="{1}"'.format(k, v)
+
+        if self.children:
+            xmlstr += '>'
+            for child in self.children:
+                xmlstr += child.toxml()
+            xmlstr += '</Component>'
+        else:
+            xmlstr += '/>'
+
+        return xmlstr
+
+class FatComponent(Fat):
+    """
+    Stores a resolved component.
+    """
+
+    def __init__(self, id_, type_):
+        """
+        Constructor.
+
+        See instance variable documentation for more details on parameters.
+        """
+
+        Fat.__init__(self)
+
+        self.id = id_
+        """ ID of the component.
+        @type: str """
+
+        self.type = type_
+        """ Type of the component.
+        @type: str """
+
+        self.child_components = list()
+        """ List of child components.
+        @type: lems.model.component.FatComponent """
+
+    def add_child_component(self, child_component):
+        """
+        Adds a child component to this fat component.
+
+        @param child_component: Child component to be added.
+        @type child_component: lems.model.component.FatComponent
+        """
+
+        self.child_components.append(child_component)
+
+    def add(self, child):
+        """
+        Adds a typed child object to the component type.
+
+        @param child: Child object to be added.
+        """
+
+        if isinstance(child, FatComponent):
+            self.add_child_component(child)
+        else:
+            Fat.add(self, child)

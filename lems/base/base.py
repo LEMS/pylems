@@ -1,5 +1,5 @@
 """
-LEMS base class.
+PyLEMS base class.
 
 @author: Gautham Ganapathy
 @organization: LEMS (http://neuroml.org/lems/, https://github.com/organizations/LEMS)
@@ -9,5 +9,12 @@ LEMS base class.
 import copy
 
 class LEMSBase(object):
+    """
+    Base object for PyLEMS.
+    """
+
     def copy(self):
         return copy.deepcopy(self)
+
+    def toxml(self):
+        return ''

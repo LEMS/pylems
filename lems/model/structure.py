@@ -1,5 +1,5 @@
 """
-Component structure storage.
+Structural properties of component types.
 
 @author: Gautham Ganapathy
 @organization: LEMS (http://neuroml.org/lems/, https://github.com/organizations/LEMS)
@@ -7,13 +7,164 @@ Component structure storage.
 """
 
 from lems.base.base import LEMSBase
+from lems.base.map import Map
 from lems.base.errors import ModelError
 
-from lems.base.util import merge_dict
+class With(LEMSBase):
+    """
+    Stores a with-as statement.
+    """
 
+    def __init__(self, instance, as_):
+        """
+        Constructor.
+        
+        See instance variable documentation for more details on parameters.
+        """
+
+        self.instance = instance
+        """ Instance to be referenced.
+        @type: str """
+
+        self.as_ = as_
+        """ Alternative name.
+        @type: str """
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<With instance="{0}" as="{1}"/>'.format(self.instance, self.as_)
+
+class EventConnection(LEMSBase):
+    """
+    Stores an event connection specification.
+    """
+
+    def __init__(self, from_, to, 
+                 source_port, target_port,
+                 receiver, receiver_container):
+        """
+        Constructor.
+        
+        See instance variable documentation for more details on parameters.
+        """
+
+        self.from_ = from_
+        """ Name of the source component for event.
+        @type: str """
+
+        self.to = to
+        """ Name of the target component for the event.
+        @type: str """
+
+        self.source_port = source_port
+        """ Source port name.
+        @type: str """
+
+        self.target_port = target_port
+        """ Target port name.
+        @type: str """
+
+        self.receiver = receiver
+        """ Name of the proxy receiver component attached to the target component that actually receiving the event.
+        @type: str """
+
+        self.receiver_container = receiver_container
+        """ Name of the child component grouping to add the receiver to.
+        @type: str """
+
+    def __eq__(self, o):
+        return (self.from_ == o.from_ and self.to == o.to and
+                self.source_port == o.source_port and self.target_port == o.target_port)
+
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<EventConnection' +\
+          (' from="{0}"'.format(self.from_) if self.from_ else '') +\
+          (' to="{0}"'.format(self.to) if self.to else '') +\
+          (' sourcePort="{0}"'.format(self.source_port) if self.source_port else '') +\
+          (' targetPort="{0}"'.format(self.target_port) if self.target_port else '') +\
+          (' receiver="{0}"'.format(self.receiver) if self.receiver else '') +\
+          (' receiverContainer="{0}"'.format(self.receiver_container) if self.receiver_container else '') +\
+          '/>'
+
+class ChildInstance(LEMSBase):
+    """
+    Stores a child instantiation specification.
+    """
+
+    def __init__(self, component, referenced_component = None):
+        """
+        Constructor.
+        
+        See instance variable documentation for more details on parameters.
+        """
+
+        self.component = component
+        """ Name of the component reference to be used for instantiation.
+        @type: str """
+
+        self.referenced_component = referenced_component
+        """ Target component being referenced after resolution.
+        @type: lems.model.component.FatComponent """
+        
+    def __eq__(self, o):
+        return self.component == o.component
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<ChildInstance component="{0}"/>'.format(self.component)
+
+class MultiInstantiate(LEMSBase):
+    """
+    Stores a child multi-instantiation specification.
+    """
+
+    def __init__(self, component, number):
+        """
+        Constructor.
+        
+        See instance variable documentation for more details on parameters.
+        """
+
+        self.component = component
+        """ Name of the component reference to be used for instantiation.
+        @type: str """
+
+        self.number = number
+        """ Name of the paramter specifying the number of times the component 
+        reference is to be instantiated.
+        @type: str"""
+        
+    def __eq__(self, o):
+        return self.component == o.component and self.number == o.number
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<MultiInstantiate component="{0}" number="{1}"/>'.format(self.component, self.number)
+
+class ForEach(LEMSBase):
+    """
+    ForEach specification.
+    """
+
+    pass
+        
 class Structure(LEMSBase):
     """
-    Stores the structural characteristics for a component type.
+    Stores structural properties of a component type.
     """
 
     def __init__(self):
@@ -21,259 +172,122 @@ class Structure(LEMSBase):
         Constructor.
         """
 
-        self.event_connections = []
-        """ List of event connections b/w components. The from and to
-        attributes are described as component:port
-        @type: list(lems.base.structure.EventConnection) """
+        self.withs = Map()
+        """ Map of With statements.
+        @type: Map(str -> lems.model.structure.With) """
 
-        self.single_child_defs = []
-        """ List of single-child instantiation definitions.
-        @type: list(string) """
+        self.event_connections = list()
+        """ List of event connections.
+        @type: list(lems.model.structure.EventConnection) """
 
-        self.multi_child_defs = {}
-        """ List of multi-child instantiation definitions.
-        @type: dict(string -> string) """
+        self.child_instances = list()
+        """ List of child instantations.
+        @type: list(lems.model.structure.ChildInstance) """
 
-        self.foreach = []
-        """ List of foreach declarations.
-        @type: lems.model.structure.ForEach """
+        self.multi_instantiates = list()
+        """ List of child multi-instantiations.
+        @type: list(lems.model.structure.MultiInstantiate) """
 
-        self.foreach_mappings = {}
-        """ Accumulated name->target mappings for nested ForEach constructs.
-        @type: dict(string -> string) """
+        self.for_each = list()
+        """ List of for each specs.
+        @type: list(lems.model.structure.ForEach) """
 
-        self.with_mappings = {}
-        """ With mappings for With specifications.
-        @type: dict(string -> string) """
-
-    def add_event_connection(self, source_path, target_path,
-                 source_port = '', target_port = '',
-                 receiver = '', receiver_container = ''):
+    def add_with(self, with_):
         """
-        Adds an event connection to the structure.
+        Adds a with-as specification to the structure.
 
-        @param source_path: Name (or mapped name) of the path variable
-        pointing to the source component.
-        @type source_path: string
-
-        @param target_path: Name (or mapped name) of the path variable
-        pointing to the target component.
-        @type target_path: string
-
-        @param source_port: Port name for the source component. Can be left empty if
-        there is only one output port defined in the component.
-        @type source_port: string
-
-        @param target_port: Port name for the target component. Can be left empty if
-        there is only one input port defined in the component.
-        @type target_port: string
-
-        @param receiver: Name of a component reference pointing to a component
-        acting as a receiver for the event.
-        @type receiver: string
-
-        @param receiver_container: TODO
-        @type receiver_container: string
+        @param with_: With-as specification.
+        @type with_: lems.model.structure.With
         """
 
-        self.event_connections.append(EventConnection(source_path, target_path,
-                                                      source_port, target_port,
-                                                      receiver, receiver_container))
-
-    def add_single_child_def(self, component):
+        self.withs[with_.as_] = with_
+        
+    def add_event_connection(self, ec):
         """
-        Adds a single-child instantiation definition to this component type.
+        Adds an event conenction to the structure.
 
-        @param component: Name of component reference used as template for
-        instantiating the child.
-        @type component: string
+        @param ec: Event connection.
+        @type ec: lems.model.structure.EventConnection
         """
 
-        if component in self.single_child_defs:
-            raise ModelError("Duplicate child instantiation = '{0}'".format(\
-                component))
-        self.single_child_defs.append(component)
+        self.event_connections.append(ec)
 
-    def add_multi_child_def(self, component, number):
+    def add_child_instance(self, ci):
         """
-        Adds a single-child instantiation definition to this component type.
+        Adds a child instantiation specification.
 
-        @param component: Name of component reference used as template for
-        instantiating the child.
-        @type component: string
-
-        @param number: Number of objects to be instantiated.
-        @type number: string
+        @param ci: Child instantiation specification.
+        @type ci: lems.model.structure.ChildInstance
         """
 
-        if component in self.single_child_defs:
-            raise ModelError("Duplicate child multiinstantiation = "
-                             "'{0}'".format(component))
+        self.child_instances.append(ci)
 
-        if self.multi_child_defs != {}:
-            raise ModelError("Only one multi-instantiation is permitted "
-                             "per component type - '{0}'".format(component))
-
-        self.multi_child_defs[component] = number
-
-    def add_foreach(self, name, target):
+    def add_multi_instantiate(self, mi):
         """
-        Adds a foreach structure nesting.
+        Adds a child multi-instantiation specification.
 
-        @param name: Name used to refer to the enumerated target references.
-        @type name: string
-
-        @param target: Path to thetarget references.
-        @type target: string
+        @param mi: Child multi-instantiation specification.
+        @type mi: lems.model.structure.MultiInstantiate
         """
 
-        foreach = ForEach(name, target)
+        self.multi_instantiates.append(mi)
 
-        for n in self.foreach_mappings:
-            t = self.foreach_mappings[n]
-            foreach.foreach_mappings[n] = t
-
-        foreach.foreach_mappings[name] = target
-
-        self.foreach.append(foreach)
-        return foreach
-
-    def add_with(self, name, target):
+    def add_for_each(self, fe):
         """
-        Adds a with structure nesting.
+        Adds a for-each specification.
 
-        @param name: Name used to refer to the enumerated target references.
-        @type name: string
-
-        @param target: Path to thetarget references.
-        @type target: string
+        @param fe: For-each specification.
+        @type fe: lems.model.structure.ForEach
         """
 
-        if name in self.with_mappings:
-            raise ModelError("Duplicate <With> specification for "
-                             "'{0}'".format(component))
+        self.for_each.append(fe)
 
-        self.with_mappings[name] = target
-
-    def merge(self, other):
+    def add(self, child):
         """
-        Merge another set of structural characteristics
-        into this one.
+        Adds a typed child object to the structure object.
 
-        @param other: structural characteristics
-        @type other: lems.model.structure.Structure
+        @param child: Child object to be added.
         """
 
-        self.event_connections += other.event_connections
-        self.single_child_defs += other.single_child_defs
+        if isinstance(child, With):
+            self.add_with(child)
+        elif isinstance(child, EventConnection):
+            self.add_event_connection(child)
+        elif isinstance(child, ChildInstance):
+            self.add_child_instance(child)
+        elif isinstance(child, MultiInstantiate):
+            self.add_multi_instantiate(child)
+        elif isinstance(child, ForEach):
+            self.add_for_each(child)
+        else:
+            raise ModelError('Unsupported child element')
 
-        merge_dict(self.multi_child_defs, other.multi_child_defs)
-
-        self.foreach += other.foreach
-        merge_dict(self.foreach_mappings, other.foreach_mappings)
-        merge_dict(self.with_mappings, other.with_mappings)
-
-
-    def merge_from_type(self, other, context):
+    def toxml(self):
         """
-        Merge another set of structural characteristics
-        into this one.
-
-        @param other: Structural characteristics
-        @type other: lems.model.structure.Structure
-
-        @param context: Context of the component
-        @type context: lems.model.context.Context
+        Exports this object into a LEMS XML object
         """
 
-        self.event_connections += other.event_connections
+        chxmlstr = ''
 
-        for c in other.single_child_defs:
-            if c in context.component_refs:
-                self.add_single_child_def(c)
-            else:
-                raise ModelError("Trying to multi-instantiate from an "
-                                 "invalid component reference '{0}'".format(\
-                        c))
+        for with_ in self.withs:
+            chxmlstr += with_.toxml()
 
-        for c in other.multi_child_defs:
-            n = other.multi_child_defs[c]
-            if c in context.component_refs:
-                component = context.component_refs[c]
-                if n in context.parameters:
-                    number = int(context.parameters[n].numeric_value)
-                    self.add_multi_child_def(component, number)
-                else:
-                    raise ModelError("Trying to multi-instantiate using an "
-                                     "invalid number parameter '{0}'".\
-                                     format(n))
-            else:
-                raise ModelError("Trying to multi-instantiate from an "
-                                 "invalid component reference '{0}'".format(\
-                                     c))
+        for event_connection in self.event_connections:
+            chxmlstr += event_connection.toxml()
 
-        self.foreach += other.foreach
-        merge_dict(self.foreach_mappings, other.foreach_mappings)
-        merge_dict(self.with_mappings, other.with_mappings)
+        for child_instance in self.child_instances:
+            chxmlstr += child_instance.toxml()
 
+        for multi_instantiate in self.multi_instantiates:
+            chxmlstr += multi_instantiate.toxml()
 
-class ForEach(Structure):
-    """
-    Stores a <ForEach> statement and containing structures.
-    """
+        for for_each in self.for_each:
+            chxmlstr += for_each.toxml()
 
-    def __init__(self, name, target):
-        """
-        Constructor.
-        """
+        if chxmlstr:
+            xmlstr = '<Structure>' + chxmlstr + '</Structure>'
+        else:
+            xmlstr = ''
 
-        Structure.__init__(self)
+        return xmlstr
 
-        self.name = name
-        """ Name used to refer to the enumerated target instances.
-        @type: string """
-
-        self.target = target
-        """ Path to the target instances.
-        @type: string """
-
-class EventConnection(LEMSBase):
-    """
-    Stores specification of an event connection.
-    """
-
-    def __init__(self, source_path, target_path,
-                 source_port, target_port,
-                 receiver, receiver_container):
-        """
-        Constructor.
-        """
-
-        self.source_path = source_path
-        """ Name (or mapped name) of the path variable
-        pointing to the source component.
-        @type: string """
-
-        self.target_path = target_path
-        """ Name (or mapped name) of the path variable
-        pointing to the target component.
-        @type: string """
-
-        self.source_port = source_port
-        """ Port name for the source component. Can be left empty if
-        there is only one output port defined in the component.
-        @type: string """
-
-        self. target_port = target_port
-        """ Port name for the target component. Can be left empty if
-        there is only one input port defined in the component.
-        @type: string """
-
-        self.receiver = receiver
-        """ Name of a component reference pointing to a component
-        acting as a receiver for the event.
-        @type: string """
-
-        self.receiver_container = receiver_container
-        """ TODO
-        @type: string """

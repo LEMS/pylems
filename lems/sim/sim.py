@@ -108,7 +108,7 @@ class Simulation(LEMSBase):
 
     def dump_runnable(self, runnable, prefix = ''):
         r = runnable
-        print('{0}{1} ({2})'.format(prefix, r.id, r.component.component_type))
+        print('{0}{1} ({2})'.format(prefix, r.id, r.component.type), r)
         #if r.instance_variables:
         #    print('{0} Instance variables'.format(prefix))
         #    for vn in r.instance_variables:
@@ -121,7 +121,6 @@ class Simulation(LEMSBase):
             for c in r.array:
                 self.dump_runnable(c, prefix + '  ')
         if r.uchildren:
-            print('{0} Children'.format(prefix))
             for cn in r.uchildren:
                 self.dump_runnable(r.uchildren[cn], prefix + '  ')
 

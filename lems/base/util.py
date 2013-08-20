@@ -1,106 +1,45 @@
 """
-Utility classes.
+PyLEMS utility classes / functions
 
 @author: Gautham Ganapathy
 @organization: LEMS (http://neuroml.org/lems/, https://github.com/organizations/LEMS)
 @contact: gautham@lisphacker.org
 """
 
-from lems.base.base import LEMSBase
-from lems.base.errors import StackError
+id_counter = 0
 
-import copy
+def make_id():
+    global id_counter
+    id_counter = id_counter + 1
+    return '__id_{0}__'.format(id_counter)
 
-class Stack(LEMSBase):
+def merge_maps(m, base):
     """
-    Basic stack implementation.
+    Merge in undefined map entries from given map.
+    
+    @param m: Map to be merged into.
+    @type m: lems.util.Map
+    
+    @param base: Map to be merged into.
+    @type base: lems.util.Map
     """
+    
+    for k in base.keys():
+        if k not in m:
+            m[k] = base[k]
 
-    def __init__(self):
-        """
-        Constructor.
-        """
+def merge_lists(l, base):
+    """
+    Merge in undefined list entries from given list.
+    
+    @param l: List to be merged into.
+    @type l: list
+    
+    @param base: List to be merged into.
+    @type base: list
+    """
+    
+    for i in base:
+        if i not in l:
+            l.append(i)
 
-        self.stack = []
-        """ List used to store the stack contents.
-        @type: list """
-
-    def push(self, val):
-        """
-        Pushed a value onto the stack.
-
-        @param val: Value to be pushed.
-        @type val: *
-        """
-
-        self.stack = [val] + self.stack
-
-    def pop(self):
-        """
-        Pops a value off the top of the stack.
-
-        @return: Value popped off the stack.
-        @rtype: *
-
-        @raise StackError: Raised when there is a stack underflow.
-        """
-
-        if self.stack:
-            val = self.stack[0]
-            self.stack = self.stack[1:]
-            return val
-        else:
-            raise StackError('Stack empty')
-
-    def top(self):
-        """
-        Returns the value off the top of the stack without popping.
-
-        @return: Value on the top of the stack.
-        @rtype: *
-
-        @raise StackError: Raised when there is a stack underflow.
-        """
-
-        if self.stack:
-            return self.stack[0]
-        else:
-            raise StackError('Stack empty')
-
-    def is_empty(self):
-        """
-        Checks if the stack is empty.
-
-        @return: True if the stack is empty, otherwise False.
-        @rtype: Boolean
-        """
-
-        return self.stack == []
-
-    def __str__(self):
-        """
-        Returns a string representation of the stack.
-
-        @note: This assumes that the stack contents are capable of generating
-        string representations.
-        """
-
-        if len(self.stack) == 0:
-            s = '[]'
-        else:
-            s = '[' + str(self.stack[0])
-            for i in range(1, len(self.stack)):
-                s += ', ' + str(self.stack[i])
-            s += ']'
-        return s
-
-def merge_dict(new, old):
-    for key in old:
-        if key not in new:
-            new[key] = copy.deepcopy(old[key])
-
-def merge_ordered_dict(new, neworder, old, oldorder):
-    for key in oldorder:
-        if key not in neworder:
-            new[key] = copy.deepcopy(old[key])
-            neworder = [key] + neworder
