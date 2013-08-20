@@ -6,7 +6,7 @@
 ## Installation
 Check the code out of github.
 
-    % git@github.com:LEMS/pylems.git
+    % git clone git@github.com:LEMS/pylems.git
 
 This will create a directory named pylems. Add this directory to your PATH and PYTHONPATH variables.
 
@@ -27,7 +27,7 @@ pylems [\<options\>] \<LEMS/NeuroML file\>
   - Export C files (Interface? Steve Marsh’s project?)
 - Assertions.
 - XPath implementation.
-- Implement Runnables from Component types instead of expanded typeless Components (Required for efficient C/C++ code generation)
+- Implement Runnables from Component types instead of expanded typeless Components (Required for efficient C/C++ code generation, but conflicts with flattening)
 
 
 
