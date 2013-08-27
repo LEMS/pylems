@@ -14,6 +14,7 @@ from lems.base.util import make_id, merge_maps, merge_lists
 from lems.base.map import Map
 from lems.parser.LEMS import LEMSFileParser
 from lems.base.errors import ModelError
+from lems.base.errors import SimBuildError
 
 from lems.model.fundamental import Dimension,Unit
 from lems.model.component import Constant,ComponentType,Component,FatComponent
@@ -23,6 +24,7 @@ from lems.model.structure import With,EventConnection,ChildInstance,MultiInstant
 import xml.dom.minidom as minidom
 
 import re
+import exceptions
 
 class Model(LEMSBase):
     """
@@ -536,26 +538,23 @@ class Model(LEMSBase):
         @type dimension: str
         """
 
-        bitsnum = re.split('[_a-zA-Z]+', value_str)
-        bitsalpha = re.split('[^_a-zA-Z]+', value_str)
+        n = None
+        i = len(value_str)
+        while n is None:
+            try:
+                part = value_str[0:i]
+                #print "Trying: "+ part
+                nn = float(part)
+                n = nn
+                s = value_str[i:]
+            except exceptions.ValueError:
+                i = i-1
 
-        n = float(bitsnum[0].strip())
-        bitsnum = bitsnum[1:]
-        bitsalpha = bitsalpha[1:]
-        s = ''
-
-        l = max(len(bitsnum), len(bitsalpha))
-        for i in range(l):
-            if i < len(bitsalpha):
-                s += bitsalpha[i].strip()
-            if i < len(bitsnum):
-                s += bitsnum[i].strip()
-        
-        #number = float(re.split('[_a-zA-Z]+', parameter.value)[0].strip())
-        #sym = re.split('[^_a-zA-Z]+', parameter.value)[1].strip()
 
         number = n
         sym = s
+
+        #print "<%s> <%s>"%( number, sym)
 
         numeric_value = None
 
@@ -564,7 +563,6 @@ class Model(LEMSBase):
         else:
             if sym in self.units:
                 unit = self.units[sym]
-
                 if dimension:
                     if dimension != unit.dimension and dimension != '*':
                         raise SimBuildError("Unit symbol '{0}' cannot "

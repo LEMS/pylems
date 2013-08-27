@@ -33,33 +33,8 @@ def inequality_to_condition(ineq):
     expr =  ''.join([s.group(1).strip(), ' - (',  s.group(3).strip() + ')'])
     sign = comp2sign(s.group(2))
     return (expr, sign)
-    
 
-model = Model()
-
-
-try:
-    lems_file = sys.argv[1] 
-except:
-    lems_file = '../NeuroML2/NeuroML2CoreTypes/LEMS_NML2_Ex9_FN.xml'
-
-print('Importing LEMS file from: %s'%lems_file)
-model.import_from_file(lems_file)
-
-target = model.targets[0]
-
-sim_comp = model.components[target]
-
-target_net = sim_comp.parameters['target']
-
-net_comp = model.components[target_net]
-
-for child in net_comp.children:
-
-    if child.type == 'population':
-
-        comp =  model.components[child.parameters['component']]
-
+def export_component(comp):
         comp_type = model.component_types[comp.type]
 
         som = {}
@@ -82,6 +57,8 @@ for child in net_comp.children:
         for dv  in dyn.derived_variables:
             if dv.value is not None:
                 dvs[dv.name] = dv.value
+            else:
+                dvs[dv.name] = "0"
 
         som['state_functions']=dvs
 
@@ -143,5 +120,42 @@ for child in net_comp.children:
         som_file.close()
 
         print(open(som_file_name,'r').read())
+
+        print "Written to "+som_file_name
+    
+
+model = Model()
+
+
+try:
+    lems_file = sys.argv[1] 
+except:
+    lems_file = '../NeuroML2/NeuroML2CoreTypes/LEMS_NML2_Ex9_FN.xml'
+
+print('Importing LEMS file from: %s'%lems_file)
+model.import_from_file(lems_file)
+
+target = model.targets[0]
+
+sim_comp = model.components[target]
+
+target_net = sim_comp.parameters['target']
+
+target_comp = model.components[target_net]
+
+if target_comp.type == 'network':
+
+    for child in target_comp.children:
+
+        if child.type == 'population':
+
+            comp =  model.components[child.parameters['component']]
+
+            export_component(comp)
+else:
+    export_component(target_comp)
+    
+
+
 
 
