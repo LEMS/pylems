@@ -109,14 +109,16 @@ class Simulation(LEMSBase):
     def dump_runnable(self, runnable, prefix = ''):
         r = runnable
         print('{0}{1} ({2})'.format(prefix, r.id, r.component.type), r)
-        #if r.instance_variables:
-        #    print('{0} Instance variables'.format(prefix))
-        #    for vn in r.instance_variables:
-        #        print('{0}  {1} = {2}'.format(prefix, vn, r.__dict__[vn]))
-        #if r.derived_variables:
-        #    print('{0} Derived variables'.format(prefix))
-        #    for vn in r.derived_variables:
-        #        print('{0}  {1} = {2}'.format(prefix, vn, r.__dict__[vn]))
+        verbose = False
+        if verbose:
+            if r.instance_variables:
+                print('{0} Instance variables'.format(prefix))
+                for vn in r.instance_variables:
+                    print('{0}  {1} = {2}'.format(prefix, vn, r.__dict__[vn]))
+            if r.derived_variables:
+                print('{0} Derived variables'.format(prefix))
+                for vn in r.derived_variables:
+                    print('{0}  {1} = {2}'.format(prefix, vn, r.__dict__[vn]))
         if r.array:
             for c in r.array:
                 self.dump_runnable(c, prefix + '  ')

@@ -108,6 +108,9 @@ class SimulationBuilder(LEMSBase):
         for parameter in component.parameters:
             runnable.add_instance_variable(parameter.name, parameter.numeric_value)
 
+        for constant in component.constants:
+            runnable.add_instance_variable(constant.name, constant.numeric_value)
+
         for text in component.texts:
             runnable.add_text_variable(text.name, text.value)
             

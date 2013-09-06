@@ -311,6 +311,7 @@ class Model(LEMSBase):
         """
 
         merge_maps(ct.parameters, base_ct.parameters)
+        merge_maps(ct.derived_parameters, base_ct.derived_parameters)
         merge_maps(ct.constants, base_ct.constants)
         merge_maps(ct.exposures, base_ct.exposures)
         merge_maps(ct.requirements, base_ct.requirements)
@@ -369,6 +370,12 @@ class Model(LEMSBase):
                 raise ModelError("Parameter '{0}' not initialized for component '{1}'",
                                  parameter.name, c.id)
 
+        ### Resolve derived_parameters
+        for derived_parameter in ct.derived_parameters:
+            derived_parameter2 = derived_parameter.copy()
+            #derived_parameter2.numeric_value = self.get_numeric_value(constant2.value, constant2.dimension)
+            fc.add(derived_parameter2)
+            
         ### Resolve constants
         for constant in ct.constants:
             constant2 = constant.copy()

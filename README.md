@@ -11,7 +11,7 @@ Check the code out of github.
 This will create a directory named pylems. Add this directory to your PATH and PYTHONPATH variables.
 
 ## Usage
-pylems [\<options\>] \<LEMS/NeuroML file\>
+pylems [\<options\>] \<LEMS file\>
 
 ### Options
 - -I/-include \<path\> - Adds a directory to the model file include search path
@@ -21,7 +21,7 @@ pylems [\<options\>] \<LEMS/NeuroML file\>
 - Implement flattening
 - Decouple events from runnables
 - Perform dimension-checking on expressions.
-- Simple LEMS API for creating, reading and writing LEMS model files.
+- Simple LEMS API for creating, reading and writing LEMS model files (DONE)
 - Implement LEMS API over lems.model.* (NeuroML API?)
   - Interface with libNeuroML and Pyramidal to export Neuron MOD files
   - Export C files (Interface? Steve Marsh’s project?)
@@ -33,10 +33,10 @@ pylems [\<options\>] \<LEMS/NeuroML file\>
 
 ## Examples
 
-### NeuroML examples
-- Example 0 -- Working
-- Example 1 -- Not working (Working on this)
-- Example 2 -- Not tested
+### *NeuroML* examples (from https://github.com/NeuroML/NeuroML2/tree/master/NeuroML2CoreTypes)
+- Example 0 -- Not working
+- Example 1 -- Not working
+- Example 2 -- Working
 - Example 3 -- Not tested
 - Example 4 -- Not tested
 - Example 5 -- Not tested
