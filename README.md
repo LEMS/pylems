@@ -35,22 +35,25 @@ pylems [\<options\>] \<LEMS file\>
 ## Examples
 
 ### *NeuroML* examples (from https://github.com/NeuroML/NeuroML2/tree/master/NeuroML2CoreTypes)
-- Example 0 -- Not working
-- Example 1 -- Not working
-- Example 2 -- Working
-- Example 3 -- Not tested
-- Example 4 -- Not tested
-- Example 5 -- Not tested
-- Example 6 -- Not tested
-- Example 7 -- Not tested
-- Example 8 -- Not tested
-- Example 9 -- Not tested
-- Example 10 -- Not tested
+
+- Example 0 --  Not working
+- Example 1 --  Runs but incorrect behaviour
+- Example 2 --  Working
+- Example 3 --  Not tested
+- Example 4 --  Not tested
+- Example 5 --  Not tested
+- Example 6 --  Not tested
+- Example 7 --  Not tested
+- Example 8 --  Not tested
+- Example 9 --  Working
+- Example 10 -- Runs but incorrect behaviour
 - Example 11 -- Not tested
 - Example 12 -- Not tested
 - Example 13 -- Not tested
 - Example 14 -- Not tested
 - Example 15 -- Not tested
+- Example 16 -- Not tested
+- Example 17 -- Runs but incorrect behaviour
       
 ## LEMS elements that do not work
 - XPath based parameters - DerivedParameter, PathParameter
