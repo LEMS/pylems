@@ -10,5 +10,5 @@ install:
   - "pip install lxml"
 
 script:  
-  - cd ./neuroml/test && nosetests 
+  - cd ./lems/test && nosetests 
 
