@@ -1,6 +1,8 @@
-# PyLEMS - A [LEMS](http://neuroml.org/lems/)/[NeuroML2](http://neuroml.org/neuroml2.php) simulator written in Python
+# PyLEMS 
 
-##
+###A [LEMS](http://neuroml.org/lems/)/[NeuroML2](http://neuroml.org/neuroml2.php) simulator written in Python
+
+
 *Note: PyLEMS is currently in the process of major refactoring.*
 
 ## Installation
@@ -30,7 +32,6 @@ pylems [\<options\>] \<LEMS file\>
 - Implement Runnables from Component types instead of expanded typeless Components (Required for efficient C/C++ code generation, but conflicts with flattening)
 
 
-
 ## Examples
 
 ### *NeuroML* examples (from https://github.com/NeuroML/NeuroML2/tree/master/NeuroML2CoreTypes)
@@ -54,3 +55,11 @@ pylems [\<options\>] \<LEMS file\>
 ## LEMS elements that do not work
 - XPath based parameters - DerivedParameter, PathParameter
 - Assertions
+
+## Travis integration
+
+pylems is integrated with the the [Travis Continuous Integration service](http://travis-ci.org/).
+
+[![Build Status](https://travis-ci.org/LEMS/pylems.png?branch=master)](https://travis-ci.org/LEMS/pylems)
+
+
