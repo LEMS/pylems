@@ -24,14 +24,15 @@ from lems.model.structure import With,EventConnection,ChildInstance,MultiInstant
 import xml.dom.minidom as minidom
 
 import re
-import exceptions
 
 class Model(LEMSBase):
     """
     Stores a model.
     """
-    target_lems_version = '0.7.1'
-    schema_location = 'https://raw.github.com/LEMS/LEMS/master/Schemas/LEMS/LEMS_v%s.xsd'%target_lems_version
+    target_lems_version = '0.7.2'
+    branch = 'development'
+    schema_location = 'https://raw.github.com/LEMS/LEMS/{0}/Schemas/LEMS/LEMS_v{1}.xsd'.format(branch, target_lems_version)
+    #schema_location = '/home/padraig/LEMS/Schemas/LEMS/LEMS_v%s.xsd'%target_lems_version
     
     def __init__(self):
         """
@@ -283,7 +284,7 @@ class Model(LEMSBase):
         @param component_type: Component type to be resolved.
         @type component_type: lems.model.component.ComponentType
         """
-
+        ##print("Resolving: %s"%component_type)
         # Resolve component type from base types if present.
         if component_type.extends:
             try:
@@ -323,6 +324,7 @@ class Model(LEMSBase):
 
         merge_maps(ct.dynamics.state_variables, base_ct.dynamics.state_variables)
         merge_maps(ct.dynamics.derived_variables, base_ct.dynamics.derived_variables)
+        merge_maps(ct.dynamics.conditional_derived_variables, base_ct.dynamics.conditional_derived_variables)
         merge_maps(ct.dynamics.time_derivatives, base_ct.dynamics.time_derivatives)
         merge_lists(ct.dynamics.event_handlers, base_ct.dynamics.event_handlers)
         merge_maps(ct.dynamics.kinetic_schemes, base_ct.dynamics.kinetic_schemes)
@@ -346,10 +348,11 @@ class Model(LEMSBase):
         @return: Fattened component.
         @rtype: lems.model.component.FatComponent
         """
-
+        ##print("Fattening: %s"%c)
         try:
             ct = self.component_types[c.type]
         except:
+            ##print(self.component_types)
             raise ModelError("Unable to resolve type '{0}' for component '{1}'",
                              c.type, c.id)
         
@@ -543,18 +546,15 @@ class Model(LEMSBase):
         while n is None:
             try:
                 part = value_str[0:i]
-                #print "Trying: "+ part
                 nn = float(part)
                 n = nn
                 s = value_str[i:]
-            except exceptions.ValueError:
+            except ValueError:
                 i = i-1
 
 
         number = n
         sym = s
-
-        #print "<%s> <%s>"%( number, sym)
 
         numeric_value = None
 

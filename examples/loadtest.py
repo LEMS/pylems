@@ -21,6 +21,6 @@ print("----------------------------------------------")
 
 print("Written generated LEMS to %s"%fn)
 
-from utils import validateLEMS
+from lems.base.util import validate_lems
 
-validateLEMS(fn)
+validate_lems(fn)

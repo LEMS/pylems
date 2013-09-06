@@ -114,6 +114,106 @@ class DerivedVariable(LEMSBase):
           (' reduce="{0}"'.format(self.reduce) if self.reduce else '') +\
           (' required="{0}"'.format(self.required) if self.required else '') +\
           '/>'
+          
+          
+class Case(LEMSBase):
+    """
+    Store the specification of a case for a Conditional Derived Variable.
+    """
+
+    def __init__(self, condition, value):
+        """
+        Constructor.
+        """
+
+        self.condition = condition
+        """ Condition for this case.
+        @type: str """
+
+        self.value = value
+        """ Value if the condition is true.
+        @type: str """
+
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<Case condition="{0}" value="{1}"'.format(self.condition, self.value) + '/>'
+          
+class ConditionalDerivedVariable(LEMSBase):
+    """
+    Store the specification of a conditional derived variable.
+    """
+
+    def __init__(self, name, dimension, exposure = None):
+        """
+        Constructor.
+
+        See instance variable documentation for more info on parameters.
+        """
+
+        self.name = name
+        """ Name of the derived variable.
+        @type: str """
+
+        self.dimension = dimension
+        """ Dimension of the state variable.
+        @type: str """
+
+        self.exposure = exposure
+        """ Exposure name for the state variable.
+        @type: str """
+        
+        self.cases = list()
+        """ List of cases related to this conditional derived variable.
+        @type: list(lems.model.dynamics.Case) """
+        
+        
+    def add_case(self, case):
+        """
+        Adds a case to this conditional derived variable.
+
+        @param case: Case to be added.
+        @type: case: lems.model.dynamics.Case
+        """
+
+        self.cases.append(case)
+
+    def add(self, child):
+        """
+        Adds a typed child object to the conditional derived variable.
+
+        @param child: Child object to be added.
+        """
+
+        if isinstance(child, Case):
+            self.add_case(child)
+        else:
+            raise ModelError('Unsupported child element')
+
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        xmlstr = '<ConditionalDerivedVariable name="{0}"'.format(self.name) +\
+          (' dimension="{0}"'.format(self.dimension) if self.dimension else '') +\
+          (' exposure="{0}"'.format(self.exposure) if self.exposure else '') 
+          
+        chxmlstr = ''
+
+        for case in self.cases:
+            chxmlstr += case.toxml()
+
+        if chxmlstr:
+            xmlstr += '>' + chxmlstr + '</ConditionalDerivedVariable>'
+        else:
+            xmlstr += '/>'
+            
+        return xmlstr
 
 class TimeDerivative(LEMSBase):
     """
@@ -519,7 +619,7 @@ class KineticScheme(LEMSBase):
 
 class Behavioral(LEMSBase):
     """
-    Store dynamic behavioral attrubutes.
+    Store dynamic behavioral attributes.
     """
 
     def __init__(self):
@@ -537,12 +637,16 @@ class Behavioral(LEMSBase):
         """ Map of derived variables in this behavior regime.
         @type: dict(str -> lems.model.dynamics.DerivedVariable """
 
+        self.conditional_derived_variables = Map()
+        """ Map of conditional derived variables in this behavior regime.
+        @type: dict(str -> lems.model.dynamics.ConditionalDerivedVariable """
+
         self.time_derivatives = Map()
         """ Map of time derivatives in this behavior regime.
         @type: dict(str -> lems.model.dynamics.TimeDerivative) """
 
         self.event_handlers = list()
-        """ List of event handlers in this behaviour regime.
+        """ List of event handlers in this behavior regime.
         @type: list(lems.model.dynamics.EventHandler) """
 
         self.kinetic_schemes = Map()
@@ -568,6 +672,16 @@ class Behavioral(LEMSBase):
         """
 
         self.derived_variables[dv.name] = dv
+        
+    def add_conditional_derived_variable(self, cdv):
+        """
+        Adds a conditional derived variable to this behavior regime.
+
+        @param cdv: Conditional Derived variable.
+        @type cdv: lems.model.dynamics.ConditionalDerivedVariable
+        """
+
+        self.conditional_derived_variables[cdv.name] = cdv
         
     def add_time_derivative(self, td):
         """
@@ -610,6 +724,8 @@ class Behavioral(LEMSBase):
             self.add_state_variable(child)
         elif isinstance(child, DerivedVariable):
             self.add_derived_variable(child)
+        elif isinstance(child, ConditionalDerivedVariable):
+            self.add_conditional_derived_variable(child)
         elif isinstance(child, TimeDerivative):
             self.add_time_derivative(child)
         elif isinstance(child, EventHandler):
@@ -631,6 +747,9 @@ class Behavioral(LEMSBase):
 
         for derived_variable in self.derived_variables:
             chxmlstr += derived_variable.toxml()
+            
+        for conditional_derived_variable in self.conditional_derived_variables:
+            chxmlstr += conditional_derived_variable.toxml()
 
         for time_derivative in self.time_derivatives:
             chxmlstr += time_derivative.toxml()
@@ -719,5 +838,5 @@ class Dynamics(Behavioral):
         if isinstance(child, Regime):
             self.add_regime(child)
         else:
-            Behavioural.add(self, child)
+            Behavioral.add(self, child)
         

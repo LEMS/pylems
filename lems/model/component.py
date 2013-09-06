@@ -8,7 +8,7 @@ Parameter, ComponentType and Component class definitions.
 
 from lems.base.base import LEMSBase
 from lems.base.map import Map
-from lems.base.errors import ModelError
+from lems.base.errors import ModelError,ParseError
 
 from lems.model.dynamics import Dynamics
 from lems.model.structure import Structure
@@ -79,6 +79,54 @@ class Fixed(Parameter):
         
         self.fixed = True
         self.fixed_value = value
+        
+        
+class DerivedParameter(LEMSBase): 
+    """ 
+    Store the specification of a derived parameter. 
+    """ 
+ 
+    def __init__(self, name, value, dimension = None, description = ''): 
+        """
+        Constructor.
+
+        See instance variable documentation for more info on derived parameters.
+        """
+
+        self.name = name
+        """ Name of the derived parameter.
+        @type: str """
+
+        self.dimension = dimension
+        """ Physical dimensions of the derived parameter.
+        @type: str """
+        
+        self.value = value
+        """ Value of the derived parameter.
+        @type: str """
+        
+        self.description = description
+        """ Description of the derived parameter.
+        @type: str """
+        
+        '''
+        try:
+            self.expression_tree = ExprParser(self.value).parse()
+        except:
+            raise ParseError("Parse error when parsing value expression "
+                             "'{0}' for derived parameter {1}",
+                             self.value, self.name)'''
+
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<DerivedParameter name="{0}"'.format(self.name) +\
+          (' dimension="{0}"'.format(self.dimension) if self.dimension else '') +\
+          (' value="{0}"'.format(self.value) if self.value else '') +\
+          '/>'
 
 class Constant(LEMSBase):
     """
@@ -436,6 +484,10 @@ class Fat(LEMSBase):
         self.parameters = Map()
         """ Map of parameters in this component type.
         @type: Map(str -> lems.model.component.Parameter) """
+        
+        self.derived_parameters = Map()
+        """ Map of derived_parameters in this component type.
+        @type: Map(str -> lems.model.component.Parameter) """
 
         self.constants = Map()
         """ Map of constants in this component type.
@@ -502,6 +554,16 @@ class Fat(LEMSBase):
         """
 
         self.parameters[parameter.name] = parameter
+        
+    def add_derived_parameter(self, derived_parameter):
+        """
+        Adds a derived_parameter to this component type.
+
+        @param derived_parameter: Derived Parameter to be added.
+        @type derived_parameter: lems.model.component.DerivedParameter
+        """
+
+        self.derived_parameters[derived_parameter.name] = derived_parameter
 
     def add_constant(self, constant):
         """
@@ -612,6 +674,8 @@ class Fat(LEMSBase):
 
         if isinstance(child, Parameter):
             self.add_parameter(child)
+        elif isinstance(child, DerivedParameter):
+            self.add_derived_parameter(child)
         elif isinstance(child, Constant):
             self.add_constant(child)
         elif isinstance(child, Exposure):
@@ -663,8 +727,8 @@ class ComponentType(Fat):
 
         self.types.add(name)
 
-    def __str__():
-        print('ComponentType, name: {0}'.format(self.name))
+    def __str__(self):
+        return 'ComponentType, name: {0}'.format(self.name)
         
     def toxml(self):
         """
@@ -679,6 +743,9 @@ class ComponentType(Fat):
 
         for parameter in self.parameters:
             chxmlstr += parameter.toxml()
+            
+        for derived_parameter in self.derived_parameters:
+            chxmlstr += derived_parameter.toxml()
 
         for constant in self.constants:
             chxmlstr += constant.toxml()

@@ -16,8 +16,19 @@ iaf1 = lems.ComponentType('iaf1')
 model.add(iaf1)
 
 iaf1.add(lems.Parameter('threshold', 'voltage'))
+iaf1.add(lems.Parameter('reset', 'voltage'))
 iaf1.add(lems.Parameter('refractoryPeriod', 'time'))
 iaf1.add(lems.Parameter('capacitance', 'capacitance'))
+dp = lems.DerivedParameter('range', 'threshold - reset', 'voltage')
+iaf1.add(dp)
+
+iaf1.dynamics.add(lems.StateVariable('v','voltage')) 
+iaf1.dynamics.add(lems.DerivedVariable('v2',dimension='voltage', value='v*2'))
+cdv = lems.ConditionalDerivedVariable('v_abs','voltage')
+cdv.add(lems.Case('v .geq. 0','v'))
+cdv.add(lems.Case('v .lt. 0','-1*v'))
+iaf1.dynamics.add(cdv)
+
 
 model.add(lems.Component('celltype_a', 'iaf1'))
 

@@ -42,4 +42,19 @@ def merge_lists(l, base):
     for i in base:
         if i not in l:
             l.append(i)
+            
+        
+def validate_lems(file_name):
+
+    from lxml import etree
+    try:
+        from urllib2 import urlopen  # Python 2
+    except:
+        from urllib.request import urlopen # Python 3
+        
+    schema_file = urlopen("https://raw.github.com/LEMS/LEMS/development/Schemas/LEMS/LEMS_v0.7.2.xsd")
+    xmlschema = etree.XMLSchema(etree.parse(schema_file))
+    print("Validating {0} against {1}".format(file_name, schema_file.geturl()))
+    xmlschema.assertValid(etree.parse(file_name))
+    print("It's valid!")
 

@@ -102,10 +102,14 @@ class LEMSFileParser(LEMSBase):
                                                 'text', 'attachments',
                                                 'constant', 'derivedparameter']
         self.valid_children['dynamics'] = ['derivedvariable',
+                                           'conditionalderivedvariable',
                                            'oncondition',
                                            'onevent', 'onstart',
                                            'statevariable', 'timederivative',
                                            'kineticscheme', 'regime']
+                                           
+        self.valid_children['conditionalderivedvariable'] = ['case']
+        
         self.valid_children['regime'] = ['oncondition', 'onentry', 'timederivative']
         self.valid_children['oncondition'] = ['eventout', 'stateassignment', 'transition']
         self.valid_children['onentry'] = ['eventout', 'stateassignment', 'transition']
@@ -131,8 +135,10 @@ class LEMSFileParser(LEMSBase):
         self.tag_parse_table['constant'] = self.parse_constant
         self.tag_parse_table['datadisplay'] = self.parse_data_display
         self.tag_parse_table['datawriter'] = self.parse_data_writer
-        #self.tag_parse_table['derivedparameter'] = self.parse_derived_parameter
+        self.tag_parse_table['derivedparameter'] = self.parse_derived_parameter
         self.tag_parse_table['derivedvariable'] = self.parse_derived_variable
+        self.tag_parse_table['conditionalderivedvariable'] = self.parse_conditional_derived_variable
+        self.tag_parse_table['case'] = self.parse_case
         self.tag_parse_table['dimension'] = self.parse_dimension
         self.tag_parse_table['dynamics'] = self.parse_dynamics
         self.tag_parse_table['eventconnection'] = self.parse_event_connection
@@ -195,6 +201,7 @@ class LEMSFileParser(LEMSBase):
 
         @raise ParseError: Raised when an unexpected nested tag is found.
         """
+        ##print("---------Processing: %s, %s"%(node.tag,tag))
 
         if tag == '':
             t = node.ltag
@@ -205,6 +212,8 @@ class LEMSFileParser(LEMSBase):
             self.xml_node_stack = [child] + self.xml_node_stack
 
             ctagl = child.ltag
+
+            ##print("Processing child: %s; %s; %s; %s"%(child.tag,ctagl,self.valid_children, t))
 
             if ctagl in self.tag_parse_table and ctagl in self.valid_children[t]:
                 self.tag_parse_table[ctagl](child)
@@ -601,9 +610,9 @@ class LEMSFileParser(LEMSBase):
         @type node: xml.etree.Element
         """
 
-        if self.current_context.context_type != Context.COMPONENT_TYPE:
-            self.raise_error('Dynamics must be defined inside a ' +
-                             'component type')
+        #if self.current_context.context_type != Context.COMPONENT_TYPE:
+        #    self.raise_error('Dynamics must be defined inside a ' +
+        #                     'component type')
 
         if 'name' in node.lattrib:
             name = node.lattrib['name']
@@ -625,7 +634,7 @@ class LEMSFileParser(LEMSBase):
         else:
             select = None
 
-        self.current_context.add_derived_parameter(DerivedParameter(name, dimension,
+        self.current_component_type.add_derived_parameter(DerivedParameter(name, dimension,
                                                                     value, select))
 
     def parse_derived_variable(self, node):
@@ -643,7 +652,7 @@ class LEMSFileParser(LEMSBase):
         elif 'exposure' in node.lattrib:
             name = node.lattrib['exposure']
         else:
-            self.raise_error('<DerivedVariable> musi specify a name')
+            self.raise_error('<DerivedVariable> must specify a name')
 
         params = dict()
         for attr_name in ['dimension', 'exposure', 'select', 'value', 'reduce', 'required']:
@@ -651,6 +660,62 @@ class LEMSFileParser(LEMSBase):
                 params[attr_name] = node.lattrib[attr_name]
 
         self.current_regime.add_derived_variable(DerivedVariable(name, **params))
+        
+        
+    def parse_conditional_derived_variable(self, node):
+        """
+        Parses <ConditionalDerivedVariable>
+
+        @param node: Node containing the <ConditionalDerivedVariable> element
+        @type node: xml.etree.Element
+
+        @raise ParseError: Raised when no name or value is specified for the conditional derived variable.
+        """
+
+        if 'name' in node.lattrib:
+            name = node.lattrib['name']
+        elif 'exposure' in node.lattrib:
+            name = node.lattrib['exposure']
+        else:
+            self.raise_error('<ConditionalDerivedVariable> must specify a name')
+            
+        if 'exposure' in node.lattrib:
+            exposure = node.lattrib['exposure']
+        else:
+            exposure = None
+            
+        if 'dimension' in node.lattrib:
+            dimension = node.lattrib['dimension']
+        else:
+            dimension = None
+
+        conditional_derived_variable = ConditionalDerivedVariable(name, dimension, exposure)
+        self.current_regime.add_conditional_derived_variable(conditional_derived_variable)
+        
+        self.current_conditional_derived_variable = conditional_derived_variable
+        
+        
+    def parse_case(self, node):
+        """
+        Parses <Case>
+
+        @param node: Node containing the <Case> element
+        @type node: xml.etree.Element
+
+        @raise ParseError: When no condition or value is specified
+        """
+
+        try:
+            condition = node.lattrib['condition']
+        except:
+            self.raise_error('<Case> must specify a condition')
+            
+        try:
+            value = node.lattrib['value']
+        except:
+            self.raise_error('<Case> must specify a value')
+
+        self.current_conditional_derived_variable(Case(condition, value))
 
     def parse_dimension(self, node):
         """

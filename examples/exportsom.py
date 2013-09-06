@@ -77,7 +77,7 @@ def export_component(comp):
                         if isinstance(action, StateAssignment):
                             if action.variable == sv.name:
                                 svs[sv.name] = action.value
-            if not svs.has_key(sv.name): 
+            if not sv.name in svs: 
                 svs[sv.name] = '0'
 
         som['state']=svs
@@ -112,7 +112,7 @@ def export_component(comp):
         
                                 
         som_file_name = 'comp_%s.json'%comp.id
-        som_file = file(som_file_name, 'w')
+        som_file = open(som_file_name, 'w')
 
         som_file.write(json.dumps(som, sort_keys=True,
                   indent=4, separators=(',', ': ')))
@@ -121,7 +121,7 @@ def export_component(comp):
 
         print(open(som_file_name,'r').read())
 
-        print "Written to "+som_file_name
+        print("Written to %s"%som_file_name)
     
 
 model = Model()
