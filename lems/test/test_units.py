@@ -35,7 +35,7 @@ class TestUnitParsing(unittest.TestCase):
 
     def check_num_val(self, unit_str, val, dimension = None):
 
-        print "Ensuring %s returns %f in dimension %s"%(unit_str, val, dimension)
+        print("Ensuring %s returns %f in dimension %s"%(unit_str, val, dimension))
         val = self.get_model().get_numeric_value(unit_str, dimension)
 
     def test_parse_units(self):
