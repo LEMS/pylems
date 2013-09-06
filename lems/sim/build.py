@@ -132,6 +132,7 @@ class SimulationBuilder(LEMSBase):
             if regime.initial:
                 runnable.current_regime = regime.name
 
+            rn = regime.name
             if rn not in runnable.regimes:
                 runnable.add_regime(Regime(rn))
             r = runnable.regimes[rn]

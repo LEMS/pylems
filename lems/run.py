@@ -30,7 +30,7 @@ def process_args():
                         help='Directory to be searched for included files')
     parser.add_argument('-nogui',
                         action='store_true',
-                        help='Directory to be searched for included files')
+                        help="If this is specified, just parse & simulate the model, but don't show any plots")
     parser.add_argument('lems_file', type=str, metavar='<LEMS file>', 
                         help='LEMS file to be simulated')
     
@@ -43,9 +43,15 @@ def main():
     args = process_args()
 
     model = Model()
+    if args.I is not None:
+        for dir in args.I:
+            model.add_include_directory(dir)
     model.import_from_file(args.lems_file)
 
     resolved_model = model.resolve()
+    
+    ###fn = '/tmp/model2.xml'
+    ###model.export_to_file(fn)
 
     sim = SimulationBuilder(resolved_model).build()
     #sim.dump()

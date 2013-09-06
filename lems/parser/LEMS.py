@@ -232,8 +232,8 @@ class LEMSFileParser(LEMSBase):
         
         xml = LEMSXMLNode(xe.XML(xmltext))
 
-        if xml.ltag != 'lems':
-            raise ParseError('<Lems> expected as root element')
+        if xml.ltag != 'lems' and xml.ltag != 'neuroml':
+            raise ParseError('<Lems> expected as root element (or even <neuroml>), found: {0}'.format(xml.ltag))
 
         self.process_nested_tags(xml)
 
@@ -690,9 +690,12 @@ class LEMSFileParser(LEMSBase):
             dimension = None
 
         conditional_derived_variable = ConditionalDerivedVariable(name, dimension, exposure)
+        
         self.current_regime.add_conditional_derived_variable(conditional_derived_variable)
         
         self.current_conditional_derived_variable = conditional_derived_variable
+        
+        self.process_nested_tags(node)
         
         
     def parse_case(self, node):
@@ -704,7 +707,7 @@ class LEMSFileParser(LEMSBase):
 
         @raise ParseError: When no condition or value is specified
         """
-
+        
         try:
             condition = node.lattrib['condition']
         except:
@@ -715,7 +718,7 @@ class LEMSFileParser(LEMSBase):
         except:
             self.raise_error('<Case> must specify a value')
 
-        self.current_conditional_derived_variable(Case(condition, value))
+        self.current_conditional_derived_variable.add_case(Case(condition, value))
 
     def parse_dimension(self, node):
         """
@@ -1317,7 +1320,7 @@ class LEMSFileParser(LEMSBase):
         else:
             exposure = None
 
-        self.current_regime.add_state_variable(StateVariable(name, exposure, dimension))
+        self.current_regime.add_state_variable(StateVariable(name, dimension, exposure))
 
     def parse_structure(self, node):
         """
