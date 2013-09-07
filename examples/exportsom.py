@@ -104,12 +104,52 @@ def export_component(comp):
 
         som['events']=evs
 
-  
         som['t_start']='0'
         som['t_end']=to_si(sim_comp.parameters['length'])
         som['dt']=to_si(sim_comp.parameters['step'])
 
-        
+        disps = []
+        saves = set()
+
+        for d in sim_comp.children: 
+            if d.type == 'Display':
+                di = {}
+                abax = {}
+                abax['min'] = d.parameters['xmin']
+                abax['max'] = d.parameters['xmax']
+                
+                orax = {}
+                orax['min'] = d.parameters['ymin']
+                orax['max'] = d.parameters['ymax']
+
+                di['abcissa_axis'] = abax
+                di['ordinate_axis'] = orax
+                
+                curves = []
+                for li in d.children:
+                    cur = {} 
+                    s = li.parameters['quantity']
+                    x = s[s.rindex('/')+1:]
+                    saves.add(x)
+                    cur['abcissa'] = x
+                    cur['ordinate'] = 't'
+                    cur['colour'] = li.parameters['color'] 
+                    curves.append(cur)
+
+                di['curves'] = curves
+                disps.append(di)
+                
+            
+                
+                
+            elif d.type == 'OutputFile':
+                som['dump_to_file'] = d.parameters['fileName']
+                for dd in d.children:
+                    s = dd.parameters['quantity']
+                    saves.add(s[s.index('/')+1:])
+                
+        som['timeseries'] = list(saves)
+        som['display'] = disps
                                 
         som_file_name = 'comp_%s.json'%comp.id
         som_file = open(som_file_name, 'w')
