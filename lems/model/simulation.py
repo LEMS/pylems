@@ -117,6 +117,10 @@ class DataDisplay(DataOutput):
         self.data_region = data_region
         """ Display position
         @type: string """
+
+        self.time_scale = 1
+        """ Time scale
+        @type: Number """
         
     def toxml(self):
         """

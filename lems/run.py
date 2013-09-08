@@ -18,6 +18,42 @@ from lems.model.simulation import DataDisplay,DataWriter
 import matplotlib.pyplot as pylab
 import numpy
 
+from lems.parser.expr import ExprParser as EP
+
+def printsexp(sexp, prefix = '', indent = '||'):
+    s = sexp
+    i = 0
+    l = len(s)
+
+    print('')
+    print(prefix, end = '')
+    
+    while i < l:
+        if s[i] == '(':
+            s = printsexp(s[(i + 1):], prefix + indent, indent)
+            i = 0
+            l = len(s)
+        elif s[i] == ')':
+            #print('')
+            return s[(i + 1):]
+        elif s[i] == ' ':
+            print('')
+            print(prefix, end = '')
+            i = i + 1
+        else:
+            print(s[i], end = '')
+            i = i + 1
+
+    return ''
+    
+def main2():
+    #expr = 'x'
+    #expr = '( (V - ((V^3) / 3)) - W + I) / SEC'
+    expr = '(V - (V^3) / 3 - W + I) / SEC'
+    sexp = str(EP(expr).parse())
+    print(sexp)
+    printsexp(sexp)
+    
 def process_args():
     """ 
     Parse command-line arguments.
@@ -40,6 +76,7 @@ def main():
     """
     Program entry point.
     """
+    
     args = process_args()
 
     model = Model()
@@ -102,7 +139,7 @@ def plot_recording(recording):
     y = numpy.empty(len(recording.values))
     i = 0
     for (xv, yv) in recording.values:
-        x[i] = xv
+        x[i] = xv / data_output.timeScale
         y[i] = yv / recorder.scale
         i = i + 1
 

@@ -174,11 +174,14 @@ class SimulationBuilder(LEMSBase):
         for regime in dynamics.regimes:
             self.add_dynamics_2(component, runnable, regime, dynamics)
 
-            if rn not in runnable.regimes:
-                runnable.add_regime(Regime(rn))
-            r = runnable.regimes[rn]
-            suffix = '_regime_' + rn
+            print('###', runnable.regimes)
+            if regime.name not in runnable.regimes:
+                runnable.add_regime(Regime(regime.name))
+            r = runnable.regimes[regime.name]
+            suffix = '_regime_' + regime.name
 
+
+            print('$$$', runnable.id, suffix)
             r.update_kinetic_scheme = runnable.__dict__['update_kinetic_scheme'
                                                         + suffix]
 

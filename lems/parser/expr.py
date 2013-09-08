@@ -409,8 +409,13 @@ class ExprParser(LEMSBase):
         @rtype: lems.parser.expr.ExprNode
         """
 
+        #print(self.parse_string)
         self.tokenize()
-        return self.parse2()
+        parse_tree = self.parse2()
+
+        #print(str(parse_tree))
+        #print('')
+        return parse_tree
 
     def parse2(self):
         self.op_stack = Stack()

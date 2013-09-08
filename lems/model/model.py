@@ -522,6 +522,8 @@ class Model(LEMSBase):
             try:
                 dd2 = DataDisplay(fc.texts[dd.title].value,
                                   '')
+                if 'timeScale' in fc.parameters:
+                    dd2.timeScale = fc.parameters['timeScale'].numeric_value
             except:
                 raise ModelError("Unable to resolve simulation display parameters in component '{0}'",
                                  fc.id)
