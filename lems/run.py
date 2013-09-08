@@ -91,7 +91,7 @@ def main():
     ###model.export_to_file(fn)
 
     sim = SimulationBuilder(resolved_model).build()
-    #sim.dump()
+    sim.dump()
     sim.run()
 
     process_simulation_output(sim, args)
@@ -126,6 +126,11 @@ def process_simulation_output(sim, options):
     if fig_count > 0:
         pylab.show()
 
+class Display:
+    def __init__(self, fig):
+        self.fig = fig
+        self.plots = list()
+        self.legend = list()
 
 displays = {}
 
@@ -144,11 +149,11 @@ def plot_recording(recording):
         i = i + 1
 
     if data_output.title in displays:
-        fig = displays[data_output.title]
+        fig = displays[data_output.title].fig
     else:
         fig_count = fig_count + 1
         fig = fig_count
-        displays[data_output.title] = fig
+        displays[data_output.title] = Display(fig)
 
         f = pylab.figure(fig)
         pylab.title(data_output.title)
@@ -157,10 +162,12 @@ def plot_recording(recording):
     pylab.figure(fig)
     p = pylab.subplot(111)
     p.patch.set_facecolor('#7f7f7f')
-    pylab.plot(x, y,
-               color=recorder.color,
-               label=recorder.quantity)
-
+    plot, = pylab.plot(x, y,
+                      color=recorder.color,
+                      label=recorder.quantity)
+    displays[data_output.title].plots.append(plot)
+    displays[data_output.title].legend.append(recorder.quantity)
+    pylab.legend(displays[data_output.title].plots, displays[data_output.title].legend)
 
 def save_recording(recording):
     pass

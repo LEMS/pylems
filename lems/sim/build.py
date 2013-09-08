@@ -14,7 +14,7 @@ from lems.sim.runnable import Runnable
 from lems.sim.sim import Simulation
 from lems.parser.expr import ExprNode
 from lems.model.dynamics import *
-from lems.sim.runnable import Regime
+from lems.sim.runnable import Regime as RunnableRegime
 
 import sys
 import re
@@ -134,7 +134,7 @@ class SimulationBuilder(LEMSBase):
 
             rn = regime.name
             if rn not in runnable.regimes:
-                runnable.add_regime(Regime(rn))
+                runnable.add_regime(RunnableRegime(rn))
             r = runnable.regimes[rn]
             suffix = '_regime_' + rn
 
@@ -174,14 +174,12 @@ class SimulationBuilder(LEMSBase):
         for regime in dynamics.regimes:
             self.add_dynamics_2(component, runnable, regime, dynamics)
 
-            print('###', runnable.regimes)
             if regime.name not in runnable.regimes:
-                runnable.add_regime(Regime(regime.name))
+                runnable.add_regime(RunnableRegime(regime.name))
             r = runnable.regimes[regime.name]
             suffix = '_regime_' + regime.name
 
 
-            print('$$$', runnable.id, suffix)
             r.update_kinetic_scheme = runnable.__dict__['update_kinetic_scheme'
                                                         + suffix]
 
@@ -410,6 +408,7 @@ class SimulationBuilder(LEMSBase):
         pre_event_handler_code = []
         post_event_handler_code = []
         startup_event_handler_code = []
+        on_entry_added = False
         for eh in regime.event_handlers:
             if isinstance(eh, OnStart):
                 startup_event_handler_code += self.build_event_handler(runnable,
@@ -420,9 +419,14 @@ class SimulationBuilder(LEMSBase):
                                                                     regime,
                                                                     eh)
             else:
+                if isinstance(eh, OnEntry):
+                    on_entry_added = True
                 pre_event_handler_code += self.build_event_handler(runnable,
                                                                    regime,
                                                                    eh)
+        if isinstance(regime, Regime) and not on_entry_added:
+            pre_event_handler_code += self.build_event_handler(runnable, regime, OnEntry())
+            
         runnable.add_method('run_startup_event_handlers' + suffix, ['self'],
                             startup_event_handler_code)
         runnable.add_method('run_preprocessing_event_handlers' + suffix, ['self'],

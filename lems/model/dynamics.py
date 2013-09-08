@@ -629,6 +629,10 @@ class Behavioral(LEMSBase):
         See instance variable documentation for more details on parameters.
         """
 
+        self.parent_behavioral = None
+        """ Parent behavioral object.
+        @type: lems.model.dynamics.Behavioral """
+
         self.state_variables = Map()
         """ Map of state variables in this behavior regime.
         @type: dict(str -> lems.model.dynamics.StateVariable """
@@ -786,7 +790,7 @@ class Regime(Behavioral):
     Stores a single behavioral regime for a component type.
     """
 
-    def __init__(self, name, initial = False):
+    def __init__(self, name, parent_behavioral, initial = False):
         """
         Constructor.
         
@@ -798,6 +802,10 @@ class Regime(Behavioral):
         self.name = name
         """ Name of this behavior regime.
         @type: str """
+
+        self.parent_behavioral = parent_behavioral
+        """ Parent behavioral object.
+        @type: lems.model.dynamics.Behavioral """
 
         self.initial = initial
         """ Initial behavior regime.

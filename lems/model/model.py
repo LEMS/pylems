@@ -323,13 +323,13 @@ class Model(LEMSBase):
         merge_maps(ct.component_references, base_ct.component_references)
         merge_maps(ct.attachments, base_ct.attachments)
 
-        merge_maps(ct.dynamics.state_variables, base_ct.dynamics.state_variables)
-        merge_maps(ct.dynamics.derived_variables, base_ct.dynamics.derived_variables)
-        merge_maps(ct.dynamics.conditional_derived_variables, base_ct.dynamics.conditional_derived_variables)
-        merge_maps(ct.dynamics.time_derivatives, base_ct.dynamics.time_derivatives)
-        merge_lists(ct.dynamics.event_handlers, base_ct.dynamics.event_handlers)
-        merge_maps(ct.dynamics.kinetic_schemes, base_ct.dynamics.kinetic_schemes)
-        
+        #merge_maps(ct.dynamics.state_variables, base_ct.dynamics.state_variables)
+        #merge_maps(ct.dynamics.derived_variables, base_ct.dynamics.derived_variables)
+        #merge_maps(ct.dynamics.conditional_derived_variables, base_ct.dynamics.conditional_derived_variables)
+        #merge_maps(ct.dynamics.time_derivatives, base_ct.dynamics.time_derivatives)
+        #merge_lists(ct.dynamics.event_handlers, base_ct.dynamics.event_handlers)
+        #merge_maps(ct.dynamics.kinetic_schemes, base_ct.dynamics.kinetic_schemes)
+
         merge_lists(ct.structure.event_connections, base_ct.structure.event_connections)
         merge_lists(ct.structure.child_instances, base_ct.structure.child_instances)
         merge_lists(ct.structure.multi_instantiates, base_ct.structure.multi_instantiates)

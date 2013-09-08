@@ -391,7 +391,7 @@ class Runnable(Reflective):
 
         self.update_state_variables(self, dt)
         self.update_shadow_variables()
-
+            
         self.run_postprocessing_event_handlers(self)
         self.update_shadow_variables()
 

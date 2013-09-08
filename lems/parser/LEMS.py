@@ -1185,7 +1185,7 @@ class LEMSFileParser(LEMSBase):
         else:
             initial = False
 
-        regime = Regime(name, initial)
+        regime = Regime(name, self.current_dynamics, initial)
         old_regime = self.current_regime
         self.current_dynamics.add_regime(regime)
         self.current_regime = regime
