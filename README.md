@@ -37,7 +37,7 @@ pylems [\<options\>] \<LEMS file\>
 ### *NeuroML* examples (from https://github.com/NeuroML/NeuroML2/tree/master/NeuroML2CoreTypes)
 
 - Example 0 --  Working
-- Example 1 --  Runs but incorrect behaviour
+- Example 1 --  Working with startup fluctuations.
 - Example 2 --  Working
 - Example 3 --  Not tested
 - Example 4 --  Not tested

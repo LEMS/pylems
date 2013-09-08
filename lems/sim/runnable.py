@@ -395,6 +395,21 @@ class Runnable(Reflective):
         self.run_postprocessing_event_handlers(self)
         self.update_shadow_variables()
 
+        if False:
+            if self.id == 'hhpop__hhcell__0':
+                print('1 - ', self.v, self)
+            if self.id in ['__id_1__', '__id_2__', '__id_3__', '__id_4__', '__id_5__', '__id_6__']:
+                print('2 - ', self.parent.parent.parent.parent.v, self.parent.parent.parent.parent)
+
+        if False:
+            g = 'na'
+            if self.id == g:
+                print(1, self.fopenHHtauInf, len(self.gatesHHtauInf))
+                #if self.id == 'forwardRate' and self.parent.id == g:
+                #print(2, self.r, self)
+                #if self.id == 'reverseRate' and self.parent.id == g:
+                #print(3, self.r, self)
+                
         if self.current_regime != '':
             regime = self.regimes[self.current_regime]
 

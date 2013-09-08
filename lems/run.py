@@ -91,7 +91,7 @@ def main():
     ###model.export_to_file(fn)
 
     sim = SimulationBuilder(resolved_model).build()
-    sim.dump()
+    #sim.dump()
     sim.run()
 
     process_simulation_output(sim, args)

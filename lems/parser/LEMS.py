@@ -418,7 +418,7 @@ class LEMSFileParser(LEMSBase):
             id_ = node.lattrib['id']
         else:
             #self.raise_error('Component must have an id')
-            id_ = make_id()
+            id_ = node.tag #make_id()
 
         if 'type' in node.lattrib:
             type_ = node.lattrib['type']

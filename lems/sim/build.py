@@ -156,12 +156,15 @@ class SimulationBuilder(LEMSBase):
             runnable.add_child(child.id, child_runnable)
 
             for children in component.children:
-                if children.type in component.types:
+                #GG - These conditions need more debugging.
+                if children.type in child.types:
                     runnable.add_child_typeref(children.type, child_runnable)
                 if children.multiple:
-                    runnable.add_child_to_group(children.name, child_runnable)
+                    if children.type in child.types:
+                        runnable.add_child_to_group(children.name, child_runnable)
                 else:
-                    runnable.add_child_typeref(children.name, child_runnable)
+                    if child_runnable.id == children.name:
+                        runnable.add_child_typeref(children.name, child_runnable)
 
         for attachment in component.attachments:
             runnable.make_attachment(attachment.type, attachment.name)
@@ -245,12 +248,6 @@ class SimulationBuilder(LEMSBase):
                 target.add_child(receiver_template.id, receiver)
                 target = receiver
 
-            print(source.id, target.id, receiver.id if ec.receiver else None)
-            print(source.event_in_ports, source.event_out_ports)
-            print(target.event_in_ports, target.event_out_ports)
-
-            print(source, target)
-            
             source_port = ec.source_port
             target_port = ec.target_port
             
