@@ -470,10 +470,9 @@ class Model(LEMSBase):
                                       target_port,
                                       fc.component_references[ev.receiver].referenced_component if ev.receiver else None,
                                       fc.texts[ev.receiver_container].value if ev.receiver_container else '')
-            except Exception as e:
-                print(ev.__dict__, fc.texts)
-                raise ModelError("Unable to resolve event connection parameters in component '{0}' - {1}",
-                                 fc.id, str(e))
+            except:
+                raise ModelError("Unable to resolve event connection parameters in component '{0}'",
+                                 fc.id)
             fc.structure.add(ev2)
                 
         for ch in ct.structure.child_instances:
