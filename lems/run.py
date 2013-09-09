@@ -26,7 +26,7 @@ def printsexp(sexp, prefix = '', indent = '||'):
     l = len(s)
 
     print('')
-    print(prefix, end = '')
+    print(prefix,)
     
     while i < l:
         if s[i] == '(':
@@ -38,10 +38,10 @@ def printsexp(sexp, prefix = '', indent = '||'):
             return s[(i + 1):]
         elif s[i] == ' ':
             print('')
-            print(prefix, end = '')
+            print(prefix,)
             i = i + 1
         else:
-            print(s[i], end = '')
+            print(s[i],)
             i = i + 1
 
     return ''
