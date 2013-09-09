@@ -131,8 +131,8 @@ def export_component(comp):
                     s = li.parameters['quantity']
                     x = s[s.rindex('/')+1:]
                     saves.add(x)
-                    cur['abcissa'] = x
-                    cur['ordinate'] = 't'
+                    cur['abcissa'] = 't'
+                    cur['ordinate'] = x
                     cur['colour'] = li.parameters['color'] 
                     curves.append(cur)
 
