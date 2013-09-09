@@ -1,17 +1,15 @@
 #! /usr/bin/python
 
 import sys
+import re
+import json
+from collections import OrderedDict
 
 from lems.model.model import Model
 from lems.model.dynamics import OnStart
 from lems.model.dynamics import OnCondition
 from lems.model.dynamics import StateAssignment
 
-from lems.parser.LEMS import LEMSFileParser
-from lems.sim.build import SimulationBuilder
-
-
-import json
 
 def to_si(unit_str):
     return str(model.get_numeric_value(unit_str))
@@ -25,22 +23,34 @@ def comp2sign(cond):
     elif cond == 'eq':
         ret = '0'
     return ret
+    
+def has_display(disp, pop):
+    pop = re.compile(pop)
+    #iterate over plots/dumps pertaining to current element
+    quants = [li.parameters['quantity'] for li in disp.children]
+    return any([pop.search(q) for q in quants])
+
+    
+def any_svs_plotted(disp, svs):
+    s = lambda x: x[x.rindex('/')+1:]
+    return any([s(li.parameters['quantity']) in svs for li in disp.children])
+
 
 def inequality_to_condition(ineq):
-    import re
+
     r = re.compile("(.+)(?:\.([gleqt]+)\.)(.+)")
     s = r.search(ineq)
     expr =  ''.join([s.group(1).strip(), ' - (',  s.group(3).strip() + ')'])
     sign = comp2sign(s.group(2))
     return (expr, sign)
 
-def export_component(comp):
+def export_component(comp, parent_pop=''):
+    
         comp_type = model.component_types[comp.type]
 
-        som = {}
+        som = OrderedDict()
         som['name'] = comp.id
-                                
-        params = {}
+        params = OrderedDict()
 
         for p in comp.parameters.keys():
            params[p] = to_si(comp.parameters[p])
@@ -52,7 +62,7 @@ def export_component(comp):
 
         dyn = comp_type.dynamics
 
-        dvs = {}
+        dvs = OrderedDict()
 
         for dv  in dyn.derived_variables:
             if dv.value is not None:
@@ -62,14 +72,14 @@ def export_component(comp):
 
         som['state_functions']=dvs
 
-        tds = {}
+        tds = OrderedDict()
 
         for td in dyn.time_derivatives:
             tds[td.variable] = td.value
 
         som['dynamics']=tds
 
-        svs = {}
+        svs = OrderedDict()
         for sv in dyn.state_variables:
             for eh in dyn.event_handlers:
                 if isinstance(eh, OnStart):
@@ -87,13 +97,13 @@ def export_component(comp):
         
         for eh in dyn.event_handlers:
             if isinstance(eh, OnCondition):
-                ev = {}
+                ev = OrderedDict()
                 ev['name'] = 'condition_%i'%count_cond
                 (cond, dir) = inequality_to_condition(eh.test)
                 ev['condition'] = cond
                 ev['direction'] = dir 
-                effect = {}
-                state_effects = {}
+                effect = OrderedDict()
+                state_effects = OrderedDict()
                 for action in eh.actions:
                     if isinstance(action, StateAssignment):
                         state_effects[action.variable] = action.value
@@ -109,16 +119,17 @@ def export_component(comp):
         som['dt']=to_si(sim_comp.parameters['step'])
 
         disps = []
-        saves = set()
 
         for d in sim_comp.children: 
-            if d.type == 'Display':
-                di = {}
-                abax = {}
+
+            if d.type == 'Display' and has_display(d, parent_pop) and any_svs_plotted(d, svs.keys()):
+
+                di = OrderedDict()
+                abax = OrderedDict()
                 abax['min'] = d.parameters['xmin']
                 abax['max'] = d.parameters['xmax']
                 
-                orax = {}
+                orax = OrderedDict()
                 orax['min'] = d.parameters['ymin']
                 orax['max'] = d.parameters['ymax']
 
@@ -127,35 +138,32 @@ def export_component(comp):
                 
                 curves = []
                 for li in d.children:
-                    cur = {} 
+                    cur = OrderedDict() 
                     s = li.parameters['quantity']
                     x = s[s.rindex('/')+1:]
-                    saves.add(x)
                     cur['abcissa'] = 't'
                     cur['ordinate'] = x
                     cur['colour'] = li.parameters['color'] 
-                    curves.append(cur)
 
+                    #som is only currentyl only concerned with state var plots 
+                    if cur['ordinate'] in svs:
+                        curves.append(cur)
+                    
                 di['curves'] = curves
                 disps.append(di)
-                
-            
                 
                 
             elif d.type == 'OutputFile':
                 som['dump_to_file'] = d.parameters['fileName']
                 for dd in d.children:
                     s = dd.parameters['quantity']
-                    saves.add(s[s.index('/')+1:])
                 
-        som['timeseries'] = list(saves)
         som['display'] = disps
-                                
+
         som_file_name = 'comp_%s.json'%comp.id
         som_file = open(som_file_name, 'w')
 
-        som_file.write(json.dumps(som, sort_keys=True,
-                  indent=4, separators=(',', ': ')))
+        som_file.write(json.dumps(som, indent=4, separators=(',', ': ')))
 
         som_file.close()
 
@@ -191,7 +199,7 @@ if target_comp.type == 'network':
 
             comp =  model.components[child.parameters['component']]
 
-            export_component(comp)
+            export_component(comp, child.id)
 else:
     export_component(target_comp)
     
