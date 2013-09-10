@@ -31,7 +31,8 @@ cdv.add(lems.Case('v .lt. 0','-1*v'))
 iaf1.dynamics.add(cdv)
 
 
-model.add(lems.Component('celltype_a', 'iaf1'))
+model.add(lems.Component('celltype_a', iaf1.name))
+model.add(lems.Component('celltype_b', iaf1.name, threshold="20mV"))
 
 fn = '/tmp/model.xml'
 model.export_to_file(fn)

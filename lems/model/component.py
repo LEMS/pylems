@@ -793,7 +793,7 @@ class Component(LEMSBase):
     Stores a component instantiation.
     """
 
-    def __init__(self, id_, type_):
+    def __init__(self, id_, type_, **params):
         """
         Constructor.
 
@@ -811,6 +811,8 @@ class Component(LEMSBase):
         self.parameters = dict()
         """ Dictionary of parameter values.
         @type: str """
+        for key, value in params.iteritems():
+            self.parameters[key] = value
 
         self.children = list()
         """ List of child components.
