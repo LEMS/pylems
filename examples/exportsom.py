@@ -10,6 +10,7 @@ from lems.model.dynamics import OnStart
 from lems.model.dynamics import OnCondition
 from lems.model.dynamics import StateAssignment
 
+SI_PREF = {'p': 1e-12, 'n': 1e-9, 'u': 1e-6, 'm': 1e-3, 'c': 1e-2}
 
 def to_si(unit_str):
     return str(model.get_numeric_value(unit_str))
@@ -123,7 +124,8 @@ def export_component(comp, parent_pop=''):
         for d in sim_comp.children: 
 
             if d.type == 'Display' and has_display(d, parent_pop) and any_svs_plotted(d, svs.keys()):
-
+                
+            
                 di = OrderedDict()
                 abax = OrderedDict()
                 abax['min'] = d.parameters['xmin']
@@ -133,8 +135,6 @@ def export_component(comp, parent_pop=''):
                 orax['min'] = d.parameters['ymin']
                 orax['max'] = d.parameters['ymax']
 
-                di['abcissa_axis'] = abax
-                di['ordinate_axis'] = orax
                 
                 curves = []
                 for li in d.children:
@@ -144,11 +144,25 @@ def export_component(comp, parent_pop=''):
                     cur['abcissa'] = 't'
                     cur['ordinate'] = x
                     cur['colour'] = li.parameters['color'] 
-
+                    px = re.search('([cmunp])s', li.parameters['timeScale'], re.IGNORECASE)
+                    py = re.search('([cmunp])+\w', li.parameters['scale'], re.IGNORECASE)
+                    try:
+                        scale_x = SI_PREF[px.group()[0]]
+                    except (KeyError, AttributeError) as e:
+                        scale_x = 1
+                    try:
+                        scale_y = SI_PREF[py.group()[0]]
+                    except (KeyError, AttributeError) as e:
+                        scale_y = 1
                     #som is only currentyl only concerned with state var plots 
                     if cur['ordinate'] in svs:
                         curves.append(cur)
-                    
+                
+                abax = {k: str(scale_x*float(v)) for (k, v) in abax.iteritems()} 
+                orax = {k: str(scale_y*float(v)) for (k, v) in orax.iteritems()} 
+                di['abcissa_axis'] = abax
+                di['ordinate_axis'] = orax
+
                 di['curves'] = curves
                 disps.append(di)
                 
