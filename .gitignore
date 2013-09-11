@@ -6,5 +6,6 @@ doc
 *.pyc
 *.pyo
 .project
+.ropeproject
 .pydevproject
 comp_*
