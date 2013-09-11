@@ -158,8 +158,8 @@ def export_component(comp, parent_pop=''):
                     if cur['ordinate'] in svs:
                         curves.append(cur)
                 
-                abax = {k: str(scale_x*float(v)) for (k, v) in abax.iteritems()} 
-                orax = {k: str(scale_y*float(v)) for (k, v) in orax.iteritems()} 
+                abax = {k: str(scale_x*float(v)) for (k, v) in abax.items()} 
+                orax = {k: str(scale_y*float(v)) for (k, v) in orax.items()} 
                 di['abcissa_axis'] = abax
                 di['ordinate_axis'] = orax
 
