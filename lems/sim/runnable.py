@@ -135,6 +135,14 @@ class Runnable(Reflective):
         self.current_regime = ''
         self.last_regime = ''
         self.regimes = {}
+        
+        
+    def __str__(self):
+        return 'Runnable, id: {0}, component: ({1})'.format(self.id, self.component)
+    
+    def __repr__(self):
+        return self.__str__()
+            
 
     def add_child(self, id_, runnable):
         self.uchildren[runnable.uid] = runnable
@@ -357,7 +365,7 @@ class Runnable(Reflective):
             keys = list(self.__dict__.keys())
             keys.sort()
             for k in keys:
-                print('{0} -> {1}'.format(k, self.__dict__[k]))
+                print('{0} -> {1}'.format(k, str(self.__dict__[k])))
             print('')
             print('')
 

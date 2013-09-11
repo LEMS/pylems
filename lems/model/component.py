@@ -296,6 +296,16 @@ class Text(LEMSBase):
         return '<Text name="{0}"'.format(self.name) +\
           (' description = "{0}"'.format(self.description) if self.description else '') +\
           '/>'
+          
+          
+    def __str__(self):
+        return 'Text, name: {0}'.format(self.name)+\
+          (', description = "{0}"'.format(self.description) if self.description else '') +\
+          (', value = "{0}"'.format(self.value) if self.value else '')
+          
+          
+    def __repr__(self):
+        return self.__str__()
         
 class Link(LEMSBase):
     """
@@ -811,8 +821,8 @@ class Component(LEMSBase):
         self.parameters = dict()
         """ Dictionary of parameter values.
         @type: str """
-        for key, value in params.iteritems():
-            self.parameters[key] = value
+        for key in params.keys():
+            self.parameters[key] = params[key]
 
         self.children = list()
         """ List of child components.
@@ -902,6 +912,12 @@ class FatComponent(Fat):
         self.child_components = list()
         """ List of child components.
         @type: lems.model.component.FatComponent """
+        
+
+    def __str__(self):
+        return 'FatComponent, id: {0}, type: {1}'.format(self.id, self.type)+\
+          (', num children: {2}'.format(len(self.child_components)) if len(self.child_components)>0 else '')
+        
 
     def add_child_component(self, child_component):
         """
