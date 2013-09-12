@@ -159,8 +159,57 @@ class ForEach(LEMSBase):
     """
     ForEach specification.
     """
+    def __init__(self, instances, as_):
 
-    pass
+        self.instances = instances
+        
+        self.as_ = as_
+        
+        self.event_connections = list()
+        """ List of event connections.
+        @type: list(lems.model.structure.EventConnection) """
+        
+        self.for_each = list()
+        """ List of for each specs.
+        @type: list(lems.model.structure.ForEach) """
+        
+        
+    def add_for_each(self, fe):
+        """
+        Adds a for-each specification.
+
+        @param fe: For-each specification.
+        @type fe: lems.model.structure.ForEach
+        """
+
+        self.for_each.append(fe)
+        
+        
+    def add_event_connection(self, ec):
+        """
+        Adds an event conenction to the structure.
+
+        @param ec: Event connection.
+        @type ec: lems.model.structure.EventConnection
+        """
+
+        self.event_connections.append(ec)
+        
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+        chxmlstr = ''
+
+        for event_connection in self.event_connections:
+            chxmlstr += event_connection.toxml()
+
+        for for_each in self.for_each:
+            chxmlstr += for_each.toxml()
+
+
+        return '<ForEach instances="{0}" as="{1}">{2}</ForEach>'.format(self.instances, self.as_, chxmlstr)
+        
         
 class Structure(LEMSBase):
     """

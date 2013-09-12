@@ -6,6 +6,10 @@ import sys
 model = Model()
 
 file_name = 'examples/hhcell.xml'
+file_name = 'examples/example0.xml'
+#file_name = '../NeuroML2/NeuroML2CoreTypes/LEMS_NML2_Ex0_IaF.xml'
+#file_name = '../NeuroML2/NeuroML2CoreTypes/LEMS_NML2_Ex3_Net.xml'
+#file_name = '../org.neuroml.import/src/test/resources/BIOMD0000000185_LEMS.xml'
 
 if len(sys.argv) == 2:
     file_name = sys.argv[1] 

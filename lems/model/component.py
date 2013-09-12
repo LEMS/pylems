@@ -13,6 +13,7 @@ from lems.base.errors import ModelError,ParseError
 from lems.model.dynamics import Dynamics
 from lems.model.structure import Structure
 from lems.model.simulation import Simulation
+from lems.parser.expr import ExprParser
 
 class Parameter(LEMSBase):
     """
@@ -80,6 +81,13 @@ class Fixed(Parameter):
         self.fixed = True
         self.fixed_value = value
         
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<Fixed parameter="{0}"'.format(self.name) + ' value="{0}"'.format(self.fixed_value)+'/>'
+        
         
 class DerivedParameter(LEMSBase): 
     """ 
@@ -109,13 +117,15 @@ class DerivedParameter(LEMSBase):
         """ Description of the derived parameter.
         @type: str """
         
-        '''
         try:
-            self.expression_tree = ExprParser(self.value).parse()
+            ep = ExprParser(self.value)
+            self.expression_tree = ep.parse()
         except:
             raise ParseError("Parse error when parsing value expression "
-                             "'{0}' for derived parameter {1}",
-                             self.value, self.name)'''
+                                 "'{0}' for derived parameter {1}",
+                                 self.value, self.name)
+        
+                             
 
 
     def toxml(self):
@@ -411,7 +421,7 @@ class EventPort(LEMSBase):
         Exports this object into a LEMS XML object
         """
 
-        return '<EventPort name="{0}" direction="{1}"'.format(self.name, self.direction.upper()) +\
+        return '<EventPort name="{0}" direction="{1}"'.format(self.name, self.direction) +\
           (' description = "{0}"'.format(self.description) if self.description else '') +\
           '/>'
         
@@ -760,8 +770,17 @@ class ComponentType(Fat):
         for constant in self.constants:
             chxmlstr += constant.toxml()
             
+        childxml = ''
+        childrenxml = ''
+        
         for children in self.children:
-            chxmlstr += children.toxml()
+            if children.multiple:
+                childrenxml += children.toxml()
+            else:
+                childxml += children.toxml()
+            
+        chxmlstr += childxml
+        chxmlstr += childrenxml
             
         for link in self.links:
             chxmlstr += link.toxml()
@@ -916,7 +935,7 @@ class FatComponent(Fat):
 
     def __str__(self):
         return 'FatComponent, id: {0}, type: {1}'.format(self.id, self.type)+\
-          (', num children: {2}'.format(len(self.child_components)) if len(self.child_components)>0 else '')
+          (', num children: {0}'.format(len(self.child_components)) if len(self.child_components)>0 else '')
         
 
     def add_child_component(self, child_component):

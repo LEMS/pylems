@@ -16,9 +16,6 @@ from lems.parser.expr import ExprNode
 from lems.model.dynamics import *
 from lems.sim.runnable import Regime as RunnableRegime
 
-import sys
-import re
-from pprint import pprint
 
 class SimulationBuilder(LEMSBase):
     """
@@ -108,6 +105,30 @@ class SimulationBuilder(LEMSBase):
         for parameter in component.parameters:
             runnable.add_instance_variable(parameter.name, parameter.numeric_value)
 
+        derived_parameter_code = []
+        
+        derived_parameter_ordering = order_derived_parameters(component)
+        
+        for dpn in derived_parameter_ordering:
+            derived_parameter = component.derived_parameters[dpn]
+            runnable.add_derived_variable(derived_parameter.name)
+            
+            expression = self.build_expression_from_tree(runnable,
+                                                        None,
+                                                        derived_parameter.expression_tree)
+            
+            derived_parameter_code += ['self.{0} = ({1})'.format(
+                        derived_parameter.name,
+                        expression)]
+            derived_parameter_code += ['self.{0}_shadow = ({1})'.format(
+                        derived_parameter.name,
+                        expression)]
+        #print derived_parameter_code
+       
+        suffix = ''
+        runnable.add_method('update_derived_parameters' + suffix, ['self'],
+                            derived_parameter_code)
+            
         for constant in component.constants:
             runnable.add_instance_variable(constant.name, constant.numeric_value)
 
@@ -234,6 +255,7 @@ class SimulationBuilder(LEMSBase):
 
         # Process event connections
         for ec in structure.event_connections:
+            #print("event_connections  {0}".format(ec.toxml()))
             source = runnable.parent.resolve_path(ec.from_)
             target = runnable.parent.resolve_path(ec.to)
 
@@ -248,8 +270,9 @@ class SimulationBuilder(LEMSBase):
                 target.add_child(receiver_template.id, receiver)
                 target = receiver
 
-            source_port = ec.source_port
-            target_port = ec.target_port
+            ### TODO: recheck retrieving portnames from target_port etc.
+            source_port = None #ec.source_port.name if ec.source_port else None
+            target_port = None #ec.target_port.name if ec.target_port else None
             
             if not source_port:
                 if len(source.event_out_ports) == 1:
@@ -265,6 +288,7 @@ class SimulationBuilder(LEMSBase):
                     raise SimBuildError(("No destination event port "
                                          "uniquely identifiable "
                                          "in '{0}'").format(target.id))
+                   
             source.register_event_out_callback(\
                 source_port, lambda: target.inc_event_in(target_port))
 
@@ -296,8 +320,8 @@ class SimulationBuilder(LEMSBase):
             source = name_mappings[event.source_path]
             target = name_mappings[event.target_path]
 
-            source_port = context.lookup_text_parameter(event.source_port)
-            target_port = context.lookup_text_parameter(event.target_port)
+            source_port = context.lookup_text_parameter(event.source_port.name)
+            target_port = context.lookup_text_parameter(event.target_port.name)
 
             if source_port == None:
                 if len(source.event_out_ports) == 1:
@@ -639,8 +663,7 @@ class SimulationBuilder(LEMSBase):
                                                 "variable '{0}'".format(v))
 
                     return '{0}.{1}'.format(var_prefix, v)
-                elif (tree_node.value in regime.derived_variables or
-                      tree_node.value in dynamics.derived_variables):
+                elif (tree_node.value in dynamics.derived_variables or (regime is not None and tree_node.value in regime.derived_variables)):
                     return 'self.{0}'.format(tree_node.value)
                 else:
                     return 'self.{0}_shadow'.format(tree_node.value)
@@ -907,6 +930,58 @@ class SimulationBuilder(LEMSBase):
             self.current_record_target.add_variable_recorder(self.current_data_output, rec)
 
 ############################################################
+
+def order_derived_parameters(component):
+    """
+    Finds ordering of derived_parameters.
+
+    @param component: Component containing derived parameters.
+    @type component: lems.model.component.Component
+
+    @return: Returns ordered list of derived parameters.
+    @rtype: list(string)
+
+    @raise SimBuildError: Raised when a proper ordering of derived
+    parameters could not be found.
+    """
+
+    if len(component.derived_parameters) == 0:
+        return []
+    
+    ordering = []
+    dps = []
+    
+    for dp in component.derived_parameters:
+        dps.append(dp.name)
+    print dps
+            
+    maxcount = 5
+
+    count = maxcount
+
+    while count > 0 and dps != []:
+        count = count - 1
+
+        for dp1 in dps:
+            #exp_tree = regime.derived_variables[dv1].expression_tree
+            value = component.derived_parameters[dp1].value
+            found = False
+            for dp2 in dps:
+                if dp1 != dp2 and dp2 in value:
+                    found = True
+            if not found:
+                ordering.append(dp1)
+                del dps[dps.index(dp1)]
+                count = maxcount
+                break
+
+    if count == 0:
+        raise SimBuildError(("Unable to find ordering for derived "
+                             "parameter in component '{0}'").format(component))
+
+    #return ordering + dvsnoexp
+    return ordering
+
 
 def order_derived_variables(regime):
     """

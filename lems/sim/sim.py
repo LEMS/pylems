@@ -112,19 +112,26 @@ class Simulation(LEMSBase):
         verbose = False
         if verbose:
             if r.instance_variables:
-                print('{0} Instance variables'.format(prefix))
+                print('{0}   Instance variables'.format(prefix))
                 for vn in r.instance_variables:
-                    print('{0}  {1} = {2}'.format(prefix, vn, r.__dict__[vn]))
+                    print('{0}     {1} = {2}'.format(prefix, vn, r.__dict__[vn]))
             if r.derived_variables:
-                print('{0} Derived variables'.format(prefix))
+                print('{0}   Derived variables'.format(prefix))
                 for vn in r.derived_variables:
-                    print('{0}  {1} = {2}'.format(prefix, vn, r.__dict__[vn]))
+                    print('{0}     {1} = {2}'.format(prefix, vn, r.__dict__[vn]))
         if r.array:
             for c in r.array:
                 self.dump_runnable(c, prefix + '  ')
         if r.uchildren:
             for cn in r.uchildren:
                 self.dump_runnable(r.uchildren[cn], prefix + '  ')
+                
+        if verbose:
+            keys = list(r.__dict__.keys())
+            keys.sort()
+            print('{0}   Keys'.format(prefix))
+            for k in keys:
+                print('{0}     {1} -> {2}'.format(prefix, k, str(r.__dict__[k])))
 
     def dump(self):
         print('Runnables:')

@@ -37,17 +37,17 @@ pylems [\<options\>] \<LEMS file\>
 ### *NeuroML* examples (from https://github.com/NeuroML/NeuroML2/tree/master/NeuroML2CoreTypes)
 
 - Example 0 --  Working
-- Example 1 --  Working with startup fluctuations.
+- Example 1 --  Working with incorrect initialisation of m, h, n
 - Example 2 --  Working
-- Example 3 --  Not tested
+- Example 3 --  Working (but with startup issue from 2)
 - Example 4 --  Not tested
-- Example 5 --  Not tested
+- Example 5 --  Working but EPSPs are too large compared to LEMS
 - Example 6 --  Not tested
 - Example 7 --  Not tested
-- Example 8 --  Not tested
+- Example 8 --  Working, though spiking could be detected sooner
 - Example 9 --  Working
-- Example 10 -- Runs but incorrect behaviour
-- Example 11 -- Not tested
+- Example 10 -- Runs, though incorrect Q10 scaling (& with startup issue from 2)
+- Example 11 -- Working
 - Example 12 -- Not tested
 - Example 13 -- Not tested
 - Example 14 -- Not tested
