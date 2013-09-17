@@ -79,19 +79,23 @@ def main():
     
     args = process_args()
 
+    print('Parsing and resolving model')
     model = Model()
     if args.I is not None:
         for dir in args.I:
             model.add_include_directory(dir)
     model.import_from_file(args.lems_file)
-
+    
     resolved_model = model.resolve()
     
     ###fn = '/tmp/model2.xml'
     ###model.export_to_file(fn)
 
+    print('Building simulation')
     sim = SimulationBuilder(resolved_model).build()
-    sim.dump()
+    #sim.dump()
+
+    print('Running simulation')
     sim.run()
 
     process_simulation_output(sim, args)

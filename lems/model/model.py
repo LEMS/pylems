@@ -463,8 +463,11 @@ class Model(LEMSBase):
 
         for w in ct.structure.withs:
             try:
-                w2 = With(fc.paths[w.instance].value,
-                          w.as_)
+                if w.instance == 'parent' or w.instance == 'this':
+                    w2 = With(w.instance, w.as_)
+                else:
+                    w2 = With(fc.paths[w.instance].value,
+                              w.as_)
             except:
                 raise ModelError("Unable to resolve With parameters for "
                                  "'{0}' in component '{1}'",

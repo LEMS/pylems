@@ -149,6 +149,8 @@ class SimulationBuilder(LEMSBase):
         self.add_dynamics_1(component, runnable, dynamics, dynamics)
 
         for regime in dynamics.regimes:
+            self.add_dynamics_1(component, runnable, regime, dynamics)
+            
             if regime.initial:
                 runnable.current_regime = regime.name
 

@@ -39,21 +39,21 @@ pylems [\<options\>] \<LEMS file\>
 - Example 0 --  Working
 - Example 1 --  Working with incorrect initialisation of m, h, n
 - Example 2 --  Working
-- Example 3 --  Working (but with startup issue from 2)
-- Example 4 --  Not tested
-- Example 5 --  Working but EPSPs are too large compared to LEMS
-- Example 6 --  Not tested
-- Example 7 --  Not tested
-- Example 8 --  Working, though spiking could be detected sooner
-- Example 9 --  Working
-- Example 10 -- Runs, though incorrect Q10 scaling (& with startup issue from 2)
+- Example 3 --  Working, but with startup issue as example 2
+- Example 4 --  Not working
+- Example 5 --  Not running (Need to be able to parse conditions in parameter for select expressions)
+- Example 6 --  Working
+- Example 7 --  Not running
+- Example 8 --  Working, with stability problems.
+- Example 9 --  Not working
+- Example 10 -- Working, but with startup issue as example 2
 - Example 11 -- Working
-- Example 12 -- Not tested
-- Example 13 -- Not tested
-- Example 14 -- Not tested
-- Example 15 -- Not tested
-- Example 16 -- Not tested
-- Example 17 -- Runs but incorrect behaviour
+- Example 12 -- Not running
+- Example 13 -- Not running
+- Example 14 -- Not running
+- Example 15 -- Not running
+- Example 16 -- Not running
+- Example 17 -- Not working
       
 ## LEMS elements that do not work
 - XPath based parameters - DerivedParameter, PathParameter
