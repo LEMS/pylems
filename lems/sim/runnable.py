@@ -6,7 +6,6 @@ Base class for runnable components.
 @contact: gautham@lisphacker.org
 """
 
-from lems.base.base import LEMSBase
 from lems.base.stack import Stack
 from lems.base.errors import SimBuildError
 from lems.sim.recording import Recording
@@ -16,7 +15,6 @@ import sys
 
 from math import *
 
-import pprint
 #import math
 
 #class Ex1(Exception):
@@ -35,6 +33,7 @@ class Reflective(object):
         self.derived_variables = []
         self.array = []
         self.methods = {}
+        #self.total_code_string = '' 
 
     #@classmethod
     def add_method(self, method_name, parameter_list, statements):
@@ -53,6 +52,8 @@ class Reflective(object):
             for statement in statements:
                 code_string += '    ' + statement + '\n'
 
+        #self.total_code_string += '[['+method_name + ']]\n'+code_string + '\n'
+        #print self.total_code_string
         g = globals()
         l = locals()
         exec(compile(ast.parse(code_string), '<unknown>', 'exec'), g, l)
@@ -135,6 +136,14 @@ class Runnable(Reflective):
         self.current_regime = ''
         self.last_regime = ''
         self.regimes = {}
+        
+        
+    def __str__(self):
+        return 'Runnable, id: {0}, component: ({1})'.format(self.id, self.component)
+    
+    def __repr__(self):
+        return self.__str__()
+            
 
     def add_child(self, id_, runnable):
         self.uchildren[runnable.uid] = runnable
@@ -358,7 +367,7 @@ class Runnable(Reflective):
             keys = list(self.__dict__.keys())
             keys.sort()
             for k in keys:
-                print('{0} -> {1}'.format(k, self.__dict__[k]))
+                print('{0} -> {1}'.format(k, str(self.__dict__[k])))
             print('')
             print('')
 
@@ -392,6 +401,10 @@ class Runnable(Reflective):
 
         self.update_state_variables(self, dt)
         self.update_shadow_variables()
+        
+        if self.time_completed == 0:
+            self.update_derived_parameters(self)
+
             
         self.run_postprocessing_event_handlers(self)
         self.update_shadow_variables()

@@ -52,7 +52,7 @@ def validate_lems(file_name):
     except:
         from urllib.request import urlopen # Python 3
         
-    schema_file = urlopen("https://raw.github.com/LEMS/LEMS/development/Schemas/LEMS/LEMS_v0.7.2.xsd")
+    schema_file = urlopen("https://raw.github.com/LEMS/LEMS/development/Schemas/LEMS/LEMS_v0.7.3.xsd")
     xmlschema = etree.XMLSchema(etree.parse(schema_file))
     print("Validating {0} against {1}".format(file_name, schema_file.geturl()))
     xmlschema.assertValid(etree.parse(file_name))

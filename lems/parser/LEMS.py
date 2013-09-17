@@ -44,7 +44,9 @@ class LEMSXMLNode:
         self.children = list()
         for pyxmlchild in pyxmlnode:
             self.children.append(LEMSXMLNode(pyxmlchild))
-        
+            
+    def __str__(self):
+        return 'LEMSXMLNode <{0} {1}>'.format(self.tag, self.attrib)
         
 class LEMSFileParser(LEMSBase):
     """
@@ -92,6 +94,7 @@ class LEMSFileParser(LEMSBase):
         self.valid_children['lems'] = ['component', 'componenttype',
                                        'target', 'include',
                                        'dimension', 'unit', 'assertion']
+                                       
         self.valid_children['componenttype'] = ['dynamics',
                                                 'child', 'children',
                                                 'componentreference',
@@ -108,6 +111,8 @@ class LEMSFileParser(LEMSBase):
                                            'statevariable', 'timederivative',
                                            'kineticscheme', 'regime']
                                            
+        self.valid_children['component'] = ['component']
+                                           
         self.valid_children['conditionalderivedvariable'] = ['case']
         
         self.valid_children['regime'] = ['oncondition', 'onentry', 'timederivative']
@@ -120,6 +125,9 @@ class LEMSFileParser(LEMSBase):
                                             'foreach',
                                             'multiinstantiate',
                                             'with']
+                                       
+        self.valid_children['foreach'] = ['foreach', 'eventconnection']     
+                                            
         self.valid_children['simulation'] = ['record', 'run',
                                              'datadisplay', 'datawriter']
 
@@ -129,7 +137,7 @@ class LEMSFileParser(LEMSBase):
         self.tag_parse_table['child'] = self.parse_child
         self.tag_parse_table['childinstance'] = self.parse_child_instance
         self.tag_parse_table['children'] = self.parse_children
-        #self.tag_parse_table['component'] = self.parse_component
+        self.tag_parse_table['component'] = self.parse_component
         self.tag_parse_table['componentreference'] = self.parse_component_reference
         self.tag_parse_table['componenttype'] = self.parse_component_type
         self.tag_parse_table['constant'] = self.parse_constant
@@ -146,7 +154,7 @@ class LEMSFileParser(LEMSBase):
         self.tag_parse_table['eventport'] = self.parse_event_port
         self.tag_parse_table['exposure'] = self.parse_exposure
         self.tag_parse_table['fixed'] = self.parse_fixed
-        #self.tag_parse_table['foreach'] = self.parse_foreach
+        self.tag_parse_table['foreach'] = self.parse_for_each
         self.tag_parse_table['include'] = self.parse_include
         self.tag_parse_table['kineticscheme'] = self.parse_kinetic_scheme
         self.tag_parse_table['link'] = self.parse_link
@@ -413,7 +421,7 @@ class LEMSFileParser(LEMSBase):
 
         @raise ParseError: Raised when the component does not have an id.
         """
-
+        #print('Parsing component {0} by typename {1}'.format(node, type_))
         if 'id' in node.lattrib:
             id_ = node.lattrib['id']
         else:
@@ -634,8 +642,8 @@ class LEMSFileParser(LEMSBase):
         else:
             select = None
 
-        self.current_component_type.add_derived_parameter(DerivedParameter(name, dimension,
-                                                                    value, select))
+        self.current_component_type.add_derived_parameter(DerivedParameter(name, value,
+                                                                    dimension, select))
 
     def parse_derived_variable(self, node):
         """
@@ -781,9 +789,9 @@ class LEMSFileParser(LEMSBase):
         receiver = node.lattrib.get('receiver', '')
         receiver_container = node.lattrib.get('receivercontainer', '')
 
-        self.current_structure.add_event_connection(EventConnection(from_, to,
-                                                                    source_port, target_port,
-                                                                    receiver, receiver_container))
+        ec = EventConnection(from_, to, source_port, target_port, receiver, receiver_container)
+        #print "----"+ec.toxml()
+        self.current_structure.add_event_connection(ec)
 
     def parse_event_out(self, node):
         """
@@ -874,40 +882,41 @@ class LEMSFileParser(LEMSBase):
         try:
             value = node.lattrib['value']
         except:
-            self.raise_error("Fixed paramter '{0}'must specify a value.", parameter)
+            self.raise_error("Fixed parameter '{0}'must specify a value.", parameter)
 
         description = node.lattrib.get('description', '')
         
         self.current_component_type.add_parameter(Fixed(parameter, value, description))
 
-    def parse_foreach(self, node):
+    def parse_for_each(self, node):
         """
         Parses <ForEach>
 
         @param node: Node containing the <ForEach> element
         @type node: xml.etree.Element
         """
-
+        
         if self.current_structure == None:
             self.raise_error('<ForEach> can only be made within ' +
                              'a structure definition')
 
         if 'instances' in node.lattrib:
-            target = node.lattrib['instances']
+            instances = node.lattrib['instances']
         else:
             self.raise_error('<ForEach> must specify a reference to target'
                              'instances')
 
         if 'as' in node.lattrib:
-            name = node.lattrib['as']
+            as_ = node.lattrib['as']
         else:
             self.raise_error('<ForEach> must specify a name for the '
                              'enumerated target instances')
 
         old_structure = self.current_structure
-        self.current_structure = self.current_structure.add_foreach(\
-            name, target)
-
+        fe = ForEach(instances, as_)
+        self.current_structure.add_for_each(fe)
+        self.current_structure = fe
+        
         self.process_nested_tags(node)
 
         self.current_structure = old_structure

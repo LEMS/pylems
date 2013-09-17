@@ -135,7 +135,7 @@ class DataWriter(DataOutput):
     Stores specification for a data writer.
     """
 
-    def __init__(self, path, file_path):
+    def __init__(self, path, file_name):
         """
         Constuctor.
 
@@ -148,9 +148,8 @@ class DataWriter(DataOutput):
         """ Path to the quantity to be saved to file.
         @type: string """
 
-        self.file_path = file_path
-        """ Text parameter to be used for the path to the file for
-        saving this quantity
+        self.file_name = file_name
+        """ Text parameter to be used for the file name
         @type: string """
 
     def toxml(self):
@@ -158,8 +157,11 @@ class DataWriter(DataOutput):
         Exports this object into a LEMS XML object
         """
 
-        return '<DataWriter path="{0}" filePath="{1}"/>'.format(self.path,
-                                                                self.file_path)
+        return '<DataWriter path="{0}" fileName="{1}"/>'.format(self.path,
+                                                                self.file_name)
+                                                                
+    def __str__(self):
+        return 'DataWriter, path: {0}, fileName: {1}'.format(self.path, self.file_name)
 
 class Simulation(LEMSBase):
     """

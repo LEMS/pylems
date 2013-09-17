@@ -10,7 +10,7 @@ import os
 from os.path import dirname
 
 from lems.base.base import LEMSBase
-from lems.base.util import make_id, merge_maps, merge_lists
+from lems.base.util import merge_maps, merge_lists
 from lems.base.map import Map
 from lems.parser.LEMS import LEMSFileParser
 from lems.base.errors import ModelError
@@ -19,17 +19,15 @@ from lems.base.errors import SimBuildError
 from lems.model.fundamental import Dimension,Unit
 from lems.model.component import Constant,ComponentType,Component,FatComponent
 from lems.model.simulation import Run,Record,DataDisplay,DataWriter
-from lems.model.structure import With,EventConnection,ChildInstance,MultiInstantiate,ForEach
+from lems.model.structure import With,EventConnection,ChildInstance,MultiInstantiate
 
 import xml.dom.minidom as minidom
-
-import re
 
 class Model(LEMSBase):
     """
     Stores a model.
     """
-    target_lems_version = '0.7.2'
+    target_lems_version = '0.7.3'
     branch = 'development'
     schema_location = 'https://raw.github.com/LEMS/LEMS/{0}/Schemas/LEMS/LEMS_v{1}.xsd'.format(branch, target_lems_version)
     #schema_location = '/home/padraig/LEMS/Schemas/LEMS/LEMS_v%s.xsd'%target_lems_version
@@ -554,8 +552,12 @@ class Model(LEMSBase):
                 
         for dw in ct.simulation.data_writers:
             try:
-                dw2 = DataWriter(fc.texts[dw.path].value,
-                                 fc.texts[dw.file_path].value)
+                path = '.'
+                if fc.texts[dw.path] and fc.texts[dw.path].value:
+                    path = fc.texts[dw.path].value
+                
+                dw2 = DataWriter(path,
+                                 fc.texts[dw.file_name].value)
             except:
                 raise ModelError("Unable to resolve simulation writer parameters in component '{0}'",
                                  fc.id)
