@@ -103,8 +103,6 @@ class SimulationBuilder(LEMSBase):
             self.current_data_output = do
 
         for parameter in component.parameters:
-            if runnable.id == 'o1':
-                print('###', parameter.__dict__)
             runnable.add_instance_variable(parameter.name, parameter.numeric_value)
 
         derived_parameter_code = []
@@ -146,14 +144,11 @@ class SimulationBuilder(LEMSBase):
             else:
                 runnable.add_event_out_port(ep.name)
 
-        if component.id == 'o1':
-            print('$$$', component.dynamics.__dict__)
+                
         dynamics = component.dynamics
         self.add_dynamics_1(component, runnable, dynamics, dynamics)
 
         for regime in dynamics.regimes:
-            self.add_dynamics_1(component, runnable, regime, dynamics)
-
             if regime.initial:
                 runnable.current_regime = regime.name
 
@@ -391,7 +386,7 @@ class SimulationBuilder(LEMSBase):
         for td in regime.time_derivatives:
             if td.variable not in regime.state_variables and td.variable not in dynamics.state_variables:
                 raise SimBuildError(('Time derivative for undefined state '
-                                     'variable {0}').format(td.variable))
+                                     'variable {0} in component {1}').format(td.variable, component.id))
 
             exp = self.build_expression_from_tree(runnable,
                                                   regime,
@@ -954,7 +949,6 @@ def order_derived_parameters(component):
     
     for dp in component.derived_parameters:
         dps.append(dp.name)
-    print dps
             
     maxcount = 5
 

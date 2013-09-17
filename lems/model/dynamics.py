@@ -633,13 +633,6 @@ class Behavioral(LEMSBase):
         """ Parent behavioral object.
         @type: lems.model.dynamics.Behavioral """
 
-        self.clear()
-
-    def clear(self):
-        """
-        Clear behavioral entities.
-        """
-        
         self.state_variables = Map()
         """ Map of state variables in this behavior regime.
         @type: dict(str -> lems.model.dynamics.StateVariable """
@@ -664,6 +657,12 @@ class Behavioral(LEMSBase):
         """ Map of kinetic schemes in this behavior regime.
         @type: dict(str -> lems.model.dynamics.KineticScheme) """
         
+    def clear(self):
+        """
+        Clear behavioral entities.
+        """
+        
+        self.time_derivatives = Map()
 
     def add_state_variable(self, sv):
         """

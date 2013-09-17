@@ -247,8 +247,6 @@ class Model(LEMSBase):
             
         xmlstr += '</Lems>'
 
-        #print(xmlstr)
-
         xmlstr = minidom.parseString(xmlstr).toprettyxml(level_prefix, '\n',)
 
         with open(filepath, 'w') as f:
@@ -282,7 +280,7 @@ class Model(LEMSBase):
         @param component_type: Component type to be resolved.
         @type component_type: lems.model.component.ComponentType
         """
-        ##print("Resolving: %s"%component_type)
+        
         # Resolve component type from base types if present.
         if component_type.extends:
             try:
@@ -310,8 +308,6 @@ class Model(LEMSBase):
 
         #merge_maps(ct.parameters, base_ct.parameters)
         for parameter in base_ct.parameters:
-            if ct.name == 'openState':
-                print('!!!', parameter.__dict__)
             if parameter.name in ct.parameters:
                 p = ct.parameters[parameter.name]
                 basep = base_ct.parameters[parameter.name]
@@ -370,8 +366,6 @@ class Model(LEMSBase):
 
         ### Resolve parameters
         for parameter in ct.parameters:
-            if c.id == 'o1':
-                print('%%%', parameter.__dict__)
             if parameter.name in c.parameters:
                 p = parameter.copy()
                 p.value = c.parameters[parameter.name]
