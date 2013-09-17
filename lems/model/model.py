@@ -310,7 +310,19 @@ class Model(LEMSBase):
         @type base_ct: lems.model.component.ComponentType
         """
 
-        merge_maps(ct.parameters, base_ct.parameters)
+        #merge_maps(ct.parameters, base_ct.parameters)
+        for parameter in base_ct.parameters:
+            if ct.name == 'openState':
+                print('!!!', parameter.__dict__)
+            if parameter.name in ct.parameters:
+                p = ct.parameters[parameter.name]
+                basep = base_ct.parameters[parameter.name]
+                if p.fixed:
+                    p.value = p.fixed_value
+                    p.dimension = basep.dimension
+            else:
+                ct.parameters[parameter.name] = base_ct.parameters[parameter.name]
+            
         merge_maps(ct.derived_parameters, base_ct.derived_parameters)
         merge_maps(ct.constants, base_ct.constants)
         merge_maps(ct.exposures, base_ct.exposures)
@@ -323,12 +335,12 @@ class Model(LEMSBase):
         merge_maps(ct.component_references, base_ct.component_references)
         merge_maps(ct.attachments, base_ct.attachments)
 
-        #merge_maps(ct.dynamics.state_variables, base_ct.dynamics.state_variables)
-        #merge_maps(ct.dynamics.derived_variables, base_ct.dynamics.derived_variables)
-        #merge_maps(ct.dynamics.conditional_derived_variables, base_ct.dynamics.conditional_derived_variables)
-        #merge_maps(ct.dynamics.time_derivatives, base_ct.dynamics.time_derivatives)
-        #merge_lists(ct.dynamics.event_handlers, base_ct.dynamics.event_handlers)
-        #merge_maps(ct.dynamics.kinetic_schemes, base_ct.dynamics.kinetic_schemes)
+        merge_maps(ct.dynamics.state_variables, base_ct.dynamics.state_variables)
+        merge_maps(ct.dynamics.derived_variables, base_ct.dynamics.derived_variables)
+        merge_maps(ct.dynamics.conditional_derived_variables, base_ct.dynamics.conditional_derived_variables)
+        merge_maps(ct.dynamics.time_derivatives, base_ct.dynamics.time_derivatives)
+        merge_lists(ct.dynamics.event_handlers, base_ct.dynamics.event_handlers)
+        merge_maps(ct.dynamics.kinetic_schemes, base_ct.dynamics.kinetic_schemes)
 
         merge_lists(ct.structure.event_connections, base_ct.structure.event_connections)
         merge_lists(ct.structure.child_instances, base_ct.structure.child_instances)
@@ -349,11 +361,10 @@ class Model(LEMSBase):
         @return: Fattened component.
         @rtype: lems.model.component.FatComponent
         """
-        ##print("Fattening: %s"%c)
+
         try:
             ct = self.component_types[c.type]
         except:
-            ##print(self.component_types)
             raise ModelError("Unable to resolve type '{0}' for component '{1}'",
                              c.type, c.id)
         
@@ -361,9 +372,15 @@ class Model(LEMSBase):
 
         ### Resolve parameters
         for parameter in ct.parameters:
+            if c.id == 'o1':
+                print('%%%', parameter.__dict__)
             if parameter.name in c.parameters:
                 p = parameter.copy()
                 p.value = c.parameters[parameter.name]
+                p.numeric_value = self.get_numeric_value(p.value, p.dimension)
+                fc.add_parameter(p)
+            elif parameter.fixed:
+                p = parameter.copy()
                 p.numeric_value = self.get_numeric_value(p.value, p.dimension)
                 fc.add_parameter(p)
             else:
@@ -433,6 +450,9 @@ class Model(LEMSBase):
         merge_maps(fc.attachments, ct.attachments)
 
         fc.dynamics = ct.dynamics.copy()
+        if len(fc.dynamics.regimes) != 0:
+            fc.dynamics.clear()
+               
         self.resolve_structure(fc, ct)
         self.resolve_simulation(fc, ct)
 
@@ -461,8 +481,8 @@ class Model(LEMSBase):
             
         for ev in ct.structure.event_connections:
             try:
-                source_port = fc.texts[ev.source_port] if ev.source_port and ev.source_port in fc.texts else None
-                target_port = fc.texts[ev.target_port] if ev.target_port and ev.target_port in fc.texts else None
+                source_port = fc.texts[ev.source_port].value if ev.source_port and ev.source_port in fc.texts else None
+                target_port = fc.texts[ev.target_port].value if ev.target_port and ev.target_port in fc.texts else None
                 
                 ev2 = EventConnection(fc.structure.withs[ev.from_].instance,
                                       fc.structure.withs[ev.to].instance,

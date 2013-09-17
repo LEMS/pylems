@@ -354,6 +354,7 @@ class Runnable(Reflective):
                                                      self.component.type, 
                                                      e))
             print(type(e))
+            
             keys = list(self.__dict__.keys())
             keys.sort()
             for k in keys:

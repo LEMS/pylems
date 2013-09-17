@@ -106,6 +106,8 @@ class SimulationBuilder(LEMSBase):
             self.current_data_output = do
 
         for parameter in component.parameters:
+            if runnable.id == 'o1':
+                print('###', parameter.__dict__)
             runnable.add_instance_variable(parameter.name, parameter.numeric_value)
 
         for constant in component.constants:
@@ -123,6 +125,8 @@ class SimulationBuilder(LEMSBase):
             else:
                 runnable.add_event_out_port(ep.name)
 
+        if component.id == 'o1':
+            print('$$$', component.dynamics.__dict__)
         dynamics = component.dynamics
         self.add_dynamics_1(component, runnable, dynamics, dynamics)
 
@@ -250,7 +254,7 @@ class SimulationBuilder(LEMSBase):
 
             source_port = ec.source_port
             target_port = ec.target_port
-            
+
             if not source_port:
                 if len(source.event_out_ports) == 1:
                     source_port = source.event_out_ports[0]
@@ -364,7 +368,7 @@ class SimulationBuilder(LEMSBase):
         for td in regime.time_derivatives:
             if td.variable not in regime.state_variables and td.variable not in dynamics.state_variables:
                 raise SimBuildError(('Time derivative for undefined state '
-                                     'variable {0}').format(tdn))
+                                     'variable {0}').format(td.variable))
 
             exp = self.build_expression_from_tree(runnable,
                                                   regime,
@@ -468,9 +472,7 @@ class SimulationBuilder(LEMSBase):
 
         # Process kinetic schemes
         ks_code = []
-        for ksn in regime.kinetic_schemes:
-            ks = regime.kinetic_schemes[ksn]
-
+        for ks in regime.kinetic_schemes:
             try:
                 nodes = {node.id:node for node in runnable.__dict__[ks.nodes]}
                 edges = runnable.__dict__[ks.edges]

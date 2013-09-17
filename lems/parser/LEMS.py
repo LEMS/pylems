@@ -878,7 +878,7 @@ class LEMSFileParser(LEMSBase):
 
         description = node.lattrib.get('description', '')
         
-        self.current_component_type.add_parameter(Parameter(parameter, value, description))
+        self.current_component_type.add_parameter(Fixed(parameter, value, description))
 
     def parse_foreach(self, node):
         """
