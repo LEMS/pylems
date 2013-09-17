@@ -888,8 +888,8 @@ class SimulationBuilder(LEMSBase):
 
         if len(bits) == 1:
             target = select
-            code += ['    self.{0} = {1}'.format(result, target)]
-            code += ['    self.{0}_shadow = {1}'.format(result, target)]
+            code += ['    self.{0} = self.{1}'.format(result, target)]
+            code += ['    self.{0}_shadow = self.{1}'.format(result, target)]
         elif len(bits) == 2:
             array = bits[0]
             ref = bits[1]

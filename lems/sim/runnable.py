@@ -62,8 +62,8 @@ class Reflective(object):
         self.__dict__[method_name] = l['__generated_function__']
         del l['__generated_function__']
 
-        #print(code_string.replace('__generated_function__', 
-        #                          '{0}.{1}'.format(self.component.type, method_name)))
+        print(code_string.replace('__generated_function__', 
+                                  '{0}.{1}'.format(self.component.type, method_name)))
 
     def add_instance_variable(self, variable, initial_value):
         self.instance_variables.append(variable)
