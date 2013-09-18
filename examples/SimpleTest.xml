@@ -45,7 +45,7 @@
     </simpleCell>
     
     
-    <Simulation id="sim1" length="200ms" step="0.01ms" target="cell0">
+    <Simulation id="sim1" length="5ms" step="1ms" target="cell0">
     
         <Display id="d1" title="Voltage" timeScale="1ms" xmin="-20" xmax="220" ymin="-110" ymax="110">
             <Line id="v" quantity="v" scale="1mV"  color="#ffffff" timeScale="1ms"/>
@@ -57,10 +57,8 @@
         </Display>
     
 
-        <OutputFile id="of0" fileName="f2_v.dat">
-            <OutputColumn id="v" quantity="v"/> 
-        </OutputFile> 
-        <OutputFile id="of1" fileName="f2_i.dat">
+        <OutputFile id="of0" fileName="simp.dat">
+            <OutputColumn id="v" quantity="v"/>
             <OutputColumn id="m" quantity="membrane/I"/> 
         </OutputFile> 
 

@@ -56,7 +56,7 @@ class Record(LEMSBase):
     Stores the parameters of a <Record> statement.
     """
 
-    def __init__(self, quantity, scale = None, color = None):
+    def __init__(self, quantity, scale = None, color = None, id = None):
         """
         Constructor.
 
@@ -75,14 +75,19 @@ class Record(LEMSBase):
         """ Text parameter to be used to specify the color for display.
         @type: str """
 
+        self.id = id
+        """ Text parameter to be used to specify an id for the record
+        @type: str """
+
     def toxml(self):
         """
         Exports this object into a LEMS XML object
         """
 
-        return '<Record quantity="{0}" scale="{1}" color="{2}"/>'.format(self.quantity,
+        return '<Record quantity="{0}" scale="{1}" color="{2}" id="{3}"/>'.format(self.quantity,
                                                                          self.scale,
-                                                                         self.color)
+                                                                         self.color,
+                                                                         self.id)
 
 class DataOutput(LEMSBase):
     """
@@ -151,6 +156,7 @@ class DataWriter(DataOutput):
         self.file_name = file_name
         """ Text parameter to be used for the file name
         @type: string """
+
 
     def toxml(self):
         """

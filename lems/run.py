@@ -104,31 +104,60 @@ fig_count = 0
 
 def process_simulation_output(sim, options):
     global fig_count
-    if not options.nogui:
-        print('Processing results')
-        rq = []
-        for rn in sim.runnables:
-            rq.append(sim.runnables[rn])
 
-        while rq != []:
-            runnable = rq[0]
-            rq = rq[1:]
-            for c in runnable.children:
-                rq.append(runnable.children[c])
-            for child in runnable.array:
-                rq.append(child)
+    print('Processing results')
+    rq = []
+    for rn in sim.runnables:
+        rq.append(sim.runnables[rn])
 
-            if runnable.recorded_variables:
-                for recording in runnable.recorded_variables:
-                    if isinstance(recording.data_output, DataDisplay):
+    file_times = {}
+    file_outs = {}
+
+    while rq != []:
+        runnable = rq[0]
+        rq = rq[1:]
+        for c in runnable.children:
+            rq.append(runnable.children[c])
+        for child in runnable.array:
+            rq.append(child)
+
+        if runnable.recorded_variables:
+            for recording in runnable.recorded_variables:
+                if isinstance(recording.data_output, DataDisplay):
+                    if not options.nogui:
                         plot_recording(recording)
-                    elif isinstance(recording.data_output, DataWriter):
-                        save_recording(recording)
-                    else:
-                        raise Exception("Invalid output type - " + str(type(recording.data_output)))
+                elif isinstance(recording.data_output, DataWriter):
+                    data_output = recording.data_output
+                    times = []
+                    vals = []
+                    for (x,y) in recording.values:
+                        times.append(x)
+                        vals.append(y)
+                    file_times[data_output.file_name] = times
+                    if not file_outs.has_key(data_output.file_name):
+                        file_outs[data_output.file_name] = []
+                    file_outs[data_output.file_name].append(vals)
+                else:
+                    raise Exception("Invalid output type - " + str(type(recording.data_output)))
+
+    for file_out_name in file_times.keys():
+        times = file_times[file_out_name]
+        vals = file_outs[file_out_name]
+        print('Going to save {0}x{1} data points to file {2}'.format(len(times),len(vals),file_out_name))
+        file_out = open(data_output.file_name, 'w')
+        i=0
+        
+        for time in times:
+           file_out.write('{0}   '.format(time))
+           for val in vals:
+                file_out.write('{0}   '.format(val[i]))
+           file_out.write('\n')
+           i += 1
+
 
     if fig_count > 0:
         pylab.show()
+
 
 class Display:
     def __init__(self, fig):
@@ -173,5 +202,6 @@ def plot_recording(recording):
     displays[data_output.title].legend.append(recorder.quantity)
     pylab.legend(displays[data_output.title].plots, displays[data_output.title].legend)
 
-def save_recording(recording):
-    pass
+
+
+
