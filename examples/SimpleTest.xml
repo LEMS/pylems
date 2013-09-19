@@ -33,7 +33,7 @@
         
         <Dynamics>
             <DerivedVariable name="I" dimension="current" exposure="I" value="g * (E-v)"/>
-            <DerivedVariable name="I2" dimension="none" exposure="I2" value="0.4"/>
+            <DerivedVariable name="I2" dimension="none" exposure="I2" value="v/E"/>
         </Dynamics>
 
     </ComponentType>
@@ -59,7 +59,8 @@
 
         <OutputFile id="of0" fileName="simp.dat">
             <OutputColumn id="v" quantity="v"/>
-            <OutputColumn id="m" quantity="membrane/I"/> 
+            <OutputColumn id="m" quantity="membrane/I"/>
+            <OutputColumn id="m" quantity="membrane/I2"/>
         </OutputFile> 
 
     </Simulation>
