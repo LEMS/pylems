@@ -7,7 +7,7 @@ long_description = open("README.md").read()
 setup(
     name = "PyLEMS",
     version = '0.3.0',
-    packages = ['lems','lems.base','lems.model','lems.parser','lems.sim'],
+    packages = ['lems','lems.base','lems.model','lems.parser','lems.sim', 'lems.dlems'],
     author = "PyLEMS authors and contributors",
     author_email = "gautham@lisphacker.org",
     description = "A Python library for working with the Low Entropy Model Specification language (LEMS)",

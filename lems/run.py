@@ -7,10 +7,8 @@ Command line simulation driver.
 """
 
 import argparse
-from pprint import pprint
 
 from lems.model.model import Model
-from lems.parser.LEMS import LEMSFileParser
 from lems.sim.build import SimulationBuilder
 from lems.model.simulation import DataDisplay,DataWriter
 
@@ -19,6 +17,8 @@ import matplotlib.pyplot as pylab
 import numpy
 
 from lems.parser.expr import ExprParser as EP
+
+dlems_info = "dLEMS (distilled LEMS in JSON format, see https://github.com/borismarin/som-codegen)"
 
 def printsexp(sexp, prefix = '', indent = '||'):
     s = sexp
@@ -64,11 +64,18 @@ def process_args():
                         metavar='<Include directory>',
                         action='append',
                         help='Directory to be searched for included files')
+                        
+                        
+    parser.add_argument('lems_file', type=str, metavar='<LEMS file>', 
+                        help='LEMS file to be simulated')
+                        
     parser.add_argument('-nogui',
                         action='store_true',
                         help="If this is specified, just parse & simulate the model, but don't show any plots")
-    parser.add_argument('lems_file', type=str, metavar='<LEMS file>', 
-                        help='LEMS file to be simulated')
+                        
+    parser.add_argument('-dlems',
+                        action='store_true',
+                        help="If this is specified, export the LEMS file as "+dlems_info)
     
     return parser.parse_args()
     
@@ -95,10 +102,41 @@ def main():
     sim = SimulationBuilder(resolved_model).build()
     #sim.dump()
 
-    print('Running simulation')
-    sim.run()
+    if args.dlems:
+        print('Exporting as: '+dlems_info)
+        
+        from lems.dlems.exportdlems import export_component
+        
+        target = model.targets[0]
 
-    process_simulation_output(sim, args)
+        sim_comp = model.components[target]
+
+        target_net = sim_comp.parameters['target']
+
+        target_comp = model.components[target_net]
+        
+        dlems_file_name = args.lems_file.replace('.xml', '.json')
+        if dlems_file_name == args.lems_file:
+            dlems_file_name = args.lems_file + '.json'
+
+        if target_comp.type == 'network':
+
+            for child in target_comp.children:
+
+                if child.type == 'population':
+
+                    comp =  model.components[child.parameters['component']]
+
+                    export_component(model, comp, sim_comp, child.id, file_name=dlems_file_name)
+        else:
+            export_component(model, sim_comp, target_comp)
+    
+    else:
+        print('Running simulation')
+        sim.run()
+
+        process_simulation_output(sim, args)
+    
     
 fig_count = 0
 

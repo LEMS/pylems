@@ -1,4 +1,9 @@
 #! /usr/bin/python
+"""
+Exporter for dLEMS (formerly SOM). See https://github.com/borismarin/som-codegen
+
+@author: Boris Marin
+"""
 
 import sys
 import re
@@ -12,7 +17,7 @@ from lems.model.dynamics import StateAssignment
 
 SI_PREF = {'p': 1e-12, 'n': 1e-9, 'u': 1e-6, 'm': 1e-3, 'c': 1e-2}
 
-def to_si(unit_str):
+def to_si(model, unit_str):
     return str(model.get_numeric_value(unit_str))
 
 def comp2sign(cond):
@@ -45,21 +50,21 @@ def inequality_to_condition(ineq):
     sign = comp2sign(s.group(2))
     return (expr, sign)
 
-def export_component(comp, parent_pop=''):
+def export_component(model, comp, sim_comp, parent_pop='', file_name=None):
     
         comp_type = model.component_types[comp.type]
 
-        som = OrderedDict()
-        som['name'] = comp.id
+        dlems = OrderedDict()
+        dlems['name'] = comp.id
         params = OrderedDict()
 
         for p in comp.parameters.keys():
-           params[p] = to_si(comp.parameters[p])
+           params[p] = to_si(model, comp.parameters[p])
 
         for c in comp_type.constants.keys():
-           params[c] = to_si(comp_type.constants[c].value)
+           params[c] = to_si(model, comp_type.constants[c].value)
                               
-        som['parameters']=params
+        dlems['parameters']=params
 
         dyn = comp_type.dynamics
 
@@ -71,14 +76,14 @@ def export_component(comp, parent_pop=''):
             else:
                 dvs[dv.name] = "0"
 
-        som['state_functions']=dvs
+        dlems['state_functions']=dvs
 
         tds = OrderedDict()
 
         for td in dyn.time_derivatives:
             tds[td.variable] = td.value
 
-        som['dynamics']=tds
+        dlems['dynamics']=tds
 
         svs = OrderedDict()
         for sv in dyn.state_variables:
@@ -91,7 +96,7 @@ def export_component(comp, parent_pop=''):
             if not sv.name in svs: 
                 svs[sv.name] = '0'
 
-        som['state']=svs
+        dlems['state']=svs
 
         evs = []
         count_cond = 0
@@ -113,11 +118,11 @@ def export_component(comp, parent_pop=''):
                 evs.append(ev)
                 count_cond+=1   
 
-        som['events']=evs
+        dlems['events']=evs
 
-        som['t_start']='0'
-        som['t_end']=to_si(sim_comp.parameters['length'])
-        som['dt']=to_si(sim_comp.parameters['step'])
+        dlems['t_start']='0'
+        dlems['t_end']=to_si(model, sim_comp.parameters['length'])
+        dlems['dt']=to_si(model, sim_comp.parameters['step'])
 
         disps = []
 
@@ -154,7 +159,7 @@ def export_component(comp, parent_pop=''):
                         scale_y = SI_PREF[py.group()[0]]
                     except (KeyError, AttributeError) as e:
                         scale_y = 1
-                    #som is only currentyl only concerned with state var plots 
+                    #dlems is only currentyl only concerned with state var plots 
                     if cur['ordinate'] in svs:
                         curves.append(cur)
                 
@@ -168,54 +173,58 @@ def export_component(comp, parent_pop=''):
                 
                 
             elif d.type == 'OutputFile':
-                som['dump_to_file'] = d.parameters['fileName']
+                dlems['dump_to_file'] = d.parameters['fileName']
                 for dd in d.children:
                     s = dd.parameters['quantity']
                 
-        som['display'] = disps
+        dlems['display'] = disps
 
-        som_file_name = 'comp_%s.json'%comp.id
-        som_file = open(som_file_name, 'w')
+        dlems_file_name = file_name
+        if dlems_file_name is None:
+            dlems_file_name = 'comp_%s.json'%comp.id
+            
+        dlems_file = open(dlems_file_name, 'w')
 
-        som_file.write(json.dumps(som, indent=4, separators=(',', ': ')))
+        dlems_file.write(json.dumps(dlems, indent=4, separators=(',', ': ')))
 
-        som_file.close()
+        dlems_file.close()
 
-        print(open(som_file_name,'r').read())
+        print(open(dlems_file_name,'r').read())
 
-        print("Written to %s"%som_file_name)
+        print("Written to %s"%dlems_file_name)
     
 
-model = Model()
 
+if __name__ == '__main__':
+    model = Model()
 
-try:
-    lems_file = sys.argv[1] 
-except:
-    lems_file = '../NeuroML2/NeuroML2CoreTypes/LEMS_NML2_Ex9_FN.xml'
+    try:
+        lems_file = sys.argv[1] 
+    except:
+        lems_file = '../NeuroML2/NeuroML2CoreTypes/LEMS_NML2_Ex9_FN.xml'
 
-print('Importing LEMS file from: %s'%lems_file)
-model.import_from_file(lems_file)
+    print('Importing LEMS file from: %s'%lems_file)
+    model.import_from_file(lems_file)
 
-target = model.targets[0]
+    target = model.targets[0]
 
-sim_comp = model.components[target]
+    sim_comp = model.components[target]
 
-target_net = sim_comp.parameters['target']
+    target_net = sim_comp.parameters['target']
 
-target_comp = model.components[target_net]
+    target_comp = model.components[target_net]
 
-if target_comp.type == 'network':
+    if target_comp.type == 'network':
 
-    for child in target_comp.children:
+        for child in target_comp.children:
 
-        if child.type == 'population':
+            if child.type == 'population':
 
-            comp =  model.components[child.parameters['component']]
+                comp =  model.components[child.parameters['component']]
 
-            export_component(comp, child.id)
-else:
-    export_component(target_comp)
+                export_component(model, comp, sim_comp, child.id)
+    else:
+        export_component(model, sim_comp, target_comp)
     
 
 
