@@ -134,12 +134,17 @@ class Case(LEMSBase):
         """ Value if the condition is true.
         @type: str """
 
-        self.expression_tree = None
-        """ Parse tree for the case expression.
+        self.condition_expression_tree = None
+        """ Parse tree for the case condition expression.
+        @type: lems.parser.expr.ExprNode """
+        
+        self.value_expression_tree = None
+        """ Parse tree for the case condition expression.
         @type: lems.parser.expr.ExprNode """
         
         try:
-            self.expression_tree = ExprParser(value).parse()
+            self.condition_expression_tree = ExprParser(condition).parse()
+            self.value_expression_tree = ExprParser(value).parse()
         except:
             raise ParseError("Parse error when parsing value expression "
                              "'{0}' for state variable {1}",
