@@ -7,6 +7,7 @@ Simulation builder.
 """
 
 import copy
+import re
 
 from lems.base.base import LEMSBase
 from lems.base.errors import SimBuildError
@@ -267,7 +268,8 @@ class SimulationBuilder(LEMSBase):
                 receiver.id = "{0}__{1}__".format(component.id,
                                                   receiver_template.id)
 
-                target.add_attachment(receiver, ec.receiver_container)
+                if ec.receiver_container:
+                    target.add_attachment(receiver, ec.receiver_container)
                 target.add_child(receiver_template.id, receiver)
                 target = receiver
 
@@ -881,7 +883,9 @@ class SimulationBuilder(LEMSBase):
             reduce_op = '*'
             acc_start = 1
 
-        bits = select.split('[*]')
+        #bits = select.split('[*]')
+        bits = re.split('\[.*\]', select)
+        seps = re.findall('\[.*\]', select)
 
         code = ['self.{0} = {1}'.format(result, acc_start)]
         code += ['self.{0}_shadow = {1}'.format(result, acc_start)]
@@ -893,14 +897,31 @@ class SimulationBuilder(LEMSBase):
             code += ['    self.{0} = self.{1}'.format(result, target)]
             code += ['    self.{0}_shadow = self.{1}'.format(result, target)]
         elif len(bits) == 2:
-            array = bits[0]
-            ref = bits[1]
+            sep = seps[0][1:-1]
 
-            code += ['    acc = {0}'.format(acc_start)]
-            code += ['    for o in self.{0}:'.format(array)]
-            code += ['        acc = acc {0} o{1}'.format(reduce_op, ref)]
-            code += ['    self.{0} = acc'.format(result)]
-            code += ['    self.{0}_shadow = acc'.format(result)]
+            if sep == '*':
+                array = bits[0]
+                ref = bits[1]
+
+                code += ['    acc = {0}'.format(acc_start)]
+                code += ['    for o in self.{0}:'.format(array)]
+                code += ['        acc = acc {0} o{1}'.format(reduce_op, ref)]
+                code += ['    self.{0} = acc'.format(result)]
+                code += ['    self.{0}_shadow = acc'.format(result)]
+            else:
+                bits2 = sep.split('=')
+                if len(bits2) > 1:
+                    array = bits[0]
+                    ref = bits[1]
+
+                    code += ['    acc = {0}'.format(acc_start)]
+                    code += ['    for o in self.{0}:'.format(array)]
+                    code += ['        if o.{0} == {1}:'.format(bits2[0], bits2[1])]
+                    code += ['            acc = acc {0} o{1}'.format(reduce_op, ref)]
+                    code += ['    self.{0} = acc'.format(result)]
+                    code += ['    self.{0}_shadow = acc'.format(result)]
+                else:
+                    raise SimbuildError("Invalid reduce target - '{0}'".format(select))
         else:
             raise SimbuildError("Invalid reduce target - '{0}'".format(select))
 

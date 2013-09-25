@@ -95,6 +95,7 @@ def main():
     sim = SimulationBuilder(resolved_model).build()
     #sim.dump()
 
+    return
     print('Running simulation')
     sim.run()
 
