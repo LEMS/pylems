@@ -41,7 +41,7 @@ pylems [\<options\>] \<LEMS file\>
 - Example 2 --  Working
 - Example 3 --  Working, but with startup issue as example 2
 - Example 4 --  Not working
-- Example 5 --  Not running (Need to be able to parse conditions in parameter for select expressions)
+- Example 5 --  Working
 - Example 6 --  Working
 - Example 7 --  Not running
 - Example 8 --  Working, with stability problems.
