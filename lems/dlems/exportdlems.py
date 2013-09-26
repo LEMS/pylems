@@ -146,7 +146,7 @@ def export_component(model, comp, sim_comp, parent_pop='', file_name=None):
                     cur = OrderedDict() 
                     s = li.parameters['quantity']
                     x = s[s.rindex('/')+1:]
-                    cur['abcissa'] = 't'
+                    cur['abscissa'] = 't'
                     cur['ordinate'] = x
                     cur['colour'] = li.parameters['color'] 
                     px = re.search('([cmunp])s', li.parameters['timeScale'], re.IGNORECASE)
@@ -165,7 +165,7 @@ def export_component(model, comp, sim_comp, parent_pop='', file_name=None):
                 
                 abax = {k: str(scale_x*float(v)) for (k, v) in abax.items()} 
                 orax = {k: str(scale_y*float(v)) for (k, v) in orax.items()} 
-                di['abcissa_axis'] = abax
+                di['abscissa_axis'] = abax
                 di['ordinate_axis'] = orax
 
                 di['curves'] = curves
