@@ -11,6 +11,7 @@ import json
 from collections import OrderedDict
 
 from lems.model.model import Model
+from lems.sim.build import order_derived_variables, order_derived_parameters
 from lems.model.dynamics import OnStart
 from lems.model.dynamics import OnCondition
 from lems.model.dynamics import StateAssignment
@@ -38,7 +39,7 @@ def has_display(disp, pop):
 
     
 def any_svs_plotted(disp, svs):
-    s = lambda x: x[x.rindex('/')+1:]
+    s = lambda x: x[x.rfind('/')+1:]
     return any([s(li.parameters['quantity']) in svs for li in disp.children])
 
 
@@ -59,10 +60,10 @@ def export_component(model, comp, sim_comp, parent_pop='', file_name=None):
         params = OrderedDict()
 
         for p in comp.parameters.keys():
-           params[p] = to_si(model, comp.parameters[p])
+            params[p] = to_si(model, comp.parameters[p])
 
         for c in comp_type.constants.keys():
-           params[c] = to_si(model, comp_type.constants[c].value)
+            params[c] = to_si(model, comp_type.constants[c].value)
                               
         dlems['parameters']=params
 
@@ -70,7 +71,7 @@ def export_component(model, comp, sim_comp, parent_pop='', file_name=None):
 
         dvs = OrderedDict()
 
-        for dv  in dyn.derived_variables:
+        for dv in dyn.derived_variables:
             if dv.value is not None:
                 dvs[dv.name] = dv.value
             else:
@@ -120,9 +121,9 @@ def export_component(model, comp, sim_comp, parent_pop='', file_name=None):
 
         dlems['events']=evs
 
-        dlems['t_start']='0'
-        dlems['t_end']=to_si(model, sim_comp.parameters['length'])
-        dlems['dt']=to_si(model, sim_comp.parameters['step'])
+        dlems['t_start'] = '0'
+        dlems['t_end'] = to_si(model, sim_comp.parameters['length'])
+        dlems['dt'] = to_si(model, sim_comp.parameters['step'])
 
         disps = []
 
@@ -145,7 +146,7 @@ def export_component(model, comp, sim_comp, parent_pop='', file_name=None):
                 for li in d.children:
                     cur = OrderedDict() 
                     s = li.parameters['quantity']
-                    x = s[s.rindex('/')+1:]
+                    x = s[s.rfind('/')+1:]
                     cur['abscissa'] = 't'
                     cur['ordinate'] = x
                     cur['colour'] = li.parameters['color'] 
@@ -159,7 +160,7 @@ def export_component(model, comp, sim_comp, parent_pop='', file_name=None):
                         scale_y = SI_PREF[py.group()[0]]
                     except (KeyError, AttributeError) as e:
                         scale_y = 1
-                    #dlems is only currentyl only concerned with state var plots 
+                    #dlems is currently concerned with state var plots only
                     if cur['ordinate'] in svs:
                         curves.append(cur)
                 
@@ -214,6 +215,7 @@ if __name__ == '__main__':
 
     target_comp = model.components[target_net]
 
+
     if target_comp.type == 'network':
 
         for child in target_comp.children:
@@ -224,7 +226,7 @@ if __name__ == '__main__':
 
                 export_component(model, comp, sim_comp, child.id)
     else:
-        export_component(model, sim_comp, target_comp)
+        export_component(model, target_comp, sim_comp)
     
 
 
