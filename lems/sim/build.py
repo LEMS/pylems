@@ -7,6 +7,7 @@ Simulation builder.
 """
 
 import copy
+import re
 
 from lems.base.base import LEMSBase
 from lems.base.errors import SimBuildError
@@ -123,7 +124,6 @@ class SimulationBuilder(LEMSBase):
             derived_parameter_code += ['self.{0}_shadow = ({1})'.format(
                         derived_parameter.name,
                         expression)]
-        #print derived_parameter_code
        
         suffix = ''
         runnable.add_method('update_derived_parameters' + suffix, ['self'],
@@ -256,7 +256,6 @@ class SimulationBuilder(LEMSBase):
 
         # Process event connections
         for ec in structure.event_connections:
-            #print("event_connections  {0}".format(ec.toxml()))
             source = runnable.parent.resolve_path(ec.from_)
             target = runnable.parent.resolve_path(ec.to)
 
@@ -267,7 +266,8 @@ class SimulationBuilder(LEMSBase):
                 receiver.id = "{0}__{1}__".format(component.id,
                                                   receiver_template.id)
 
-                target.add_attachment(receiver, ec.receiver_container)
+                if ec.receiver_container:
+                    target.add_attachment(receiver, ec.receiver_container)
                 target.add_child(receiver_template.id, receiver)
                 target = receiver
 
@@ -402,26 +402,35 @@ class SimulationBuilder(LEMSBase):
         derived_variable_code = []
         derived_variables_ordering = order_derived_variables(regime)
         for dvn in derived_variables_ordering: #regime.derived_variables:
-            dv = dynamics.derived_variables[dvn]
-            runnable.add_derived_variable(dv.name)
-            if dv.value:
-                derived_variable_code += ['self.{0} = ({1})'.format(
+            if dvn in dynamics.derived_variables:
+                dv = dynamics.derived_variables[dvn]
+                runnable.add_derived_variable(dv.name)
+                if dv.value:
+                    derived_variable_code += ['self.{0} = ({1})'.format(
                         dv.name,
                         self.build_expression_from_tree(runnable,
                                                         regime,
                                                         dv.expression_tree))]
-            elif dv.select:
-                if dv.reduce:
-                    derived_variable_code += self.build_reduce_code(dv.name,
-                                                                    dv.select,
-                                                                    dv.reduce)
-                else:
-                    derived_variable_code += ['self.{0} = (self.{1})'.format(
+                elif dv.select:
+                    if dv.reduce:
+                        derived_variable_code += self.build_reduce_code(dv.name,
+                                                                        dv.select,
+                                                                        dv.reduce)
+                    else:
+                        derived_variable_code += ['self.{0} = (self.{1})'.format(
                             dv.name,
                             dv.select.replace('/', '.'))]
+                else:
+                    raise SimBuildError(('Inconsistent derived variable settings'
+                                         'for {0}').format(dvn))
+            elif dvn in dynamics.conditional_derived_variables:
+                dv = dynamics.conditional_derived_variables[dvn]
+                derived_variable_code += self.build_conditional_derived_var_code(runnable,
+                                                                                 regime,
+                                                                                 dv)
             else:
-                raise SimBuildError(('Inconsistent derived variable settings'
-                                     'for {0}').format(dvn))
+                raise SimBuildError("Unknown derived variable '{0}' in '{1}'",
+                                     dvn, runnable.id)
         runnable.add_method('update_derived_variables' + suffix, ['self'],
                             derived_variable_code)
 
@@ -881,7 +890,9 @@ class SimulationBuilder(LEMSBase):
             reduce_op = '*'
             acc_start = 1
 
-        bits = select.split('[*]')
+        #bits = select.split('[*]')
+        bits = re.split('\[.*\]', select)
+        seps = re.findall('\[.*\]', select)
 
         code = ['self.{0} = {1}'.format(result, acc_start)]
         code += ['self.{0}_shadow = {1}'.format(result, acc_start)]
@@ -893,20 +904,48 @@ class SimulationBuilder(LEMSBase):
             code += ['    self.{0} = self.{1}'.format(result, target)]
             code += ['    self.{0}_shadow = self.{1}'.format(result, target)]
         elif len(bits) == 2:
-            array = bits[0]
-            ref = bits[1]
+            sep = seps[0][1:-1]
 
-            code += ['    acc = {0}'.format(acc_start)]
-            code += ['    for o in self.{0}:'.format(array)]
-            code += ['        acc = acc {0} o{1}'.format(reduce_op, ref)]
-            code += ['    self.{0} = acc'.format(result)]
-            code += ['    self.{0}_shadow = acc'.format(result)]
+            if sep == '*':
+                array = bits[0]
+                ref = bits[1]
+
+                code += ['    acc = {0}'.format(acc_start)]
+                code += ['    for o in self.{0}:'.format(array)]
+                code += ['        acc = acc {0} o{1}'.format(reduce_op, ref)]
+                code += ['    self.{0} = acc'.format(result)]
+                code += ['    self.{0}_shadow = acc'.format(result)]
+            else:
+                bits2 = sep.split('=')
+                if len(bits2) > 1:
+                    array = bits[0]
+                    ref = bits[1]
+
+                    code += ['    acc = {0}'.format(acc_start)]
+                    code += ['    for o in self.{0}:'.format(array)]
+                    code += ['        if o.{0} == {1}:'.format(bits2[0], bits2[1])]
+                    code += ['            acc = acc {0} o{1}'.format(reduce_op, ref)]
+                    code += ['    self.{0} = acc'.format(result)]
+                    code += ['    self.{0}_shadow = acc'.format(result)]
+                else:
+                    raise SimbuildError("Invalid reduce target - '{0}'".format(select))
         else:
             raise SimbuildError("Invalid reduce target - '{0}'".format(select))
 
         code += ['except:']
         code += ['    pass']
 
+        return code
+
+    def build_conditional_derived_var_code(self, runnable, regime, dv):
+        code = []
+        for case in dv.cases:
+            code += ['if {0}:'.format(self.build_expression_from_tree(runnable, 
+                                                                      regime, 
+                                                                      case.condition_expression_tree))]
+            code += ['    self.{0} = {1}'.format(dv.name, self.build_expression_from_tree(runnable, 
+                                                                                          regime, 
+                                                                                          case.value_expression_tree))]
         return code
 
     def add_recording_behavior(self, component, runnable):
@@ -925,6 +964,7 @@ class SimulationBuilder(LEMSBase):
         simulation = component.simulation
 
         for rec in simulation.records:
+            rec.id = runnable.id
             self.current_record_target.add_variable_recorder(self.current_data_output, rec)
 
 ############################################################
@@ -1004,6 +1044,13 @@ def order_derived_variables(regime):
             dvsnoexp.append(dv.name)
         else:
             dvs.append(dv.name)
+            
+    for dv in regime.conditional_derived_variables:
+        if len(dv.cases) == 0:
+            dvsnoexp.append(dv.name)
+        else:
+            dvs.append(dv.name)
+            
 
     count = maxcount
 
@@ -1011,11 +1058,24 @@ def order_derived_variables(regime):
         count = count - 1
 
         for dv1 in dvs:
-            exp_tree = regime.derived_variables[dv1].expression_tree
+            if dv1 in regime.derived_variables:
+                dv = regime.derived_variables[dv1]
+            else:
+                dv = regime.conditional_derived_variables[dv1]
+                
             found = False
-            for dv2 in dvs:
-                if dv1 != dv2 and is_var_in_exp_tree(dv2, exp_tree):
-                    found = True
+            if isinstance(dv, DerivedVariable):
+                exp_tree = dv.expression_tree
+                for dv2 in dvs:
+                    if dv1 != dv2 and is_var_in_exp_tree(dv2, exp_tree):
+                        found = True
+            else:
+                for case in dv.cases:
+                    for dv2 in dvs:
+                        if dv1 != dv2 and (is_var_in_exp_tree(dv2, case.condition_expression_tree) or
+                                           is_var_in_exp_tree(dv2, case.value_expression_tree)):
+                            found = True
+                            
             if not found:
                 ordering.append(dv1)
                 del dvs[dvs.index(dv1)]

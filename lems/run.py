@@ -95,9 +95,6 @@ def main():
     
     resolved_model = model.resolve()
     
-    ###fn = '/tmp/model2.xml'
-    ###model.export_to_file(fn)
-
     print('Building simulation')
     sim = SimulationBuilder(resolved_model).build()
     #sim.dump()
@@ -237,7 +234,7 @@ def plot_recording(recording):
                       color=recorder.color,
                       label=recorder.quantity)
     displays[data_output.title].plots.append(plot)
-    displays[data_output.title].legend.append(recorder.quantity)
+    displays[data_output.title].legend.append(recorder.id)
     pylab.legend(displays[data_output.title].plots, displays[data_output.title].legend)
 
 

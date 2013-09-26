@@ -63,6 +63,10 @@ class Record(LEMSBase):
         See instance variable documentation for information on parameters.
         """
 
+        self.id = ''
+        """ Id of the quantity
+        @type: str """
+        
         self.quantity = quantity
         """ Path to the quantity to be recorded.
         @type: str """

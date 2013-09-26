@@ -14,6 +14,7 @@ import ast
 import sys
 
 from math import *
+from pprint import pprint
 
 #import math
 
@@ -52,18 +53,17 @@ class Reflective(object):
             for statement in statements:
                 code_string += '    ' + statement + '\n'
 
-        #self.total_code_string += '[['+method_name + ']]\n'+code_string + '\n'
-        #print self.total_code_string
         g = globals()
         l = locals()
+        
+        #print(code_string.replace('__generated_function__', 
+        #                          '{0}.{1}'.format(self.component.type, method_name)))
+
         exec(compile(ast.parse(code_string), '<unknown>', 'exec'), g, l)
 
         #setattr(cls, method_name, __generated_function__)
         self.__dict__[method_name] = l['__generated_function__']
         del l['__generated_function__']
-
-        #print(code_string.replace('__generated_function__', 
-        #                          '{0}.{1}'.format(self.component.type, method_name)))
 
     def add_instance_variable(self, variable, initial_value):
         self.instance_variables.append(variable)
@@ -189,8 +189,8 @@ class Runnable(Reflective):
 
                 return
 
-        raise SimBuildError('Unable to find appropriate attachment for {0} in {1}'.format(
-            runnable.id, self.id))
+        raise SimBuildError('Unable to find appropriate attachment for {0} in {1}',
+                            runnable.id, self.id)
 
     def add_event_in_port(self, port):
         self.event_in_ports.append(port)
@@ -360,8 +360,8 @@ class Runnable(Reflective):
                 name = "{0}.{1}".format(r.id, name)
 
             print("Error in '{0} ({1})': {2}".format(name,
-                                                     self.component.type, 
-                                                     e))
+                                                         self.component.type, 
+                                                         e))
             print(type(e))
             
             keys = list(self.__dict__.keys())
@@ -398,7 +398,7 @@ class Runnable(Reflective):
 
         self.update_derived_variables(self)
         self.update_shadow_variables()
-
+                
         self.update_state_variables(self, dt)
         self.update_shadow_variables()
         
@@ -409,21 +409,6 @@ class Runnable(Reflective):
         self.run_postprocessing_event_handlers(self)
         self.update_shadow_variables()
 
-        if False:
-            if self.id == 'hhpop__hhcell__0':
-                print('1 - ', self.v, self)
-            if self.id in ['__id_1__', '__id_2__', '__id_3__', '__id_4__', '__id_5__', '__id_6__']:
-                print('2 - ', self.parent.parent.parent.parent.v, self.parent.parent.parent.parent)
-
-        if False:
-            g = 'na'
-            if self.id == g:
-                print(1, self.fopenHHtauInf, len(self.gatesHHtauInf))
-                #if self.id == 'forwardRate' and self.parent.id == g:
-                #print(2, self.r, self)
-                #if self.id == 'reverseRate' and self.parent.id == g:
-                #print(3, self.r, self)
-                
         if self.current_regime != '':
             regime = self.regimes[self.current_regime]
 
