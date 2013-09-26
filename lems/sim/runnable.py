@@ -14,7 +14,6 @@ import ast
 import sys
 
 from math import *
-from pprint import pprint
 
 #import math
 
@@ -221,11 +220,15 @@ class Runnable(Reflective):
     def resolve_path(self, path):
         if path == '':
             return self
+        if path == 'this':
+            return self
         if path[0] == '/':
             return self.parent.resolve_path(path)
         elif path.find('../') == 0:
             return self.parent.resolve_path(path[3:])
         elif path.find('..') == 0:
+            return self.parent
+        elif path == 'parent':
             return self.parent
         else:
             if path.find('/') >= 1:
@@ -246,8 +249,8 @@ class Runnable(Reflective):
                 childobj = self.children[child]
                 if idx != -1:
                     childobj = childobj.array[idx]
-            elif child in self.component.context.parameters:
-                ctx = self.component.context
+            elif child in self.component.parameters:
+                ctx = self.component
                 p = ctx.parameters[child]
                 return self.resolve_path('../' + p.value)
             else:

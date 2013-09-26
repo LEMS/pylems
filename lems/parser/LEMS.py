@@ -719,7 +719,7 @@ class LEMSFileParser(LEMSBase):
         try:
             condition = node.lattrib['condition']
         except:
-            self.raise_error('<Case> must specify a condition')
+            condition = None
             
         try:
             value = node.lattrib['value']

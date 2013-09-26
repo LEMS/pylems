@@ -479,21 +479,54 @@ class Model(LEMSBase):
                 source_port = fc.texts[ev.source_port].value if ev.source_port and ev.source_port in fc.texts else None
                 target_port = fc.texts[ev.target_port].value if ev.target_port and ev.target_port in fc.texts else None
                 
-                ev2 = EventConnection(fc.structure.withs[ev.from_].instance,
-                                      fc.structure.withs[ev.to].instance,
+                
+                receiver = None
+                
+                # TODO: Get more efficient way to find parent comp
+                if '../' in ev.receiver:
+                    receiver_id = None
+                    parent_attr = ev.receiver[3:]
+                    #print "Finding %s in parent of %s"%(parent_attr, fc.id)
+                    for comp in self.components.values():
+                        for child in comp.children:
+                            for child2 in child.children:
+                                if child2.id == fc.id:
+                                    receiver_id = child.parameters[parent_attr]
+                                    #print "Got it: "+receiver_id
+                    
+                    if receiver_id is not None:            
+                        for comp in self.fat_components:
+                            if comp.id == receiver_id:
+                                    receiver = comp
+                                    #print "receiver is: %s"%receiver
+             
+                    
+                if not receiver:
+                    receiver = fc.component_references[ev.receiver].referenced_component if ev.receiver else None
+                receiver_container = fc.texts[ev.receiver_container].value if (fc.texts and ev.receiver_container) else ''
+                
+                if len(receiver_container)==0:
+                    # TODO: remove this hard coded check!
+                    receiver_container = 'synapses'
+                
+                from_inst = fc.structure.withs[ev.from_].instance
+                to_inst = fc.structure.withs[ev.to].instance
+                
+                ev2 = EventConnection(from_inst,
+                                      to_inst,
                                       source_port,
                                       target_port,
-                                      fc.component_references[ev.receiver].referenced_component if ev.receiver else None,
-                                      fc.texts[ev.receiver_container].value if ev.receiver_container else '')
-            except:
-                raise ModelError("Unable to resolve event connection parameters in component '{0}'",
-                                 fc.id)
+                                      receiver,
+                                      receiver_container)
+            except Exception as e:
+                raise ModelError("Unable to resolve event connection parameters in component '{0}'",fc)
             fc.structure.add(ev2)
                 
         for ch in ct.structure.child_instances:
             try:
+                ref_comp = fc.component_references[ch.component].referenced_component
                 ch2 = ChildInstance(ch.component,
-                                    fc.component_references[ch.component].referenced_component)
+                                    ref_comp)
             except:
                 raise ModelError("Unable to resolve child instance parameters for "
                                  "'{0}' in component '{1}'",
@@ -507,7 +540,7 @@ class Model(LEMSBase):
             except:
                 raise ModelError("Unable to resolve multi-instantiate parameters for "
                                  "'{0}' in component '{1}'",
-                                 mi.component, fc.id)
+                                 mi.component, fc)
             fc.structure.add(mi2)
 
     def resolve_simulation(self, fc, ct):
