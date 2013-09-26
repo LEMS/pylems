@@ -62,20 +62,21 @@ def export_component(model, comp, sim_comp, parent_pop='', file_name=None):
         for p in comp.parameters.keys():
             params[p] = to_si(model, comp.parameters[p])
 
+        for p in order_derived_parameters(comp_type):
+            params[p] = to_si(model, comp_type.derived_parameters[p])
+
         for c in comp_type.constants.keys():
             params[c] = to_si(model, comp_type.constants[c].value)
-                              
         dlems['parameters']=params
 
         dyn = comp_type.dynamics
-
         dvs = OrderedDict()
-
-        for dv in dyn.derived_variables:
-            if dv.value is not None:
-                dvs[dv.name] = dv.value
+        for dv in order_derived_variables(dyn):
+            val = dyn.derived_variables[dv].value
+            if val is not None:
+                dvs[dv] = val
             else:
-                dvs[dv.name] = "0"
+                dvs[dv] = "0"
 
         dlems['state_functions']=dvs
 
