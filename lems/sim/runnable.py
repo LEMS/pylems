@@ -478,3 +478,93 @@ class Runnable(Reflective):
 
     def __lt__(self, other):
         return self.id < other.id
+
+    def copy(self):
+        """
+        Make a copy of this runnable.
+
+        @return: Copy of this runnable.
+        @rtype: lems.sim.runnable.Runnable
+        """
+
+        r = Runnable(self.id, self.component, self.parent)
+
+        # Copy simulation time parameters
+        r.time_step = self.time_step
+        r.time_completed = self.time_completed
+        r.time_total = self.time_total
+
+        # Plasticity and state stack (?)
+        r.plastic = self.plastic
+        r.state_stack = Stack()
+        
+        # Copy variables (GG - Faster using the add_* methods?)
+        for v in self.instance_variables:
+            r.instance_variables.append(v)
+            r.__dict__[v] = self.__dict__[v]
+            r.__dict__[v + '_shadow'] = self.__dict__[v + '_shadow']
+        
+        for v in self.derived_variables:
+            r.derived_variables.append(v)
+            r.__dict__[v] = self.__dict__[v]
+            r.__dict__[v + '_shadow'] = self.__dict__[v + '_shadow']
+        
+        # Copy array elements
+        for child in self.array:
+            child_copy = child.copy()
+            child_copy.parent = r
+            r.array.append(child_copy)
+
+        # Copy children
+        for uid in self.uchildren:
+            child = self.uchildren[uid]
+            child_copy = child.copy()
+            child_copy.parent = r
+            
+            r.add_child(child_copy.id, child_copy)
+
+            # For typerefs
+            try:
+                idx = [k for k in self.__dict__ if self.__dict__[k] == child][0]
+                r.__dict__[idx] = child_copy
+            except:
+                pass
+
+            # For groups and attachments:
+            try:
+                idx = [k for k in self.__dict__ if child in self.__dict__[k]][0]
+                if idx not in r.__dict__:
+                    r.__dict__[idx] = []
+                r.__dict__[idx].append(child_copy)
+
+                for at in self.atatchments:
+                    if self.attachments[at] == idx:
+                        r.attachments[at] = idx
+            except:
+                pass
+                        
+        # Copy event ports
+        for port in self.event_in_ports:
+            r.event_in_ports.append(port)
+            r.event_in_counters[port] = 0
+
+        for port in self.event_out_ports:
+            r.event_out_ports.append(port)
+            r.event_out_callbacks[port] = []
+
+        # Copy methods
+        r.update_kinetic_scheme = self.update_kinetic_scheme
+        r.run_startup_event_handlers = self.run_startup_event_handlers
+        r.run_preprocessing_event_handlers = self.run_preprocessing_event_handlers
+        r.run_postprocessing_event_handlers = self.run_postprocessing_event_handlers
+        
+        r.update_state_variables = self.update_state_variables
+        r.update_derived_variables = self.update_derived_variables
+        r.update_shadow_variables = self.update_shadow_variables
+        r.update_derived_parameters = self.update_derived_parameters
+
+        for rn in self.regimes:
+            r.add_regime(self.regimes[rn])
+        r.current_regime = self.current_regime
+        
+        return r

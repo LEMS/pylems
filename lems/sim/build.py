@@ -245,7 +245,8 @@ class SimulationBuilder(LEMSBase):
 
             for i in range(mi.number):
                 print("Creating instance {} of multi of {}".format(i,template))
-                instance = copy.deepcopy(template)
+                #instance = copy.deepcopy(template)
+                instance = template.copy()
                 instance.id = "{0}__{1}__{2}".format(component.id,
                                                      template.id,
                                                      i)
