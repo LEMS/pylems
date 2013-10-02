@@ -97,7 +97,7 @@ class OpNode(ExprNode):
 
         return '({0} {1} {2})'.format(self.op,
                                       str(self.left),
-                                     str(self.right))
+                                      str(self.right))
 
 class Func1Node(ExprNode):
     """

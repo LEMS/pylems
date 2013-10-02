@@ -478,7 +478,8 @@ class Model(LEMSBase):
             try:
                 source_port = fc.texts[ev.source_port].value if ev.source_port and ev.source_port in fc.texts else None
                 target_port = fc.texts[ev.target_port].value if ev.target_port and ev.target_port in fc.texts else None
-                
+
+                print(fc.id, fc.paths, fc.component_references)
                 ev2 = EventConnection(fc.structure.withs[ev.from_].instance,
                                       fc.structure.withs[ev.to].instance,
                                       source_port,
