@@ -7,10 +7,8 @@ Command line simulation driver.
 """
 
 import argparse
-from pprint import pprint
 
 from lems.model.model import Model
-from lems.parser.LEMS import LEMSFileParser
 from lems.sim.build import SimulationBuilder
 from lems.model.simulation import DataDisplay,DataWriter
 
@@ -19,6 +17,8 @@ import matplotlib.pyplot as pylab
 import numpy
 
 from lems.parser.expr import ExprParser as EP
+
+dlems_info = "dLEMS (distilled LEMS in JSON format, see https://github.com/borismarin/som-codegen)"
 
 def printsexp(sexp, prefix = '', indent = '||'):
     s = sexp
@@ -64,11 +64,18 @@ def process_args():
                         metavar='<Include directory>',
                         action='append',
                         help='Directory to be searched for included files')
+                        
+                        
+    parser.add_argument('lems_file', type=str, metavar='<LEMS file>', 
+                        help='LEMS file to be simulated')
+                        
     parser.add_argument('-nogui',
                         action='store_true',
                         help="If this is specified, just parse & simulate the model, but don't show any plots")
-    parser.add_argument('lems_file', type=str, metavar='<LEMS file>', 
-                        help='LEMS file to be simulated')
+                        
+    parser.add_argument('-dlems',
+                        action='store_true',
+                        help="If this is specified, export the LEMS file as "+dlems_info)
     
     return parser.parse_args()
     
@@ -92,40 +99,100 @@ def main():
     sim = SimulationBuilder(resolved_model).build()
     #sim.dump()
 
-    print('Running simulation')
-    sim.run()
+    if args.dlems:
+        print('Exporting as: '+dlems_info)
+        
+        from lems.dlems.exportdlems import export_component
+        
+        target = model.targets[0]
 
-    process_simulation_output(sim, args)
+        sim_comp = model.components[target]
+
+        target_net = sim_comp.parameters['target']
+
+        target_comp = model.components[target_net]
+        
+        dlems_file_name = args.lems_file.replace('.xml', '.json')
+        if dlems_file_name == args.lems_file:
+            dlems_file_name = args.lems_file + '.json'
+
+        if target_comp.type == 'network':
+
+            for child in target_comp.children:
+
+                if child.type == 'population':
+
+                    comp =  model.components[child.parameters['component']]
+
+                    export_component(model, comp, sim_comp, child.id, file_name=dlems_file_name)
+        else:
+            export_component(model, sim_comp, target_comp)
+    
+    else:
+        print('Running simulation')
+        sim.run()
+
+        process_simulation_output(sim, args)
+    
     
 fig_count = 0
 
 def process_simulation_output(sim, options):
     global fig_count
-    if not options.nogui:
-        print('Processing results')
-        rq = []
-        for rn in sim.runnables:
-            rq.append(sim.runnables[rn])
 
-        while rq != []:
-            runnable = rq[0]
-            rq = rq[1:]
-            for c in runnable.children:
-                rq.append(runnable.children[c])
-            for child in runnable.array:
-                rq.append(child)
+    print('Processing results')
+    rq = []
+    for rn in sim.runnables:
+        rq.append(sim.runnables[rn])
 
-            if runnable.recorded_variables:
-                for recording in runnable.recorded_variables:
-                    if isinstance(recording.data_output, DataDisplay):
+    file_times = {}
+    file_outs = {}
+
+    while rq != []:
+        runnable = rq[0]
+        rq = rq[1:]
+        for c in runnable.children:
+            rq.append(runnable.children[c])
+        for child in runnable.array:
+            rq.append(child)
+
+        if runnable.recorded_variables:
+            for recording in runnable.recorded_variables:
+                if isinstance(recording.data_output, DataDisplay):
+                    if not options.nogui:
                         plot_recording(recording)
-                    elif isinstance(recording.data_output, DataWriter):
-                        save_recording(recording)
-                    else:
-                        raise Exception("Invalid output type - " + str(type(recording.data_output)))
+                elif isinstance(recording.data_output, DataWriter):
+                    data_output = recording.data_output
+                    times = []
+                    vals = []
+                    for (x,y) in recording.values:
+                        times.append(x)
+                        vals.append(y)
+                    file_times[data_output.file_name] = times
+                    if not file_outs.has_key(data_output.file_name):
+                        file_outs[data_output.file_name] = []
+                    file_outs[data_output.file_name].append(vals)
+                else:
+                    raise Exception("Invalid output type - " + str(type(recording.data_output)))
+
+    for file_out_name in file_times.keys():
+        times = file_times[file_out_name]
+        vals = file_outs[file_out_name]
+        print('Going to save {0}x{1} data points to file {2}'.format(len(times),len(vals),file_out_name))
+        file_out = open(data_output.file_name, 'w')
+        i=0
+        
+        for time in times:
+           file_out.write('{0}   '.format(time))
+           for val in vals:
+                file_out.write('{0}   '.format(val[i]))
+           file_out.write('\n')
+           i += 1
+
 
     if fig_count > 0:
         pylab.show()
+
 
 class Display:
     def __init__(self, fig):
@@ -170,5 +237,6 @@ def plot_recording(recording):
     displays[data_output.title].legend.append(recorder.id)
     pylab.legend(displays[data_output.title].plots, displays[data_output.title].legend)
 
-def save_recording(recording):
-    pass
+
+
+

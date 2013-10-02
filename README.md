@@ -39,10 +39,10 @@ pylems [\<options\>] \<LEMS file\>
 - Example 0 --  Working
 - Example 1 --  Working with incorrect initialisation of m, h, n
 - Example 2 --  Working
-- Example 3 --  Working, but with startup issue as example 2
+- Example 3 --  Partially working, with startup issue as example 2, and expOneSyn not working
 - Example 4 --  Not working
-- Example 5 --  Working
-- Example 6 --  Working
+- Example 5 --  Working, but with startup issue as example 2
+- Example 6 --  Working, but with initialisation error on block factor
 - Example 7 --  Not running
 - Example 8 --  Working, with stability problems.
 - Example 9 --  Not working
@@ -53,7 +53,7 @@ pylems [\<options\>] \<LEMS file\>
 - Example 14 -- Not running
 - Example 15 -- Not running
 - Example 16 -- Not running
-- Example 17 -- Not working
+- Example 17 -- Runs, but not working
       
 ## LEMS elements that do not work
 - XPath based parameters - DerivedParameter, PathParameter

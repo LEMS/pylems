@@ -143,12 +143,16 @@ class Case(LEMSBase):
         @type: lems.parser.expr.ExprNode """
         
         try:
-            self.condition_expression_tree = ExprParser(condition).parse()
-            self.value_expression_tree = ExprParser(value).parse()
+            self.value_expression_tree = ExprParser(self.value).parse()
+            
+            if not self.condition:
+                self.condition_expression_tree = None
+            else:
+                self.condition_expression_tree = ExprParser(self.condition).parse()
         except:
-            raise ParseError("Parse error when parsing value expression "
-                             "'{0}' for state variable {1}",
-                             self.value, self.variable)
+            raise ParseError("Parse error when parsing case with condition "
+                             "'{0}' and value {1}",
+                             self.condition, self.value)
         
     def toxml(self):
         """

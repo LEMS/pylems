@@ -849,7 +849,10 @@ class Component(LEMSBase):
 
 
     def __str__(self):
-        return 'Component, id: {0}, type: {1}, parameters: {2}'.format(self.id, self.type, self.parameters)
+        return 'Component, id: {0}, type: {1},\n   parameters: {2}\n'.format(self.id, self.type, self.parameters)
+    
+    def __repr__(self):
+        return self.__str__()
 
     def set_parameter(self, parameter, value):
         """

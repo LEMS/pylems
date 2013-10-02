@@ -1,0 +1,70 @@
+<Lems>
+
+    <Target component="sim1"/>
+    
+    <!-- Include standard NeuroML2 ComponentType definitions -->
+    <Include file="Simulation.xml"/>
+    
+    
+    <ComponentType name="simpleCell">
+        
+        <Parameter name="v0" dimension="voltage"/>
+        <Parameter name="v1" dimension="voltage"/>
+        <Parameter name="tau" dimension="time"/>
+        
+        <Exposure name="v" dimension="voltage" description="Membrane potential"/>
+        
+        <Child name="membrane" type="membrane"/>
+        
+        <Dynamics>
+            <DerivedVariable name="v" dimension="voltage" exposure="v" value="v0 + (t*(v1-v0)/tau)"/>
+
+        </Dynamics>
+
+    </ComponentType>
+    
+    <ComponentType name="membrane">
+        
+        <Parameter name="g" dimension="conductance"/>
+        <Parameter name="E" dimension="voltage"/>
+        <Exposure name="I" dimension="current"/>
+        <Exposure name="I2" dimension="none"/>
+        <Requirement name="v" dimension="voltage"/>
+        
+        <Dynamics>
+            <DerivedVariable name="I" dimension="current" exposure="I" value="g * (E-v)"/>
+            <DerivedVariable name="I2" dimension="none" exposure="I2" value="v/E"/>
+        </Dynamics>
+
+    </ComponentType>
+    
+    
+    
+    <simpleCell id="cell0" v0="-100 mV" v1="100 mV" tau="200 ms">
+        <membrane g="10 pS" E="50 mV"/>
+    </simpleCell>
+    
+    
+    <Simulation id="sim1" length="5ms" step="1ms" target="cell0">
+    
+        <Display id="d1" title="Voltage" timeScale="1ms" xmin="-20" xmax="220" ymin="-110" ymax="110">
+            <Line id="v" quantity="v" scale="1mV"  color="#ffffff" timeScale="1ms"/>
+        </Display>
+        
+        <Display id="d2" title="Current" timeScale="1ms" xmin="-20" xmax="220" ymin="-1" ymax="2">
+            <Line id="I" quantity="membrane/I" scale="1pS"  color="#ffffff" timeScale="1ms"/>
+            <Line id="I2" quantity="membrane/I2" scale="1"  color="#f22fff" timeScale="1ms"/>
+        </Display>
+    
+
+        <OutputFile id="of0" fileName="simp.dat">
+            <OutputColumn id="v" quantity="v"/>
+            <OutputColumn id="m" quantity="membrane/I"/>
+            <OutputColumn id="m" quantity="membrane/I2"/>
+        </OutputFile> 
+
+    </Simulation>
+
+
+
+</Lems>

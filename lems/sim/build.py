@@ -244,6 +244,7 @@ class SimulationBuilder(LEMSBase):
                                            runnable)
 
             for i in range(mi.number):
+                print("Creating instance {} of multi of {}".format(i,template))
                 instance = copy.deepcopy(template)
                 instance.id = "{0}__{1}__{2}".format(component.id,
                                                      template.id,
@@ -262,6 +263,8 @@ class SimulationBuilder(LEMSBase):
             if ec.receiver:
                 receiver_template = self.build_runnable(ec.receiver,
                                                             target)
+                                                            
+                print("Creating instance of receiver of {}".format(receiver_template))
                 receiver = copy.deepcopy(receiver_template)
                 receiver.id = "{0}__{1}__".format(component.id,
                                                   receiver_template.id)
@@ -287,7 +290,7 @@ class SimulationBuilder(LEMSBase):
                 else:
                     raise SimBuildError(("No destination event port "
                                          "uniquely identifiable "
-                                         "in '{0}'").format(target.id))
+                                         "in '{0}'").format(target))
                    
             source.register_event_out_callback(\
                 source_port, lambda: target.inc_event_in(target_port))
@@ -939,13 +942,24 @@ class SimulationBuilder(LEMSBase):
 
     def build_conditional_derived_var_code(self, runnable, regime, dv):
         code = []
+        el = ''
         for case in dv.cases:
-            code += ['if {0}:'.format(self.build_expression_from_tree(runnable, 
-                                                                      regime, 
-                                                                      case.condition_expression_tree))]
-            code += ['    self.{0} = {1}'.format(dv.name, self.build_expression_from_tree(runnable, 
-                                                                                          regime, 
-                                                                                          case.value_expression_tree))]
+            if case.condition_expression_tree:
+                code += [el+'if {0}:'.format(self.build_expression_from_tree(runnable, 
+                                                                          regime, 
+                                                                          case.condition_expression_tree))]
+                el='el'
+                code += ['    self.{0} = {1}'.format(dv.name, self.build_expression_from_tree(runnable, 
+                                                                                              regime, 
+                                                                                              case.value_expression_tree))]
+                                                                                              
+        for case in dv.cases:
+            if case.condition_expression_tree is None:
+                code += ['else: ']
+                code += ['    self.{0} = {1}'.format(dv.name, self.build_expression_from_tree(runnable, 
+                                                                                              regime, 
+                                                                                              case.value_expression_tree))]
+        #print code                                                                                     
         return code
 
     def add_recording_behavior(self, component, runnable):

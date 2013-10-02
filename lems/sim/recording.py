@@ -22,5 +22,11 @@ class Recording(LEMSBase):
 
         self.values = []
 
+    def __str__(self):
+        return 'Recorder: {0}, {1}, size: {2}'.format(self.variable, self.recorder, len(self.values))
+
+    def __repr__(self):
+        return self.__str__()
+
     def add_value(self, time, value):
         self.values.append((time, value))

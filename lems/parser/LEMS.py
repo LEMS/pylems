@@ -719,7 +719,7 @@ class LEMSFileParser(LEMSBase):
         try:
             condition = node.lattrib['condition']
         except:
-            self.raise_error('<Case> must specify a condition')
+            condition = None
             
         try:
             value = node.lattrib['value']
@@ -1173,8 +1173,9 @@ class LEMSFileParser(LEMSBase):
 
         scale = node.lattrib.get('scale', None)
         color  = node.lattrib.get('color', None)
+        id  = node.lattrib.get('id', None)
 
-        self.current_simulation.add_record(Record(quantity, scale, color))
+        self.current_simulation.add_record(Record(quantity, scale, color, id))
 
     def parse_regime(self, node):
         """

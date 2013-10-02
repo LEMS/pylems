@@ -1,3 +1,4 @@
+*.dat
 results
 test*.sh
 build
