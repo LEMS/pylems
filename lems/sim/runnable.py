@@ -515,6 +515,12 @@ class Runnable(Reflective):
             child_copy.parent = r
             r.array.append(child_copy)
 
+        # Copy attachment def
+        for att in self.attachments:
+            atn = self.attachments[att]
+            r.attachments[att] = atn
+            r.__dict__[atn] = []
+            
         # Copy children
         for uid in self.uchildren:
             child = self.uchildren[uid]
@@ -537,9 +543,6 @@ class Runnable(Reflective):
                     r.__dict__[idx] = []
                 r.__dict__[idx].append(child_copy)
 
-                for at in self.atatchments:
-                    if self.attachments[at] == idx:
-                        r.attachments[at] = idx
             except:
                 pass
                         
