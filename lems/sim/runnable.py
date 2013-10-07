@@ -408,7 +408,6 @@ class Runnable(Reflective):
         if self.time_completed == 0:
             self.update_derived_parameters(self)
 
-            
         self.run_postprocessing_event_handlers(self)
         self.update_shadow_variables()
 
@@ -563,7 +562,7 @@ class Runnable(Reflective):
         
         r.update_state_variables = self.update_state_variables
         r.update_derived_variables = self.update_derived_variables
-        r.update_shadow_variables = self.update_shadow_variables
+        #r.update_shadow_variables = self.update_shadow_variables
         r.update_derived_parameters = self.update_derived_parameters
 
         for rn in self.regimes:

@@ -266,7 +266,8 @@ class SimulationBuilder(LEMSBase):
                                                             target)
                                                             
                 print("Creating instance of receiver of {}".format(receiver_template))
-                receiver = copy.deepcopy(receiver_template)
+                #receiver = copy.deepcopy(receiver_template)
+                receiver = receiver_template.copy()
                 receiver.id = "{0}__{1}__".format(component.id,
                                                   receiver_template.id)
 
