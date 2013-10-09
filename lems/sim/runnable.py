@@ -6,6 +6,7 @@ Base class for runnable components.
 @contact: gautham@lisphacker.org
 """
 
+from lems.base.base import LEMSBase
 from lems.base.stack import Stack
 from lems.base.errors import SimBuildError
 from lems.sim.recording import Recording
@@ -27,7 +28,7 @@ from math import *
 #        print('ERROR performing exp({0})'.format(x))
 #        raise Ex1()
 
-class Reflective(object):
+class Reflective(LEMSBase):
     def __init__(self):
         self.instance_variables = []
         self.derived_variables = []
@@ -487,6 +488,7 @@ class Runnable(Reflective):
         """
 
         r = Runnable(self.id, self.component, self.parent)
+        copies = dict()
 
         # Copy simulation time parameters
         r.time_step = self.time_step
@@ -513,18 +515,20 @@ class Runnable(Reflective):
             child_copy = child.copy()
             child_copy.parent = r
             r.array.append(child_copy)
+            copies[child.uid] = child_copy
 
         # Copy attachment def
         for att in self.attachments:
             atn = self.attachments[att]
             r.attachments[att] = atn
             r.__dict__[atn] = []
-            
+
         # Copy children
         for uid in self.uchildren:
             child = self.uchildren[uid]
             child_copy = child.copy()
             child_copy.parent = r
+            copies[child.uid] = child_copy
             
             r.add_child(child_copy.id, child_copy)
 
@@ -568,5 +572,38 @@ class Runnable(Reflective):
         for rn in self.regimes:
             r.add_regime(self.regimes[rn])
         r.current_regime = self.current_regime
+
+        # Copy remaining runnable references.
+        for k in self.__dict__:
+            if k == 'parent':
+                continue
+            c = self.__dict__[k]
+            if isinstance(c, Runnable):
+                if c.uid in copies:
+                    r.__dict__[k] = copies[c.uid]
+                else:
+                    c2 = c.copy()
+                    c2.parent = r
+                    copies[c.uid] = c2
+                    r.__dict__[k] = c2
+                
+
+        print('########################################')
+        keys = list(self.__dict__.keys())
+        keys.sort()
+        print(len(keys))
+        for k in keys:
+            print(k, self.__dict__[k])
+        print('----------------------------------------')
+        keys = list(r.__dict__.keys())
+        keys.sort()
+        print(len(keys))
+        for k in keys:
+            print(k, r.__dict__[k])
+        print('########################################')
+        print('')
+        print('')
+        print('')
+        print('')
         
         return r

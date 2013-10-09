@@ -244,7 +244,6 @@ class SimulationBuilder(LEMSBase):
                                            runnable)
 
             for i in range(mi.number):
-                print("Creating instance {} of multi of {}".format(i,template))
                 #instance = copy.deepcopy(template)
                 instance = template.copy()
                 instance.id = "{0}__{1}__{2}".format(component.id,
@@ -265,7 +264,6 @@ class SimulationBuilder(LEMSBase):
                 receiver_template = self.build_runnable(ec.receiver,
                                                             target)
                                                             
-                print("Creating instance of receiver of {}".format(receiver_template))
                 #receiver = copy.deepcopy(receiver_template)
                 receiver = receiver_template.copy()
                 receiver.id = "{0}__{1}__".format(component.id,
@@ -961,7 +959,6 @@ class SimulationBuilder(LEMSBase):
                 code += ['    self.{0} = {1}'.format(dv.name, self.build_expression_from_tree(runnable, 
                                                                                               regime, 
                                                                                               case.value_expression_tree))]
-        #print code                                                                                     
         return code
 
     def add_recording_behavior(self, component, runnable):

@@ -169,7 +169,7 @@ def process_simulation_output(sim, options):
                         times.append(x)
                         vals.append(y)
                     file_times[data_output.file_name] = times
-                    if not file_outs.has_key(data_output.file_name):
+                    if data_output.file_name not in file_outs:
                         file_outs[data_output.file_name] = []
                     file_outs[data_output.file_name].append(vals)
                 else:
