@@ -43,7 +43,7 @@ pylems [\<options\>] \<LEMS file\>
 - Example 4 --  Not working
 - Example 5 --  Working, but with startup issue as example 2
 - Example 6 --  Working, but with initialisation error on block factor
-- Example 7 --  Not running
+- Example 7 --  Not working (Check Runnable.copy() for typeref copying)
 - Example 8 --  Working, with stability problems.
 - Example 9 --  Not working
 - Example 10 -- Working, but with startup issue as example 2

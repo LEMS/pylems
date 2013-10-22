@@ -121,6 +121,7 @@ class Runnable(Reflective):
 
         self.children = {}
         self.uchildren = {}
+        self.groups = []
 
         self.recorded_variables = []
 
@@ -139,7 +140,7 @@ class Runnable(Reflective):
         
         
     def __str__(self):
-        return 'Runnable, id: {0}, component: ({1})'.format(self.id, self.component)
+        return 'Runnable, id: {0} ({1}), component: ({2})'.format(self.id, self.uid, self.component)
     
     def __repr__(self):
         return self.__str__()
@@ -164,6 +165,7 @@ class Runnable(Reflective):
     def add_child_to_group(self, group_name, child):
         if group_name not in self.__dict__:
             self.__dict__[group_name] = []
+            self.groups.append(group_name)
         self.__dict__[group_name].append(child)
         child.parent = self
 
@@ -394,8 +396,8 @@ class Runnable(Reflective):
 
         self.update_kinetic_scheme(self, dt)
 
-        if self.time_completed == 0:
-            self.run_startup_event_handlers(self)
+        #if self.time_completed == 0:
+        #    self.run_startup_event_handlers(self)
 
         self.run_preprocessing_event_handlers(self)
         self.update_shadow_variables()
@@ -406,11 +408,16 @@ class Runnable(Reflective):
         self.update_state_variables(self, dt)
         self.update_shadow_variables()
         
-        if self.time_completed == 0:
-            self.update_derived_parameters(self)
+        #if self.time_completed == 0:
+        #    self.update_derived_parameters(self)
 
         self.run_postprocessing_event_handlers(self)
         self.update_shadow_variables()
+
+        if False:#self.id == 'hhpop__hhcell__0':
+            print('1', self.uid, self.v)
+        if False:#self.id == 'reverseRate':
+            print('2', self.parent.parent.parent.parent.uid, self.parent.parent.parent.parent.v)
 
         if self.current_regime != '':
             regime = self.regimes[self.current_regime]
@@ -436,6 +443,16 @@ class Runnable(Reflective):
             return 0
         else:
             return dt
+
+    def do_startup(self):
+        for cid in self.uchildren:
+            self.uchildren[cid].do_startup()
+
+        for child in self.array:
+            child.do_startup()
+
+        self.run_startup_event_handlers(self)
+        self.update_derived_parameters(self)
 
 
     def record_variables(self):
@@ -573,6 +590,19 @@ class Runnable(Reflective):
             r.add_regime(self.regimes[rn])
         r.current_regime = self.current_regime
 
+        # Copy groups
+        for gn in self.groups:
+            g = self.__dict__[gn]
+            for c in g:
+                if c.uid in copies:
+                    r.add_child_to_group(gn, copies[c.uid])
+                else:
+                    c2 = c.copy()
+                    c2.parent = r
+                    copies[c.uid] = c2
+                    r.add_child_to_group(gn, c2)
+                    
+
         # Copy remaining runnable references.
         for k in self.__dict__:
             if k == 'parent':
@@ -588,22 +618,23 @@ class Runnable(Reflective):
                     r.__dict__[k] = c2
                 
 
-        print('########################################')
-        keys = list(self.__dict__.keys())
-        keys.sort()
-        print(len(keys))
-        for k in keys:
-            print(k, self.__dict__[k])
-        print('----------------------------------------')
-        keys = list(r.__dict__.keys())
-        keys.sort()
-        print(len(keys))
-        for k in keys:
-            print(k, r.__dict__[k])
-        print('########################################')
-        print('')
-        print('')
-        print('')
-        print('')
+        if False:#self.component.type == 'pointCellCondBased':
+            print('########################################')
+            keys = list(self.__dict__.keys())
+            keys.sort()
+            print(len(keys))
+            for k in keys:
+                print(k, self.__dict__[k])
+            print('----------------------------------------')
+            keys = list(r.__dict__.keys())
+            keys.sort()
+            print(len(keys))
+            for k in keys:
+                print(k, r.__dict__[k])
+            print('########################################')
+            print('')
+            print('')
+            print('')
+            print('')
         
         return r

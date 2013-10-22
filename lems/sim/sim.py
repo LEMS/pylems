@@ -50,6 +50,7 @@ class Simulation(LEMSBase):
     def init_run(self):
         self.current_time = 0
         for id in self.runnables:
+            self.runnables[id].do_startup()
             heapq.heappush(self.run_queue, (0, self.runnables[id]))
 
     def step(self):
