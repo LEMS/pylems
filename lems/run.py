@@ -76,6 +76,10 @@ def process_args():
     parser.add_argument('-dlems',
                         action='store_true',
                         help="If this is specified, export the LEMS file as "+dlems_info)
+
+    parser.add_argument('-mpi',
+                        action='store_true',
+                        help="Enable MPI support")
     
     return parser.parse_args()
     
