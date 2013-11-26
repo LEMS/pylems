@@ -12,5 +12,5 @@ install:
 
 
 script:  
-  - cd ./lems/test && nosetests -v
+  - cd ./lems/test && nosetests -vs
 
