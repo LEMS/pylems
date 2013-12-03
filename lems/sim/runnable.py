@@ -38,6 +38,7 @@ class Reflective(LEMSBase):
 
     #@classmethod
     def add_method(self, method_name, parameter_list, statements):
+        verbose = False
         code_string = 'def __generated_function__'
         if parameter_list == []:
             code_string += '():\n'
@@ -47,6 +48,8 @@ class Reflective(LEMSBase):
                 code_string += ', ' + parameter
             code_string += '):\n'
 
+        if verbose:
+            code_string += '    print("Calling method: %s(), dv: %s")\n'%(method_name, str(self.derived_variables))
         if statements == []:
             code_string += '    pass'
         else:
@@ -59,6 +62,9 @@ class Reflective(LEMSBase):
         #print(code_string.replace('__generated_function__', 
         #                          '{0}.{1}'.format(self.component.type, method_name)))
 
+        if verbose and statements != []:
+            print("------------- %s %s ----------------"%(method_name, str(self.derived_variables)))
+            print(code_string)
         exec(compile(ast.parse(code_string), '<unknown>', 'exec'), g, l)
 
         #setattr(cls, method_name, __generated_function__)
@@ -453,6 +459,13 @@ class Runnable(Reflective):
 
         self.run_startup_event_handlers(self)
         self.update_derived_parameters(self)
+        self.update_derived_variables(self)
+        
+        for cid in self.uchildren:
+            self.uchildren[cid].do_startup()
+
+        for child in self.array:
+            child.do_startup()
 
 
     def record_variables(self):

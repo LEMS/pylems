@@ -785,7 +785,7 @@ class SimulationBuilder(LEMSBase):
         for action in on_start.actions:
             code = self.build_action(runnable, regime, action)
             for line in code:
-                on_start_code += ['    ' + line]
+                on_start_code += [line]
 
         return on_start_code
 

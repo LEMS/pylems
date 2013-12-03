@@ -3,17 +3,16 @@
 ###A [LEMS](http://neuroml.org/lems/)/[NeuroML2](http://neuroml.org/neuroml2.php) simulator written in Python
 
 
-*Note: PyLEMS is currently in the process of major refactoring.*
-
 ## Installation
 Check the code out of github.
 
-    % git clone git@github.com:LEMS/pylems.git
+    git clone git@github.com:LEMS/pylems.git
 
 This will create a directory named pylems. Add this directory to your PATH and PYTHONPATH variables.
 
 ## Usage
-pylems [\<options\>] \<LEMS file\>
+
+    pylems [\<options\>] \<LEMS file\>
 
 ### Options
 - -I/-include \<path\> - Adds a directory to the model file include search path
@@ -37,23 +36,23 @@ pylems [\<options\>] \<LEMS file\>
 ### *NeuroML* examples (from https://github.com/NeuroML/NeuroML2/tree/master/NeuroML2CoreTypes)
 
 - Example 0 --  Working
-- Example 1 --  Working with incorrect initialisation of m, h, n
+- Example 1 --  Working!
 - Example 2 --  Working
-- Example 3 --  Partially working, with startup issue as example 2, and expOneSyn not working
-- Example 4 --  Not working
-- Example 5 --  Working, but with startup issue as example 2
-- Example 6 --  Working, but with initialisation error on block factor
-- Example 7 --  Not working (Check Runnable.copy() for typeref copying)
+- Example 3 --  Partially working; expOneSyn not working
+- Example 4 --  Not working (KSChannel)
+- Example 5 --  Working
+- Example 6 --  Not working: KeyError: 'passive'
+- Example 7 --  Not working: KeyError: 'passive' (Check Runnable.copy() for typeref copying)
 - Example 8 --  Working, with stability problems.
-- Example 9 --  Not working
-- Example 10 -- Working, but with startup issue as example 2
+- Example 9 --  Working
+- Example 10 -- Working
 - Example 11 -- Working
 - Example 12 -- Not running
 - Example 13 -- Not running
 - Example 14 -- Not running
 - Example 15 -- Not running
 - Example 16 -- Not running
-- Example 17 -- Runs, but not working
+- Example 17 -- Working
       
 ## LEMS elements that do not work
 - XPath based parameters - DerivedParameter, PathParameter

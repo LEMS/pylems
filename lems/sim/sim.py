@@ -88,6 +88,7 @@ class Simulation(LEMSBase):
         """
 
         self.init_run()
+        #self.dump("AfterInit:")
         while self.step():
             pass
 
@@ -107,37 +108,41 @@ class Simulation(LEMSBase):
         for id in self.runnables:
             self.runnables[id].plastic = False
 
-    def dump_runnable(self, runnable, prefix = ''):
+    def dump_runnable(self, runnable, prefix = '.'):
         r = runnable
-        print('{0}{1} ({2})'.format(prefix, r.id, r.component.type), r)
-        verbose = False
+        print('{0}...............  {1} ({2})'.format(prefix, r.id, r.component.type))
+        print(prefix+str(r))
+        verbose = r.component.type != "Display" and r.component.type != "Line"
         if verbose:
             if r.instance_variables:
-                print('{0}   Instance variables'.format(prefix))
+                print('{0}    Instance variables'.format(prefix))
                 for vn in r.instance_variables:
-                    print('{0}     {1} = {2}'.format(prefix, vn, r.__dict__[vn]))
+                    print('{0}      {1} = {2}'.format(prefix, vn, r.__dict__[vn]))
             if r.derived_variables:
-                print('{0}   Derived variables'.format(prefix))
+                print('{0}    Derived variables'.format(prefix))
                 for vn in r.derived_variables:
-                    print('{0}     {1} = {2}'.format(prefix, vn, r.__dict__[vn]))
+                    print('{0}      {1} = {2}'.format(prefix, vn, r.__dict__[vn]))
         if r.array:
             for c in r.array:
-                self.dump_runnable(c, prefix + '  ')
+                self.dump_runnable(c, prefix + '    .')
         if r.uchildren:
             for cn in r.uchildren:
-                self.dump_runnable(r.uchildren[cn], prefix + '  ')
+                self.dump_runnable(r.uchildren[cn], prefix + '    .')
                 
         if verbose:
             keys = list(r.__dict__.keys())
             keys.sort()
-            print('{0}   Keys'.format(prefix))
+            print('{0}    Keys for {1}'.format(prefix, r.id))
             for k in keys:
-                print('{0}     {1} -> {2}'.format(prefix, k, str(r.__dict__[k])))
+                key_str = str(r.__dict__[k])
+                if len(key_str) > 0 and not key_str == "[]" and not key_str == "{}":
+                    print('{0}       {1} -> {2}'.format(prefix, k, key_str))
+            print(r.total_code_string)
 
-    def dump(self):
+    def dump(self, prefix=''):
         print('Runnables:')
         for id in self.runnables:
-            self.dump_runnable(self.runnables[id])
+            self.dump_runnable(self.runnables[id], prefix)
 
 class Event:
     """

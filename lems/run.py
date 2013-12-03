@@ -97,7 +97,7 @@ def main():
     
     print('Building simulation')
     sim = SimulationBuilder(resolved_model).build()
-    #sim.dump()
+    #sim.dump("Afterbuild:")
 
     if args.dlems:
         print('Exporting as: '+dlems_info)
