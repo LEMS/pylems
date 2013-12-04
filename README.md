@@ -38,10 +38,10 @@ This will create a directory named pylems. Add this directory to your PATH and P
 - Example 0 --  Working
 - Example 1 --  Working!
 - Example 2 --  Working
-- Example 3 --  Partially working; expOneSyn not working
+- Example 3 --  Working
 - Example 4 --  Not working (KSChannel)
 - Example 5 --  Working
-- Example 6 --  Not working: KeyError: 'passive'
+- Example 6 --  Working
 - Example 7 --  Not working: KeyError: 'passive' (Check Runnable.copy() for typeref copying)
 - Example 8 --  Working, with stability problems.
 - Example 9 --  Working
