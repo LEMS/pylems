@@ -42,7 +42,7 @@ This will create a directory named pylems. Add this directory to your PATH and P
 - Example 4 --  Not working (KSChannel)
 - Example 5 --  Working
 - Example 6 --  Working
-- Example 7 --  Not working: KeyError: 'passive' (Check Runnable.copy() for typeref copying)
+- Example 7 --  Running, but without plasticity (Check Runnable.copy() for typeref copying)
 - Example 8 --  Working, with stability problems.
 - Example 9 --  Working
 - Example 10 -- Working

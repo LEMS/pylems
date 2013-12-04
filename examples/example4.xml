@@ -164,7 +164,7 @@
 <SimulationSet id="simset">
 	<Display id="disp1" title="Example 4: Kinetic Schemes" xmin="0" xmax="80" ymin="-80" ymax="50"/>
 	
-	<Simulation id="sim1" length="80ms" step="0.005ms" target="kscell_1" display="disp1">
+	<Simulation id="sim1" length="80ms" step="0.05ms" target="kscell_1" display="disp1">
     	<DisplayList timeScale="1ms" title="">
              <Line quantity="v" scale="1mV" timeScale="1ms" color="#ff4040"/>
     	</DisplayList>

@@ -58,7 +58,7 @@ refractoryPeriod="4ms" capacitance="1pF"/>
     <Text name="save"/>
     <Path name="quantity"/>
     <Simulation>
-        <Record quantity="quantity" timeScale="timeScale" scale="scale" color="color" display="display"/>
+        <Record quantity="quantity" timeScale="timeScale" scale="scale" color="color" destination="display"/>
     </Simulation>
 </ComponentType>
 
@@ -93,10 +93,10 @@ refractoryPeriod="4ms" capacitance="1pF"/>
 	 
 	<Simulation id="sim1" length="80ms" step="0.05ms" target="hhcell_1" display="disp1">
     	<DisplayList timeScale="1ms" title="">
-            <Line id="V" quantity="v" scale="1mV" timeScale="1ms" color="#0000f0"/>
+             <Line id="V" quantity="v" scale="1mV" timeScale="1ms" color="#0000f0"/>
          
-            <Line id="Na_q" quantity="NaPop/geff" scale="1nS" timeScale="1ms" color="#f00000"/>
-            <Line id="K_q" quantity="KPop/geff" scale="1nS" timeScale="1ms" color="#00f000"/>
+        <Line id="Na_q" quantity="NaPop/geff" scale="1nS" timeScale="1ms" color="#f00000"/>
+        <Line id="K_q" quantity="KPop/geff" scale="1nS" timeScale="1ms" color="#00f000"/>
     	</DisplayList>
 	</Simulation>
 </SimulationSet>
