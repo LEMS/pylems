@@ -10,13 +10,12 @@
  
  
 
-<Component id="iaf3cpt" type="iaf3" 
-	   leakReversal="-50mV" deltaV="50mV" 
-	   threshold="-30mV" leakConductance="50pS"
-	   refractoryPeriod="4ms" capacitance="1pF"/>
+<Component id="iaf3cpt" type="iaf3" leakReversal="-50mV" deltaV="50mV" threshold="-30mV" leakConductance="50pS"
+refractoryPeriod="4ms" capacitance="1pF"/>
  
 <Component id="gena" type="spikeGenerator2" period="32ms"/>
 <Component id="genb" type="spikeGenerator2" period="40ms"/>
+
 
 <ComponentType name="Synapse">
     <Parameter name="deltaG" dimension="conductance"/>
@@ -38,8 +37,7 @@
             <StateAssignment variable="geff" value="geff + deltaG"/>
         </OnEvent>     
         
-        <DerivedVariable name="current" exposure="current" 
-			 dimension="current" value="geff * (erev - v)"/>
+        <DerivedVariable name="current" exposure="current" dimension="current" value="geff * (erev - v)"/>
     </Dynamics>
 </ComponentType>
 
@@ -59,10 +57,8 @@
     
     <Dynamics>
        <StateVariable name="v" dimension="voltage" exposure="v"/>
-       <DerivedVariable name="synapticCurrent" dimension="current" 
-			select="synapses[*]/current" reduce="add"/>
-       <TimeDerivative variable="v" 
-		       value="(leakConductance * (leakReversal - v) + synapticCurrent) / capacitance"/>
+       <DerivedVariable name="synapticCurrent" dimension="current" select="synapses[*]/current" reduce="add"/>
+       <TimeDerivative variable="v" value="(leakConductance * (leakReversal - v) + synapticCurrent) / capacitance"/>
     </Dynamics>
 
 </ComponentType>
@@ -82,9 +78,9 @@
     <ComponentReference name="component" type="Component"/>
     <Parameter name="size" dimension="none"/>
    
-    <Structure>
-        <MultiInstantiate number="size" component="component"/>
-    </Structure>
+   	 <Structure>
+            <MultiInstantiate number="size" component="component"/>
+     </Structure>
     
 </ComponentType>
   
@@ -101,12 +97,13 @@
     <Text name="sourcePort"/>
     <Text name="targetPort"/>
     <Structure>
-<With instance="from" as="a"/>
+            <With instance="from" as="a"/>
           <With instance="to" as="b"/>
          <EventConnection from="a" to="b"
-			  receiver="synapse" receiverContainer="destination" 
-			  sourcePort="sourcePort" targetPort="targetPort"/>
-    </Structure>
+          receiver="synapse" receiverContainer="destination" 
+                sourcePort="sourcePort" targetPort="targetPort"/>
+        
+      </Structure>
 </ComponentType>
 
 

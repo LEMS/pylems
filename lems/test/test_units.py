@@ -34,6 +34,9 @@ class TestUnitParsing(unittest.TestCase):
 
         model.add(Unit('Kelvin', 'K', 'temperature', 0))
         model.add(Unit('celsius', 'degC', 'temperature', 0, offset=273.15))
+        
+        model.add(Unit('hour', 'hour', 'time', scale=3600))
+        model.add(Unit('min', 'min', 'time', scale=60))
 
         return model
 
@@ -62,6 +65,9 @@ class TestUnitParsing(unittest.TestCase):
         
         self.check_num_val('10.5 mS_per_cm2', 105, 'conductanceDensity')
         self.check_num_val('10.5 mS_per_cm2', 105)
+        
+        self.check_num_val('1 hour', 3600)
+        self.check_num_val('30 min', 30*60)
         
 
 

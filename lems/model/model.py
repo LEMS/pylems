@@ -634,7 +634,7 @@ class Model(LEMSBase):
                 else:
                     dimension = unit.dimension
 
-                numeric_value = (number * (10 ** unit.power)) + unit.offset
+                numeric_value = (number * (10 ** unit.power) * unit.scale) + unit.offset
             else:
                 raise SimBuildError("Unknown unit symbol '{0}'. Known: {1}",
                                     sym, self.units)
