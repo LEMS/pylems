@@ -33,7 +33,7 @@ This will create a directory named pylems. Add this directory to your PATH and P
 
 ## Examples
 
-### *NeuroML* examples (from https://github.com/NeuroML/NeuroML2/tree/master/NeuroML2CoreTypes)
+### *NeuroML* examples (from https://github.com/NeuroML/NeuroML2/tree/development/NeuroML2CoreTypes)
 
 - Example 0 --  Working
 - Example 1 --  Working!
@@ -47,9 +47,9 @@ This will create a directory named pylems. Add this directory to your PATH and P
 - Example 9 --  Working
 - Example 10 -- Working
 - Example 11 -- Working
-- Example 12 -- Not running
+- Example 12 -- Not working (Unsupported in PyLEMS: Property)
 - Example 13 -- Not running
-- Example 14 -- Not running
+- Example 14 -- Not working (Unsupported in PyLEMS: Property)
 - Example 15 -- Not running
 - Example 16 -- Not running
 - Example 17 -- Working
