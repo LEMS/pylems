@@ -790,7 +790,7 @@ class LEMSFileParser(LEMSBase):
         receiver_container = node.lattrib.get('receivercontainer', '')
 
         ec = EventConnection(from_, to, source_port, target_port, receiver, receiver_container)
-        #print "----"+ec.toxml()
+        print("----"+ec.toxml())
         self.current_structure.add_event_connection(ec)
 
     def parse_event_out(self, node):

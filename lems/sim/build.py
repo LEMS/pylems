@@ -63,7 +63,7 @@ class SimulationBuilder(LEMSBase):
             runnable = self.build_runnable(component)
             self.sim.add_runnable(runnable)
 
-        return self.sim
+        return self.sim 
 
     def build_runnable(self, component, parent = None, id_ = None):
         """
@@ -82,6 +82,7 @@ class SimulationBuilder(LEMSBase):
         @raise SimBuildError: Raised when a component reference cannot be
         resolved.
         """
+        print("++++++++ Calling build_runnable of %s with parent %s"%(component, parent))
 
         if id_ == None:
             runnable = Runnable(component.id, component, parent)
@@ -230,6 +231,7 @@ class SimulationBuilder(LEMSBase):
         structure code in the runnable component.
         @type structure: lems.model.structure.Structure
         """
+        print("++++++++ Calling build_structure of %s with runnable %s, parent %s"%(component, runnable, runnable.parent))
 
         # Process single-child instantiations
         for ch in structure.child_instances:
@@ -257,9 +259,9 @@ class SimulationBuilder(LEMSBase):
 
         # Process event connections
         for ec in structure.event_connections:
+            print(ec.toxml())
             source = runnable.parent.resolve_path(ec.from_)
             target = runnable.parent.resolve_path(ec.to)
-
             if ec.receiver:
                 receiver_template = self.build_runnable(ec.receiver,
                                                             target)
@@ -273,6 +275,9 @@ class SimulationBuilder(LEMSBase):
                     target.add_attachment(receiver, ec.receiver_container)
                 target.add_child(receiver_template.id, receiver)
                 target = receiver
+            else:
+                source = runnable.resolve_path(ec.from_)
+                target = runnable.resolve_path(ec.to)
 
             source_port = ec.source_port
             target_port = ec.target_port
@@ -291,7 +296,8 @@ class SimulationBuilder(LEMSBase):
                     raise SimBuildError(("No destination event port "
                                          "uniquely identifiable "
                                          "in '{0}'").format(target))
-                   
+             
+            print("register_event_out_callback %s (%s) -> %s (port: %s)"%(source, source_port, target, target_port))
             source.register_event_out_callback(\
                 source_port, lambda: target.inc_event_in(target_port))
 

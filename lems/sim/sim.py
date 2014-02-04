@@ -88,7 +88,7 @@ class Simulation(LEMSBase):
         """
 
         self.init_run()
-        #self.dump("AfterInit:")
+        self.dump("AfterInit:")
         #print("++++++++++++++++ Time: %f"%self.current_time)
         while self.step():
             #print("++++++++++++++++ Time: %f"%self.current_time)
