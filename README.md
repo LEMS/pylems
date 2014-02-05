@@ -43,7 +43,7 @@ This will create a directory named pylems. Add this directory to your PATH and P
 - Example 5 --  Working
 - Example 6 --  Working
 - Example 7 --  Running, but without plasticity (Check Runnable.copy() for typeref copying)
-- Example 8 --  Working, but issue with Regimes, see [here](https://github.com/LEMS/pylems/issues/10)
+- Example 8 --  Working
 - Example 9 --  Working
 - Example 10 -- Working
 - Example 11 -- Working
