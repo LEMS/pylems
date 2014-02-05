@@ -29,6 +29,9 @@ from math import *
 #        raise Ex1()
 
 class Reflective(LEMSBase):
+    
+    debug = False
+    
     def __init__(self):
         self.instance_variables = []
         self.derived_variables = []
@@ -38,7 +41,7 @@ class Reflective(LEMSBase):
 
     #@classmethod
     def add_method(self, method_name, parameter_list, statements):
-        verbose = False
+
         code_string = 'def __generated_function__'
         if parameter_list == []:
             code_string += '():\n'
@@ -48,7 +51,7 @@ class Reflective(LEMSBase):
                 code_string += ', ' + parameter
             code_string += '):\n'
 
-        if verbose:
+        if self.debug:
             code_string += '    print("Calling method: %s(), dv: %s")\n'%(method_name, str(self.derived_variables))
         if statements == []:
             code_string += '    pass'
@@ -62,7 +65,7 @@ class Reflective(LEMSBase):
         #print(code_string.replace('__generated_function__', 
         #                          '{0}.{1}'.format(self.component.type, method_name)))
 
-        if verbose and statements != []:
+        if self.debug and statements != []:
             print("------------- %s %s ----------------"%(method_name, str(self.derived_variables)))
             print(code_string)
         exec(compile(ast.parse(code_string), '<unknown>', 'exec'), g, l)
@@ -395,11 +398,13 @@ class Runnable(Reflective):
 
         for child in self.array:
             child.single_step(dt)
-
+            
+        '''
+        Regime transition now happens below...
         if self.new_regime != '':
             self.current_regime = self.new_regime
-            self.new_regime = ''
-
+            self.new_regime = '''''
+        
         self.update_kinetic_scheme(self, dt)
 
         #if self.time_completed == 0:
@@ -426,6 +431,7 @@ class Runnable(Reflective):
             print('2', self.parent.parent.parent.parent.uid, self.parent.parent.parent.parent.v)
 
         if self.current_regime != '':
+            if self.debug: print "In reg: "+self.current_regime
             regime = self.regimes[self.current_regime]
 
             regime.update_kinetic_scheme(self, dt)
@@ -441,6 +447,16 @@ class Runnable(Reflective):
 
             regime.run_postprocessing_event_handlers(self)
             self.update_shadow_variables()
+            
+            if self.new_regime != '':
+                self.current_regime = self.new_regime
+                self.new_regime = ''
+                regime = self.regimes[self.current_regime]
+                regime.run_preprocessing_event_handlers(self)
+                self.update_shadow_variables()
+                
+            if self.debug: print "In reg: "+self.current_regime
+                
 
         self.record_variables()
 

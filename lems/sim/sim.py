@@ -15,6 +15,7 @@ class Simulation(LEMSBase):
     """
     Simulation class.
     """
+    debug = False
 
     def __init__(self):
         """
@@ -88,7 +89,7 @@ class Simulation(LEMSBase):
         """
 
         self.init_run()
-        self.dump("AfterInit:")
+        if self.debug: self.dump("AfterInit: ")
         #print("++++++++++++++++ Time: %f"%self.current_time)
         while self.step():
             #print("++++++++++++++++ Time: %f"%self.current_time)

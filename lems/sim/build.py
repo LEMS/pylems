@@ -6,7 +6,6 @@ Simulation builder.
 @contact: gautham@lisphacker.org
 """
 
-import copy
 import re
 
 from lems.base.base import LEMSBase
@@ -22,6 +21,7 @@ class SimulationBuilder(LEMSBase):
     """
     Simulation builder class.
     """
+    debug = False
 
     def __init__(self, model):
         """
@@ -82,7 +82,7 @@ class SimulationBuilder(LEMSBase):
         @raise SimBuildError: Raised when a component reference cannot be
         resolved.
         """
-        print("++++++++ Calling build_runnable of %s with parent %s"%(component, parent))
+        if self.debug: print("++++++++ Calling build_runnable of %s with parent %s"%(component, parent))
 
         if id_ == None:
             runnable = Runnable(component.id, component, parent)
@@ -231,7 +231,7 @@ class SimulationBuilder(LEMSBase):
         structure code in the runnable component.
         @type structure: lems.model.structure.Structure
         """
-        print("++++++++ Calling build_structure of %s with runnable %s, parent %s"%(component, runnable, runnable.parent))
+        if self.debug: print("++++++++ Calling build_structure of %s with runnable %s, parent %s"%(component, runnable, runnable.parent))
 
         # Process single-child instantiations
         for ch in structure.child_instances:
@@ -259,7 +259,7 @@ class SimulationBuilder(LEMSBase):
 
         # Process event connections
         for ec in structure.event_connections:
-            print(ec.toxml())
+            if self.debug: print(ec.toxml())
             source = runnable.parent.resolve_path(ec.from_)
             target = runnable.parent.resolve_path(ec.to)
             if ec.receiver:
@@ -297,7 +297,7 @@ class SimulationBuilder(LEMSBase):
                                          "uniquely identifiable "
                                          "in '{0}'").format(target))
              
-            print("register_event_out_callback %s (%s) -> %s (port: %s)"%(source, source_port, target, target_port))
+            if self.debug: print("register_event_out_callback %s (%s) -> %s (port: %s)"%(source, source_port, target, target_port))
             source.register_event_out_callback(\
                 source_port, lambda: target.inc_event_in(target_port))
 

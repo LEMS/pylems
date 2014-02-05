@@ -36,6 +36,8 @@ class Model(LEMSBase):
     schema_location = 'https://raw.github.com/LEMS/LEMS/{0}/Schemas/LEMS/LEMS_v{1}.xsd'.format(branch, target_lems_version)
     #schema_location = '/home/padraig/LEMS/Schemas/LEMS/LEMS_v%s.xsd'%target_lems_version
     
+    debug = False
+    
     def __init__(self):
         """
         Constructor.
@@ -464,7 +466,7 @@ class Model(LEMSBase):
         """
         Resolve structure specifications.
         """
-        print("++++++++ Resolving structure of %s with %s"%(fc, ct))
+        if self.debug: print("++++++++ Resolving structure of %s with %s"%(fc, ct))
         for w in ct.structure.withs:
             try:
                 if w.instance == 'parent' or w.instance == 'this':
@@ -484,7 +486,7 @@ class Model(LEMSBase):
                 from_inst = fc.structure.withs[ev.from_].instance
                 to_inst = fc.structure.withs[ev.to].instance
                 
-                print(from_inst+" to.. "+to_inst)
+                if self.debug: print(from_inst+" to.. "+to_inst)
                 
                 if len(fc.texts) > 0 :
                     
@@ -525,12 +527,13 @@ class Model(LEMSBase):
                         #par = fc.component_references[ev.receiver]
                         #print par
                     
-                    print("+++++++++++++++++++")
-                    print(ev.toxml())
-                    print(ev.source_port)
+                    if self.debug: 
+                        print("+++++++++++++++++++")
+                        print(ev.toxml())
+                        print(ev.source_port)
+                        print(fc)
                     source_port = ev.source_port
                     target_port = ev.target_port
-                    print(fc)
                     receiver = None
                     receiver_container = None
                     
@@ -543,7 +546,7 @@ class Model(LEMSBase):
                                       target_port,
                                       receiver,
                                       receiver_container)
-                print(ev2.toxml())
+                if self.debug: print(ev2.toxml())
             except:
                 logging.exception("Something awful happened!")
                 raise ModelError("Unable to resolve event connection parameters in component '{0}'",fc)
