@@ -215,10 +215,11 @@ class SimulationBuilder(LEMSBase):
         self.current_record_target = record_target_backup
 
         return runnable
-
-    def build_structure(self, component, runnable, structure):
+    
+    
+    def build_event_connections(self, component, runnable, structure):
         """
-        Adds structure to a runnable component based on the structure
+        Adds event connections to a runnable component based on the structure
         specifications in the component model.
 
         @param component: Component model containing structure specifications.
@@ -231,32 +232,7 @@ class SimulationBuilder(LEMSBase):
         structure code in the runnable component.
         @type structure: lems.model.structure.Structure
         """
-        if self.debug: print("++++++++ Calling build_structure of %s with runnable %s, parent %s"%(component, runnable, runnable.parent))
-
-        # Process single-child instantiations
-        for ch in structure.child_instances:
-            child_runnable = self.build_runnable(ch.referenced_component, runnable)
-            runnable.add_child(child_runnable.id, child_runnable)
-
-            runnable.add_child_typeref(ch.component, child_runnable)
-            
-        # Process multi-child instatiantions
-        for mi in structure.multi_instantiates:
-            template = self.build_runnable(mi.component,
-                                           runnable)
-
-            for i in range(mi.number):
-                #instance = copy.deepcopy(template)
-                instance = template.copy()
-                instance.id = "{0}__{1}__{2}".format(component.id,
-                                                     template.id,
-                                                     i)
-                runnable.array.append(instance)
-
-        # Process foreach statements
-        if structure.for_each:
-            self.build_foreach(component, runnable, structure)
-
+        if self.debug: print("\n++++++++ Calling build_event_connections of %s with runnable %s, parent %s"%(component.id, runnable.id, runnable.parent))
         # Process event connections
         for ec in structure.event_connections:
             if self.debug: print(ec.toxml())
@@ -297,9 +273,56 @@ class SimulationBuilder(LEMSBase):
                                          "uniquely identifiable "
                                          "in '{0}'").format(target))
              
-            if self.debug: print("register_event_out_callback %s (%s) -> %s (port: %s)"%(source, source_port, target, target_port))
+            if self.debug: print("register_event_out_callback\n   Source: %s, %s (port: %s) \n   -> %s, %s (port: %s)"%(source, id(source), source_port, target, id(target), target_port))
             source.register_event_out_callback(\
                 source_port, lambda: target.inc_event_in(target_port))
+                
+            
+
+    def build_structure(self, component, runnable, structure):
+        """
+        Adds structure to a runnable component based on the structure
+        specifications in the component model.
+
+        @param component: Component model containing structure specifications.
+        @type component: lems.model.component.FatComponent
+
+        @param runnable: Runnable component to which structure is to be added.
+        @type runnable: lems.sim.runnable.Runnable
+
+        @param structure: The structure object to be used to add
+        structure code in the runnable component.
+        @type structure: lems.model.structure.Structure
+        """
+        if self.debug: print("\n++++++++ Calling build_structure of %s with runnable %s, parent %s"%(component.id, runnable.id, runnable.parent))
+
+        # Process single-child instantiations
+        for ch in structure.child_instances:
+            child_runnable = self.build_runnable(ch.referenced_component, runnable)
+            runnable.add_child(child_runnable.id, child_runnable)
+
+            runnable.add_child_typeref(ch.component, child_runnable)
+            
+        # Process multi-child instatiantions
+        for mi in structure.multi_instantiates:
+            template = self.build_runnable(mi.component,
+                                           runnable)
+
+            for i in range(mi.number):
+                #instance = copy.deepcopy(template)
+                instance = template.copy()
+                instance.id = "{0}__{1}__{2}".format(component.id,
+                                                     template.id,
+                                                     i)
+                runnable.array.append(instance)
+
+        # Process foreach statements
+        if structure.for_each:
+            self.build_foreach(component, runnable, structure)
+        
+        self.build_event_connections(component, runnable, structure)
+
+
 
     def build_foreach(self, component, runnable, foreach, name_mappings = {}):
         """
@@ -758,12 +781,15 @@ class SimulationBuilder(LEMSBase):
         @return: Generated OnEvent code
         @rtype: list(string)
         """
-
         on_event_code = []
 
+        if self.debug: on_event_code += ['print("Maybe handling something for %s ("+str(id(self))+")")'%(runnable.id),
+                          'print("EICs ("+str(id(self))+"): "+str(self.event_in_counters))']
+                          
         on_event_code += ['count = self.event_in_counters[\'{0}\']'.\
                           format(on_event.port),
                           'while count > 0:',
+                          '    print("  Handling event")' if self.debug else '',
                           '    count -= 1']
         for action in on_event.actions:
             code = self.build_action(runnable, regime, action)
