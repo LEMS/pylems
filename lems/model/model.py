@@ -23,6 +23,10 @@ from lems.model.structure import With,EventConnection,ChildInstance,MultiInstant
 
 import xml.dom.minidom as minidom
 
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+
 class Model(LEMSBase):
     """
     Stores a model.
@@ -31,6 +35,8 @@ class Model(LEMSBase):
     branch = 'development'
     schema_location = 'https://raw.github.com/LEMS/LEMS/{0}/Schemas/LEMS/LEMS_v{1}.xsd'.format(branch, target_lems_version)
     #schema_location = '/home/padraig/LEMS/Schemas/LEMS/LEMS_v%s.xsd'%target_lems_version
+    
+    debug = False
     
     def __init__(self):
         """
@@ -460,7 +466,7 @@ class Model(LEMSBase):
         """
         Resolve structure specifications.
         """
-
+        if self.debug: print("++++++++ Resolving structure of %s with %s"%(fc, ct))
         for w in ct.structure.withs:
             try:
                 if w.instance == 'parent' or w.instance == 'this':
@@ -476,40 +482,63 @@ class Model(LEMSBase):
             
         for ev in ct.structure.event_connections:
             try:
-                source_port = fc.texts[ev.source_port].value if ev.source_port and ev.source_port in fc.texts else None
-                target_port = fc.texts[ev.target_port].value if ev.target_port and ev.target_port in fc.texts else None
-                
-                receiver = None
-                
-                # TODO: Get more efficient way to find parent comp
-                if '../' in ev.receiver:
-                    receiver_id = None
-                    parent_attr = ev.receiver[3:]
-                    #print "Finding %s in parent of %s"%(parent_attr, fc.id)
-                    for comp in self.components.values():
-                        for child in comp.children:
-                            for child2 in child.children:
-                                if child2.id == fc.id:
-                                    receiver_id = child.parameters[parent_attr]
-                                    #print "Got it: "+receiver_id
-                    
-                    if receiver_id is not None:            
-                        for comp in self.fat_components:
-                            if comp.id == receiver_id:
-                                    receiver = comp
-                                    #print "receiver is: %s"%receiver
-             
-                    
-                if not receiver:
-                    receiver = fc.component_references[ev.receiver].referenced_component if ev.receiver else None
-                receiver_container = fc.texts[ev.receiver_container].value if (fc.texts and ev.receiver_container) else ''
-                
-                if len(receiver_container)==0:
-                    # TODO: remove this hard coded check!
-                    receiver_container = 'synapses'
                 
                 from_inst = fc.structure.withs[ev.from_].instance
                 to_inst = fc.structure.withs[ev.to].instance
+                
+                if self.debug: print(from_inst+" to.. "+to_inst)
+                
+                if len(fc.texts) > 0 :
+                    
+                    source_port = fc.texts[ev.source_port].value if ev.source_port and len(ev.source_port)>0 and ev.source_port in fc.texts else None
+                    target_port = fc.texts[ev.target_port].value if ev.target_port and len(ev.target_port)>0 and ev.target_port in fc.texts else None
+
+                    receiver = None
+
+                    # TODO: Get more efficient way to find parent comp
+                    if '../' in ev.receiver:
+                        receiver_id = None
+                        parent_attr = ev.receiver[3:]
+                        #print "Finding %s in parent of %s"%(parent_attr, fc.id)
+                        for comp in self.components.values():
+                            for child in comp.children:
+                                for child2 in child.children:
+                                    if child2.id == fc.id:
+                                        receiver_id = child.parameters[parent_attr]
+                                        #print "Got it: "+receiver_id
+
+                        if receiver_id is not None:            
+                            for comp in self.fat_components:
+                                if comp.id == receiver_id:
+                                        receiver = comp
+                                        #print "receiver is: %s"%receiver
+
+
+                    if not receiver:
+                        receiver = fc.component_references[ev.receiver].referenced_component if ev.receiver else None
+                    receiver_container = fc.texts[ev.receiver_container].value if (fc.texts and ev.receiver_container) else ''
+
+                    if len(receiver_container)==0:
+                        # TODO: remove this hard coded check!
+                        receiver_container = 'synapses'
+
+                else:
+                    #if from_inst == 'parent':
+                        #par = fc.component_references[ev.receiver]
+                        #print par
+                    
+                    if self.debug: 
+                        print("+++++++++++++++++++")
+                        print(ev.toxml())
+                        print(ev.source_port)
+                        print(fc)
+                    source_port = ev.source_port
+                    target_port = ev.target_port
+                    receiver = None
+                    receiver_container = None
+                    
+                    
+                    
                 
                 ev2 = EventConnection(from_inst,
                                       to_inst,
@@ -517,7 +546,9 @@ class Model(LEMSBase):
                                       target_port,
                                       receiver,
                                       receiver_container)
-            except Exception as e:
+                if self.debug: print(ev2.toxml())
+            except:
+                logging.exception("Something awful happened!")
                 raise ModelError("Unable to resolve event connection parameters in component '{0}'",fc)
             fc.structure.add(ev2)
                 

@@ -86,7 +86,7 @@ def main():
     
     args = process_args()
 
-    print('Parsing and resolving model')
+    print('Parsing and resolving model: '+args.lems_file)
     model = Model()
     if args.I is not None:
         for dir in args.I:
