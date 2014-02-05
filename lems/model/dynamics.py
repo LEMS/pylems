@@ -515,7 +515,7 @@ class OnEvent(EventHandler):
         @type: str """
 
     def __str__(self):
-        istr = 'OnEvent...'
+        istr = 'OnEvent, port: %s'%self.port
         return istr
 
     def toxml(self):
@@ -730,7 +730,7 @@ class Behavioral(LEMSBase):
         @param eh: Event handler.
         @type eh: lems.model.dynamics.EventHandler
         """
-
+        
         self.event_handlers.append(eh)
 
     def add_kinetic_scheme(self, ks):
