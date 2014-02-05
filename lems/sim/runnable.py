@@ -431,7 +431,7 @@ class Runnable(Reflective):
             print('2', self.parent.parent.parent.parent.uid, self.parent.parent.parent.parent.v)
 
         if self.current_regime != '':
-            if self.debug: print "In reg: "+self.current_regime
+            if self.debug: print("In reg: "+self.current_regime)
             regime = self.regimes[self.current_regime]
 
             regime.update_kinetic_scheme(self, dt)
@@ -455,7 +455,7 @@ class Runnable(Reflective):
                 regime.run_preprocessing_event_handlers(self)
                 self.update_shadow_variables()
                 
-            if self.debug: print "In reg: "+self.current_regime
+            if self.debug: print("In reg: "+self.current_regime)
                 
 
         self.record_variables()
