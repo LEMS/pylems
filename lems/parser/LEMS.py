@@ -19,7 +19,6 @@ from lems.model.simulation import *
 
 from lems.base.util import make_id
 
-from pprint import pprint
 
 def get_nons_tag_from_node(node):
     tag = node.tag
@@ -790,7 +789,6 @@ class LEMSFileParser(LEMSBase):
         receiver_container = node.lattrib.get('receivercontainer', '')
 
         ec = EventConnection(from_, to, source_port, target_port, receiver, receiver_container)
-        #print("----"+ec.toxml())
         self.current_structure.add_event_connection(ec)
 
     def parse_event_out(self, node):

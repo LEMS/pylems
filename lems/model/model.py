@@ -339,7 +339,9 @@ class Model(LEMSBase):
         merge_maps(ct.dynamics.derived_variables, base_ct.dynamics.derived_variables)
         merge_maps(ct.dynamics.conditional_derived_variables, base_ct.dynamics.conditional_derived_variables)
         merge_maps(ct.dynamics.time_derivatives, base_ct.dynamics.time_derivatives)
-        merge_lists(ct.dynamics.event_handlers, base_ct.dynamics.event_handlers)
+        
+        #merge_lists(ct.dynamics.event_handlers, base_ct.dynamics.event_handlers)
+        
         merge_maps(ct.dynamics.kinetic_schemes, base_ct.dynamics.kinetic_schemes)
 
         merge_lists(ct.structure.event_connections, base_ct.structure.event_connections)
