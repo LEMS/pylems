@@ -315,7 +315,6 @@ class Structure(LEMSBase):
         """
         Exports this object into a LEMS XML object
         """
-
         chxmlstr = ''
 
         for with_ in self.withs:

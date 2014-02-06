@@ -42,7 +42,7 @@ This will create a directory named pylems. Add this directory to your PATH and P
 - Example 4 --  Not working (Unsupported in PyLEMS: KSChannel)
 - Example 5 --  Working
 - Example 6 --  Working
-- Example 7 --  Running, but without plasticity (Check Runnable.copy() for typeref copying)
+- Example 7 --  Working!
 - Example 8 --  Working
 - Example 9 --  Working
 - Example 10 -- Working

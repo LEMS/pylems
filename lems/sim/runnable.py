@@ -51,8 +51,9 @@ class Reflective(LEMSBase):
                 code_string += ', ' + parameter
             code_string += '):\n'
 
-        if self.debug and False:
-            code_string += '    print("Calling method: %s(), dv: %s")\n'%(method_name, str(self.derived_variables))
+
+        if self.debug:
+            code_string += '    if "xxx" in "%s": print("Calling method: %s(), dv: %s, iv: %s")\n'%(method_name,method_name, str(self.derived_variables), str(self.instance_variables))
         if statements == []:
             code_string += '    pass'
         else:
@@ -149,7 +150,7 @@ class Runnable(Reflective):
         
         
     def __str__(self):
-        return 'Runnable, id: {0} ({1}), component: ({2})'.format(self.id, self.uid, self.component)
+        return 'Runnable, id: {0} ({1}, {2}), component: ({3})'.format(self.id, self.uid, id(self), self.component)
     
     def __repr__(self):
         return self.__str__()
@@ -210,6 +211,9 @@ class Runnable(Reflective):
 
     def inc_event_in(self, port):
         self.event_in_counters[port] += 1
+        if self.debug: 
+            print("\n--- Event in to %s (%s, %s) on port: %s"%(self.id, id(self), self.__class__, port))
+            print("EIC (%s): %s"%(id(self),self.event_in_counters))
 
     def add_event_out_port(self, port):
         self.event_out_ports.append(port)
@@ -220,11 +224,13 @@ class Runnable(Reflective):
         self.event_out_callbacks[port].append((runnable, remote_port))
 
     def register_event_out_callback(self, port, callback):
+        if self.debug: print("register_event_out_callback on %s, port: %s, callback: %s"%(self.id, port, callback))
         if port in self.event_out_callbacks:
             self.event_out_callbacks[port].append(callback)
         else:
             raise SimBuildError('No event out port \'{0}\' in '
                                 'component \'{1}\''.format(port, self.id))
+        if self.debug: print("EOC: "+str(self.event_out_callbacks))
 
     def add_regime(self, regime):
         self.regimes[regime.name] = regime
@@ -532,7 +538,7 @@ class Runnable(Reflective):
         @return: Copy of this runnable.
         @rtype: lems.sim.runnable.Runnable
         """
-
+        if self.debug: print("Coping....."+self.id)
         r = Runnable(self.id, self.component, self.parent)
         copies = dict()
 
@@ -562,7 +568,7 @@ class Runnable(Reflective):
             child_copy.parent = r
             r.array.append(child_copy)
             copies[child.uid] = child_copy
-
+            
         # Copy attachment def
         for att in self.attachments:
             atn = self.attachments[att]
@@ -594,7 +600,7 @@ class Runnable(Reflective):
 
             except:
                 pass
-                        
+               
         # Copy event ports
         for port in self.event_in_ports:
             r.event_in_ports.append(port)
@@ -602,7 +608,54 @@ class Runnable(Reflective):
 
         for port in self.event_out_ports:
             r.event_out_ports.append(port)
-            r.event_out_callbacks[port] = []
+            r.event_out_callbacks[port] = self.event_out_callbacks[port]
+        
+        for ec in r.component.structure.event_connections:
+            if self.debug: print("--- Fixing event_connection: %s in %s"%(ec.toxml(), id(r)))
+            
+            source = r.parent.resolve_path(ec.from_)
+            target = r.parent.resolve_path(ec.to)
+            
+            if ec.receiver:
+                # Will throw error...
+                receiver_template = self.build_runnable(ec.receiver, target)                                
+                #receiver = copy.deepcopy(receiver_template)
+                receiver = receiver_template.copy()
+                receiver.id = "{0}__{1}__".format(component.id,
+                                                  receiver_template.id)
+
+                if ec.receiver_container:
+                    target.add_attachment(receiver, ec.receiver_container)
+                target.add_child(receiver_template.id, receiver)
+                target = receiver
+            else:
+                source = r.resolve_path(ec.from_)
+                target = r.resolve_path(ec.to)
+
+            source_port = ec.source_port
+            target_port = ec.target_port
+
+            if not source_port:
+                if len(source.event_out_ports) == 1:
+                    source_port = source.event_out_ports[0]
+                else:
+                    raise SimBuildError(("No source event port "
+                                         "uniquely identifiable"
+                                         " in '{0}'").format(source.id))
+            if not target_port:
+                if len(target.event_in_ports) == 1:
+                    target_port = target.event_in_ports[0]
+                else:
+                    raise SimBuildError(("No destination event port "
+                                         "uniquely identifiable "
+                                         "in '{0}'").format(target))
+             
+            if self.debug: print("register_event_out_callback\n   Source: %s, %s (port: %s) \n   -> %s, %s (port: %s)"%(source, id(source), source_port, target, id(target), target_port))
+            source.register_event_out_callback(\
+                source_port, lambda: target.inc_event_in(target_port))
+            
+        
+            
 
         # Copy methods
         r.update_kinetic_scheme = self.update_kinetic_scheme
@@ -671,5 +724,7 @@ class Runnable(Reflective):
             print('')
             print('')
             print('')
+            
+        if self.debug: print("Finished coping..."+self.id)
         
         return r
