@@ -209,7 +209,7 @@ class ExprParser(LEMSBase):
         @rtype: Boolean
         """
 
-        return str in ['exp', 'ln']
+        return str in ['exp', 'ln', 'sqrt']
 
     def is_sym(self, str):
         """
