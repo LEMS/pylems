@@ -51,7 +51,7 @@ class Reflective(LEMSBase):
                 code_string += ', ' + parameter
             code_string += '):\n'
 
-        if self.debug:
+        if self.debug and False:
             code_string += '    print("Calling method: %s(), dv: %s")\n'%(method_name, str(self.derived_variables))
         if statements == []:
             code_string += '    pass'
@@ -66,7 +66,7 @@ class Reflective(LEMSBase):
         #                          '{0}.{1}'.format(self.component.type, method_name)))
 
         if self.debug and statements != []:
-            print("------------- %s %s ----------------"%(method_name, str(self.derived_variables)))
+            print("------------- %s, %s, %s ----------------"%(method_name, self.id, str(self.derived_variables)))
             print(code_string)
         exec(compile(ast.parse(code_string), '<unknown>', 'exec'), g, l)
 
@@ -645,9 +645,15 @@ class Runnable(Reflective):
                     c2.parent = r
                     copies[c.uid] = c2
                     r.__dict__[k] = c2
+           
+        # Copy text fields
+        for k in self.__dict__:          
+            if not k in r.__dict__:
+                c = self.__dict__[k]
+                if self.debug: print("Adding remaining field: %s = %s"%(k,c))
+                r.__dict__[k] = c
                 
-
-        if False:#self.component.type == 'pointCellCondBased':
+        if self.debug:
             print('########################################')
             keys = list(self.__dict__.keys())
             keys.sort()
