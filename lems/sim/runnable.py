@@ -493,7 +493,10 @@ class Runnable(Reflective):
 
         self.run_startup_event_handlers(self)
         self.update_derived_parameters(self)
-        self.update_derived_variables(self)
+        try:
+            self.update_derived_variables(self)
+        except:
+            print("Oh well...")
       
         for cid in self.uchildren:
             self.uchildren[cid].do_startup()
