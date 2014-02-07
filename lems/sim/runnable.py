@@ -473,8 +473,9 @@ class Runnable(Reflective):
             return dt
 
     def do_startup(self):
+        
         if self.debug:
-            print "  Doing start: "+self.id
+            print("  Doing start: "+self.id)
             for iv in self.instance_variables: print "%s = %s"%(iv,self.__dict__[iv])
             for dv in self.derived_variables: print "%s = %s"%(dv,self.__dict__[dv])
         
@@ -484,26 +485,21 @@ class Runnable(Reflective):
         for child in self.array:
             child.do_startup()
             
-        if self.debug:
-            print "     Really start: "+self.id
-            for iv in self.instance_variables: print "%s = %s"%(iv,self.__dict__[iv])
-            for iv in self.instance_variables: print "%s_shadow = %s"%(iv,self.__dict__[iv+"_shadow"])
-            for dv in self.derived_variables: print "%s = %s"%(dv,self.__dict__[dv])
-            for dv in self.derived_variables: print "%s_shadow = %s"%(dv,self.__dict__[dv+"_shadow"])
-
         self.run_startup_event_handlers(self)
         self.update_derived_parameters(self)
+        
         try:
             self.update_derived_variables(self)
-        except:
-            print("Oh well...")
+        except Exception as e:
+            print("Problem setting initial value of DerivedVariable in %s: %s"%(self.id,e))
+            print("Continuing...")
       
         for cid in self.uchildren:
             self.uchildren[cid].do_startup()
 
         for child in self.array:
             child.do_startup()
-            
+             
 
     def record_variables(self):
         for recording in self.recorded_variables:
