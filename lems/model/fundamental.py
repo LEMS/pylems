@@ -128,7 +128,7 @@ class Unit(LEMSBase):
 
         return '<Unit' +\
           (' symbol = "{0}"'.format(self.symbol) if self.symbol else '') +\
-          (' dimension = "{0}"'.format(self.dimension) if self.dimension else '') +\
+          (' dimension = "{0}"'.format(self.dimension.name) if self.dimension else '') +\
           (' power = "{0}"'.format(self.power) if self.power else '') +\
           (' scale = "{0}"'.format(self.scale) if self.scale else '') +\
           (' offset = "{0}"'.format(self.offset) if self.offset else '') +\
