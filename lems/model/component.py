@@ -846,10 +846,14 @@ class Component(LEMSBase):
         self.children = list()
         """ List of child components.
         @type: list(lems.model.component.Component) """
-
+        
+        self.parent_id = None
+        """ Optional id of parent
+        @type: str """
+        
 
     def __str__(self):
-        return 'Component, id: {0}, type: {1},\n   parameters: {2}\n'.format(self.id, self.type, self.parameters)
+        return 'Component, id: {0}, type: {1},\n   parameters: {2}\n   parent: {3}\n'.format(self.id, self.type, self.parameters, self.parent_id)
     
     def __repr__(self):
         return self.__str__()
@@ -889,6 +893,17 @@ class Component(LEMSBase):
         else:
             raise ModelError('Unsupported child element')
         
+    def set_parent_id(self, parent_id):
+        """
+        Sets the id of the parent Component
+        
+        @param parent_id: id of the parent Component
+        @type parent_id: str
+        """
+        
+        self.parent_id = parent_id
+        
+        
     def toxml(self):
         """
         Exports this object into a LEMS XML object
@@ -908,6 +923,7 @@ class Component(LEMSBase):
             xmlstr += '/>'
 
         return xmlstr
+    
 
 class FatComponent(Fat):
     """
@@ -935,9 +951,13 @@ class FatComponent(Fat):
         """ List of child components.
         @type: lems.model.component.FatComponent """
         
+        self.parent_id = None
+        """ Optional id of parent
+        @type: str """
+        
 
     def __str__(self):
-        return 'FatComponent, id: {0}, type: {1}'.format(self.id, self.type)+\
+        return 'FatComponent, id: {0}, type: {1}, parent:{2}'.format(self.id, self.type, self.parent_id)+\
           (', num children: {0}'.format(len(self.child_components)) if len(self.child_components)>0 else '')
         
 
@@ -962,3 +982,13 @@ class FatComponent(Fat):
             self.add_child_component(child)
         else:
             Fat.add(self, child)
+            
+    def set_parent_id(self, parent_id):
+        """
+        Sets the id of the parent Component
+        
+        @param parent_id: id of the parent Component
+        @type parent_id: str
+        """
+        
+        self.parent_id = parent_id

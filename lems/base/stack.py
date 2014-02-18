@@ -9,8 +9,6 @@ Stack class.
 from lems.base.base import LEMSBase
 from lems.base.errors import StackError
 
-import copy
-
 class Stack(LEMSBase):
     """
     Basic stack implementation.
@@ -93,3 +91,6 @@ class Stack(LEMSBase):
                 s += ', ' + str(self.stack[i])
             s += ']'
         return s
+
+    def __repr__(self):
+        return self.__str__()

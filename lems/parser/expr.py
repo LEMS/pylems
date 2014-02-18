@@ -7,7 +7,6 @@ Expression parser
 """
 
 from lems.base.base import LEMSBase
-from lems.base.errors import ParseError
 from lems.base.stack import Stack
 
 class ExprNode(LEMSBase):
@@ -138,22 +137,19 @@ class ExprParser(LEMSBase):
     """
     Parser class for parsing an expression and generating a parse tree.
     """
+    
+    debug = False
 
     op_priority = {
         '$':-5,
-
         'func':8,
-
         '+':5,
         '-':5,
         '*':6,
         '/':6,
         '^':7,
-
         '~':8,
-
         'exp':8,
-
         '.and.':1,
         '.or.':1,
         '.gt.':2,
@@ -209,7 +205,7 @@ class ExprParser(LEMSBase):
         @rtype: Boolean
         """
 
-        return str in ['exp', 'ln', 'sqrt']
+        return str in ['exp', 'ln', 'sqrt', 'sin', 'cos', 'tan', 'sinh', 'cosh', 'tanh', 'abs', 'ceil', 'factorial']
 
     def is_sym(self, str):
         """
@@ -284,7 +280,7 @@ class ExprParser(LEMSBase):
 
             while i < len(ps) and ps[i].isspace():
                 i += 1
-
+                
     def make_op_node(self, op, right):
         if self.is_func(op):
             return Func1Node(op, right)
@@ -307,14 +303,14 @@ class ExprParser(LEMSBase):
             right = ValueNode(right)
 
         while self.op_stack.top() != '$':
-            #print '4>', self.op_stack, self.val_stack, self.node_stack
+            #if self.debug: print('4>', self.op_stack, self.val_stack, self.node_stack
             op = self.op_stack.pop()
 
             right = self.make_op_node(op, right)
 
-            #print '5>', self.op_stack, self.val_stack, self.node_stack
-            #print '6', right
-            #print ''
+            #if self.debug: print('5>', self.op_stack, self.val_stack, self.node_stack
+            #if self.debug: print('6', right
+            #if self.debug: print(''
 
         return right
 
@@ -333,8 +329,7 @@ class ExprParser(LEMSBase):
         exit_loop = False
 
         ExprParser.depth = ExprParser.depth + 1
-        #print ''
-        #print '>>>>>', ExprParser.depth
+        if self.debug: print('>>>>> %i'% ExprParser.depth)
 
         precedence = min_precedence
 
@@ -342,8 +337,8 @@ class ExprParser(LEMSBase):
             token = self.token_list[0]
             la = self.token_list[1] if len(self.token_list) > 1 else None
 
-            #print '0>', self.token_list
-            #print '1>', token, la, self.op_stack, self.val_stack, self.node_stack
+            if self.debug: print('0> %s'% self.token_list)
+            if self.debug: print('1> %s'% [token, la, self.op_stack, self.val_stack, self.node_stack])
 
             self.token_list = self.token_list[1:]
 
@@ -363,8 +358,8 @@ class ExprParser(LEMSBase):
                 self.op_stack.push(token)
             elif self.is_op(token):
                 stack_top = self.op_stack.top()
-                #print 'HELLO0', token, stack_top
-                #print 'HELLO1', self.priority(token), self.priority(stack_top)
+                if self.debug: print('HELLO0 %s'% [token, stack_top])
+                if self.debug: print('HELLO1 %s'% [self.priority(token), self.priority(stack_top)])
                 if self.priority(token) < self.priority(stack_top):
                     self.node_stack.push(self.cleanup_stacks())
                     self.val_stack.push('$')
@@ -390,15 +385,15 @@ class ExprParser(LEMSBase):
                         self.node_stack.push(op_node)
                         self.val_stack.push('$')
 
-            #print '2>', token, la, self.op_stack, self.val_stack, self.node_stack
-            #print ''
+            if self.debug: print('2> %s'% [ token, la, self.op_stack, self.val_stack, self.node_stack])
+            if self.debug: print('')
 
-        #print '3>', self.op_stack, self.val_stack, self.node_stack
+        if self.debug: print('3> %s'% [ self.op_stack, self.val_stack, self.node_stack])
         ret = self.cleanup_stacks()
 
-        #print '<<<<<', ExprParser.depth, ret
+        if self.debug: print('<<<<< %s'% [ExprParser.depth, ret])
         ExprParser.depth = ExprParser.depth - 1
-        #print ''
+        if self.debug: print('')
         return ret
 
     def parse(self):
@@ -410,9 +405,9 @@ class ExprParser(LEMSBase):
         """
 
         self.tokenize()
+        if self.debug: print("Tokens found: %s"%self.token_list)
         parse_tree = self.parse2()
 
-        #print('')
         return parse_tree
 
     def parse2(self):

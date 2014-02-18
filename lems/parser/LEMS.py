@@ -25,8 +25,18 @@ def get_nons_tag_from_node(node):
     bits = tag.split('}')
     if len(bits) == 1:
         return tag
-    else:
+    elif '/lems/' in bits[0]:
         return bits[1]
+    elif 'neuroml2' in bits[0]:
+        return bits[1]
+    elif 'rdf' in bits[0]:
+        return "rdf_"+bits[1]
+    elif 'model-qualifiers' in bits[0]:
+        return "bqmodel_"+bits[1]
+    elif 'biology-qualifiers' in bits[0]:
+        return "bqbiol_"+bits[1]
+    else:
+        return "%s:%s"%(bits[0],bits[1])
 
 class LEMSXMLNode:
     def __init__(self, pyxmlnode):
@@ -94,6 +104,9 @@ class LEMSFileParser(LEMSBase):
                                        'target', 'include',
                                        'dimension', 'unit', 'assertion']
                                        
+        #TODO: make this generic for any domain specific language based on LEMS
+        self.valid_children['neuroml'] = ['include', 'componenttype']
+                                       
         self.valid_children['componenttype'] = ['dynamics',
                                                 'child', 'children',
                                                 'componentreference',
@@ -103,6 +116,7 @@ class LEMSFileParser(LEMSBase):
                                                 'simulation', 'structure',
                                                 'text', 'attachments',
                                                 'constant', 'derivedparameter']
+                                                
         self.valid_children['dynamics'] = ['derivedvariable',
                                            'conditionalderivedvariable',
                                            'oncondition',
@@ -220,11 +234,11 @@ class LEMSFileParser(LEMSBase):
 
             ctagl = child.ltag
 
-            ##print("Processing child: %s; %s; %s; %s"%(child.tag,ctagl,self.valid_children, t))
-
             if ctagl in self.tag_parse_table and ctagl in self.valid_children[t]:
+                #print("Processing known type: %s"%ctagl)
                 self.tag_parse_table[ctagl](child)
             else:
+                #print("Processing unknown type: %s"%ctagl)
                 self.parse_component_by_typename(child, child.tag)
 
             self.xml_node_stack = self.xml_node_stack[1:]
@@ -435,7 +449,9 @@ class LEMSFileParser(LEMSBase):
         component = Component(id_, type_)
 
         if self.current_component:
+            component.set_parent_id(self.current_component.id)
             self.current_component.add_child(component)
+            
         else:
             self.model.add_component(component)
 
@@ -471,6 +487,7 @@ class LEMSFileParser(LEMSBase):
         component = Component(id_, type_)
 
         if self.current_component:
+            component.set_parent_id(self.current_component.id)
             self.current_component.add_child(component)
         else:
             self.model.add_component(component)
@@ -928,9 +945,14 @@ class LEMSFileParser(LEMSBase):
 
         @raise ParseError: Raised when the file to be included is not specified. 
         """
-
+        
+        #TODO: remove this hard coding for reading NeuroML includes...
         if 'file' not in node.lattrib:
-            self.raise_error('<Include> must specify the file to be included.')
+            if 'href' in node.lattrib:
+                self.model.include_file(node.lattrib['href'], self.include_dirs)
+                return
+            else:
+                self.raise_error('<Include> must specify the file to be included.')
 
         self.model.include_file(node.lattrib['file'], self.include_dirs)
 

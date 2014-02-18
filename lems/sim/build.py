@@ -457,6 +457,7 @@ class SimulationBuilder(LEMSBase):
                                          'for {0}').format(dvn))
             elif dvn in dynamics.conditional_derived_variables:
                 dv = dynamics.conditional_derived_variables[dvn]
+                runnable.add_derived_variable(dv.name)
                 derived_variable_code += self.build_conditional_derived_var_code(runnable,
                                                                                  regime,
                                                                                  dv)

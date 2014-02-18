@@ -272,6 +272,7 @@ class Runnable(Reflective):
                 p = ctx.parameters[child]
                 return self.resolve_path('../' + p.value)
             else:
+                #print(self)
                 raise SimBuildError('Unable to find child \'{0}\' in '
                                     '\'{1}\''.format(child, self.id))
 
@@ -476,8 +477,8 @@ class Runnable(Reflective):
         
         if self.debug:
             print("  Doing start: "+self.id)
-            for iv in self.instance_variables: print "%s = %s"%(iv,self.__dict__[iv])
-            for dv in self.derived_variables: print "%s = %s"%(dv,self.__dict__[dv])
+            for iv in self.instance_variables: print("%s = %s"%(iv,self.__dict__[iv]))
+            for dv in self.derived_variables: print("%s = %s"%(dv,self.__dict__[dv]))
         
         for cid in self.uchildren:
             self.uchildren[cid].do_startup()

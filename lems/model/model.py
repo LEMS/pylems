@@ -74,6 +74,10 @@ class Model(LEMSBase):
         self.include_directories = []
         """ List of include directories to search for included LEMS files.
         @type: list(str) """
+        
+        self.included_files = []
+        """ List of files already included.
+        @type: list(str) """
 
     def add_target(self, target):
         """
@@ -188,19 +192,29 @@ class Model(LEMSBase):
         @param include_dirs: Optional alternate include search path.
         @type include_dirs: list(str)
         """
-        
+        if self.debug: print("------------------                   Including file: %s"%path)
         inc_dirs = include_dirs if include_dirs else self.include_dirs
 
         parser = LEMSFileParser(self, inc_dirs)
         if os.access(path, os.F_OK):
-           parser.parse(open(path).read()) 
-           return
+            if not path in self.included_files:
+                parser.parse(open(path).read()) 
+                self.included_files.append(path)
+                return
+            else:
+                if self.debug: print("Already included: %s"%path)
+                return
         else:
             for inc_dir in inc_dirs:
                 new_path = (inc_dir + '/' + path)
                 if os.access(new_path, os.F_OK):
-                    parser.parse(open(new_path).read())
-                    return
+                    if not new_path in self.included_files:
+                        parser.parse(open(new_path).read())
+                        self.included_files.append(new_path)
+                        return
+                    else:
+                        if self.debug: print("Already included: %s"%path)
+                        return
         raise Exception('Unable to open ' + path)
             
     def import_from_file(self, filepath):
@@ -363,14 +377,15 @@ class Model(LEMSBase):
         @return: Fattened component.
         @rtype: lems.model.component.FatComponent
         """
-
+        if self.debug: print("Fattening %s"%c.id) 
         try:
             ct = self.component_types[c.type]
         except:
-            raise ModelError("Unable to resolve type '{0}' for component '{1}'",
-                             c.type, c.id)
+            raise ModelError("Unable to resolve type '{0}' for component '{1}'; existing: {2}",
+                             c.type, c.id, self.component_types.keys())
         
         fc = FatComponent(c.id, c.type)
+        if c.parent_id: fc.set_parent_id(c.parent_id)
 
         ### Resolve parameters
         for parameter in ct.parameters:
@@ -463,12 +478,39 @@ class Model(LEMSBase):
             fc.add(self.fatten_component(child))
 
         return fc
+    
+    
+    def get_parent_component(self, fc):
+        """
+        TODO: Replace with more efficient way to do this...
+        """
+        if self.debug: print("Looking for parent of %s (%s)"%(fc.id, fc.parent_id)) 
+        parent_comp = None
+        for comp in self.components.values():
+            if self.debug: print(" - Checking "+comp.id) 
+            for child in comp.children:
+                if parent_comp == None:
+                    if child.id == fc.id and comp.id == fc.parent_id:
+                        if self.debug: print("1) It is "+comp.id) 
+                        parent_comp = comp
+                    else:
+                        for child2 in child.children:
+                            if self.debug: print("    - Checking child: %s, %s"%(child.id,child2.id)) 
+                            if parent_comp == None and child2.id == fc.id and child.id == fc.parent_id:
+                                if self.debug: print("2) It is "+child.id) 
+                                parent_comp = child
+                                break
+                            else:
+                                if self.debug: print("No..."   )
+        return parent_comp
+                        
+
 
     def resolve_structure(self, fc, ct):
         """
         Resolve structure specifications.
         """
-        if self.debug: print("++++++++ Resolving structure of %s with %s"%(fc, ct))
+        if self.debug: print("++++++++ Resolving structure of (%s) with %s"%(fc, ct))
         for w in ct.structure.withs:
             try:
                 if w.instance == 'parent' or w.instance == 'this':
@@ -488,12 +530,15 @@ class Model(LEMSBase):
                 from_inst = fc.structure.withs[ev.from_].instance
                 to_inst = fc.structure.withs[ev.to].instance
                 
-                if self.debug: print(from_inst+" to.. "+to_inst)
+                if self.debug: print("EC..: "+from_inst+" to "+to_inst+ " in "+str(fc.paths))
                 
-                if len(fc.texts) > 0 :
+                if len(fc.texts) > 0 or len(fc.paths) > 0:
                     
                     source_port = fc.texts[ev.source_port].value if ev.source_port and len(ev.source_port)>0 and ev.source_port in fc.texts else None
                     target_port = fc.texts[ev.target_port].value if ev.target_port and len(ev.target_port)>0 and ev.target_port in fc.texts else None
+                    
+                    if self.debug: print("sp: %s"%source_port)
+                    if self.debug: print("tp: %s"%target_port)
 
                     receiver = None
 
@@ -501,25 +546,31 @@ class Model(LEMSBase):
                     if '../' in ev.receiver:
                         receiver_id = None
                         parent_attr = ev.receiver[3:]
-                        #print "Finding %s in parent of %s"%(parent_attr, fc.id)
+                        if self.debug: print("Finding %s in the parent of: %s (%i)"%(parent_attr, fc, id(fc)))
+                        
                         for comp in self.components.values():
+                            if self.debug: print(" - Checking %s (%i)" %(comp.id,id(comp))) 
                             for child in comp.children:
+                                if self.debug: print("    - Checking %s (%i)" %(child.id,id(child))) 
                                 for child2 in child.children:
-                                    if child2.id == fc.id:
+                                    if child2.id == fc.id and child2.type == fc.type and child.id == fc.parent_id:
+                                        if self.debug: print("    - Got it?: %s (%i), child: %s"%(child.id, id(child), child2))
                                         receiver_id = child.parameters[parent_attr]
-                                        #print "Got it: "+receiver_id
+                                        if self.debug: print("Got it: "+receiver_id)
+                                        break
 
                         if receiver_id is not None:            
                             for comp in self.fat_components:
                                 if comp.id == receiver_id:
                                         receiver = comp
-                                        #print "receiver is: %s"%receiver
+                                        if self.debug: print("receiver is: %s"%receiver)
 
-
+                    if self.debug: print("rec1: %s"%receiver)
                     if not receiver:
                         receiver = fc.component_references[ev.receiver].referenced_component if ev.receiver else None
                     receiver_container = fc.texts[ev.receiver_container].value if (fc.texts and ev.receiver_container) else ''
 
+                    if self.debug: print("rec2: %s"%receiver)
                     if len(receiver_container)==0:
                         # TODO: remove this hard coded check!
                         receiver_container = 'synapses'
@@ -527,7 +578,6 @@ class Model(LEMSBase):
                 else:
                     #if from_inst == 'parent':
                         #par = fc.component_references[ev.receiver]
-                        #print par
                     
                     if self.debug: 
                         print("+++++++++++++++++++")
@@ -539,16 +589,16 @@ class Model(LEMSBase):
                     receiver = None
                     receiver_container = None
                     
-                    
-                    
-                
                 ev2 = EventConnection(from_inst,
                                       to_inst,
                                       source_port,
                                       target_port,
                                       receiver,
                                       receiver_container)
-                if self.debug: print(ev2.toxml())
+                if self.debug: 
+                    print("Created EC: "+ev2.toxml())
+                    print(receiver)
+                    print(receiver_container)
             except:
                 logging.exception("Something awful happened!")
                 raise ModelError("Unable to resolve event connection parameters in component '{0}'",fc)
@@ -556,10 +606,20 @@ class Model(LEMSBase):
                 
         for ch in ct.structure.child_instances:
             try:
-                ref_comp = fc.component_references[ch.component].referenced_component
-                ch2 = ChildInstance(ch.component,
-                                    ref_comp)
-            except:
+                if self.debug: print(ch.toxml())
+                if '../' in ch.component:
+                    parent = self.get_parent_component(fc)
+                    if self.debug: print("Parent: %s"%parent)
+                    comp_ref = ch.component[3:]
+                    if self.debug: print("comp_ref: %s"%comp_ref)
+                    comp_id = parent.parameters[comp_ref]
+                    comp = self.fat_components[comp_id]
+                    ch2 = ChildInstance(ch.component, comp)
+                else:    
+                    ref_comp = fc.component_references[ch.component].referenced_component
+                    ch2 = ChildInstance(ch.component, ref_comp)
+            except Exception as e:
+                if self.debug: print(e)
                 raise ModelError("Unable to resolve child instance parameters for "
                                  "'{0}' in component '{1}'",
                                  ch.component, fc.id)

@@ -6,7 +6,7 @@ long_description = open("README.md").read()
 
 setup(
     name = "PyLEMS",
-    version = '0.3.0',
+    version = '0.3.01',
     packages = ['lems','lems.base','lems.model','lems.parser','lems.sim', 'lems.dlems'],
     author = "PyLEMS authors and contributors",
     author_email = "gautham@lisphacker.org",
