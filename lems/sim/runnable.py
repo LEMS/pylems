@@ -386,6 +386,16 @@ class Runnable(Reflective):
                                                          e))
             print(type(e))
             
+            prefix = "- "
+            if self.instance_variables:
+                print('Instance variables'.format(prefix))
+                for vn in self.instance_variables:
+                    print('{0}      {1} = {2}'.format(prefix, vn, self.__dict__[vn]))
+            if self.derived_variables:
+                print('{0}    Derived variables'.format(prefix))
+                for vn in self.derived_variables:
+                    print('{0}      {1} = {2}'.format(prefix, vn, self.__dict__[vn]))
+            
             keys = list(self.__dict__.keys())
             keys.sort()
             for k in keys:
@@ -475,8 +485,8 @@ class Runnable(Reflective):
 
     def do_startup(self):
         
-        if self.debug:
-            print("  Doing start: "+self.id)
+        if self.debug and False:
+            print("  Doing startup: "+self.id)
             for iv in self.instance_variables: print("%s = %s"%(iv,self.__dict__[iv]))
             for dv in self.derived_variables: print("%s = %s"%(dv,self.__dict__[dv]))
         

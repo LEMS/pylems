@@ -52,8 +52,13 @@ class ValueNode(ExprNode):
         """
         Generates a string representation of this node.
         """
-
         return "{" + self.value + "}"
+    
+    def __repr__(self):
+        return self.__str__()
+    
+    def to_python_expr(self):
+        return self.value
 
 class OpNode(ExprNode):
     """
@@ -97,6 +102,14 @@ class OpNode(ExprNode):
         return '({0} {1} {2})'.format(self.op,
                                       str(self.left),
                                       str(self.right))
+                                      
+    def __repr__(self):
+        return self.__str__()
+    
+    def to_python_expr(self):
+        return '({0} {1} {2})'.format(self.left.to_python_expr(),
+                                      self.op,
+                                      self.right.to_python_expr())
 
 class Func1Node(ExprNode):
     """
@@ -131,6 +144,12 @@ class Func1Node(ExprNode):
         """
 
         return '({0} {1})'.format(self.func, str(self.param))
+    
+    def __repr__(self):
+        return self.__str__()
+    
+    def to_python_expr(self):
+        return '({0}({1}))'.format(self.func, self.param.to_python_expr())
 
 
 class ExprParser(LEMSBase):
@@ -301,15 +320,17 @@ class ExprParser(LEMSBase):
             right = self.node_stack.pop()
         else:
             right = ValueNode(right)
-
+            
+        if self.debug: print('- Cleanup > right: %s'% right)
+        
         while self.op_stack.top() != '$':
-            #if self.debug: print('4>', self.op_stack, self.val_stack, self.node_stack
+            if self.debug: print('5> op stack: %s, val stack: %s, node stack: %s'% ( self.op_stack, self.val_stack, self.node_stack))
             op = self.op_stack.pop()
 
             right = self.make_op_node(op, right)
 
-            #if self.debug: print('5>', self.op_stack, self.val_stack, self.node_stack
-            #if self.debug: print('6', right
+            if self.debug: print('6> op stack: %s, val stack: %s, node stack: %s'% ( self.op_stack, self.val_stack, self.node_stack))
+            if self.debug: print('7> %s'% right)
             #if self.debug: print(''
 
         return right
@@ -329,7 +350,7 @@ class ExprParser(LEMSBase):
         exit_loop = False
 
         ExprParser.depth = ExprParser.depth + 1
-        if self.debug: print('>>>>> %i'% ExprParser.depth)
+        if self.debug: print('>>>>> Depth: %i'% ExprParser.depth)
 
         precedence = min_precedence
 
@@ -338,10 +359,12 @@ class ExprParser(LEMSBase):
             la = self.token_list[1] if len(self.token_list) > 1 else None
 
             if self.debug: print('0> %s'% self.token_list)
-            if self.debug: print('1> %s'% [token, la, self.op_stack, self.val_stack, self.node_stack])
+            if self.debug: print('1> Token: %s, next: %s, op stack: %s, val stack: %s, node stack: %s'% (token, la, self.op_stack, self.val_stack, self.node_stack))
 
             self.token_list = self.token_list[1:]
-
+            
+            close_bracket = False
+            
             if token == '(':
                 np = ExprParser('')
                 np.token_list = self.token_list
@@ -352,31 +375,40 @@ class ExprParser(LEMSBase):
                 self.val_stack.push('$')
 
                 self.token_list = np.token_list
+                if self.debug: print('>>> Tokens left: %s'%self.token_list)
+                close_bracket = True
             elif token == ')':
                 break
             elif self.is_func(token):
                 self.op_stack.push(token)
             elif self.is_op(token):
                 stack_top = self.op_stack.top()
-                if self.debug: print('HELLO0 %s'% [token, stack_top])
-                if self.debug: print('HELLO1 %s'% [self.priority(token), self.priority(stack_top)])
+                if self.debug: print('OP Token: %s (prior: %i), top: %s (prior: %i)'% (token, self.priority(token), stack_top, self.priority(stack_top)))
                 if self.priority(token) < self.priority(stack_top):
+                    if self.debug: print('  Priority of %s is less than %s'%(token, stack_top))
                     self.node_stack.push(self.cleanup_stacks())
                     self.val_stack.push('$')
+                else:
+                    if self.debug: print('  Priority of %s is greater than %s'%(token, stack_top))
+                
 
                 self.op_stack.push(token)
             else:
+                if self.debug: print('Not a bracket func or op...')
                 stack_top = self.op_stack.top()
                 if stack_top == '$':
+                    if self.debug: print("option a")
                     self.node_stack.push(ValueNode(token))
                     self.val_stack.push('$')
                 else:
                     if (self.is_op(la) and
                         self.priority(stack_top) < self.priority(la)):
+                        if self.debug: print("option b")
 
                         self.node_stack.push(ValueNode(token))
                         self.val_stack.push('$')
                     else:
+                        if self.debug: print("option c, nodes: %s"% self.node_stack)
                         op = self.op_stack.pop()
 
                         right = ValueNode(token)
@@ -384,14 +416,45 @@ class ExprParser(LEMSBase):
 
                         self.node_stack.push(op_node)
                         self.val_stack.push('$')
+                        
+            if close_bracket:
+                stack_top = self.op_stack.top()
+                if self.debug: print("+ Closing bracket, op stack: %s, node stack: %s la: %s"%(self.op_stack, self.node_stack, la))
+                if self.debug: print('>>> Tokens left: %s'%self.token_list)
+                
+                if stack_top == '$':
+                    if self.debug: print("+ option a")
+                    '''
+                    self.node_stack.push(ValueNode(token))
+                    self.val_stack.push('$')'''
+                else:
+                    la = self.token_list[0] if len(self.token_list) > 1 else None
+                    if (self.is_op(la) and self.priority(stack_top) < self.priority(la)):
+                        if self.debug: print("+ option b")
+                        #self.node_stack.push(ValueNode(token))
+                        #self.val_stack.push('$')
+                    else:
+                        if self.debug: print("+ option c, nodes: %s"% self.node_stack)
+                        if self.debug: print('35> op stack: %s, val stack: %s, node stack: %s'% ( self.op_stack, self.val_stack, self.node_stack))
+                        right = self.node_stack.pop()
+                        op = self.op_stack.pop()
+                        op_node = self.make_op_node(stack_top,right)
+                        if self.debug: print("Made op node: %s, right: %s"%(op_node, right))
 
-            if self.debug: print('2> %s'% [ token, la, self.op_stack, self.val_stack, self.node_stack])
+                        self.node_stack.push(op_node)
+                        self.val_stack.push('$')
+                        if self.debug: print('36> op stack: %s, val stack: %s, node stack: %s'% ( self.op_stack, self.val_stack, self.node_stack))
+                        
+            
+
+            if self.debug: print('2> Token: %s, next: %s, op stack: %s, val stack: %s, node stack: %s'% (token, la, self.op_stack, self.val_stack, self.node_stack))
             if self.debug: print('')
 
-        if self.debug: print('3> %s'% [ self.op_stack, self.val_stack, self.node_stack])
+        if self.debug: print('3> op stack: %s, val stack: %s, node stack: %s'% ( self.op_stack, self.val_stack, self.node_stack))
         ret = self.cleanup_stacks()
 
-        if self.debug: print('<<<<< %s'% [ExprParser.depth, ret])
+        if self.debug: print('4> op stack: %s, val stack: %s, node stack: %s'% ( self.op_stack, self.val_stack, self.node_stack))
+        if self.debug: print('<<<<< Depth: %s, returning: %s'% (ExprParser.depth, ret))
         ExprParser.depth = ExprParser.depth - 1
         if self.debug: print('')
         return ret
@@ -403,7 +466,7 @@ class ExprParser(LEMSBase):
         @return: Returns a token string.
         @rtype: lems.parser.expr.ExprNode
         """
-
+        #print("Parsing: %s"%self.parse_string)
         self.tokenize()
         if self.debug: print("Tokens found: %s"%self.token_list)
         parse_tree = self.parse2()
