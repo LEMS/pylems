@@ -731,4 +731,6 @@ class Model(LEMSBase):
             else:
                 raise SimBuildError("Unknown unit symbol '{0}'. Known: {1}",
                                     sym, self.units)
+                                    
+        #print("Have converted %s to value: %s, dimension %s"%(value_str, numeric_value, dimension))                            
         return numeric_value

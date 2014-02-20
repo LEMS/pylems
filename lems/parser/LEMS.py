@@ -1460,8 +1460,18 @@ class LEMSFileParser(LEMSBase):
             name = node.lattrib['name']
         else:
             name = ''
+            
+        if 'scale' in node.lattrib:
+            scale = float(node.lattrib['scale'])
+        else:
+            scale = 1.0
+            
+        if 'offset' in node.lattrib:
+            offset = float(node.lattrib['offset'])
+        else:
+            offset = 0.0
 
-        self.model.add_unit(Unit(name, symbol, dimension, power))
+        self.model.add_unit(Unit(name, symbol, dimension, power, scale, offset))
 
     def parse_with(self, node):
         """

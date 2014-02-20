@@ -161,16 +161,20 @@ class SimulationBuilder(LEMSBase):
             r = runnable.regimes[rn]
             suffix = '_regime_' + rn
 
-            r.update_state_variables = runnable.__dict__['update_state_variables'
-                                                         + suffix]
-            r.update_derived_variables = runnable.__dict__['update_derived_variables'
-                                                           + suffix]
-            r.run_startup_event_handlers = runnable.__dict__['run_startup_event_handlers'
-                                                             + suffix]
-            r.run_preprocessing_event_handlers = runnable.__dict__['run_preprocessing_event_handlers'
-                                                                   + suffix]
-            r.run_postprocessing_event_handlers = runnable.__dict__['run_postprocessing_event_handlers'
-                                                                    + suffix]
+            if runnable.__dict__.has_key('update_state_variables' + suffix): 
+                  r.update_state_variables = runnable.__dict__['update_state_variables' + suffix]
+                  
+            if runnable.__dict__.has_key('update_derived_variables' + suffix): 
+                r.update_derived_variables = runnable.__dict__['update_derived_variables' + suffix]
+            
+            if runnable.__dict__.has_key('run_startup_event_handlers' + suffix): 
+                r.run_startup_event_handlers = runnable.__dict__['run_startup_event_handlers' + suffix]
+            
+            if runnable.__dict__.has_key('run_preprocessing_event_handlers' + suffix): 
+                r.run_preprocessing_event_handlers = runnable.__dict__['run_preprocessing_event_handlers' + suffix]
+            
+            if runnable.__dict__.has_key('run_postprocessing_event_handlers' + suffix): 
+                r.run_postprocessing_event_handlers = runnable.__dict__['run_postprocessing_event_handlers' + suffix]
 
         self.process_simulation_specs(component, runnable, component.simulation)
 
@@ -205,9 +209,8 @@ class SimulationBuilder(LEMSBase):
             r = runnable.regimes[regime.name]
             suffix = '_regime_' + regime.name
 
-
-            r.update_kinetic_scheme = runnable.__dict__['update_kinetic_scheme'
-                                                        + suffix]
+            if runnable.__dict__.has_key('update_kinetic_scheme' + suffix): 
+                r.update_kinetic_scheme = runnable.__dict__['update_kinetic_scheme' + suffix]
 
         self.add_recording_behavior(component, runnable)
 

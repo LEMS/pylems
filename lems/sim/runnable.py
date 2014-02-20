@@ -41,7 +41,8 @@ class Reflective(LEMSBase):
 
     #@classmethod
     def add_method(self, method_name, parameter_list, statements):
-
+        if statements == []:
+            return;
         code_string = 'def __generated_function__'
         if parameter_list == []:
             code_string += '():\n'
@@ -374,7 +375,7 @@ class Runnable(Reflective):
         #    print self.parent.parent.parent.parent.v
         #    # rate * exp((v - midpoint)/scale)
         #    sys.exit(0)
-        except Exception as e:
+        except KeyError as e:
             r = self
             name = r.id
             while r.parent:
@@ -384,7 +385,7 @@ class Runnable(Reflective):
             print("Error in '{0} ({1})': {2}".format(name,
                                                          self.component.type, 
                                                          e))
-            print(type(e))
+            print(e)
             
             prefix = "- "
             if self.instance_variables:
@@ -422,25 +423,25 @@ class Runnable(Reflective):
             self.current_regime = self.new_regime
             self.new_regime = '''''
         
-        self.update_kinetic_scheme(self, dt)
+        if getattr(self, "update_kinetic_scheme", None): self.update_kinetic_scheme(self, dt)
 
         #if self.time_completed == 0:
         #    self.run_startup_event_handlers(self)
 
-        self.run_preprocessing_event_handlers(self)
-        self.update_shadow_variables()
+        if getattr(self, "run_preprocessing_event_handlers", None): self.run_preprocessing_event_handlers(self)
+        if getattr(self, "update_shadow_variables", None): self.update_shadow_variables()
 
-        self.update_derived_variables(self)
-        self.update_shadow_variables()
+        if getattr(self, "update_derived_variables", None): self.update_derived_variables(self)
+        if getattr(self, "update_shadow_variables", None): self.update_shadow_variables()
                 
-        self.update_state_variables(self, dt)
-        self.update_shadow_variables()
+        if getattr(self, "update_state_variables", None): self.update_state_variables(self, dt)
+        if getattr(self, "update_shadow_variables", None): self.update_shadow_variables()
         
         #if self.time_completed == 0:
         #    self.update_derived_parameters(self)
 
-        self.run_postprocessing_event_handlers(self)
-        self.update_shadow_variables()
+        if getattr(self, "run_postprocessing_event_handlers", None): self.run_postprocessing_event_handlers(self)
+        if getattr(self, "update_shadow_variables", None): self.update_shadow_variables()
 
         if False:#self.id == 'hhpop__hhcell__0':
             print('1', self.uid, self.v)
@@ -451,26 +452,27 @@ class Runnable(Reflective):
             if self.debug: print("In reg: "+self.current_regime)
             regime = self.regimes[self.current_regime]
 
-            regime.update_kinetic_scheme(self, dt)
+            #if getattr(self, "xxx", None): 
+            if getattr(regime, "update_kinetic_scheme", None): regime.update_kinetic_scheme(self, dt)
 
-            regime.run_preprocessing_event_handlers(self)
-            self.update_shadow_variables()
+            if getattr(regime, "run_preprocessing_event_handlers", None): regime.run_preprocessing_event_handlers(self)
+            if getattr(self, "update_shadow_variables", None): self.update_shadow_variables()
 
-            regime.update_derived_variables(self)
-            self.update_shadow_variables()
+            if getattr(regime, "update_derived_variables", None): regime.update_derived_variables(self)
+            if getattr(self, "update_shadow_variables", None): self.update_shadow_variables()
 
-            regime.update_state_variables(self, dt)
-            self.update_shadow_variables()
+            if getattr(regime, "update_state_variables", None): regime.update_state_variables(self, dt)
+            if getattr(self, "update_shadow_variables", None): self.update_shadow_variables()
 
-            regime.run_postprocessing_event_handlers(self)
-            self.update_shadow_variables()
+            if getattr(regime, "run_postprocessing_event_handlers", None): regime.run_postprocessing_event_handlers(self)
+            if getattr(self, "update_shadow_variables", None): self.update_shadow_variables()
             
             if self.new_regime != '':
                 self.current_regime = self.new_regime
                 self.new_regime = ''
                 regime = self.regimes[self.current_regime]
-                regime.run_preprocessing_event_handlers(self)
-                self.update_shadow_variables()
+                if getattr(regime, "run_preprocessing_event_handlers", None): regime.run_preprocessing_event_handlers(self)
+                if getattr(self, "update_shadow_variables", None): self.update_shadow_variables()
                 
             if self.debug: print("In reg: "+self.current_regime)
                 
@@ -495,12 +497,13 @@ class Runnable(Reflective):
 
         for child in self.array:
             child.do_startup()
-            
-        self.run_startup_event_handlers(self)
-        self.update_derived_parameters(self)
+        
+        #if getattr(self, "xxx", None): 
+        if getattr(self, "run_startup_event_handlers", None): self.run_startup_event_handlers(self)
+        if getattr(self, "update_derived_parameters", None): self.update_derived_parameters(self)
         
         try:
-            self.update_derived_variables(self)
+            if getattr(self, "update_derived_variables", None): self.update_derived_variables(self)
         except Exception as e:
             print("Problem setting initial value of DerivedVariable in %s: %s"%(self.id,e))
             print("Continuing...")
@@ -680,15 +683,15 @@ class Runnable(Reflective):
             
 
         # Copy methods
-        r.update_kinetic_scheme = self.update_kinetic_scheme
-        r.run_startup_event_handlers = self.run_startup_event_handlers
-        r.run_preprocessing_event_handlers = self.run_preprocessing_event_handlers
-        r.run_postprocessing_event_handlers = self.run_postprocessing_event_handlers
+        if getattr(self, "update_kinetic_scheme", None): r.update_kinetic_scheme = self.update_kinetic_scheme
+        if getattr(self, "run_startup_event_handlers", None): r.run_startup_event_handlers = self.run_startup_event_handlers
+        if getattr(self, "run_preprocessing_event_handlers", None): r.run_preprocessing_event_handlers = self.run_preprocessing_event_handlers
+        if getattr(self, "run_postprocessing_event_handlers", None): r.run_postprocessing_event_handlers = self.run_postprocessing_event_handlers
         
-        r.update_state_variables = self.update_state_variables
-        r.update_derived_variables = self.update_derived_variables
+        if getattr(self, "update_state_variables", None): r.update_state_variables = self.update_state_variables
+        if getattr(self, "update_derived_variables", None): r.update_derived_variables = self.update_derived_variables
         #r.update_shadow_variables = self.update_shadow_variables
-        r.update_derived_parameters = self.update_derived_parameters
+        if getattr(self, "update_derived_parameters", None): r.update_derived_parameters = self.update_derived_parameters
 
         for rn in self.regimes:
             r.add_regime(self.regimes[rn])

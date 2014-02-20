@@ -9,6 +9,8 @@ Expression parser
 from lems.base.base import LEMSBase
 from lems.base.stack import Stack
 
+known_functions = ['exp', 'log', 'sqrt', 'sin', 'cos', 'tan', 'sinh', 'cosh', 'tanh', 'abs', 'ceil', 'factorial', 'random']
+
 class ExprNode(LEMSBase):
     """
     Base class for a node in the expression parse tree.
@@ -47,18 +49,28 @@ class ValueNode(ExprNode):
         self.value = value
         """ Value to be stored in this node.
         @type: string """
+        
+    def clean_up(self):
+        """
+        To make sure an integer is returned as a float. No division by integers!!
+        """
+        try:
+            return str(float(self.value)) 
+        except ValueError:
+            return self.value
+                
 
     def __str__(self):
         """
         Generates a string representation of this node.
         """
-        return "{" + self.value + "}"
+        return "{" + self.clean_up() + "}"
     
     def __repr__(self):
         return self.__str__()
     
     def to_python_expr(self):
-        return self.value
+        return self.clean_up()
 
 class OpNode(ExprNode):
     """
@@ -224,7 +236,7 @@ class ExprParser(LEMSBase):
         @rtype: Boolean
         """
 
-        return str in ['exp', 'ln', 'sqrt', 'sin', 'cos', 'tan', 'sinh', 'cosh', 'tanh', 'abs', 'ceil', 'factorial']
+        return str in known_functions
 
     def is_sym(self, str):
         """
@@ -273,8 +285,9 @@ class ExprParser(LEMSBase):
                 while i < len(ps) and (ps[i].isdigit() or
                                        ps[i] == '.' or
                                        ps[i] == 'e' or
-                                       ps[i] == '+' or
-                                       ps[i] == '-'):
+                                       ps[i] == 'E' or
+                                       (ps[i] == '+' and (ps[i-1] == 'e' or ps[i-1] == 'E')) or
+                                       (ps[i] == '-' and (ps[i-1] == 'e' or ps[i-1] == 'E'))):
                     token += ps[i]
                     i += 1
             elif ps[i] == '.':
@@ -395,6 +408,8 @@ class ExprParser(LEMSBase):
                 self.op_stack.push(token)
             else:
                 if self.debug: print('Not a bracket func or op...')
+                if la == '(':
+                    raise Exception("Error parsing expression: %s\nToken: %s is placed like a function but is not recognised!\nKnown functions: %s"%(self.parse_string, token, known_functions))
                 stack_top = self.op_stack.top()
                 if stack_top == '$':
                     if self.debug: print("option a")
@@ -469,8 +484,11 @@ class ExprParser(LEMSBase):
         #print("Parsing: %s"%self.parse_string)
         self.tokenize()
         if self.debug: print("Tokens found: %s"%self.token_list)
-        parse_tree = self.parse2()
-
+        
+        try:
+            parse_tree = self.parse2()
+        except Exception as e:
+                raise e
         return parse_tree
 
     def parse2(self):
@@ -480,9 +498,12 @@ class ExprParser(LEMSBase):
 
         self.op_stack.push('$')
         self.val_stack.push('$')
-
-        return self.parse_token_list_rec(self.op_priority['$'])
-        #return self.parse_token_list_rec()
+        try:
+            ret = self.parse_token_list_rec(self.op_priority['$'])
+        except Exception as e:
+            raise e
+    
+        return ret
 
     def __str__(self):
         return str(self.token_list)

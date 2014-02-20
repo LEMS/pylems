@@ -82,7 +82,7 @@ class Unit(LEMSBase):
     Stores a unit definition.
     """
     
-    def __init__(self, name, symbol, dimension, power = 0, scale = 1, offset = 0, description = ''):
+    def __init__(self, name, symbol, dimension, power = 0, scale = 1.0, offset = 0.0, description = ''):
         """
         Constructor.
 
