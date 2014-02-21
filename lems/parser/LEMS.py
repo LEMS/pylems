@@ -429,8 +429,8 @@ class LEMSFileParser(LEMSBase):
         @param node: Node containing the <Component> element
         @type node: xml.etree.Element
 
-        @param type: Type of this component.
-        @type type: string
+        @param type_: Type of this component.
+        @type type_: string
 
         @raise ParseError: Raised when the component does not have an id.
         """

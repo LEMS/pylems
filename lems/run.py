@@ -12,9 +12,6 @@ from lems.model.model import Model
 from lems.sim.build import SimulationBuilder
 from lems.model.simulation import DataDisplay,DataWriter
 
-#import pylab
-import matplotlib.pyplot as pylab
-import numpy
 
 from lems.parser.expr import ExprParser as EP
 
@@ -203,6 +200,10 @@ class Display:
 displays = {}
 
 def plot_recording(recording):
+    
+    import matplotlib.pyplot as pylab
+    import numpy
+    
     global fig_count
 
     data_output = recording.data_output

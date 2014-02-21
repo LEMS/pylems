@@ -195,7 +195,7 @@ class ConditionalDerivedVariable(LEMSBase):
         Adds a case to this conditional derived variable.
 
         @param case: Case to be added.
-        @type: case: lems.model.dynamics.Case
+        @type case: lems.model.dynamics.Case
         """
 
         self.cases.append(case)
@@ -394,7 +394,7 @@ class EventHandler(LEMSBase):
         Adds an action to this event handler.
 
         @param action: Action to be added.
-        @type: action: lems.model.dynamics.Action
+        @type action: lems.model.dynamics.Action
         """
 
         self.actions.append(action)
@@ -737,8 +737,8 @@ class Behavioral(LEMSBase):
         """
         Adds a kinetic scheme to this behavior regime.
 
-        @param td: Kinetic scheme.
-        @type td: lems.model.dynamics.KineticScheme
+        @param ks: Kinetic scheme.
+        @type ks: lems.model.dynamics.KineticScheme
         """
 
         self.kinetic_schemes[ks.name] = ks
