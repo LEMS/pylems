@@ -43,6 +43,7 @@ class Reflective(LEMSBase):
     def add_method(self, method_name, parameter_list, statements):
         if statements == []:
             return;
+        
         code_string = 'def __generated_function__'
         if parameter_list == []:
             code_string += '():\n'
@@ -53,6 +54,10 @@ class Reflective(LEMSBase):
             code_string += '):\n'
 
 
+        for statement in statements:
+            if 'random.uniform' in statement:
+                code_string += '    import random\n'
+                
         if self.debug:
             code_string += '    if "xxx" in "%s": print("Calling method: %s(), dv: %s, iv: %s")\n'%(method_name,method_name, str(self.derived_variables), str(self.instance_variables))
         if statements == []:
@@ -174,6 +179,7 @@ class Runnable(Reflective):
         self.__dict__[typename] = runnable
 
     def add_child_to_group(self, group_name, child):
+        #print("add_child_to_group in %s; grp: %s; child: %s "%(self.id, group_name, child))
         if group_name not in self.__dict__:
             self.__dict__[group_name] = []
             self.groups.append(group_name)

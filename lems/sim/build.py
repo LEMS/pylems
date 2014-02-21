@@ -663,6 +663,8 @@ class SimulationBuilder(LEMSBase):
 
         if func == 'ln':
             return 'log'
+        if func == 'random':
+            return 'random.uniform'
         else:
             return func
 
@@ -713,8 +715,12 @@ class SimulationBuilder(LEMSBase):
             else:
                 return tree_node.value
         elif tree_node.type == ExprNode.FUNC1:
-            return '({0}({1}))'.format(\
-                self.convert_func(tree_node.func),
+            pattern = '({0}({1}))'
+            func = self.convert_func(tree_node.func)
+            if 'random.uniform' in func:
+                pattern = '({0}(0,{1}))'
+            return pattern.format(\
+                func,
                 self.build_expression_from_tree(runnable,
                                                 regime,
                                                 tree_node.param))
