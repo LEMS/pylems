@@ -1,32 +1,30 @@
 PyLEMS 
 ======
 
-A LEMS (http://lems.github.io/LEMS)/NeuroML2 (http://neuroml.org/neuroml2.php) simulator written in Python
-----------------------------------------------------------------------------------------------------------
+*A LEMS (http://lems.github.io/LEMS)/NeuroML2 (http://neuroml.org/neuroml2.php) simulator written in Python*
 
 
-Installation
-------------
+*Installation*
+
 Check the code out of github.
 
     git clone git@github.com:LEMS/pylems.git
 
 This will create a directory named pylems. Add this directory to your PATH and PYTHONPATH variables.
 
-Usage
------
+*Usage*
 
     pylems [\<options\>] \<LEMS file\>
 
-Options
--------
+*Options*
+
 - -I/-include \<path\> - Adds a directory to the model file include search path
 
 Examples
 --------
 
-*NeuroML* examples (from https://github.com/NeuroML/NeuroML2/tree/development/NeuroML2CoreTypes)
-------------------------------------------------------------------------------------------------
+*NeuroML examples (from https://github.com/NeuroML/NeuroML2/tree/development/NeuroML2CoreTypes)*
+
 
 - Example 0 --  Working
 - Example 1 --  Working
@@ -49,13 +47,13 @@ Examples
 - Example 18 -- Working
 
       
-LEMS elements that do not work
-------------------------------
+*LEMS elements that do not work*
+
 - XPath based parameters - PathParameter
 - Assertions
 
-Tasks TODO
-----------
+*Tasks TODO*
+
 - Implement flattening
 - Decouple events from runnables
 - Perform dimension-checking on expressions.
