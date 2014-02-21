@@ -1,7 +1,7 @@
 PyLEMS 
 ======
 
-_A LEMS (http://lems.github.io/LEMS)/NeuroML2 (http://neuroml.org/neuroml2.php) simulator written in Python_
+**A LEMS (http://lems.github.io/LEMS) simulator written in Python which can be used to run NeuroML2 (http://neuroml.org/neuroml2.php) models**
 
 _Usage_
 
