@@ -188,6 +188,7 @@ def process_simulation_output(sim, options):
 
 
     if fig_count > 0:
+        import matplotlib.pyplot as pylab
         pylab.show()
 
 
