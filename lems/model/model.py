@@ -524,6 +524,9 @@ class Model(LEMSBase):
                                  w.as_, fc.id)
             fc.structure.add(w2)
             
+        for fe in ct.structure.for_eachs:
+            fc.structure.add_for_each(fe)
+            
         for ev in ct.structure.event_connections:
             try:
                 

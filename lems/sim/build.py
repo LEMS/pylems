@@ -298,7 +298,7 @@ class SimulationBuilder(LEMSBase):
         @type structure: lems.model.structure.Structure
         """
         if self.debug: print("\n++++++++ Calling build_structure of %s with runnable %s, parent %s"%(component.id, runnable.id, runnable.parent))
-
+        
         # Process single-child instantiations
         for ch in structure.child_instances:
             child_runnable = self.build_runnable(ch.referenced_component, runnable)
@@ -320,8 +320,8 @@ class SimulationBuilder(LEMSBase):
                 runnable.array.append(instance)
 
         # Process foreach statements
-        if structure.for_each:
-            self.build_foreach(component, runnable, structure)
+        for fe in structure.for_eachs:
+            self.build_foreach(component, runnable, fe)
         
         self.build_event_connections(component, runnable, structure)
 
@@ -341,40 +341,50 @@ class SimulationBuilder(LEMSBase):
         structure code in the runnable component.
         @type foreach: lems.model.structure.ForEach
         """
+        if self.debug: print("\n++++++++ Calling build_foreach of %s with runnable %s, parent %s, name_mappings: %s"%(component.id, runnable.id, runnable.parent, name_mappings))
 
-        # Process foreach statements
-        for fe in foreach.foreach:
-            target_array = runnable.resolve_path(fe.target)
+        target_array = runnable.resolve_path(foreach.instances)
+        
+        for target_runnable in target_array:
+            if self.debug: print("Applying contents of for_each to %s, as %s"%(target_runnable.id, foreach.as_))
+            name_mappings[foreach.as_] = target_runnable
 
-            for target_runnable in target_array:
-                name_mappings[fe.name] = target_runnable
-                self.build_foreach(component, runnable, fe, name_mappings)
+            # Process foreach statements
+            for fe2 in foreach.for_eachs:
+                #print fe2.toxml()
+                target_array2 = runnable.resolve_path(fe2.instances)
 
-        # Process event connections
-        for event in foreach.event_connections:
-            source = name_mappings[event.source_path]
-            target = name_mappings[event.target_path]
+                for target_runnable2 in target_array2:
+                    name_mappings[fe2.as_] = target_runnable2
+                    self.build_foreach(component, runnable, fe2, name_mappings)
 
-            source_port = context.lookup_text_parameter(event.source_port.name)
-            target_port = context.lookup_text_parameter(event.target_port.name)
+            # Process event connections
+            for ec in foreach.event_connections:
+                source = name_mappings[ec.from_]
+                target = name_mappings[ec.to]
 
-            if source_port == None:
-                if len(source.event_out_ports) == 1:
-                    source_port = source.event_out_ports[0]
-                else:
-                    raise SimBuildError(("No source event port "
-                                         "uniquely identifiable"
-                                         " in '{0}'").format(source.id))
-            if target_port == None:
-                if len(target.event_in_ports) == 1:
-                    target_port = target.event_in_ports[0]
-                else:
-                    raise SimBuildError(("No destination event port uniquely"
-                                         "identifiable in '{0}'").format(target.id))
+                source_port = ec.source_port
+                target_port = ec.target_port
 
-            source.register_event_out_callback(\
-                source_port, lambda: target.inc_event_in(target_port))
+                if not source_port:
+                    if len(source.event_out_ports) == 1:
+                        source_port = source.event_out_ports[0]
+                    else:
+                        raise SimBuildError(("No source event port "
+                                             "uniquely identifiable"
+                                             " in '{0}'").format(source.id))
+                if not target_port:
+                    if len(target.event_in_ports) == 1:
+                        target_port = target.event_in_ports[0]
+                    else:
+                        raise SimBuildError(("No destination event port "
+                                             "uniquely identifiable "
+                                             "in '{0}'").format(target))
 
+                if self.debug: print("register_event_out_callback\n   Source: %s, %s (port: %s) \n   -> %s, %s (port: %s)"%(source, id(source), source_port, target, id(target), target_port))
+                source.register_event_out_callback(\
+                    source_port, lambda: target.inc_event_in(target_port))
+                
 
     def add_dynamics_1(self, component, runnable, regime, dynamics):
         """

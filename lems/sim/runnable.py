@@ -243,6 +243,7 @@ class Runnable(Reflective):
         self.regimes[regime.name] = regime
 
     def resolve_path(self, path):
+        if self.debug: print("Resolving path: %s in %s"%(path, self))
         if path == '':
             return self
         if path == 'this':
@@ -278,8 +279,21 @@ class Runnable(Reflective):
                 ctx = self.component
                 p = ctx.parameters[child]
                 return self.resolve_path('../' + p.value)
+            elif child in self.__dict__.keys():
+                child_resolved = self.__dict__[child]
+                print("Think it's a link from %s to %s"%(child, child_resolved))
+                return self.resolve_path('../' + child_resolved)
             else:
-                #print(self)
+                if self.debug:
+                    keys = list(self.__dict__.keys())
+                    keys.sort()
+                    prefix = "--- "
+                    print('{0}    Keys for {1}'.format(prefix, self.id))
+                    for k in keys:
+                        key_str = str(self.__dict__[k])
+                        if len(key_str) > 0 and not key_str == "[]" and not key_str == "{}":
+                            print('{0}       {1} -> {2}'.format(prefix, k, key_str))
+                        
                 raise SimBuildError('Unable to find child \'{0}\' in '
                                     '\'{1}\''.format(child, self.id))
 

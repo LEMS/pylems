@@ -169,7 +169,7 @@ class ForEach(LEMSBase):
         """ List of event connections.
         @type: list(lems.model.structure.EventConnection) """
         
-        self.for_each = list()
+        self.for_eachs = list()
         """ List of for each specs.
         @type: list(lems.model.structure.ForEach) """
         
@@ -182,7 +182,7 @@ class ForEach(LEMSBase):
         @type fe: lems.model.structure.ForEach
         """
 
-        self.for_each.append(fe)
+        self.for_eachs.append(fe)
         
         
     def add_event_connection(self, ec):
@@ -204,7 +204,7 @@ class ForEach(LEMSBase):
         for event_connection in self.event_connections:
             chxmlstr += event_connection.toxml()
 
-        for for_each in self.for_each:
+        for for_each in self.for_eachs:
             chxmlstr += for_each.toxml()
 
 
@@ -237,7 +237,7 @@ class Structure(LEMSBase):
         """ List of child multi-instantiations.
         @type: list(lems.model.structure.MultiInstantiate) """
 
-        self.for_each = list()
+        self.for_eachs = list()
         """ List of for each specs.
         @type: list(lems.model.structure.ForEach) """
 
@@ -289,7 +289,7 @@ class Structure(LEMSBase):
         @type fe: lems.model.structure.ForEach
         """
 
-        self.for_each.append(fe)
+        self.for_eachs.append(fe)
 
     def add(self, child):
         """
@@ -329,7 +329,7 @@ class Structure(LEMSBase):
         for multi_instantiate in self.multi_instantiates:
             chxmlstr += multi_instantiate.toxml()
 
-        for for_each in self.for_each:
+        for for_each in self.for_eachs:
             chxmlstr += for_each.toxml()
 
         if chxmlstr:
