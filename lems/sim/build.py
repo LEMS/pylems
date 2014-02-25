@@ -549,7 +549,10 @@ class SimulationBuilder(LEMSBase):
         ks_code = []
         for ks in regime.kinetic_schemes:
             try:
-                nodes = {node.id:node for node in runnable.__dict__[ks.nodes]}
+                ###nodes = {node.id:node for node in runnable.__dict__[ks.nodes]}
+                nodes = {}
+                for node in runnable.__dict__[ks.nodes]:
+                    nodes[node.id] = node
                 edges = runnable.__dict__[ks.edges]
 
                 for edge in edges:

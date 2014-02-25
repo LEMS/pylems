@@ -16,18 +16,6 @@ Examples
 --------
 
 
-**LEMS examples (in directory examples)**
-
-- example1.xml --  Working
-- example2.xml --  Working
-- example3.xml --  Working
-- example4.xml --  Not working (Unsupported in PyLEMS: KSChannel)
-- example5.xml --  Not working (Unsupported in PyLEMS: KSChannel)
-- example6.xml --  Working
--- TODO: Rest of examples require an update to the <Simulation> element,
-   i.e. use <Simulation...> not <SimulationSet...>, to work in PyLEMS 
-
-
 **NeuroML examples (from https://github.com/NeuroML/NeuroML2/tree/development/NeuroML2CoreTypes)**
 
 - Example 0 --  Working
@@ -49,6 +37,18 @@ Examples
 - Example 16 -- Working (apart from spikeArray)
 - Example 17 -- Working
 - Example 18 -- Working
+
+
+**LEMS examples (in directory examples)**
+
+- example1.xml --  Working
+- example2.xml --  Working
+- example3.xml --  Working
+- example4.xml --  Not working (Unsupported in PyLEMS: KSChannel)
+- example5.xml --  Not working (Unsupported in PyLEMS: KSChannel)
+- example6.xml --  Working
+-- TODO: Rest of examples require an update to the <Simulation> element,
+   i.e. use <Simulation...> not <SimulationSet...>, to work in PyLEMS 
 
       
 **LEMS elements that do not work**
