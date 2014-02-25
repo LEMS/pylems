@@ -15,8 +15,20 @@ Usage as a LEMS model simulator
 Examples
 --------
 
-**NeuroML examples (from https://github.com/NeuroML/NeuroML2/tree/development/NeuroML2CoreTypes)**
 
+**LEMS examples (in directory examples)**
+
+- example1.xml --  Working
+- example2.xml --  Working
+- example3.xml --  Working
+- example4.xml --  Not working (Unsupported in PyLEMS: KSChannel)
+- example5.xml --  Not working (Unsupported in PyLEMS: KSChannel)
+- example6.xml --  Working
+-- TODO: Rest of examples require an update to the <Simulation> element,
+   i.e. use <Simulation...> not <SimulationSet...>, to work in PyLEMS 
+
+
+**NeuroML examples (from https://github.com/NeuroML/NeuroML2/tree/development/NeuroML2CoreTypes)**
 
 - Example 0 --  Working
 - Example 1 --  Working

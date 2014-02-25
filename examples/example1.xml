@@ -1,6 +1,6 @@
 <Lems>
 
-    <Target component="simset" />
+    <Target component="sim1" />
 
     <Dimension name="voltage" m="1" l="2" t="-3" i="-1" />
     <Dimension name="time" t="1" />
@@ -265,7 +265,7 @@
 
     <Include file="SingleSimulation.xml" />
     
-    <Simulation id="simset" length="80ms" step="0.01ms" target="net1">
+    <Simulation id="sim1" length="80ms" step="0.01ms" target="net1">
         <Display id="d0" title="Example 1: Dimensions, Units, ComponentTypes and Components" 
                  timeScale="1ms" xmin="-10" xmax="90" ymin="-90" ymax="60">
             <Line id="tsince" quantity="p1[0]/tsince" scale="1ms" timeScale="1ms" color="#00c000" />

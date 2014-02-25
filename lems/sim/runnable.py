@@ -281,7 +281,7 @@ class Runnable(Reflective):
                 return self.resolve_path('../' + p.value)
             elif child in self.__dict__.keys():
                 child_resolved = self.__dict__[child]
-                print("Think it's a link from %s to %s"%(child, child_resolved))
+                #print("Think it's a link from %s to %s"%(child, child_resolved))
                 return self.resolve_path('../' + child_resolved)
             else:
                 if self.debug:

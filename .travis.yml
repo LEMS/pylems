@@ -13,4 +13,5 @@ install:
 
 script:  
   - cd ./lems/test && nosetests -vs
-
+  - cd ../.. 
+  - ./pylems examples/example1.xml -nogui
