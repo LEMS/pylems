@@ -62,7 +62,7 @@ class LEMSFileParser(LEMSBase):
     LEMS XML file format parser class.
     """
     
-    def __init__(self, model, include_dirs = []):
+    def __init__(self, model, include_dirs = [], include_includes=True):
         """
         Constructor.
 
@@ -88,6 +88,10 @@ class LEMSFileParser(LEMSBase):
         self.id_counter = None
         """ Counter generator for generating unique ids.
         @type: generator(int) """
+        
+        self.include_includes = include_includes
+        """ Whether to include LEMS definitions in <Include> elements
+        @type: boolean """
         
         self.init_parser()
 
@@ -255,6 +259,11 @@ class LEMSFileParser(LEMSBase):
 
         if xml.ltag != 'lems' and xml.ltag != 'neuroml':
             raise ParseError('<Lems> expected as root element (or even <neuroml>), found: {0}'.format(xml.ltag))
+        '''
+        if xml.ltag == 'lems':
+            if 'description' in xml.lattrib:
+                self.description = xml.lattrib['description']
+        '''
 
         self.process_nested_tags(xml)
 
@@ -945,16 +954,19 @@ class LEMSFileParser(LEMSBase):
 
         @raise ParseError: Raised when the file to be included is not specified. 
         """
-        
-        #TODO: remove this hard coding for reading NeuroML includes...
-        if 'file' not in node.lattrib:
-            if 'href' in node.lattrib:
-                self.model.include_file(node.lattrib['href'], self.include_dirs)
-                return
-            else:
-                self.raise_error('<Include> must specify the file to be included.')
+        if not self.include_includes:
+            print("Ignoring included LEMS file: %s"%node.lattrib['file'])
+        else:
 
-        self.model.include_file(node.lattrib['file'], self.include_dirs)
+            #TODO: remove this hard coding for reading NeuroML includes...
+            if 'file' not in node.lattrib:
+                if 'href' in node.lattrib:
+                    self.model.include_file(node.lattrib['href'], self.include_dirs)
+                    return
+                else:
+                    self.raise_error('<Include> must specify the file to be included.')
+
+            self.model.include_file(node.lattrib['file'], self.include_dirs)
 
     def parse_kinetic_scheme(self, node):
         """

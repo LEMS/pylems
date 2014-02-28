@@ -38,7 +38,7 @@ class Model(LEMSBase):
     
     debug = False
     
-    def __init__(self):
+    def __init__(self, include_includes='True'):
         """
         Constructor.
         """
@@ -78,6 +78,14 @@ class Model(LEMSBase):
         self.included_files = []
         """ List of files already included.
         @type: list(str) """
+        
+        self.description = None
+        """ Short description of contents of LEMS file
+        @type: str """
+        
+        self.include_includes = include_includes
+        """ Whether to include LEMS definitions in <Include> elements
+        @type: boolean """
 
     def add_target(self, target):
         """
@@ -192,30 +200,31 @@ class Model(LEMSBase):
         @param include_dirs: Optional alternate include search path.
         @type include_dirs: list(str)
         """
-        if self.debug: print("------------------                   Including file: %s"%path)
-        inc_dirs = include_dirs if include_dirs else self.include_dirs
+        if self.include_includes:
+            if self.debug: print("------------------                   Including a file: %s"%path)
+            inc_dirs = include_dirs if include_dirs else self.include_dirs
 
-        parser = LEMSFileParser(self, inc_dirs)
-        if os.access(path, os.F_OK):
-            if not path in self.included_files:
-                parser.parse(open(path).read()) 
-                self.included_files.append(path)
-                return
+            parser = LEMSFileParser(self, inc_dirs, self.include_includes)
+            if os.access(path, os.F_OK):
+                if not path in self.included_files:
+                    parser.parse(open(path).read()) 
+                    self.included_files.append(path)
+                    return
+                else:
+                    if self.debug: print("Already included: %s"%path)
+                    return
             else:
-                if self.debug: print("Already included: %s"%path)
-                return
-        else:
-            for inc_dir in inc_dirs:
-                new_path = (inc_dir + '/' + path)
-                if os.access(new_path, os.F_OK):
-                    if not new_path in self.included_files:
-                        parser.parse(open(new_path).read())
-                        self.included_files.append(new_path)
-                        return
-                    else:
-                        if self.debug: print("Already included: %s"%path)
-                        return
-        raise Exception('Unable to open ' + path)
+                for inc_dir in inc_dirs:
+                    new_path = (inc_dir + '/' + path)
+                    if os.access(new_path, os.F_OK):
+                        if not new_path in self.included_files:
+                            parser.parse(open(new_path).read())
+                            self.included_files.append(new_path)
+                            return
+                        else:
+                            if self.debug: print("Already included: %s"%path)
+                            return
+            raise Exception('Unable to open ' + path)
             
     def import_from_file(self, filepath):
         """
@@ -228,7 +237,7 @@ class Model(LEMSBase):
         inc_dirs = self.include_directories[:]
         inc_dirs.append(dirname(filepath))
                         
-        parser = LEMSFileParser(self, inc_dirs)
+        parser = LEMSFileParser(self, inc_dirs, self.include_includes)
         with open(filepath) as f:
             parser.parse(f.read())
         

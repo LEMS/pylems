@@ -221,7 +221,7 @@ class Requirement(LEMSBase):
     Stores a requirement specification.
     """
 
-    def __init__(self, name, dimension):
+    def __init__(self, name, dimension, description = ''):
         """
         Constructor.
 
@@ -235,13 +235,19 @@ class Requirement(LEMSBase):
         self.dimension = dimension
         """ Physical dimension of the requirement.
         @type: str """
+        
+        self.description = description
+        """ Description of this exposure.
+        @type: str """
 
     def toxml(self):
         """
         Exports this object into a LEMS XML object
         """
 
-        return '<Requirement name="{0}" dimension="{1}"/>'.format(self.name, self.dimension)
+        return '<Requirement name="{0}" dimension="{1}"'.format(self.name, self.dimension) +\
+          (' description = "{0}"'.format(self.description) if self.description else '') +\
+          '/>'
 
 class Children(LEMSBase):
     """

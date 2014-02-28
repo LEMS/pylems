@@ -470,8 +470,7 @@ class OnCondition(EventHandler):
         try:
             self.expression_tree = ExprParser(test).parse()
         except:
-            raise ParseError("Parse error when parsing OnCondition test '{0}'",
-                             test)
+            raise ParseError("Parse error when parsing OnCondition test '{0}'", test)
         
     def __str__(self):
         istr = 'OnCondition...'
