@@ -240,6 +240,16 @@ class Structure(LEMSBase):
         self.for_eachs = list()
         """ List of for each specs.
         @type: list(lems.model.structure.ForEach) """
+        
+    def has_content(self):
+        if len(self.withs)==0 and \
+           len(self.event_connections)==0 and \
+           len(self.child_instances)==0 and \
+           len(self.multi_instantiates)==0 and \
+           len(self.for_eachs)==0:
+               return False
+        else:
+            return True
 
     def add_with(self, with_):
         """

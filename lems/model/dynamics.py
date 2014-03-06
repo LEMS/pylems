@@ -675,6 +675,18 @@ class Behavioral(LEMSBase):
         """ Map of kinetic schemes in this behavior regime.
         @type: dict(str -> lems.model.dynamics.KineticScheme) """
         
+        
+    def has_content(self):
+        if len(self.state_variables)==0 and \
+           len(self.derived_variables)==0 and \
+           len(self.conditional_derived_variables)==0 and \
+           len(self.time_derivatives)==0 and \
+           len(self.event_handlers)==0 and \
+           len(self.kinetic_schemes)==0:
+               return False
+        else:
+            return True
+        
     def clear(self):
         """
         Clear behavioral entities.
@@ -872,4 +884,10 @@ class Dynamics(Behavioral):
             self.add_regime(child)
         else:
             Behavioral.add(self, child)
+            
+    def has_content(self):
+        if len(self.regimes)>0: 
+            return True
+        else:
+            return Behavioral.has_content(self)
         
