@@ -203,7 +203,8 @@ if __name__ == '__main__':
     try:
         lems_file = sys.argv[1] 
     except:
-        lems_file = '../NeuroML2/NeuroML2CoreTypes/LEMS_NML2_Ex9_FN.xml'
+        lems_file = '../NeuroML2/LEMSexamples/LEMS_NML2_Ex9_FN.xml'
+        model.add_include_directory('../NeuroML2/NeuroML2CoreTypes')
 
     print('Importing LEMS file from: %s'%lems_file)
     model.import_from_file(lems_file)
