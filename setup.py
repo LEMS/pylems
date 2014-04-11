@@ -8,6 +8,7 @@ setup(
     name = "PyLEMS",
     version = '0.3.5',
     packages = ['lems','lems.base','lems.model','lems.parser','lems.sim', 'lems.dlems'],
+    scripts=['pylems'],
     author = "PyLEMS authors and contributors",
     author_email = "gautham@lisphacker.org, p.gleeson@gmail.com",
     description = "A Python library for working with the Low Entropy Model Specification language (LEMS)",
