@@ -38,8 +38,8 @@ script:
 
   - ./pylems -I NeuroML2/NeuroML2CoreTypes/ NeuroML2/LEMSexamples/LEMS_NML2_Ex13_Instances.xml -nogui
 
-  - ./pylems -I NeuroML2/NeuroML2CoreTypes/ NeuroML2/LEMSexamples/LEMS_NML2_Ex15_CaDynamics.xml -nogui
+  ##- ./pylems -I NeuroML2/NeuroML2CoreTypes/ NeuroML2/LEMSexamples/LEMS_NML2_Ex15_CaDynamics.xml -nogui
 
-  - ./pylems -I NeuroML2/NeuroML2CoreTypes/ NeuroML2/LEMSexamples/LEMS_NML2_Ex17_Tissue.xml -nogui
-  - ./pylems -I NeuroML2/NeuroML2CoreTypes/ NeuroML2/LEMSexamples/LEMS_NML2_Ex18_GHK.xml -nogui
+  ##- ./pylems -I NeuroML2/NeuroML2CoreTypes/ NeuroML2/LEMSexamples/LEMS_NML2_Ex17_Tissue.xml -nogui
+  ##- ./pylems -I NeuroML2/NeuroML2CoreTypes/ NeuroML2/LEMSexamples/LEMS_NML2_Ex18_GHK.xml -nogui
 
