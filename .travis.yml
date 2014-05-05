@@ -13,6 +13,7 @@ install:
   - cd NeuroML2
   - git checkout development
   - cd ..
+  - mkdir results
 
 
 script:  
