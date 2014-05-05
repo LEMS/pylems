@@ -10,6 +10,9 @@ install:
   - "pip install lxml"  
   - "pip install . --use-mirrors"
   - git clone https://github.com/NeuroML/NeuroML2
+  - cd NeuroML2
+  - git checkout development
+  - cd ..
 
 
 script:  
