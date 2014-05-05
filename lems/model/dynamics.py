@@ -580,8 +580,6 @@ class KineticScheme(LEMSBase):
         
         See instance variable documentation for more details on parameters.
         """
-        
-        raise NotImplementedError("KineticScheme is not stable in PyLEMS yet, see https://github.com/LEMS/pylems/issues/15")
 
         self.name = name
         """ Name of the kinetic scheme.

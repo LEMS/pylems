@@ -9,6 +9,7 @@ python:
 install:
   - "pip install lxml"  
   - "pip install . --use-mirrors"
+  - git clone https://github.com/NeuroML/NeuroML2
 
 
 script:  
@@ -18,3 +19,4 @@ script:
   - ./pylems examples/example2.xml -nogui
   - ./pylems examples/example3.xml -nogui
   - ./pylems examples/example6.xml -nogui
+  - ./pylems -I ../NeuroML2/NeuroML2CoreTypes/ ../NeuroML2/LEMSexamples/LEMS_NML2_Ex0_IaF.xml -nogui
