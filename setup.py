@@ -6,7 +6,7 @@ long_description = open("README.md").read()
 
 setup(
     name = "PyLEMS",
-    version = '0.3.6',
+    version = '0.3.7',
     packages = ['lems','lems.base','lems.model','lems.parser','lems.sim', 'lems.dlems'],
     scripts=['pylems'],
     author = "PyLEMS authors and contributors",

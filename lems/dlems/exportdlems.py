@@ -45,7 +45,7 @@ def any_svs_plotted(disp, svs):
 
 def inequality_to_condition(ineq):
 
-    r = re.compile("(.+)(?:\.([gleqt]+)\.)(.+)")
+    r = re.compile("(.+)(?:\.([glneqt]+)\.)(.+)")
     s = r.search(ineq)
     expr =  ''.join([s.group(1).strip(), ' - (',  s.group(3).strip() + ')'])
     sign = comp2sign(s.group(2))

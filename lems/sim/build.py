@@ -654,7 +654,9 @@ class SimulationBuilder(LEMSBase):
             return '<='
         elif op == '.eq.':
             return '=='
-        elif op == '.ne.':
+        elif op == '.neq.':   
+            return '!='
+        elif op == '.ne.':   # .neq. is preferred!
             return '!='
         elif op == '^':
             return '**'

@@ -189,7 +189,8 @@ class ExprParser(LEMSBase):
         '.lt.':2,
         '.le.':2,
         '.eq.':2,
-        '.ne.':2}
+        '.neq.':2,
+        '.ne.':2}  # .neq. is preferred!
 
     depth = 0
 
