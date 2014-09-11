@@ -4,9 +4,12 @@ from distutils.core import setup
 
 long_description = open("README.md").read()
 
+import lems
+version = lems.__version__
+
 setup(
     name = "PyLEMS",
-    version = '0.3.7',
+    version = version,
     packages = ['lems','lems.base','lems.model','lems.parser','lems.sim', 'lems.dlems'],
     scripts=['pylems'],
     author = "PyLEMS authors and contributors",
