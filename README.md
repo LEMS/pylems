@@ -91,4 +91,6 @@ pylems is integrated with the the [Travis Continuous Integration service](http:/
 
 [![Build Status](https://travis-ci.org/LEMS/pylems.png?branch=master)](https://travis-ci.org/LEMS/pylems)
 
+This code is distributed under the terms of the GNU Lesser General Public License.
+
 
