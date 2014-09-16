@@ -16,11 +16,11 @@ setup(
     author_email = "gautham@lisphacker.org, p.gleeson@gmail.com",
     description = "A Python library for working with the Low Entropy Model Specification language (LEMS)",
     long_description = long_description,
-    license = "BSD",
+    license = "LGPL",
     url="https://github.com/LEMS/pylems",
     classifiers = [
         'Intended Audience :: Science/Research',
-        'License :: OSI Approved :: BSD License',
+        'License :: OSI Approved :: LGPL',
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.6',
