@@ -107,6 +107,23 @@ def process_simulation_output(sim, model, options):
 
     file_times = {}
     file_outs = {}
+    
+    display_order = {}
+    file_column_order = {}
+    
+    simulation = model.components[model.targets[0]]
+    for c in simulation.children:
+        if c.type == 'Display':
+            display_order[c.parameters['title']] = []
+            for l in c.children:
+                display_order[c.parameters['title']].append(l.parameters['quantity'])
+                
+        if c.type == 'OutputFile':
+            file_column_order[c.parameters['fileName']] = []
+            for f in c.children:
+                file_column_order[c.parameters['fileName']].append(f.parameters['quantity'])
+                
+    recordings = {}
 
     while rq != []:
         runnable = rq[0]
@@ -119,8 +136,12 @@ def process_simulation_output(sim, model, options):
         if runnable.recorded_variables:
             for recording in runnable.recorded_variables:
                 if isinstance(recording.data_output, DataDisplay):
+                    data_output = recording.data_output
                     if not options.nogui:
-                        plot_recording(recording)
+                        if data_output.title not in recordings:
+                            recordings[data_output.title] = {}
+                            
+                        recordings[data_output.title][recording.full_path] = recording
                 elif isinstance(recording.data_output, DataWriter):
                     data_output = recording.data_output
                     times = []
@@ -137,26 +158,12 @@ def process_simulation_output(sim, model, options):
                     raise Exception("Invalid output type - " + str(type(recording.data_output)))
 
     
-    display_order = {}
-    file_column_order = {}
-    
-    simulation = model.components[model.targets[0]]
-    for c in simulation.children:
-        if c.type == 'Display':
-            display_order[c.id] = []
-            for l in c.children:
-                display_order[c.id].append(l.id)
-                
-        if c.type == 'OutputFile':
-            file_column_order[c.parameters['fileName']] = []
-            for f in c.children:
-                file_column_order[c.parameters['fileName']].append(f.parameters['quantity'])
     
     for file_out_name in file_column_order.keys():
         times = file_times[file_out_name]
         vals = file_outs[file_out_name]
         print('Going to save {0}x{1} data points to file {2}'.format(len(times),len(vals.keys()),file_out_name))
-        file_out = open(data_output.file_name, 'w')
+        file_out = open(file_out_name, 'w')
         i=0
         
         for time in times:
@@ -169,6 +176,12 @@ def process_simulation_output(sim, model, options):
             file_out.write('\n')
             i += 1
 
+    if not options.nogui:
+        for display in display_order.keys():
+            lines = display_order[display]
+            recordings_here = recordings[display]
+            for line in lines:
+                plot_recording(recordings_here[line])
 
     if fig_count > 0:
         import matplotlib.pyplot as pylab
