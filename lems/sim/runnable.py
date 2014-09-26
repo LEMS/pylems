@@ -303,13 +303,14 @@ class Runnable(Reflective):
                 return childobj.resolve_path(new_path)
 
     def add_variable_recorder(self, data_output, recorder):
-        self.add_variable_recorder2(data_output, recorder, recorder.quantity)
+        self.add_variable_recorder2(data_output, recorder, recorder.quantity, recorder.quantity)
 
-    def add_variable_recorder2(self, data_output, recorder, path):
+    def add_variable_recorder2(self, data_output, recorder, path, full_path):
+        
         if path[0] == '/':
-            self.parent.add_variable_recorder2(data_output, recorder, path)
+            self.parent.add_variable_recorder2(data_output, recorder, path, full_path)
         elif path.find('../') == 0:
-            self.parent.add_variable_recorder2(data_output, recorder, path[3:])
+            self.parent.add_variable_recorder2(data_output, recorder, path[3:], full_path)
         elif path.find('/') >= 1:
             (child, new_path) = path.split('/', 1)
 
@@ -330,7 +331,8 @@ class Runnable(Reflective):
                 else:
                     childobj.array[idx].add_variable_recorder2(data_output,
                                                                recorder,
-                                                               new_path)
+                                                               new_path,
+                                                               full_path)
             elif child in self.component.children:
                 cdef = self.component.children[child]
                 childobj = None
@@ -349,7 +351,7 @@ class Runnable(Reflective):
                 raise SimBuildError('Unable to find child \'{0}\' in '
                                     '\'{1}\''.format(child, self.id))
         else:
-            self.recorded_variables.append(Recording(path, data_output, recorder))
+            self.recorded_variables.append(Recording(path, full_path, data_output, recorder))
 
 
     def configure_time(self, time_step, time_total):

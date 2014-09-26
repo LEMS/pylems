@@ -13,8 +13,10 @@ class Recording(LEMSBase):
     Stores details of a variable recording across a single simulation run.
     """
 
-    def __init__(self, variable, data_output, recorder):
+    def __init__(self, variable, full_path, data_output, recorder):
         self.variable = variable
+        
+        self.full_path = full_path
         
         self.data_output = data_output
 
@@ -23,7 +25,7 @@ class Recording(LEMSBase):
         self.values = []
 
     def __str__(self):
-        return 'Recorder: {0}, {1}, size: {2}'.format(self.variable, self.recorder, len(self.values))
+        return 'Recording: {0} ({1}), {2}, size: {3}'.format(self.variable, self.full_path, self.recorder, len(self.values))
 
     def __repr__(self):
         return self.__str__()

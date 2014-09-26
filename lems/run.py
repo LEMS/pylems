@@ -13,44 +13,9 @@ from lems.sim.build import SimulationBuilder
 from lems.model.simulation import DataDisplay,DataWriter
 
 
-from lems.parser.expr import ExprParser as EP
-
 dlems_info = "dLEMS (distilled LEMS in JSON format, see https://github.com/borismarin/som-codegen)"
-
-def printsexp(sexp, prefix = '', indent = '||'):
-    s = sexp
-    i = 0
-    l = len(s)
-
-    print('')
-    print(prefix,)
     
-    while i < l:
-        if s[i] == '(':
-            s = printsexp(s[(i + 1):], prefix + indent, indent)
-            i = 0
-            l = len(s)
-        elif s[i] == ')':
-            #print('')
-            return s[(i + 1):]
-        elif s[i] == ' ':
-            print('')
-            print(prefix,)
-            i = i + 1
-        else:
-            print(s[i],)
-            i = i + 1
 
-    return ''
-    
-def main2():
-    #expr = 'x'
-    #expr = '( (V - ((V^3) / 3)) - W + I) / SEC'
-    expr = '(V - (V^3) / 3 - W + I) / SEC'
-    sexp = str(EP(expr).parse())
-    print(sexp)
-    printsexp(sexp)
-    
 def process_args():
     """ 
     Parse command-line arguments.
@@ -75,14 +40,14 @@ def process_args():
                         help="If this is specified, export the LEMS file as "+dlems_info)
     
     return parser.parse_args()
-    
+
 def main():
     """
     Program entry point.
     """
     
     args = process_args()
-
+    
     print('Parsing and resolving model: '+args.lems_file)
     model = Model()
     if args.I is not None:
@@ -128,13 +93,11 @@ def main():
     else:
         print('Running simulation')
         sim.run()
-
-        process_simulation_output(sim, args)
-    
+        process_simulation_output(sim, model, args)
     
 fig_count = 0
 
-def process_simulation_output(sim, options):
+def process_simulation_output(sim, model, options):
     global fig_count
 
     print('Processing results')
@@ -167,24 +130,44 @@ def process_simulation_output(sim, options):
                         vals.append(y)
                     file_times[data_output.file_name] = times
                     if data_output.file_name not in file_outs:
-                        file_outs[data_output.file_name] = []
-                    file_outs[data_output.file_name].append(vals)
+                        file_outs[data_output.file_name] = {}
+                
+                    file_outs[data_output.file_name][recording.full_path] = vals
                 else:
                     raise Exception("Invalid output type - " + str(type(recording.data_output)))
 
-    for file_out_name in file_times.keys():
+    
+    display_order = {}
+    file_column_order = {}
+    
+    simulation = model.components[model.targets[0]]
+    for c in simulation.children:
+        if c.type == 'Display':
+            display_order[c.id] = []
+            for l in c.children:
+                display_order[c.id].append(l.id)
+                
+        if c.type == 'OutputFile':
+            file_column_order[c.parameters['fileName']] = []
+            for f in c.children:
+                file_column_order[c.parameters['fileName']].append(f.parameters['quantity'])
+    
+    for file_out_name in file_column_order.keys():
         times = file_times[file_out_name]
         vals = file_outs[file_out_name]
-        print('Going to save {0}x{1} data points to file {2}'.format(len(times),len(vals),file_out_name))
+        print('Going to save {0}x{1} data points to file {2}'.format(len(times),len(vals.keys()),file_out_name))
         file_out = open(data_output.file_name, 'w')
         i=0
         
         for time in times:
-           file_out.write('{0}   '.format(time))
-           for val in vals:
+            file_out.write('{0}   '.format(time))
+            columns = file_column_order[file_out_name]
+            for column in columns:
+                val = vals[column]
                 file_out.write('{0}   '.format(val[i]))
-           file_out.write('\n')
-           i += 1
+                
+            file_out.write('\n')
+            i += 1
 
 
     if fig_count > 0:
