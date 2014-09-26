@@ -327,7 +327,8 @@ class Runnable(Reflective):
                 if idx == -1:
                     childobj.add_variable_recorder2(data_output,
                                                     recorder,
-                                                    new_path)
+                                                    new_path,
+                                                    full_path)
                 else:
                     childobj.array[idx].add_variable_recorder2(data_output,
                                                                recorder,
