@@ -181,8 +181,12 @@ class Runnable(Reflective):
     def add_child_to_group(self, group_name, child):
         #print("add_child_to_group in %s; grp: %s; child: %s "%(self.id, group_name, child))
         if group_name not in self.__dict__:
+            #print sorted(self.__dict__.keys())
             self.__dict__[group_name] = []
             self.groups.append(group_name)
+        #print sorted(self.__dict__.keys())
+        #print ".........."
+        #print self.__dict__[group_name]
         self.__dict__[group_name].append(child)
         child.parent = self
 
