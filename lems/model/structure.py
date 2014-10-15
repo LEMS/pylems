@@ -15,11 +15,10 @@ class With(LEMSBase):
     Stores a with-as statement.
     """
 
-    def __init__(self, instance, as_):
+    def __init__(self, instance, as_, list=None, index=None):
         """
-        Constructor.
+        Constructor referencing single identified instance, or list/index.
         
-        See instance variable documentation for more details on parameters.
         """
 
         self.instance = instance
@@ -30,12 +29,70 @@ class With(LEMSBase):
         """ Alternative name.
         @type: str """
 
+        self.list = list
+        """ list of components, e.g. population
+        @type: str """
+
+        self.index = index
+        """ index in list to be referenced.
+        @type: str """
+        
+
     def toxml(self):
         """
         Exports this object into a LEMS XML object
         """
 
-        return '<With instance="{0}" as="{1}"/>'.format(self.instance, self.as_)
+        return '<With ' + \
+          (' instance="{0}"'.format(self.instance) if self.instance else '') +\
+          (' list="{0}"'.format(self.list) if self.list else '') + \
+          (' index="{0}"'.format(self.index) if self.index else '') + \
+          ' as="{1}"/>'.format(self.instance, self.as_)
+          
+          
+class Tunnel(LEMSBase):
+    """
+    Stores a Tunnel.
+    """
+
+    def __init__(self, name, end_a, end_b, component_a, component_b):
+        """
+        Constructor.
+        
+        """
+
+        self.name = name
+        """ name of Tunnel.
+        @type: str """
+
+        self.end_a = end_a
+        """ 'A' end of Tunnel.
+        @type: str """
+
+        self.end_b = end_b
+        """ 'B' end of Tunnel.
+        @type: str """
+
+        self.component_a = component_a
+        """ Component to create at A.
+        @type: str """
+        
+        self.component_b = component_b
+        """ Component to create at B.
+        @type: str """
+
+        
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<Tunnel name="{0}"'.format(self.name) + \
+               ' endA="{0}"'.format(self.end_a) + \
+               ' endB="{0}"'.format(self.end_b) + \
+               ' componentA="{0}"'.format(self.component_a) + \
+               ' componentB="{0}"'.format(self.component_b) + '/>'
 
 class EventConnection(LEMSBase):
     """
@@ -224,6 +281,10 @@ class Structure(LEMSBase):
         self.withs = Map()
         """ Map of With statements.
         @type: Map(str -> lems.model.structure.With) """
+        
+        self.tunnels = Map()
+        """ Map of tunnel statements.
+        @type: Map(str -> lems.model.structure.Tunnel) """
 
         self.event_connections = list()
         """ List of event connections.
@@ -260,6 +321,16 @@ class Structure(LEMSBase):
         """
 
         self.withs[with_.as_] = with_
+
+    def add_tunnel(self, tunnel):
+        """
+        Adds a tunnel specification to the structure.
+
+        @param tunnel: tunnel specification.
+        @type tunnel: lems.model.structure.Tunnel
+        """
+
+        self.tunnels[tunnel.name] = tunnel
         
     def add_event_connection(self, ec):
         """

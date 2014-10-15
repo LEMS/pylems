@@ -347,9 +347,12 @@ class Model(LEMSBase):
                 ct.parameters[parameter.name] = base_ct.parameters[parameter.name]
             
         merge_maps(ct.derived_parameters, base_ct.derived_parameters)
+        merge_maps(ct.index_parameters, base_ct.index_parameters)
         merge_maps(ct.constants, base_ct.constants)
         merge_maps(ct.exposures, base_ct.exposures)
         merge_maps(ct.requirements, base_ct.requirements)
+        merge_maps(ct.component_requirements, base_ct.component_requirements)
+        merge_maps(ct.instance_requirements, base_ct.instance_requirements)
         merge_maps(ct.children, base_ct.children)
         merge_maps(ct.texts, base_ct.texts)
         merge_maps(ct.links, base_ct.links)
@@ -398,6 +401,7 @@ class Model(LEMSBase):
 
         ### Resolve parameters
         for parameter in ct.parameters:
+            if self.debug: print("Checking: %s"%parameter)
             if parameter.name in c.parameters:
                 p = parameter.copy()
                 p.value = c.parameters[parameter.name]
@@ -414,8 +418,13 @@ class Model(LEMSBase):
         ### Resolve derived_parameters
         for derived_parameter in ct.derived_parameters:
             derived_parameter2 = derived_parameter.copy()
-            #derived_parameter2.numeric_value = self.get_numeric_value(constant2.value, constant2.dimension)
             fc.add(derived_parameter2)
+            
+        ### Resolve derived_parameters
+        for index_parameter in ct.index_parameters:
+            raise ModelError("IndexParameter not yet implemented in PyLEMS!")
+            index_parameter2 = index_parameter.copy()
+            fc.add(index_parameter2)
             
         ### Resolve constants
         for constant in ct.constants:
@@ -449,8 +458,15 @@ class Model(LEMSBase):
                 raise ModelError("Path parameter '{0}' not initialized for component '{1}'",
                                  path.name, c.id)
 
+        if len(ct.component_requirements)>0:
+            raise ModelError("ComponentRequirement not yet implemented in PyLEMS!")
+        if len(ct.instance_requirements)>0:
+            raise ModelError("InstanceRequirement not yet implemented in PyLEMS!")
+
         ### Resolve component references.
         for cref in ct.component_references:
+            if cref.local:
+                raise ModelError("Attribute local on ComponentReference not yet implemented in PyLEMS!")
             if cref.name in c.parameters:
                 cref2 = cref.copy()
                 cid = c.parameters[cref.name]
@@ -466,6 +482,8 @@ class Model(LEMSBase):
             
         merge_maps(fc.exposures, ct.exposures)
         merge_maps(fc.requirements, ct.requirements)
+        merge_maps(fc.component_requirements, ct.component_requirements)
+        merge_maps(fc.instance_requirements, ct.instance_requirements)
         merge_maps(fc.children, ct.children)
         merge_maps(fc.texts, ct.texts)
         merge_maps(fc.links, ct.links)
@@ -532,6 +550,9 @@ class Model(LEMSBase):
                                  "'{0}' in component '{1}'",
                                  w.as_, fc.id)
             fc.structure.add(w2)
+            
+        if len(ct.structure.tunnels) > 0:
+            raise ModelError("Tunnel is not yet supported in PyLEMS!");
             
         for fe in ct.structure.for_eachs:
             fc.structure.add_for_each(fe)
