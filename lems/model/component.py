@@ -63,6 +63,15 @@ class Parameter(LEMSBase):
         return '<{0} name="{1}" dimension="{2}"'.format('Fixed' if self.fixed else 'Parameter', self.name, self.dimension) +\
           (' description = "{0}"'.format(self.description) if self.description else '') +\
           '/>'
+          
+          
+    def __str__(self):
+        return '{0}: name="{1}" dimension="{2}"'.format('Fixed' if self.fixed else 'Parameter', self.name, self.dimension) +\
+          (' description = "{0}"'.format(self.description) if self.description else '')
+          
+          
+    def __repr__(self):
+        return self.__str__()
 
 class Fixed(Parameter):
     """
@@ -87,6 +96,34 @@ class Fixed(Parameter):
         """
 
         return '<Fixed parameter="{0}"'.format(self.name) + ' value="{0}"'.format(self.fixed_value)+'/>'
+
+class IndexParameter(LEMSBase):
+    """
+    Stores a parameter which is an index (integer > 0).
+    """
+    
+    def __init__(self, name, description = ''):
+        """
+        Constructor.
+        """
+
+        self.name = name
+        """ Name of the parameter.
+        @type: str """
+        
+        self.description = description
+        """ Description of this parameter.
+        @type: str """
+        
+        
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<IndexParameter name="{0}"'.format(self.name) + '' + \
+            (' description = "{0}"'.format(self.description) if self.description else '') +\
+            '/>'
         
         
 class DerivedParameter(LEMSBase): 
@@ -237,7 +274,7 @@ class Requirement(LEMSBase):
         @type: str """
         
         self.description = description
-        """ Description of this exposure.
+        """ Description of this requirement.
         @type: str """
 
     def toxml(self):
@@ -246,6 +283,67 @@ class Requirement(LEMSBase):
         """
 
         return '<Requirement name="{0}" dimension="{1}"'.format(self.name, self.dimension) +\
+          (' description = "{0}"'.format(self.description) if self.description else '') +\
+          '/>'
+          
+          
+class ComponentRequirement(LEMSBase):
+    """
+    Specifies a component that is required
+    """
+    
+    def __init__(self, name, description = ''):
+        """
+        Constructor.
+        """
+
+        self.name = name
+        """ Name of the Component required.
+        @type: str """
+        
+        self.description = description
+        """ Description of this ComponentRequirement.
+        @type: str """
+        
+        
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<ComponentRequirement name="{0}"'.format(self.name) + '' + \
+            (' description = "{0}"'.format(self.description) if self.description else '') +\
+            '/>'
+        
+          
+class InstanceRequirement(LEMSBase):
+    """
+    Stores an instance requirement specification.
+    """
+
+    def __init__(self, name, type, description = ''):
+        """
+        Constructor.
+        """
+        
+        self.name = name
+        """ Name of the instance requirement.
+        @type: str """
+         
+        self.type = type
+        """ Type of the instance required.
+        @type: str """
+        
+        self.description = description
+        """ Description of this InstanceRequirement.
+        @type: str """
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<InstanceRequirement name="{0}" type="{1}"'.format(self.name, self.dimension) +\
           (' description = "{0}"'.format(self.description) if self.description else '') +\
           '/>'
 
@@ -436,7 +534,7 @@ class ComponentReference(LEMSBase):
     Stores a component reference.
     """
 
-    def __init__(self, name, type_):
+    def __init__(self, name, type_, local=None):
         """
         Constructor.
 
@@ -451,6 +549,10 @@ class ComponentReference(LEMSBase):
         """ Type of the component reference.
         @type: str """
 
+        self.local = local
+        """ ???
+        @type: str """
+
         self.referenced_component = None
         """ Component being referenced.
         @type: FatComponent """
@@ -460,7 +562,9 @@ class ComponentReference(LEMSBase):
         Exports this object into a LEMS XML object
         """
 
-        return '<ComponentReference name="{0}" type="{1}"/>'.format(self.name, self.type)
+        return '<ComponentReference name="{0}" type="{1}"'.format(self.name, self.type) + \
+          (' local = "{0}"'.format(self.local) if self.local else '') + \
+            '/>'
         
 class Attachments(LEMSBase):
     """
@@ -514,6 +618,10 @@ class Fat(LEMSBase):
         self.derived_parameters = Map()
         """ Map of derived_parameters in this component type.
         @type: Map(str -> lems.model.component.Parameter) """
+        
+        self.index_parameters = Map()
+        """ Map of index_parameters in this component type.
+        @type: Map(str -> lems.model.component.IndexParameter) """
 
         self.constants = Map()
         """ Map of constants in this component type.
@@ -526,6 +634,14 @@ class Fat(LEMSBase):
         self.requirements = Map()
         """ Map of requirements.
         @type: Map(str -> lems.model.component.Requirement) """
+
+        self.component_requirements = Map()
+        """ Map of component requirements.
+        @type: Map(str -> lems.model.component.ComponentRequirement) """
+
+        self.instance_requirements = Map()
+        """ Map of instance requirements.
+        @type: Map(str -> lems.model.component.InstanceRequirement) """
 
         self.children = Map()
         """ Map of children.
@@ -590,6 +706,18 @@ class Fat(LEMSBase):
         """
 
         self.derived_parameters[derived_parameter.name] = derived_parameter
+        
+        
+    def add_index_parameter(self, index_parameter):
+        """
+        Adds an index_parameter to this component type.
+
+        @param index_parameter: Index Parameter to be added.
+        @type index_parameter: lems.model.component.IndexParameter
+        """
+
+        self.index_parameters[index_parameter.name] = index_parameter
+
 
     def add_constant(self, constant):
         """
@@ -601,6 +729,7 @@ class Fat(LEMSBase):
 
         self.constants[constant.name] = constant
 
+
     def add_exposure(self, exposure):
         """
         Adds a exposure to this component type.
@@ -611,6 +740,7 @@ class Fat(LEMSBase):
 
         self.exposures[exposure.name] = exposure
 
+
     def add_requirement(self, requirement):
         """
         Adds a requirement to this component type.
@@ -620,6 +750,29 @@ class Fat(LEMSBase):
         """
 
         self.requirements[requirement.name] = requirement
+
+
+    def add_component_requirement(self, component_requirement):
+        """
+        Adds a component requirement to this component type.
+
+        @param component_requirement: ComponentRequirement to be added.
+        @type component_requirement: lems.model.component.ComponentRequirement
+        """
+
+        self.component_requirements[component_requirement.name] = component_requirement
+
+
+    def add_instance_requirement(self, instance_requirement):
+        """
+        Adds an instance requirement to this component type.
+
+        @param instance_requirement: InstanceRequirement to be added.
+        @type instance_requirement: lems.model.component.InstanceRequirement
+        """
+
+        self.instance_requirements[instance_requirement.name] = instance_requirement
+
 
     def add_children(self, children):
         """
@@ -702,12 +855,18 @@ class Fat(LEMSBase):
             self.add_parameter(child)
         elif isinstance(child, DerivedParameter):
             self.add_derived_parameter(child)
+        elif isinstance(child, IndexParameter):
+            self.add_index_parameter(child)
         elif isinstance(child, Constant):
             self.add_constant(child)
         elif isinstance(child, Exposure):
             self.add_exposure(child)
         elif isinstance(child, Requirement):
             self.add_requirement(child)
+        elif isinstance(child, ComponentRequirement):
+            self.add_component_requirement(child)
+        elif isinstance(child, InstanceRequirement):
+            self.add_instance_requirement(child)
         elif isinstance(child, Children):
             self.add_children(child)
         elif isinstance(child, Text):
@@ -772,6 +931,9 @@ class ComponentType(Fat):
             
         for derived_parameter in self.derived_parameters:
             chxmlstr += derived_parameter.toxml()
+            
+        for index_parameter in self.index_parameters:
+            chxmlstr += index_parameter.toxml()
 
         for constant in self.constants:
             chxmlstr += constant.toxml()
@@ -805,6 +967,12 @@ class ComponentType(Fat):
             
         for requirement in self.requirements:
             chxmlstr += requirement.toxml()
+            
+        for component_requirement in self.component_requirements:
+            chxmlstr += component_requirement.toxml()
+            
+        for instance_requirement in self.instance_requirements:
+            chxmlstr += instance_requirement.toxml()
             
         for path in self.paths:
             chxmlstr += path.toxml()

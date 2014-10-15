@@ -116,7 +116,10 @@ class LEMSFileParser(LEMSBase):
                                                 'componentreference',
                                                 'exposure', 'eventport',
                                                 'fixed', 'link', 'parameter',
+                                                'indexparameter',
                                                 'path', 'requirement',
+                                                'componentrequirement',
+                                                'instancerequirement',
                                                 'simulation', 'structure',
                                                 'text', 'attachments',
                                                 'constant', 'derivedparameter']
@@ -141,7 +144,8 @@ class LEMSFileParser(LEMSBase):
                                             'eventconnection',
                                             'foreach',
                                             'multiinstantiate',
-                                            'with']
+                                            'with',
+                                            'tunnel']
                                        
         self.valid_children['foreach'] = ['foreach', 'eventconnection']     
                                             
@@ -155,7 +159,8 @@ class LEMSFileParser(LEMSBase):
         self.tag_parse_table['childinstance'] = self.parse_child_instance
         self.tag_parse_table['children'] = self.parse_children
         self.tag_parse_table['component'] = self.parse_component
-        self.tag_parse_table['componentreference'] = self.parse_component_reference
+        self.tag_parse_table['componentreference'] = self.parse_component_reference   
+        self.tag_parse_table['componentrequirement'] = self.parse_component_requirement
         self.tag_parse_table['componenttype'] = self.parse_component_type
         self.tag_parse_table['constant'] = self.parse_constant
         self.tag_parse_table['datadisplay'] = self.parse_data_display
@@ -173,6 +178,7 @@ class LEMSFileParser(LEMSBase):
         self.tag_parse_table['fixed'] = self.parse_fixed
         self.tag_parse_table['foreach'] = self.parse_for_each
         self.tag_parse_table['include'] = self.parse_include
+        self.tag_parse_table['indexparameter'] = self.parse_index_parameter
         self.tag_parse_table['kineticscheme'] = self.parse_kinetic_scheme
         self.tag_parse_table['link'] = self.parse_link
         self.tag_parse_table['multiinstantiate'] = self.parse_multi_instantiate
@@ -185,6 +191,7 @@ class LEMSFileParser(LEMSBase):
         self.tag_parse_table['record'] = self.parse_record
         self.tag_parse_table['regime'] = self.parse_regime
         self.tag_parse_table['requirement'] = self.parse_requirement
+        self.tag_parse_table['instancerequirement'] = self.parse_instance_requirement     
         self.tag_parse_table['run'] = self.parse_run
         #self.tag_parse_table['show'] = self.parse_show
         self.tag_parse_table['simulation'] = self.parse_simulation
@@ -195,6 +202,7 @@ class LEMSFileParser(LEMSBase):
         self.tag_parse_table['text'] = self.parse_text
         self.tag_parse_table['timederivative'] = self.parse_time_derivative
         self.tag_parse_table['transition'] = self.parse_transition
+        self.tag_parse_table['tunnel'] = self.parse_tunnel
         self.tag_parse_table['unit'] = self.parse_unit
         self.tag_parse_table['with'] = self.parse_with
 
@@ -529,8 +537,13 @@ class LEMSFileParser(LEMSBase):
         else:
             self.raise_error('<ComponentReference> must specify a type for the ' +
                              'reference.')
+                             
+        if 'local' in node.lattrib:
+            local = node.lattrib['local']
+        else:
+            local = None
 
-        self.current_component_type.add_component_reference(ComponentReference(name, type_))
+        self.current_component_type.add_component_reference(ComponentReference(name, type_, local))
 
     def parse_component_type(self, node):
         """
@@ -1168,6 +1181,69 @@ class LEMSFileParser(LEMSBase):
         parameter = Parameter(name, dimension)
 
         self.current_component_type.add_parameter(parameter)
+        
+        
+    def parse_index_parameter(self, node):
+        """
+        Parses <IndexParameter>
+
+        @param node: Node containing the <IndexParameter> element
+        @type node: xml.etree.Element
+
+        @raise ParseError: Raised when the IndexParameter does not have a name.
+        """
+
+        if self.current_component_type == None:
+            self.raise_error('IndexParameters can only be defined in ' +
+                             'a component type')
+
+        try:
+            name = node.lattrib['name']
+        except:
+            self.raise_error('<IndexParameter> must specify a name')
+
+
+        index_parameter = IndexParameter(name)
+
+        self.current_component_type.add_index_parameter(index_parameter)
+        
+        
+    def parse_tunnel(self, node):
+        """
+        Parses <Tunnel>
+
+        @param node: Node containing the <Tunnel> element
+        @type node: xml.etree.Element
+
+        @raise ParseError: Raised when the Tunnel does not have a name.
+        """
+
+        try:
+            name = node.lattrib['name']
+        except:
+            self.raise_error('<Tunnel> must specify a name')
+        try:
+            end_a = node.lattrib['enda']
+        except:
+            self.raise_error('<Tunnel> must specify: endA')
+        try:
+            end_b = node.lattrib['enda']
+        except:
+            self.raise_error('<Tunnel> must specify: endB')
+        try:
+            component_a = node.lattrib['componenta']
+        except:
+            self.raise_error('<Tunnel> must specify: componentA')
+        try:
+            component_b = node.lattrib['componentb']
+        except:
+            self.raise_error('<Tunnel> must specify: componentB')
+
+
+        tunnel = Tunnel(name, end_a, end_b, component_a, component_b)
+
+        self.current_structure.add_tunnel(tunnel)
+        
 
     def parse_path(self, node):
         """
@@ -1255,7 +1331,42 @@ class LEMSFileParser(LEMSBase):
             self.raise_error("Requirement \{0}' must specify a dimension.", name)
 
         self.current_component_type.add_requirement(Requirement(name, dimension))
+    
+    def parse_component_requirement(self, node):
+        """
+        Parses <ComponentRequirement>
 
+        @param node: Node containing the <ComponentRequirement> element
+        @type node: xml.etree.Element
+        """
+
+        if 'name' in node.lattrib:
+            name = node.lattrib['name']
+        else:
+            self.raise_error('<ComponentRequirement> must specify a name')
+
+        self.current_component_type.add_component_requirement(ComponentRequirement(name))
+    
+    def parse_instance_requirement(self, node):
+        """
+        Parses <InstanceRequirement>
+
+        @param node: Node containing the <InstanceRequirement> element
+        @type node: xml.etree.Element
+        """
+
+        if 'name' in node.lattrib:
+            name = node.lattrib['name']
+        else:
+            self.raise_error('<InstanceRequirement> must specify a name')
+
+        if 'type' in node.lattrib:
+            type = node.lattrib['type']
+        else:
+            self.raise_error("InstanceRequirement \{0}' must specify a type.", name)
+
+        self.current_component_type.add_instance_requirement(InstanceRequirement(name, type))
+    
     def parse_run(self, node):
         """
         Parses <Run>
@@ -1495,9 +1606,14 @@ class LEMSFileParser(LEMSBase):
 
         if 'instance' in node.lattrib:
             instance = node.lattrib['instance']
+            list = None
+            index = None
+        elif 'list' in node.lattrib and 'index' in node.lattrib:
+            instance = None
+            list = node.lattrib['list']
+            index = node.lattrib['index']
         else:
-            self.raise_error('<With> must specify a reference to target'
-                             'instance')
+            self.raise_error('<With> must specify EITHER instance OR list & index')
 
         if 'as' in node.lattrib:
             as_ = node.lattrib['as']
@@ -1505,4 +1621,5 @@ class LEMSFileParser(LEMSBase):
             self.raise_error('<With> must specify a name for the '
                              'target instance')
 
-        self.current_structure.add_with(With(instance, as_))
+        self.current_structure.add_with(With(instance, as_, list, index))
+
