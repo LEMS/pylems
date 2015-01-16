@@ -1,7 +1,8 @@
 PyLEMS 
 ======
 
-A LEMS (http://lems.github.io/LEMS) simulator written in Python which can be used to run NeuroML2 (http://neuroml.org/neuroml2.php) models.
+A LEMS (http://lems.github.io/LEMS) simulator written in Python which can be used 
+to run NeuroML2 (http://neuroml.org/neuroml2.php) models.
 
 For more about PyLEMS see:
 
@@ -17,6 +18,25 @@ Robert C. Cannon, Padraig Gleeson, Sharon Crook, Gautham Ganapathy, Boris Marin,
 **LEMS: A language for expressing complex biological models in concise and hierarchical form and its use in underpinning NeuroML 2**, 
 [Frontiers in Neuroinformatics 2014](http://journal.frontiersin.org/Journal/10.3389/fninf.2014.00079/abstract), doi: 10.3389/fninf.2014.00079
 
+
+Installation
+------------
+
+A stable version of PyLEMS is [available on PyPI](https://pypi.python.org/pypi/PyLEMS) using [pip](https://pip.pypa.io/en/latest/installing.html):
+
+    pip install pylems
+
+To install as root:
+
+    sudo pip install pylems
+
+Alternatively, you can obtain the latest version with
+
+    git clone https://github.com/LEMS/pylems.git
+    cd pylems 
+    git checkout development   # optional
+    sudo python setup.py install
+
 Usage as a LEMS model simulator
 -------------------------------
 
@@ -26,9 +46,9 @@ Usage as a LEMS model simulator
 
 - -I/-include path - Adds a directory to the model file include search path
 
+
 Examples
 --------
-
 
 **NeuroML examples (from https://github.com/NeuroML/NeuroML2/tree/development/NeuroML2CoreTypes)**
 
@@ -61,12 +81,14 @@ Examples
 - example4.xml --  Not working (Unsupported in PyLEMS: KSChannel)
 - example5.xml --  Not working (Unsupported in PyLEMS: KSChannel)
 - example6.xml --  Working
--- TODO: Rest of examples require an update to the <Simulation> element,
-   i.e. use <Simulation...> not <SimulationSet...>, to work in PyLEMS 
+-- TODO: Rest of examples require an update to the `<Simulation>` element,
+   i.e. use `<Simulation...>` not `<SimulationSet...>`, to work in PyLEMS 
 
       
 **LEMS elements that do not work**
 
+- KSChannel
+- Property
 - XPath based parameters - PathParameter
 - Assertions
 
@@ -74,14 +96,7 @@ Examples
 
 - Implement flattening
 - Decouple events from runnables
-- Perform dimension-checking on expressions.
-- Implement LEMS API over lems.model.* (NeuroML API?)
-  - Interface with libNeuroML and Pyramidal to export Neuron MOD files
-  - Export C files (Interface? Steve Marsh’s project?)
-- Assertions.
-- XPath implementation.
-- Implement Runnables from Component types instead of expanded typeless Components (Required for efficient C/C++ code generation, but conflicts with flattening)
-
+- Improve dimension-checking on expressions.
 
 
 Travis integration
