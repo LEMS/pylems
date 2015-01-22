@@ -41,12 +41,25 @@ def process_args():
     
     return parser.parse_args()
 
-def main():
+def run(file_path,include_dirs=[],dlems=False,nogui=False):
+    """
+    Function for running from a script or shell.
+    """
+    import argparse
+    args = argparse.Namespace()
+    args.lems_file = file_path
+    args.I = include_dirs
+    args.dlems = dlems
+    args.nogui = nogui
+    main(args=args)
+
+def main(args=None):
     """
     Program entry point.
     """
     
-    args = process_args()
+    if args is None:
+        args = process_args()
     
     print('Parsing and resolving model: '+args.lems_file)
     model = Model()
