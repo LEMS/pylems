@@ -187,6 +187,9 @@ class Runnable(Reflective):
         #print sorted(self.__dict__.keys())
         #print ".........."
         #print self.__dict__[group_name]
+        # Force group_name attribute to be a list before we append to it.
+        if type(self.__dict__[group_name]) is not list:
+            self.__dict__[group_name] = [self.__dict__[group_name]]
         self.__dict__[group_name].append(child)
         child.parent = self
 
