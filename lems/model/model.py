@@ -33,7 +33,7 @@ class Model(LEMSBase):
     """
     target_lems_version = '0.7.3'
     branch = 'development'
-    schema_location = 'https://raw.github.com/LEMS/LEMS/{0}/Schemas/LEMS/LEMS_v{1}.xsd'.format(branch, target_lems_version)
+    schema_location = 'https://raw.githubusercontent.com/LEMS/LEMS/{0}/Schemas/LEMS/LEMS_v{1}.xsd'.format(branch, target_lems_version)
     #schema_location = '/home/padraig/LEMS/Schemas/LEMS/LEMS_v%s.xsd'%target_lems_version
     
     debug = False
