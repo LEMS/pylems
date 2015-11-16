@@ -20,7 +20,7 @@ setup(
     url="https://github.com/LEMS/pylems",
     classifiers = [
         'Intended Audience :: Science/Research',
-        'License :: OSI Approved :: LGPL',
+        'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.6',
