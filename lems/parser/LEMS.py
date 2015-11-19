@@ -116,6 +116,7 @@ class LEMSFileParser(LEMSBase):
                                                 'componentreference',
                                                 'exposure', 'eventport',
                                                 'fixed', 'link', 'parameter',
+                                                'property',
                                                 'indexparameter',
                                                 'path', 'requirement',
                                                 'componentrequirement',
@@ -187,6 +188,7 @@ class LEMSFileParser(LEMSBase):
         self.tag_parse_table['onevent'] = self.parse_on_event
         self.tag_parse_table['onstart'] = self.parse_on_start
         self.tag_parse_table['parameter'] = self.parse_parameter
+        self.tag_parse_table['property'] = self.parse_property
         self.tag_parse_table['path'] = self.parse_path
         self.tag_parse_table['record'] = self.parse_record
         self.tag_parse_table['regime'] = self.parse_regime
@@ -1181,6 +1183,37 @@ class LEMSFileParser(LEMSBase):
         parameter = Parameter(name, dimension)
 
         self.current_component_type.add_parameter(parameter)
+
+    def parse_property(self, node):
+        """
+        Parses <Property>
+
+        @param node: Node containing the <Property> element
+        @type node: xml.etree.Element
+
+        @raise ParseError: Raised when the property does not have a name.
+        @raise ParseError: Raised when the property does not have a
+        dimension.
+        """
+
+        if self.current_component_type == None:
+            self.raise_error('Property can only be defined in ' +
+                             'a component type')
+
+        try:
+            name = node.lattrib['name']
+        except:
+            self.raise_error('<Property> must specify a name')
+
+        try:
+            dimension = node.lattrib['dimension']
+        except:
+            self.raise_error("Property '{0}' has no dimension",
+                             name)
+
+        property = Property(name, dimension)
+
+        self.current_component_type.add_property(property)
         
         
     def parse_index_parameter(self, node):

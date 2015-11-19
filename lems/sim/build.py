@@ -106,6 +106,10 @@ class SimulationBuilder(LEMSBase):
 
         for parameter in component.parameters:
             runnable.add_instance_variable(parameter.name, parameter.numeric_value)
+            
+        
+        for property in component.properties:
+            raise NotImplementedError("Property element is not stable in PyLEMS yet, see https://github.com/LEMS/pylems/issues/16")
 
         derived_parameter_code = []
         

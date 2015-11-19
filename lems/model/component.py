@@ -96,6 +96,41 @@ class Fixed(Parameter):
         """
 
         return '<Fixed parameter="{0}"'.format(self.name) + ' value="{0}"'.format(self.fixed_value)+'/>'
+    
+    
+        
+class Property(LEMSBase): 
+    """ 
+    Store the specification of a property. 
+    """ 
+ 
+    def __init__(self, name, dimension = None, description = ''): 
+        """
+        Constructor.
+        """
+
+        self.name = name
+        """ Name of the property.
+        @type: str """
+
+        self.dimension = dimension
+        """ Physical dimensions of the property.
+        @type: str """
+        
+        self.description = description
+        """ Description of the property.
+        @type: str """
+
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<Property name="{0}"'.format(self.name) +\
+          (' dimension="{0}"'.format(self.dimension) if self.dimension else 'none') +\
+          '/>'
+          
 
 class IndexParameter(LEMSBase):
     """
@@ -615,6 +650,10 @@ class Fat(LEMSBase):
         """ Map of parameters in this component type.
         @type: Map(str -> lems.model.component.Parameter) """
         
+        self.properties = Map()
+        """ Map of properties in this component type.
+        @type: Map(str -> lems.model.component.Property) """
+        
         self.derived_parameters = Map()
         """ Map of derived_parameters in this component type.
         @type: Map(str -> lems.model.component.Parameter) """
@@ -696,6 +735,17 @@ class Fat(LEMSBase):
         """
 
         self.parameters[parameter.name] = parameter
+        
+        
+    def add_property(self, property):
+        """
+        Adds a property to this component type.
+
+        @param property: Property to be added.
+        @type property: lems.model.component.Property
+        """
+
+        self.properties[property.name] = property
         
     def add_derived_parameter(self, derived_parameter):
         """
@@ -853,6 +903,8 @@ class Fat(LEMSBase):
 
         if isinstance(child, Parameter):
             self.add_parameter(child)
+        elif isinstance(child, Property):
+            self.add_property(child)
         elif isinstance(child, DerivedParameter):
             self.add_derived_parameter(child)
         elif isinstance(child, IndexParameter):
@@ -925,6 +977,9 @@ class ComponentType(Fat):
           (' description="{0}"'.format(self.description) if self.description else '')
 
         chxmlstr = ''
+
+        for property in self.properties:
+            chxmlstr += property.toxml()
 
         for parameter in self.parameters:
             chxmlstr += parameter.toxml()

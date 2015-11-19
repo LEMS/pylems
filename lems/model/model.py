@@ -346,6 +346,8 @@ class Model(LEMSBase):
             else:
                 ct.parameters[parameter.name] = base_ct.parameters[parameter.name]
             
+        merge_maps(ct.properties, base_ct.properties)
+        
         merge_maps(ct.derived_parameters, base_ct.derived_parameters)
         merge_maps(ct.index_parameters, base_ct.index_parameters)
         merge_maps(ct.constants, base_ct.constants)
@@ -415,6 +417,11 @@ class Model(LEMSBase):
                 raise ModelError("Parameter '{0}' not initialized for component '{1}'",
                                  parameter.name, c.id)
 
+        ### Resolve properties
+        for property in ct.properties:
+            property2 = property.copy()
+            fc.add(property2)
+            
         ### Resolve derived_parameters
         for derived_parameter in ct.derived_parameters:
             derived_parameter2 = derived_parameter.copy()
