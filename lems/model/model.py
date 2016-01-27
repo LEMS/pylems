@@ -125,8 +125,14 @@ class Model(LEMSBase):
         @param component_type: Component type to be added.
         @type component_type: lems.model.fundamental.ComponentType
         """
-
-        self.component_types[component_type.name] = component_type
+        name = component_type.name
+        
+        # To handle colons in names in LEMS
+        if ':' in name:
+            name = name.replace(':', '_')
+            component_type.name = name
+            
+        self.component_types[name] = component_type
 
     def add_component(self, component):
         """
