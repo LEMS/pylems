@@ -109,7 +109,11 @@ class SimulationBuilder(LEMSBase):
             
         
         for property in component.properties:
-            raise NotImplementedError("Property element is not stable in PyLEMS yet, see https://github.com/LEMS/pylems/issues/16")
+            print("\n\n*****************************************************************\n\n"+
+                  "   Property element is not stable in PyLEMS yet, see https://github.com/LEMS/pylems/issues/16\n\n"+
+                  "   Used in: %s\n\n"%property.toxml()+
+                  "*****************************************************************\n\n\n")
+            runnable.add_instance_variable(property.name, property.default_value)
 
         derived_parameter_code = []
         

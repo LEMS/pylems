@@ -1210,8 +1210,10 @@ class LEMSFileParser(LEMSBase):
         except:
             self.raise_error("Property '{0}' has no dimension",
                              name)
-
-        property = Property(name, dimension)
+                             
+        default_value = node.lattrib.get('defaultvalue', None)
+        
+        property = Property(name, dimension, default_value=default_value)
 
         self.current_component_type.add_property(property)
         

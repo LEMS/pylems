@@ -104,7 +104,7 @@ class Property(LEMSBase):
     Store the specification of a property. 
     """ 
  
-    def __init__(self, name, dimension = None, description = ''): 
+    def __init__(self, name, dimension = None, default_value = None, description = ''): 
         """
         Constructor.
         """
@@ -120,7 +120,10 @@ class Property(LEMSBase):
         self.description = description
         """ Description of the property.
         @type: str """
-
+        
+        self.default_value = default_value
+        """ Default value of the property.
+        @type: float """
 
     def toxml(self):
         """
@@ -129,6 +132,7 @@ class Property(LEMSBase):
 
         return '<Property name="{0}"'.format(self.name) +\
           (' dimension="{0}"'.format(self.dimension) if self.dimension else 'none') +\
+          (' defaultValue = "{0}"'.format(self.default_value) if self.default_value else '') +\
           '/>'
           
 
