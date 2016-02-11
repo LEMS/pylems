@@ -711,10 +711,6 @@ class Model(LEMSBase):
 
         for event_record in ct.simulation.event_records:
             try:
-                print event_record
-                print fc
-                print fc.parameters
-                print fc.texts
                 event_record2 = EventRecord(fc.paths[event_record.quantity].value,
                                  fc.texts[event_record.eventPort].value)
             except:
