@@ -92,6 +92,37 @@ class Record(LEMSBase):
                                                                          self.scale,
                                                                          self.color,
                                                                          self.id)
+class EventRecord(LEMSBase):
+    """
+    Stores the parameters of an <EventRecord> statement.
+    """
+
+    def __init__(self, quantity, eventPort):
+        """
+        Constructor.
+
+        See instance variable documentation for information on parameters.
+        """
+
+        self.id = ''
+        """ Id of the quantity
+        @type: str """
+        
+        self.quantity = quantity
+        """ Path to the quantity to be recorded.
+        @type: str """
+
+        self.eventPort = eventPort
+        """ eventPort to be used for the event record
+        @type: str """
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<EventRecord quantity="{0}" eventPort="{1}"/>'.format(self.quantity,
+                                                                         self.eventPort)
 
 class DataOutput(LEMSBase):
     """
@@ -172,6 +203,47 @@ class DataWriter(DataOutput):
                                                                 
     def __str__(self):
         return 'DataWriter, path: {0}, fileName: {1}'.format(self.path, self.file_name)
+    
+    
+class EventWriter(DataOutput):
+    """
+    Stores specification for an event writer.
+    """
+
+    def __init__(self, path, file_name, format):
+        """
+        Constuctor.
+
+        See instance variable documentation for information on parameters.
+        """
+
+        DataOutput.__init__(self)
+        
+        self.path = path
+        """ Path to the quantity to be saved to file.
+        @type: string """
+
+        self.file_name = file_name
+        """ Text parameter to be used for the file name
+        @type: string """
+
+        self.format = format
+        """ Text parameter to be used for the format
+        @type: string """
+
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<EventWriter path="{0}" fileName="{1}" format="{2}"/>'.format(self.path,
+                                                                self.file_name, self.format)
+                                                                
+    def __str__(self):
+        return 'EventWriter, path: {0}, fileName: {1}, format: {2}'.format(self.path, self.file_name, self.format)
+
+
 
 class Simulation(LEMSBase):
     """
@@ -191,6 +263,10 @@ class Simulation(LEMSBase):
         """ Map of recorded variables in this dynamics regime.
         @type: Map(string -> lems.model.simulation.Record """
 
+        self.event_records = Map()
+        """ Map of recorded events in this dynamics regime.
+        @type: Map(string -> lems.model.simulation.EventRecord """
+
         self.data_displays = Map()
         """ Map of data displays mapping titles to regions.
         @type: Map(string -> string) """
@@ -198,6 +274,10 @@ class Simulation(LEMSBase):
         self.data_writers = Map()
         """ Map of recorded variables to data writers.
         @type: Map(string -> lems.model.simulation.DataWriter """
+
+        self.event_writers = Map()
+        """ Map of recorded variables to event writers.
+        @type: Map(string -> lems.model.simulation.EventWriter """
 
     def add_run(self, run):
         """
@@ -221,6 +301,17 @@ class Simulation(LEMSBase):
 
         self.records[record.quantity] = record
 
+    def add_event_record(self, event_record):
+        """
+        Adds an eventrecord object to the list of event_record objects in this dynamics
+        regime.
+
+        @param event_record: EventRecord object to be added.
+        @type event_record: lems.model.simulation.EventRecord
+        """
+
+        self.event_records[event_record.quantity] = event_record
+
     def add_data_display(self, data_display):
         """
         Adds a data display to this simulation section.
@@ -241,6 +332,16 @@ class Simulation(LEMSBase):
 
         self.data_writers[data_writer.path] = data_writer
 
+    def add_event_writer(self, event_writer):
+        """
+        Adds an event writer to this simulation section.
+
+        @param event_writer: event writer to be added.
+        @type event_writer: lems.model.simulation.EventWriter
+        """
+
+        self.event_writers[event_writer.path] = event_writer
+
     def add(self, child):
         """
         Adds a typed child object to the simulation spec.
@@ -252,10 +353,14 @@ class Simulation(LEMSBase):
             self.add_run(child)
         elif isinstance(child, Record):
             self.add_record(child)
+        elif isinstance(child, EventRecord):
+            self.add_event_record(child)
         elif isinstance(child, DataDisplay):
             self.add_data_display(child)
         elif isinstance(child, DataWriter):
             self.add_data_writer(child)
+        elif isinstance(child, EventWriter):
+            self.add_event_writer(child)
         else:
             raise ModelError('Unsupported child element')
         
@@ -272,11 +377,17 @@ class Simulation(LEMSBase):
         for record in self.records:
             chxmlstr += record.toxml()
 
+        for event_record in self.event_records:
+            chxmlstr += event_record.toxml()
+
         for data_display in self.data_displays:
             chxmlstr += data_display.toxml()
 
         for data_writer in self.data_writers:
             chxmlstr += data_writer.toxml()
+
+        for event_writer in self.event_writers:
+            chxmlstr += event_writer.toxml()
 
         if chxmlstr:
             xmlstr = '<Simulation>' + chxmlstr + '</Simulation>'

@@ -18,7 +18,7 @@ from lems.base.errors import SimBuildError
 
 from lems.model.fundamental import Dimension,Unit
 from lems.model.component import Constant,ComponentType,Component,FatComponent
-from lems.model.simulation import Run,Record,DataDisplay,DataWriter
+from lems.model.simulation import Run,Record,EventRecord,DataDisplay,DataWriter,EventWriter
 from lems.model.structure import With,EventConnection,ChildInstance,MultiInstantiate
 
 import xml.dom.minidom as minidom
@@ -384,8 +384,10 @@ class Model(LEMSBase):
 
         merge_maps(ct.simulation.runs, base_ct.simulation.runs)
         merge_maps(ct.simulation.records, base_ct.simulation.records)
+        merge_maps(ct.simulation.event_records, base_ct.simulation.event_records)
         merge_maps(ct.simulation.data_displays, base_ct.simulation.data_displays)
         merge_maps(ct.simulation.data_writers, base_ct.simulation.data_writers)
+        merge_maps(ct.simulation.event_writers, base_ct.simulation.event_writers)
 
     def fatten_component(self, c):
         """
@@ -707,6 +709,19 @@ class Model(LEMSBase):
                                  fc.id)
             fc.simulation.add(record2)
 
+        for event_record in ct.simulation.event_records:
+            try:
+                print event_record
+                print fc
+                print fc.parameters
+                print fc.texts
+                event_record2 = EventRecord(fc.paths[event_record.quantity].value,
+                                 fc.texts[event_record.eventPort].value)
+            except:
+                raise ModelError("Unable to resolve simulation event_record parameters in component '{0}'",
+                                 fc.id)
+            fc.simulation.add(event_record2)
+
         for dd in ct.simulation.data_displays:
             try:
                 dd2 = DataDisplay(fc.texts[dd.title].value,
@@ -730,6 +745,20 @@ class Model(LEMSBase):
                 raise ModelError("Unable to resolve simulation writer parameters in component '{0}'",
                                  fc.id)
             fc.simulation.add(dw2)
+                
+        for ew in ct.simulation.event_writers:
+            try:
+                path = '.'
+                if fc.texts[ew.path] and fc.texts[ew.path].value:
+                    path = fc.texts[ew.path].value
+                
+                ew2 = EventWriter(path,
+                                 fc.texts[ew.file_name].value,
+                                 fc.texts[ew.format].value)
+            except:
+                raise ModelError("Unable to resolve simulation writer parameters in component '{0}'",
+                                 fc.id)
+            fc.simulation.add(ew2)
                 
             
     def get_numeric_value(self, value_str, dimension = None):

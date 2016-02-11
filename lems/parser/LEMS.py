@@ -150,8 +150,8 @@ class LEMSFileParser(LEMSBase):
                                        
         self.valid_children['foreach'] = ['foreach', 'eventconnection']     
                                             
-        self.valid_children['simulation'] = ['record', 'run',
-                                             'datadisplay', 'datawriter']
+        self.valid_children['simulation'] = ['record', 'eventrecord', 'run',
+                                             'datadisplay', 'datawriter', 'eventwriter']
 
         self.tag_parse_table = dict()
         #self.tag_parse_table['assertion'] = self.parse_assertion
@@ -166,6 +166,7 @@ class LEMSFileParser(LEMSBase):
         self.tag_parse_table['constant'] = self.parse_constant
         self.tag_parse_table['datadisplay'] = self.parse_data_display
         self.tag_parse_table['datawriter'] = self.parse_data_writer
+        self.tag_parse_table['eventwriter'] = self.parse_event_writer
         self.tag_parse_table['derivedparameter'] = self.parse_derived_parameter
         self.tag_parse_table['derivedvariable'] = self.parse_derived_variable
         self.tag_parse_table['conditionalderivedvariable'] = self.parse_conditional_derived_variable
@@ -191,6 +192,7 @@ class LEMSFileParser(LEMSBase):
         self.tag_parse_table['property'] = self.parse_property
         self.tag_parse_table['path'] = self.parse_path
         self.tag_parse_table['record'] = self.parse_record
+        self.tag_parse_table['eventrecord'] = self.parse_event_record
         self.tag_parse_table['regime'] = self.parse_regime
         self.tag_parse_table['requirement'] = self.parse_requirement
         self.tag_parse_table['instancerequirement'] = self.parse_instance_requirement     
@@ -649,6 +651,33 @@ class LEMSFileParser(LEMSBase):
                              path)
 
         self.current_simulation.add_data_writer(DataWriter(path, file_path))
+
+    def parse_event_writer(self, node):
+        """
+        Parses <EventWriter>
+
+        @param node: Node containing the <EventWriter> element
+        @type node: xml.etree.Element
+        """
+
+        if 'path' in node.lattrib:
+            path = node.lattrib['path']
+        else:
+            self.raise_error('<EventWriter> must specify a path.')
+
+        if 'filename' in node.lattrib:
+            file_path = node.lattrib['filename']
+        else:
+            self.raise_error("Event writer for '{0}' must specify a filename.",
+                             path)
+                             
+        if 'format' in node.lattrib:
+            format = node.lattrib['format']
+        else:
+            self.raise_error("Event writer for '{0}' must specify a format.",
+                             path)
+
+        self.current_simulation.add_event_writer(EventWriter(path, file_path, format))
 
     def parse_derived_parameter(self, node):
         """
@@ -1319,6 +1348,31 @@ class LEMSFileParser(LEMSBase):
         id  = node.lattrib.get('id', None)
 
         self.current_simulation.add_record(Record(quantity, scale, color, id))
+
+    def parse_event_record(self, node):
+        """
+        Parses <EventRecord>
+
+        @param node: Node containing the <EventRecord> element
+        @type node: xml.etree.Element
+        """
+
+        if self.current_simulation == None:
+            self.raise_error('<EventRecord> must be only be used inside a ' +
+                             'simulation specification')
+
+        if 'quantity' in node.lattrib:
+            quantity = node.lattrib['quantity']
+        else:
+            self.raise_error('<EventRecord> must specify a quantity.')
+
+        if 'eventport' in node.lattrib:
+            eventPort = node.lattrib['eventport']
+        else:
+            self.raise_error('<EventRecord> must specify an eventPort.')
+
+
+        self.current_simulation.add_event_record(EventRecord(quantity, eventPort))
 
     def parse_regime(self, node):
         """
