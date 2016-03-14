@@ -9,7 +9,7 @@ Expression parser
 from lems.base.base import LEMSBase
 from lems.base.stack import Stack
 
-known_functions = ['exp', 'log', 'sqrt', 'sin', 'cos', 'tan', 'sinh', 'cosh', 'tanh', 'abs', 'ceil', 'factorial', 'random']
+known_functions = ['exp', 'log', 'sqrt', 'sin', 'cos', 'tan', 'sinh', 'cosh', 'tanh', 'abs', 'ceil', 'factorial', 'random', 'H']
 
 class ExprNode(LEMSBase):
     """

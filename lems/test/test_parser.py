@@ -46,6 +46,7 @@ class TestParser(unittest.TestCase):
             exprs['exp(v*2)'] = '(exp (* {v} {2.0}))'
             exprs['exp(-x)'] = '(exp (- {0.0} {x}))'
             exprs['sin(y)'] = '(sin {y})'
+            exprs['H(y)'] = '(H {y})'
             exprs['a / b'] = '(/ {a} {b})'
             exprs['a / (b)'] = '(/ {a} {b})'
             

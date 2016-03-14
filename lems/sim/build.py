@@ -689,8 +689,14 @@ class SimulationBuilder(LEMSBase):
 
         if func == 'ln':
             return 'log'
-        if func == 'random':
+        elif func == 'random':
             return 'random.uniform'
+        elif func == 'H':
+            def heaviside_step(x):
+                if x < 0: return 0
+                elif x > 0: return 1
+                else: return 0.5 
+            return 'heaviside_step'
         else:
             return func
 
