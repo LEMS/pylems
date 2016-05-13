@@ -320,7 +320,15 @@ class Runnable(Reflective):
             self.parent.add_variable_recorder2(data_output, recorder, path[3:], full_path)
         elif path.find('/') >= 1:
             (child, new_path) = path.split('/', 1)
-
+            
+            if ':' in child:
+                syn_parts = child.split(":")
+                if syn_parts[0] == 'synapses' and syn_parts[2] == '0':
+                    child = syn_parts[1]
+                else:
+                    raise SimBuildError('Cannot determine what to do with (synapse?) path: %s (full path: %s)'
+                                        % (child, full_path))
+                
             idxbegin = child.find('[')
             idxend = child.find(']')
             if idxbegin != 0 and idxend > idxbegin:
@@ -353,10 +361,10 @@ class Runnable(Reflective):
                                                     recorder,
                                                     new_path)
                 else:                    
-                    raise SimBuildError('Unable to find child \'{0}\' in '
+                    raise SimBuildError('Unable to find the child \'{0}\' in '
                                         '\'{1}\''.format(child, self.id))
             else:
-                raise SimBuildError('Unable to find child \'{0}\' in '
+                raise SimBuildError('Unable to find a child \'{0}\' in '
                                     '\'{1}\''.format(child, self.id))
         else:
             self.recorded_variables.append(Recording(path, full_path, data_output, recorder))
