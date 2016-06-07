@@ -8,6 +8,32 @@ Dimension and Unit definitions in terms of the fundamental SI units.
 
 from lems.base.base import LEMSBase
 
+class Include(LEMSBase):
+    """
+    Include another LEMS file.
+    """
+    
+    def __init__(self, filename):
+        """
+        Constructor.
+
+        @param filename: Name of the file.
+        @type name: str
+
+        """
+        
+        self.file = filename
+        """ Name of the file.
+        @type: str """
+        
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<Include file="%s"/>'%self.file
+
 class Dimension(LEMSBase):
     """
     Stores a dimension in terms of the seven fundamental SI units.

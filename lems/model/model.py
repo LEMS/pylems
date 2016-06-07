@@ -16,7 +16,7 @@ from lems.parser.LEMS import LEMSFileParser
 from lems.base.errors import ModelError
 from lems.base.errors import SimBuildError
 
-from lems.model.fundamental import Dimension,Unit
+from lems.model.fundamental import Dimension,Unit,Include
 from lems.model.component import Constant,ComponentType,Component,FatComponent
 from lems.model.simulation import Run,Record,EventRecord,DataDisplay,DataWriter,EventWriter
 from lems.model.structure import With,EventConnection,ChildInstance,MultiInstantiate
@@ -46,6 +46,10 @@ class Model(LEMSBase):
         self.targets = list()
         """ List of targets to be run on startup.
         @type: list(str) """
+        
+        self.includes = Map()
+        """ Dictionary of includes defined in the model.
+        @type: dict(str -> lems.model.fundamental.Include """
         
         self.dimensions = Map()
         """ Dictionary of dimensions defined in the model.
@@ -97,6 +101,16 @@ class Model(LEMSBase):
         """
         
         self.targets.append(target)
+        
+    def add_include(self, include):
+        """
+        Adds an include to the model.
+
+        @param include: Include to be added.
+        @type include: lems.model.fundamental.Include
+        """
+
+        self.includes[include.file] = include
         
     def add_dimension(self, dimension):
         """
@@ -171,7 +185,9 @@ class Model(LEMSBase):
         @param child: Child object to be added.
         """
 
-        if isinstance(child, Dimension):
+        if isinstance(child, Include):
+            self.add_include(child)
+        elif isinstance(child, Dimension):
             self.add_dimension(child)
         elif isinstance(child, Unit):
             self.add_unit(child)
@@ -261,6 +277,9 @@ class Model(LEMSBase):
         namespaces = namespaces%(self.target_lems_version,self.target_lems_version,self.schema_location)
 
         xmlstr = '<Lems %s>'%namespaces
+
+        for include in self.includes:
+            xmlstr += include.toxml()
 
         for target in self.targets:
             xmlstr += '<Target component="{0}"/>'.format(target)
