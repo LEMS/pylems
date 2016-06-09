@@ -44,7 +44,7 @@ class Population(LEMSBase):
         """
         Exports this object into a LEMS XML object
         """
-        return ('<Population id="{0}" component="{1}"' +\
+        return ('<population id="{0}" component="{1}"' +\
                ' size="{2}"').format(self.id, self.component, self.size) +\
                '/>'
 
