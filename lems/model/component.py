@@ -219,7 +219,7 @@ class Constant(LEMSBase):
     Stores a constant specification.
     """
     
-    def __init__(self, name, value, dimension = None, description = ''):
+    def __init__(self, name, value, dimension = None, symbol = None, description = ''):
         """
         Constructor.
 
@@ -228,6 +228,10 @@ class Constant(LEMSBase):
         
         self.name = name
         """ Name of the constant.
+        @type: str """
+        
+        self.symbol = symbol
+        """ Symbol of the constant.
         @type: str """
 
         self.value = value
@@ -253,6 +257,7 @@ class Constant(LEMSBase):
 
         return '<Constant' +\
           (' name = "{0}"'.format(self.name) if self.name else '') +\
+          (' symbol = "{0}"'.format(self.symbol) if self.symbol else '') +\
           (' value = "{0}"'.format(self.value) if self.value else '') +\
           (' dimension = "{0}"'.format(self.dimension) if self.dimension else '') +\
           (' description = "{0}"'.format(self.description) if self.description else '') +\
