@@ -28,7 +28,7 @@ class Population(LEMSBase):
         """ ID of the population.
         @type: str """
 
-        self.dimension = dimension
+        self.component = component
         """Component of the population.
         @type: str """
 
@@ -37,17 +37,17 @@ class Population(LEMSBase):
         @type: str/int """
 
     def __str__(self):
-        return 'Population id="{0}" component="{1}"' +\
-           'size="{2}"'.format(self.id_, self.component, self.size)
+        return ('Population id="{0}" component="{1}"' +\
+           ' size="{2}"').format(self.id, self.component, self.size)
 
     def toxml(self):
         """
         Exports this object into a LEMS XML object
         """
+        return ('<Population id="{0}" component="{1}"' +\
+               ' size="{2}"').format(self.id, self.component, self.size) +\
+               '/>'
 
-        return '<Population id="{0}" component="{1}"' +\
-           'size="{2}"'.format(self.id_, self.component, self.size) +\
-           '/>'
 
 class Network(LEMSBase):
     """

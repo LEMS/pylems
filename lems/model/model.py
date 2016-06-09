@@ -20,6 +20,7 @@ from lems.model.fundamental import Dimension,Unit,Include
 from lems.model.component import Constant,ComponentType,Component,FatComponent
 from lems.model.simulation import Run,Record,EventRecord,DataDisplay,DataWriter,EventWriter
 from lems.model.structure import With,EventConnection,ChildInstance,MultiInstantiate
+from lems.model.network import Network
 
 import xml.dom.minidom as minidom
 
@@ -75,6 +76,10 @@ class Model(LEMSBase):
         """ Map of constants in this component type.
         @type: dict(str -> lems.model.component.Constant) """
 
+        self.networks = Map()
+        """ Map of networks in this component type.
+        @type: dict(str -> lems.model.network.Network) """
+
         self.include_directories = []
         """ List of include directories to search for included LEMS files.
         @type: list(str) """
@@ -111,7 +116,17 @@ class Model(LEMSBase):
         """
 
         self.includes[include.file] = include
-        
+
+    def add_network(self, network):
+        """
+        Adds a network to the model.
+
+        @param network: network to be added.
+        @type Network: lems.model.network.Network
+        """
+
+        self.networks[network.id] = network
+
     def add_dimension(self, dimension):
         """
         Adds a dimension to the model.
