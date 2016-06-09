@@ -313,6 +313,9 @@ class Model(LEMSBase):
             
         for component in self.components:
             xmlstr += component.toxml()
+
+        for network in self.networks:
+            xmlstr += network.toxml()
             
         xmlstr += '</Lems>'
 
