@@ -11,7 +11,45 @@ from lems.base.map import Map
 from lems.base.errors import ModelError,ParseError
 from lems.parser.expr import ExprParser
 
-class Netowrk(LEMSBase):
+
+class Population(LEMSBase):
+    """
+    Store the specification of a population.
+    """
+
+    def __init__(self, id_, component, size):
+        """
+        Constructor.
+
+        See instance variable documentation for more info on parameters.
+        """
+
+        self.id = id_
+        """ ID of the population.
+        @type: str """
+
+        self.dimension = dimension
+        """Component of the population.
+        @type: str """
+
+        self.size = str(size)
+        """Size name for the population.
+        @type: str/int """
+
+    def __str__(self):
+        return 'Population id="{0}" component="{1}"' +\
+           'size="{2}"'.format(self.id_, self.component, self.size)
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+
+        return '<Population id="{0}" component="{1}"' +\
+           'size="{2}"'.format(self.id_, self.component, self.size) +\
+           '/>'
+
+class Network(LEMSBase):
     """
     Store the specification of a network.
     """
