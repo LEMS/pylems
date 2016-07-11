@@ -264,7 +264,7 @@ class MultiInstantiate(LEMSBase):
         """
         Exports this object into a LEMS XML object
         """
-        if self.assigments:
+        if self.assignments:
             chxmlstr = ''
             for assign in self.assignments:
                 chxmlstr += assign.toxml()
