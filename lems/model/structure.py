@@ -268,7 +268,7 @@ class MultiInstantiate(LEMSBase):
             chxmlstr = ''
             for assign in self.assignments:
                 chxmlstr += assign.toxml()
-            return '<MultiInstantiate component="{0}" number="{1}">{2}</ForEach>'.format(self.component, self.number, chxmlstr)
+            return '<MultiInstantiate component="{0}" number="{1}">{2}</MultiInstantiate>'.format(self.component, self.number, chxmlstr)
         else:
             return '<MultiInstantiate component="{0}" number="{1}"/>'.format(self.component, self.number)
 
@@ -479,4 +479,3 @@ class Structure(LEMSBase):
             xmlstr = ''
 
         return xmlstr
-
