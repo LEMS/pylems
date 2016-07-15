@@ -181,6 +181,36 @@ class ChildInstance(LEMSBase):
 
         return '<ChildInstance component="{0}"/>'.format(self.component)
 
+class Assign(LEMSBase):
+    """
+    Stores a child assign specification.
+    """
+
+    def __init__(self, property, value):
+        """
+        Constructor.
+        
+        See instance variable documentation for more details on parameters.
+        """
+
+        self.property_ = property
+        """ Name of the property reference to be used for instantiation.
+        @type: str """
+
+        self.value = value
+        """ Value of the property.
+        @type: str"""
+
+    def __eq__(self, o):
+        return self.property_ == o.property_ and self.value == o.value
+
+    def toxml(self):
+        """
+        Exports this object into a LEMS XML object
+        """
+        return '<Assign property="{0}" value="{1}"/>'.format(self.property_, self.value)
+
+
 class MultiInstantiate(LEMSBase):
     """
     Stores a child multi-instantiation specification.
@@ -201,16 +231,46 @@ class MultiInstantiate(LEMSBase):
         """ Name of the paramter specifying the number of times the component 
         reference is to be instantiated.
         @type: str"""
+
+        self.assignments = []
+        """ List of assignments included in MultiInstantiate.
+        @type: list(Assign) """
         
     def __eq__(self, o):
         return self.component == o.component and self.number == o.number
+        
+    def add_assign(self, assign):
+        """
+        Adds an Assign to the structure.
+
+        @param assign: Assign structure.
+        @type assign: lems.model.structure.Assign
+        """
+        self.assignments.append(assign)
+
+    def add(self, child):
+        """
+        Adds a typed child object to the structure object.
+
+        @param child: Child object to be added.
+        """
+
+        if isinstance(child, Assign):
+            self.add_assign(child)
+        else:
+            raise ModelError('Unsupported child element')
 
     def toxml(self):
         """
         Exports this object into a LEMS XML object
         """
-
-        return '<MultiInstantiate component="{0}" number="{1}"/>'.format(self.component, self.number)
+        if self.assignments:
+            chxmlstr = ''
+            for assign in self.assignments:
+                chxmlstr += assign.toxml()
+            return '<MultiInstantiate component="{0}" number="{1}">{2}</MultiInstantiate>'.format(self.component, self.number, chxmlstr)
+        else:
+            return '<MultiInstantiate component="{0}" number="{1}"/>'.format(self.component, self.number)
 
 class ForEach(LEMSBase):
     """
@@ -419,4 +479,3 @@ class Structure(LEMSBase):
             xmlstr = ''
 
         return xmlstr
-
