@@ -263,12 +263,9 @@ class Model(LEMSBase):
         with open(filepath) as f:
             parser.parse(f.read())
         
-    def export_to_file(self, filepath, level_prefix = '  '):
+    def export_to_dom(self):
         """
-        Exports this model to a file.
-
-        @param filepath: File to be exported to.
-        @type filepath: str
+        Exports this model to a DOM.
         """
         namespaces = 'xmlns="http://www.neuroml.org/lems/%s" ' + \
                      'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' + \
@@ -301,7 +298,18 @@ class Model(LEMSBase):
             
         xmlstr += '</Lems>'
 
-        xmlstr = minidom.parseString(xmlstr).toprettyxml(level_prefix, '\n',)
+        xmldom = minidom.parseString(xmlstr)
+        return xmldom
+
+    def export_to_file(self, filepath, level_prefix = '  '):
+        """
+        Exports this model to a file.
+
+        @param filepath: File to be exported to.
+        @type filepath: str
+        """
+        xmldom = self.export_to_dom()
+        xmlstr = xmldom.toprettyxml(level_prefix, '\n',)
 
         with open(filepath, 'w') as f:
             f.write(xmlstr)
