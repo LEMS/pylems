@@ -21,8 +21,7 @@ install:
 script:  
   ###       Run main python unit tests (not many yet...)
   
-  - cd ./lems/test && nosetests -vs
-  - cd ../..
+  - nosetests -vs
   
   ###      Try running "standard" LEMS examples
   - ./pylems examples/example1.xml -nogui
