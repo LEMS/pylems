@@ -1,0 +1,102 @@
+<?xml version="1.0" ?>
+<Lems xmlns="http://www.neuroml.org/lems/0.7.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.neuroml.org/lems/0.7.3 https://raw.githubusercontent.com/LEMS/LEMS/development/Schemas/LEMS/LEMS_v0.7.3.xsd">
+  <Dimension name="per_time" t="-1"/>
+  <Dimension i="1" name="current"/>
+  <Dimension i="2" l="-2" m="-1" name="capacitance" t="4"/>
+  <Dimension i="2" l="-2" m="-1" name="conductance" t="3"/>
+  <Dimension i="-1" l="2" m="1" name="voltage" t="-3"/>
+  <Dimension name="time" t="1"/>
+  <ComponentType name="HHRate">
+    <Parameter dimension="per_time" name="rate"/>
+    <Parameter dimension="voltage" name="scale"/>
+    <Parameter dimension="voltage" name="midpoint"/>
+    <Exposure dimension="per_time" name="r"/>
+    <Requirement dimension="voltage" name="v"/>
+  </ComponentType>
+  <ComponentType name="HHChannel">
+    <Parameter dimension="conductance" name="conductance"/>
+    <Children name="gates" type="HHGate"/>
+    <Exposure dimension="conductance" name="g"/>
+    <Dynamics>
+      <DerivedVariable dimension="none" name="gatefeff" reduce="multiply" select="gates[*]/fcond"/>
+      <DerivedVariable dimension="conductance" exposure="g" name="g" value="conductance * gatefeff"/>
+    </Dynamics>
+  </ComponentType>
+  <ComponentType name="HHCell">
+    <Parameter dimension="voltage" name="v0"/>
+    <Parameter dimension="capacitance" name="capacitance"/>
+    <Parameter dimension="current" name="injection"/>
+    <Children name="populations" type="ChannelPopulation"/>
+    <Exposure dimension="voltage" name="v"/>
+    <Dynamics>
+      <StateVariable dimension="voltage" exposure="v" name="v"/>
+      <DerivedVariable dimension="current" name="totcurrent" reduce="add" select="populations[*]/current"/>
+      <TimeDerivative value="(totcurrent + injection) / capacitance" variable="v"/>
+      <OnStart>
+        <StateAssignment value="v0" variable="v"/>
+      </OnStart>
+    </Dynamics>
+  </ComponentType>
+  <ComponentType extends="HHRate" name="HHSigmoidRate">
+    <Dynamics>
+      <DerivedVariable dimension="per_time" exposure="r" name="r" value="rate / (1 + exp( -(v - midpoint)/scale))"/>
+    </Dynamics>
+  </ComponentType>
+  <ComponentType name="ChannelPopulation">
+    <Parameter dimension="voltage" name="erev"/>
+    <Parameter dimension="none" name="number"/>
+    <ComponentReference name="channel" type="HHChannel"/>
+    <Exposure dimension="current" name="current"/>
+    <Exposure dimension="conductance" name="geff"/>
+    <Requirement dimension="voltage" name="v"/>
+    <Dynamics>
+      <DerivedVariable exposure="geff" name="geff" value="channelg * number"/>
+      <DerivedVariable exposure="current" name="current" value="geff * (erev - v)"/>
+      <DerivedVariable dimension="conductance" name="channelg" select="channel/g"/>
+    </Dynamics>
+    <Structure>
+      <ChildInstance component="channel"/>
+    </Structure>
+  </ComponentType>
+  <ComponentType name="HHGate">
+    <Parameter dimension="none" name="power"/>
+    <Child name="Forward" type="HHRate"/>
+    <Child name="Reverse" type="HHRate"/>
+    <Exposure dimension="none" name="fcond"/>
+    <Requirement dimension="voltage" name="v"/>
+    <Dynamics>
+      <StateVariable dimension="none" name="x"/>
+      <DerivedVariable dimension="none" name="q" value="ex / (1 + ex)"/>
+      <DerivedVariable dimension="per_time" name="rf" select="Forward/r"/>
+      <DerivedVariable dimension="none" name="ex" value="exp(x)"/>
+      <DerivedVariable dimension="per_time" name="rr" select="Reverse/r"/>
+      <DerivedVariable dimension="none" exposure="fcond" name="fcond" value="q^power"/>
+      <TimeDerivative value="(1 + ex)^2 / ex * (rf * (1 - q) - rr * q)" variable="x"/>
+    </Dynamics>
+  </ComponentType>
+  <ComponentType extends="HHRate" name="HHExpRate">
+    <Dynamics>
+      <DerivedVariable dimension="per_time" exposure="r" name="r" value="rate * exp((v - midpoint)/scale)"/>
+    </Dynamics>
+  </ComponentType>
+  <ComponentType name="HHGate0">
+    <Parameter dimension="none" name="power"/>
+    <Child name="Forward" type="HHRate"/>
+    <Child name="Reverse" type="HHRate"/>
+    <Exposure dimension="none" name="fcond"/>
+    <Requirement dimension="voltage" name="v"/>
+    <Dynamics>
+      <StateVariable dimension="none" name="q"/>
+      <DerivedVariable dimension="per_time" name="rf" select="Forward/r"/>
+      <DerivedVariable dimension="per_time" name="rr" select="Reverse/r"/>
+      <DerivedVariable dimension="none" exposure="fcond" name="fcond" value="q^power"/>
+      <TimeDerivative value="rf * (1 - q) - rr * q" variable="q"/>
+    </Dynamics>
+  </ComponentType>
+  <ComponentType extends="HHRate" name="HHExpLinearRate">
+    <Dynamics>
+      <DerivedVariable dimension="none" name="x" value="(v - midpoint) / scale"/>
+      <DerivedVariable dimension="per_time" exposure="r" name="r" value="rate * x / (1 - exp(-x))"/>
+    </Dynamics>
+  </ComponentType>
+</Lems>
