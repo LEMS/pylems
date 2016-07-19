@@ -216,14 +216,14 @@ class MultiInstantiate(LEMSBase):
     Stores a child multi-instantiation specification.
     """
 
-    def __init__(self, component, number):
+    def __init__(self, component_type, number):
         """
         Constructor.
         
         See instance variable documentation for more details on parameters.
         """
 
-        self.component = component
+        self.component_type = component_type
         """ Name of the component reference to be used for instantiation.
         @type: str """
 
@@ -237,7 +237,7 @@ class MultiInstantiate(LEMSBase):
         @type: list(Assign) """
         
     def __eq__(self, o):
-        return self.component == o.component and self.number == o.number
+        return self.component_type == o.component_type and self.number == o.number
         
     def add_assign(self, assign):
         """
@@ -268,9 +268,9 @@ class MultiInstantiate(LEMSBase):
             chxmlstr = ''
             for assign in self.assignments:
                 chxmlstr += assign.toxml()
-            return '<MultiInstantiate component="{0}" number="{1}">{2}</MultiInstantiate>'.format(self.component, self.number, chxmlstr)
+            return '<MultiInstantiate componentType="{0}" number="{1}">{2}</MultiInstantiate>'.format(self.component_type, self.number, chxmlstr)
         else:
-            return '<MultiInstantiate component="{0}" number="{1}"/>'.format(self.component, self.number)
+            return '<MultiInstantiate componentType="{0}" number="{1}"/>'.format(self.component_type, self.number)
 
 class ForEach(LEMSBase):
     """
