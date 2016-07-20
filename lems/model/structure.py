@@ -216,15 +216,19 @@ class MultiInstantiate(LEMSBase):
     Stores a child multi-instantiation specification.
     """
 
-    def __init__(self, component_type, number):
+    def __init__(self, component=None, component_type=None, number=None):
         """
         Constructor.
         
         See instance variable documentation for more details on parameters.
         """
 
-        self.component_type = component_type
+        self.component = component
         """ Name of the component reference to be used for instantiation.
+        @type: str """
+
+        self.component_type = component_type
+        """ Name of the component type reference to be used for instantiation.
         @type: str """
 
         self.number = number
@@ -237,7 +241,7 @@ class MultiInstantiate(LEMSBase):
         @type: list(Assign) """
         
     def __eq__(self, o):
-        return self.component_type == o.component_type and self.number == o.number
+        return self.component == o.component and self.number == o.number
         
     def add_assign(self, assign):
         """
@@ -264,13 +268,20 @@ class MultiInstantiate(LEMSBase):
         """
         Exports this object into a LEMS XML object
         """
+        argstr = ''
+        if self.component:
+            argstr += 'component="{0}" '.format(self.component)
+        if self.component_type:
+            argstr += 'componentType="{0}" '.format(self.component_type)
+        if self.number:
+            argstr += 'number="{0}" '.format(self.number)
         if self.assignments:
             chxmlstr = ''
             for assign in self.assignments:
                 chxmlstr += assign.toxml()
-            return '<MultiInstantiate componentType="{0}" number="{1}">{2}</MultiInstantiate>'.format(self.component_type, self.number, chxmlstr)
+            return '<MultiInstantiate {0}>{1}</MultiInstantiate>'.format(argstr, chxmlstr)
         else:
-            return '<MultiInstantiate componentType="{0}" number="{1}"/>'.format(self.component_type, self.number)
+            return '<MultiInstantiate {0}/>'.format(argstr)
 
 class ForEach(LEMSBase):
     """
