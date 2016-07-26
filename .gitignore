@@ -13,3 +13,4 @@ doc
 .pydevproject
 comp_*
 /lems/test/hhcell_resaved3.xml
+/lems/__init__$py.class
