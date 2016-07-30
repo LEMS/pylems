@@ -216,7 +216,7 @@ class MultiInstantiate(LEMSBase):
     Stores a child multi-instantiation specification.
     """
 
-    def __init__(self, component=None, component_type=None, number=None):
+    def __init__(self, component=None, number=None, component_type=None):
         """
         Constructor.
         
