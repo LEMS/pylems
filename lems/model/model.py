@@ -702,8 +702,12 @@ class Model(LEMSBase):
 
         for mi in ct.structure.multi_instantiates:
             try:
-                mi2 = MultiInstantiate(fc.component_references[mi.component].referenced_component,
-                                       int(fc.parameters[mi.number].numeric_value))
+                if mi.component:
+                    mi2 = MultiInstantiate(component=fc.component_references[mi.component].referenced_component,
+                                           number=int(fc.parameters[mi.number].numeric_value))
+                else:
+                    mi2 = MultiInstantiate(component_type=fc.component_references[mi.component_type].referenced_component,
+                                           number=int(fc.parameters[mi.number].numeric_value))                    
             except:
                 raise ModelError("Unable to resolve multi-instantiate parameters for "
                                  "'{0}' in component '{1}'",
