@@ -248,7 +248,7 @@ class MultiInstantiate(LEMSBase):
         if self.component:
             flag = self.component == o.component and self.number == o.number
         else:
-            flag = self.component_type == o.component_type and self.numbek4r == o.number
+            flag = self.component_type == o.component_type and self.number == o.number
         return flag
 
     def add_assign(self, assign):
