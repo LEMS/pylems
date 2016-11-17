@@ -188,6 +188,8 @@ def process_simulation_output(sim, model, options):
                 
             file_out.write('\n')
             i += 1
+            
+        file_out.close()
 
     if not options.nogui:
         for display in display_order.keys():

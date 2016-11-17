@@ -311,8 +311,10 @@ class Model(LEMSBase):
         xmldom = self.export_to_dom()
         xmlstr = xmldom.toprettyxml(level_prefix, '\n',)
 
-        with open(filepath, 'w') as f:
-            f.write(xmlstr)
+
+        f = open(filepath, 'w')
+        f.write(xmlstr)
+        f.close()
 
     def resolve(self):
         """

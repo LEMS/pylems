@@ -191,7 +191,9 @@ def export_component(model, comp, sim_comp, parent_pop='', file_name=None):
 
         dlems_file.close()
 
-        print(open(dlems_file_name,'r').read())
+        reopen = open(dlems_file_name,'r')
+        print(reopen.read())
+        reopen.close()
 
         print("Written to %s"%dlems_file_name)
     
