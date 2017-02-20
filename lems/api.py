@@ -11,4 +11,5 @@ from lems.model.structure import *
 from lems.model.dynamics import *
 from lems.model.simulation import *
 from lems.model.component import *
+from lems.model.network import *
 from lems.model.model import Model
