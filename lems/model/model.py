@@ -247,7 +247,8 @@ class Model(LEMSBase):
                         else:
                             if self.debug: print("Already included: %s"%path)
                             return
-            raise Exception('Unable to open ' + path)
+            if self.debug: print('Unable to open' + path)
+            #raise Exception('Unable to open ' + path)
             
     def import_from_file(self, filepath):
         """
