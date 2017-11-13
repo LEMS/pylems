@@ -999,7 +999,7 @@ class LEMSFileParser(LEMSBase):
         @raise ParseError: Raised when the file to be included is not specified. 
         """
         if not self.include_includes:
-            print("Ignoring included LEMS file: %s"%node.lattrib['file'])
+            if self.model.debug: print("Ignoring included LEMS file: %s"%node.lattrib['file'])
         else:
 
             #TODO: remove this hard coding for reading NeuroML includes...
