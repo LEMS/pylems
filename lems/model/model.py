@@ -38,8 +38,8 @@ class Model(LEMSBase):
     #schema_location = '/home/padraig/LEMS/Schemas/LEMS/LEMS_v%s.xsd'%target_lems_version
     
     debug = False
-    
-    def __init__(self, include_includes='True'):
+    , 
+    def __init__(self, include_includes=True, fail_on_missing_includes=True):
         """
         Constructor.
         """
@@ -90,6 +90,10 @@ class Model(LEMSBase):
         
         self.include_includes = include_includes
         """ Whether to include LEMS definitions in <Include> elements
+        @type: boolean """
+        
+        self.fail_on_missing_includes = fail_on_missing_includes
+        """ Whether to raise an Exception when a file in an <Include> element is not found
         @type: boolean """
 
     def add_target(self, target):
@@ -247,7 +251,11 @@ class Model(LEMSBase):
                         else:
                             if self.debug: print("Already included: %s"%path)
                             return
-            raise Exception('Unable to open ' + path)
+            msg = 'Unable to open ' + path
+            if self.fail_on_missing_includes:
+                raise Exception(msg)
+            elif self.debug: 
+                print(msg)
             
     def import_from_file(self, filepath):
         """
