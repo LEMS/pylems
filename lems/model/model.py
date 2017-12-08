@@ -38,7 +38,7 @@ class Model(LEMSBase):
     #schema_location = '/home/padraig/LEMS/Schemas/LEMS/LEMS_v%s.xsd'%target_lems_version
     
     debug = False
-    , 
+    
     def __init__(self, include_includes=True, fail_on_missing_includes=True):
         """
         Constructor.
