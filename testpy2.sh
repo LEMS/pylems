@@ -1,8 +1,8 @@
 set -e
-sudo python2.7 setup.py clean
-sudo python2.7 setup.py install
-python2.7 examples/apitest.py
-python2.7 examples/apitest2.py
-python2.7 examples/loadtest.py
-python2.7 lems/dlems/exportdlems.py
-python2.7 pylems -I ../NeuroML2/NeuroML2CoreTypes ../NeuroML2/LEMSexamples/LEMS_NML2_Ex5_DetCell.xml
+python setup.py clean
+python setup.py install
+python examples/apitest.py
+python examples/apitest2.py
+python examples/loadtest.py
+python lems/dlems/exportdlems.py
+python pylems -I ../NeuroML2/NeuroML2CoreTypes ../NeuroML2/LEMSexamples/LEMS_NML2_Ex5_DetCell.xml
