@@ -1,4 +1,4 @@
 include README.md
-include examples *.xml
+include examples/
 include doc/*.txt
 include LICENSE.lesser
