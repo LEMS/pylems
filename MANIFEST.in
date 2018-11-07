@@ -1,4 +1,4 @@
 include README.md
-include examples/
-include doc/*.txt
+include examples/*.xml
+include examples/*.py
 include LICENSE.lesser
