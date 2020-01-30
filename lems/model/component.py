@@ -387,7 +387,7 @@ class InstanceRequirement(LEMSBase):
         Exports this object into a LEMS XML object
         """
 
-        return '<InstanceRequirement name="{0}" type="{1}"'.format(self.name, self.dimension) +\
+        return '<InstanceRequirement name="{0}" type="{1}"'.format(self.name, self.type) +\
           (' description = "{0}"'.format(self.description) if self.description else '') +\
           '/>'
 
