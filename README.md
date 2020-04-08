@@ -1,8 +1,6 @@
-PyLEMS 
-======
+## PyLEMS 
 
-A LEMS (http://lems.github.io/LEMS) simulator written in Python which can be used 
-to run NeuroML2 (http://neuroml.org/neuroml2.php) models.
+A LEMS (http://lems.github.io/LEMS) simulator written in Python which can be used to run NeuroML2 (http://neuroml.org/neuroml2.php) models.
 
 For more about PyLEMS see:
 
@@ -19,8 +17,7 @@ Robert C. Cannon, Padraig Gleeson, Sharon Crook, Gautham Ganapathy, Boris Marin,
 [Frontiers in Neuroinformatics 2014](http://journal.frontiersin.org/Journal/10.3389/fninf.2014.00079/abstract), doi: 10.3389/fninf.2014.00079
 
 
-Installation
-------------
+### Installation
 
 A stable version of PyLEMS is [available on PyPI](https://pypi.python.org/pypi/PyLEMS) using [pip](https://pip.pypa.io/en/latest/installing.html):
 
@@ -37,8 +34,7 @@ Alternatively, you can obtain the latest version with
     git checkout development   # optional
     sudo python setup.py install
 
-Usage as a LEMS model simulator
--------------------------------
+### Usage as a LEMS model simulator
 
     pylems [options] LEMS_file
 
@@ -47,8 +43,8 @@ Usage as a LEMS model simulator
 - -I/-include path - Adds a directory to the model file include search path
 
 
-Examples
---------
+### Examples
+
 
 **NeuroML examples (from https://github.com/NeuroML/NeuroML2/tree/development/NeuroML2CoreTypes)**
 
@@ -99,8 +95,7 @@ Examples
 - Improve dimension-checking on expressions.
 
 
-Travis integration
-------------------
+### Travis integration
 
 pylems is integrated with the the [Travis Continuous Integration service](http://travis-ci.org/).
 
