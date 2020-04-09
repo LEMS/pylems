@@ -14,3 +14,5 @@ doc
 comp_*
 /lems/test/hhcell_resaved3.xml
 /lems/__init__$py.class
+/PyLEMS.egg-info
+/dist
