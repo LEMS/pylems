@@ -8,8 +8,8 @@ python:
 
 # command to install dependencies
 install:
-  - "pip install lxml"  
-  - "pip install ."
+  - pip install lxml
+  - python setup.py install 
   - git clone https://github.com/NeuroML/NeuroML2
   - cd NeuroML2
   # Use the development branch of NeuroML2
