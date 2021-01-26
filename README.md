@@ -97,9 +97,9 @@ Alternatively, you can obtain the latest version with
 
 ### Travis integration
 
-pylems is integrated with the the [Travis Continuous Integration service](http://travis-ci.org/).
+pylems is integrated with the the [Travis Continuous Integration service](http://travis-ci.com/).
 
-[![Build Status](https://travis-ci.org/LEMS/pylems.png?branch=master)](https://travis-ci.org/LEMS/pylems)
+[![Build Status](https://travis-ci.com/LEMS/pylems.png?branch=master)](https://travis-ci.com/LEMS/pylems)
 
 This code is distributed under the terms of the GNU Lesser General Public License.
 
