@@ -706,13 +706,18 @@ class LEMSFileParser(LEMSBase):
         else:
             value = None
 
+        # TODO: this is not used in the DerivedParameter constructor
         if 'select' in node.lattrib:
             select = node.lattrib['select']
         else:
             select = None
 
-        self.current_component_type.add_derived_parameter(DerivedParameter(name, value,
-                                                                    dimension, select))
+        if 'description' in node.lattrib:
+            description = node.lattrib['description']
+        else:
+            description = None
+
+        self.current_component_type.add_derived_parameter(DerivedParameter(name, value, dimension, description))
 
     def parse_derived_variable(self, node):
         """
