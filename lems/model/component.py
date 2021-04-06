@@ -211,6 +211,7 @@ class DerivedParameter(LEMSBase):
 
         return '<DerivedParameter name="{0}"'.format(self.name) +\
           (' dimension="{0}"'.format(self.dimension) if self.dimension else '') +\
+          (' description="{0}"'.format(self.description) if self.description else '') +\
           (' value="{0}"'.format(self.value) if self.value else '') +\
           '/>'
 
