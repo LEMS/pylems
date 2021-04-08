@@ -8,4 +8,4 @@ import logging
 
 logger = logging.getLogger('LEMS')
 
-__version__ = '0.5.2'
+__version__ = '0.5.3'
