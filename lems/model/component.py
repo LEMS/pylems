@@ -397,7 +397,7 @@ class Children(LEMSBase):
     Stores children specification.
     """
     
-    def __init__(self, name, type_, multiple = False):
+    def __init__(self, name, type_, description = "", multiple = False):
         """
         Constructor.
 
@@ -410,6 +410,10 @@ class Children(LEMSBase):
          
         self.type = type_
         """ Component type of the children.
+        @type: str """
+
+        self.description = description
+        """ Description of the children.
         @type: str """
 
         self.multiple = multiple

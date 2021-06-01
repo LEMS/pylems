@@ -406,7 +406,8 @@ class LEMSFileParser(LEMSBase):
         else:
             self.raise_error("Child '{0}' must specify a type.", name)
 
-        self.current_component_type.add_children(Children(name, type_, False))
+        description = node.lattrib.get('description', '')
+        self.current_component_type.add_children(Children(name, type_, description))
 
     def parse_child_instance(self, node):
         """
@@ -441,7 +442,8 @@ class LEMSFileParser(LEMSBase):
         else:
             self.raise_error("Children '{0}' must specify a type.", name)
 
-        self.current_component_type.add_children(Children(name, type_, True))
+        description = node.lattrib.get('description', '')
+        self.current_component_type.add_children(Children(name, type_, description))
 
     def parse_component_by_typename(self, node, type_):
         """
