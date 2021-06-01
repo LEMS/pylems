@@ -425,7 +425,7 @@ class Children(LEMSBase):
         Exports this object into a LEMS XML object
         """
 
-        return '<{2} name="{0}" type="{1}"/>'.format(self.name, self.type, 'Children' if self.multiple else 'Child')
+        return '<{3} name="{0}" type="{1}" description="{2}"/>'.format(self.name, self.type, self.description, 'Children' if self.multiple else 'Child')
 
 class Text(LEMSBase):
     """
