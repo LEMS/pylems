@@ -407,7 +407,7 @@ class LEMSFileParser(LEMSBase):
             self.raise_error("Child '{0}' must specify a type.", name)
 
         description = node.lattrib.get('description', '')
-        self.current_component_type.add_children(Children(name, type_, description))
+        self.current_component_type.add_children(Children(name, type_, description, multiple=False))
 
     def parse_child_instance(self, node):
         """
