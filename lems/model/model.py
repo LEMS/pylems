@@ -9,6 +9,7 @@ Model storage.
 import os
 from os.path import dirname
 
+from lems import __schema_location__, __schema_version__
 from lems.base.base import LEMSBase
 from lems.base.util import merge_maps, merge_lists
 from lems.base.map import Map
@@ -32,9 +33,8 @@ class Model(LEMSBase):
 
     logging.basicConfig(level=logging.INFO)
 
-    target_lems_version = '0.7.3'
-    branch = 'development'
-    schema_location = 'https://raw.githubusercontent.com/LEMS/LEMS/{0}/Schemas/LEMS/LEMS_v{1}.xsd'.format(branch, target_lems_version)
+    target_lems_version = __schema_version__
+    schema_location = __schema_location__
     #schema_location = '/home/padraig/LEMS/Schemas/LEMS/LEMS_v%s.xsd'%target_lems_version
     
     debug = False
