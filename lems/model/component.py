@@ -397,7 +397,7 @@ class Children(LEMSBase):
     Stores children specification.
     """
     
-    def __init__(self, name, type_, multiple = False):
+    def __init__(self, name, type_, description = "", multiple = False):
         """
         Constructor.
 
@@ -412,6 +412,10 @@ class Children(LEMSBase):
         """ Component type of the children.
         @type: str """
 
+        self.description = description
+        """ Description of the children.
+        @type: str """
+
         self.multiple = multiple
         """ Single child / multiple children.
         @type: bool """
@@ -421,7 +425,7 @@ class Children(LEMSBase):
         Exports this object into a LEMS XML object
         """
 
-        return '<{2} name="{0}" type="{1}"/>'.format(self.name, self.type, 'Children' if self.multiple else 'Child')
+        return '<{3} name="{0}" type="{1}" description="{2}"/>'.format(self.name, self.type, self.description, 'Children' if self.multiple else 'Child')
 
 class Text(LEMSBase):
     """
