@@ -6,6 +6,8 @@
 #
 # Run tests on GitHub actions
 
+mkdir results
+
 ###      Try running "standard" LEMS examples
 echo "Running standard LEMS examples"
 ./pylems examples/example1.xml -nogui
