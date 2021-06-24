@@ -17,6 +17,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
@@ -33,8 +34,6 @@ jobs:
         repository: NeuroML/NeuroML2
         ref: development
         path: NeuroML2
-
-    - name: Set up Python ${{ matrix.python-version }}
 
     - name: Build package
       run: |
