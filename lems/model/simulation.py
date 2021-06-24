@@ -1,9 +1,8 @@
 """
 Simulation specification classes.
 
-@author: Gautham Ganapathy
-@organization: LEMS (http://neuroml.org/lems/, https://github.com/organizations/LEMS)
-@contact: gautham@lisphacker.org
+:author: Gautham Ganapathy
+:organization: LEMS (https://github.com/organizations/LEMS)
 """
 
 from lems.base.base import LEMSBase
@@ -26,20 +25,20 @@ class Run(LEMSBase):
         self.component = component
         """ Name of the target component to be run according to the
         specification given for an independent state variable.
-        @type: str """
+        :type: str """
 
         self.variable = variable
         """ The name of an independent state variable according to which the
         target component will be run.
-        @type: str """
+        :type: str """
 
         self.increment = increment
         """ Increment of the state variable on each step.
-        @type: str """
+        :type: str """
 
         self.total = total
         """ Final value of the state variable.
-        @type: str """
+        :type: str """
 
     def toxml(self):
         """
@@ -65,23 +64,23 @@ class Record(LEMSBase):
 
         self.id = ''
         """ Id of the quantity
-        @type: str """
+        :type: str """
         
         self.quantity = quantity
         """ Path to the quantity to be recorded.
-        @type: str """
+        :type: str """
 
         self.scale = scale
         """ Text parameter to be used for scaling the quantity before display.
-        @type: str """
+        :type: str """
 
         self.color = color
         """ Text parameter to be used to specify the color for display.
-        @type: str """
+        :type: str """
 
         self.id = id
         """ Text parameter to be used to specify an id for the record
-        @type: str """
+        :type: str """
 
     def toxml(self):
         """
@@ -106,15 +105,15 @@ class EventRecord(LEMSBase):
 
         self.id = ''
         """ Id of the quantity
-        @type: str """
+        :type: str """
         
         self.quantity = quantity
         """ Path to the quantity to be recorded.
-        @type: str """
+        :type: str """
 
         self.eventPort = eventPort
         """ eventPort to be used for the event record
-        @type: str """
+        :type: str """
 
     def toxml(self):
         """
@@ -152,15 +151,15 @@ class DataDisplay(DataOutput):
 
         self.title = title
         """ Title for the display.
-        @type: string """
+        :type: string """
 
         self.data_region = data_region
         """ Display position
-        @type: string """
+        :type: string """
 
         self.time_scale = 1
         """ Time scale
-        @type: Number """
+        :type: Number """
         
     def toxml(self):
         """
@@ -186,11 +185,11 @@ class DataWriter(DataOutput):
         
         self.path = path
         """ Path to the quantity to be saved to file.
-        @type: string """
+        :type: string """
 
         self.file_name = file_name
         """ Text parameter to be used for the file name
-        @type: string """
+        :type: string """
 
 
     def toxml(self):
@@ -221,15 +220,15 @@ class EventWriter(DataOutput):
         
         self.path = path
         """ Path to the quantity to be saved to file.
-        @type: string """
+        :type: string """
 
         self.file_name = file_name
         """ Text parameter to be used for the file name
-        @type: string """
+        :type: string """
 
         self.format = format
         """ Text parameter to be used for the format
-        @type: string """
+        :type: string """
 
 
     def toxml(self):
@@ -257,35 +256,35 @@ class Simulation(LEMSBase):
 
         self.runs = Map()
         """ Map of runs in this dynamics regime.
-        @type: Map(string -> lems.model.simulation.Run) """
+        :type: Map(string -> lems.model.simulation.Run) """
 
         self.records = Map()
         """ Map of recorded variables in this dynamics regime.
-        @type: Map(string -> lems.model.simulation.Record """
+        :type: Map(string -> lems.model.simulation.Record """
 
         self.event_records = Map()
         """ Map of recorded events in this dynamics regime.
-        @type: Map(string -> lems.model.simulation.EventRecord """
+        :type: Map(string -> lems.model.simulation.EventRecord """
 
         self.data_displays = Map()
         """ Map of data displays mapping titles to regions.
-        @type: Map(string -> string) """
+        :type: Map(string -> string) """
 
         self.data_writers = Map()
         """ Map of recorded variables to data writers.
-        @type: Map(string -> lems.model.simulation.DataWriter """
+        :type: Map(string -> lems.model.simulation.DataWriter """
 
         self.event_writers = Map()
         """ Map of recorded variables to event writers.
-        @type: Map(string -> lems.model.simulation.EventWriter """
+        :type: Map(string -> lems.model.simulation.EventWriter """
 
     def add_run(self, run):
         """
         Adds a runnable target component definition to the list of runnable
         components stored in this context.
 
-        @param run: Run specification
-        @type run: lems.model.simulation.Run
+        :param run: Run specification
+        :type run: lems.model.simulation.Run
         """
 
         self.runs[run.component] = run
@@ -295,8 +294,8 @@ class Simulation(LEMSBase):
         Adds a record object to the list of record objects in this dynamics
         regime.
 
-        @param record: Record object to be added.
-        @type record: lems.model.simulation.Record
+        :param record: Record object to be added.
+        :type record: lems.model.simulation.Record
         """
 
         self.records[record.quantity] = record
@@ -306,8 +305,8 @@ class Simulation(LEMSBase):
         Adds an eventrecord object to the list of event_record objects in this dynamics
         regime.
 
-        @param event_record: EventRecord object to be added.
-        @type event_record: lems.model.simulation.EventRecord
+        :param event_record: EventRecord object to be added.
+        :type event_record: lems.model.simulation.EventRecord
         """
 
         self.event_records[event_record.quantity] = event_record
@@ -316,8 +315,8 @@ class Simulation(LEMSBase):
         """
         Adds a data display to this simulation section.
 
-        @param data_display: Data display to be added.
-        @type data_display: lems.model.simulation.DataDisplay
+        :param data_display: Data display to be added.
+        :type data_display: lems.model.simulation.DataDisplay
         """
 
         self.data_displays[data_display.title] = data_display
@@ -326,8 +325,8 @@ class Simulation(LEMSBase):
         """
         Adds a data writer to this simulation section.
 
-        @param data_writer: Data writer to be added.
-        @type data_writer: lems.model.simulation.DataWriter
+        :param data_writer: Data writer to be added.
+        :type data_writer: lems.model.simulation.DataWriter
         """
 
         self.data_writers[data_writer.path] = data_writer
@@ -336,8 +335,8 @@ class Simulation(LEMSBase):
         """
         Adds an event writer to this simulation section.
 
-        @param event_writer: event writer to be added.
-        @type event_writer: lems.model.simulation.EventWriter
+        :param event_writer: event writer to be added.
+        :type event_writer: lems.model.simulation.EventWriter
         """
 
         self.event_writers[event_writer.path] = event_writer
@@ -346,7 +345,7 @@ class Simulation(LEMSBase):
         """
         Adds a typed child object to the simulation spec.
 
-        @param child: Child object to be added.
+        :param child: Child object to be added.
         """
 
         if isinstance(child, Run):

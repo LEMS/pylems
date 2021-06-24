@@ -1,9 +1,8 @@
 """
 PyLEMS utility classes / functions
 
-@author: Gautham Ganapathy
-@organization: LEMS (http://neuroml.org/lems/, https://github.com/organizations/LEMS)
-@contact: gautham@lisphacker.org
+:author: Gautham Ganapathy
+:organization: LEMS (https://github.com/organizations/LEMS)
 """
 
 from lems import __schema_location__
@@ -20,11 +19,11 @@ def merge_maps(m, base):
     """
     Merge in undefined map entries from given map.
     
-    @param m: Map to be merged into.
-    @type m: lems.util.Map
+    :param m: Map to be merged into.
+    :type m: lems.util.Map
     
-    @param base: Map to be merged into.
-    @type base: lems.util.Map
+    :param base: Map to be merged into.
+    :type base: lems.util.Map
     """
     
     for k in base.keys():
@@ -35,11 +34,11 @@ def merge_lists(l, base):
     """
     Merge in undefined list entries from given list.
     
-    @param l: List to be merged into.
-    @type l: list
+    :param l: List to be merged into.
+    :type l: list
     
-    @param base: List to be merged into.
-    @type base: list
+    :param base: List to be merged into.
+    :type base: list
     """
     
     for i in base:
