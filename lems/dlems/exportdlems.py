@@ -2,7 +2,7 @@
 """
 Exporter for dLEMS (formerly SOM). See https://github.com/borismarin/som-codegen
 
-@author: Boris Marin
+:author: Boris Marin
 """
 
 import sys

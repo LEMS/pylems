@@ -1,9 +1,8 @@
 """
 Model storage.
 
-@author: Gautham Ganapathy
-@organization: LEMS (http://neuroml.org/lems/, https://github.com/organizations/LEMS)
-@contact: gautham@lisphacker.org
+:author: Gautham Ganapathy
+:organization: LEMS (https://github.com/organizations/LEMS)
 """
 
 import os
@@ -47,63 +46,62 @@ class Model(LEMSBase):
 
         self.targets = list()
         """ List of targets to be run on startup.
-        @type: list(str) """
+        :type: list(str) """
 
         self.includes = Map()
         """ Dictionary of includes defined in the model.
-        @type: dict(str -> lems.model.fundamental.Include """
+        :type: dict(str -> lems.model.fundamental.Include """
 
         self.dimensions = Map()
         """ Dictionary of dimensions defined in the model.
-        @type: dict(str -> lems.model.fundamental.Dimension """
+        :type: dict(str -> lems.model.fundamental.Dimension """
 
         self.units = Map()
         """ Map of units defined in the model.
-        @type: dict(str -> lems.model.fundamental.Unit """
+        :type: dict(str -> lems.model.fundamental.Unit """
 
         self.component_types = Map()
         """ Map of component types defined in the model.
-        @type: dict(str -> lems.model.component.ComponentType) """
+        :type: dict(str -> lems.model.component.ComponentType) """
 
         self.components = Map()
         """ Map of root components defined in the model.
-        @type: dict(str -> lems.model.component.Component) """
+        :type: dict(str -> lems.model.component.Component) """
 
         self.fat_components = Map()
         """ Map of root fattened components defined in the model.
-        @type: dict(str -> lems.model.component.FatComponent) """
+        :type: dict(str -> lems.model.component.FatComponent) """
 
         self.constants = Map()
         """ Map of constants in this component type.
-        @type: dict(str -> lems.model.component.Constant) """
+        :type: dict(str -> lems.model.component.Constant) """
 
         self.include_directories = []
         """ List of include directories to search for included LEMS files.
-        @type: list(str) """
+        :type: list(str) """
 
         self.included_files = []
         """ List of files already included.
-        @type: list(str) """
+        :type: list(str) """
 
         self.description = None
         """ Short description of contents of LEMS file
-        @type: str """
+        :type: str """
 
         self.include_includes = include_includes
         """ Whether to include LEMS definitions in <Include> elements
-        @type: boolean """
+        :type: boolean """
 
         self.fail_on_missing_includes = fail_on_missing_includes
         """ Whether to raise an Exception when a file in an <Include> element is not found
-        @type: boolean """
+        :type: boolean """
 
     def add_target(self, target):
         """
         Adds a simulation target to the model.
 
-        @param target: Name of the component to be added as a
-        simulation target.
-        @type target: str
+        :param target: Name of the component to be added as a simulation target.
+        :type target: str
         """
 
         self.targets.append(target)
@@ -112,8 +110,8 @@ class Model(LEMSBase):
         """
         Adds an include to the model.
 
-        @param include: Include to be added.
-        @type include: lems.model.fundamental.Include
+        :param include: Include to be added.
+        :type include: lems.model.fundamental.Include
         """
 
         self.includes[include.file] = include
@@ -122,8 +120,8 @@ class Model(LEMSBase):
         """
         Adds a dimension to the model.
 
-        @param dimension: Dimension to be added.
-        @type dimension: lems.model.fundamental.Dimension
+        :param dimension: Dimension to be added.
+        :type dimension: lems.model.fundamental.Dimension
         """
 
         self.dimensions[dimension.name] = dimension
@@ -132,8 +130,8 @@ class Model(LEMSBase):
         """
         Adds a unit to the model.
 
-        @param unit: Unit to be added.
-        @type unit: lems.model.fundamental.Unit
+        :param unit: Unit to be added.
+        :type unit: lems.model.fundamental.Unit
         """
 
         self.units[unit.symbol] = unit
@@ -142,8 +140,8 @@ class Model(LEMSBase):
         """
         Adds a component type to the model.
 
-        @param component_type: Component type to be added.
-        @type component_type: lems.model.fundamental.ComponentType
+        :param component_type: Component type to be added.
+        :type component_type: lems.model.fundamental.ComponentType
         """
         name = component_type.name
 
@@ -158,8 +156,8 @@ class Model(LEMSBase):
         """
         Adds a component to the model.
 
-        @param component: Component to be added.
-        @type component: lems.model.fundamental.Component
+        :param component: Component to be added.
+        :type component: lems.model.fundamental.Component
         """
 
         self.components[component.id] = component
@@ -168,8 +166,8 @@ class Model(LEMSBase):
         """
         Adds a fattened component to the model.
 
-        @param fat_component: Fattened component to be added.
-        @type fat_component: lems.model.fundamental.Fat_component
+        :param fat_component: Fattened component to be added.
+        :type fat_component: lems.model.fundamental.Fat_component
         """
 
         self.fat_components[fat_component.id] = fat_component
@@ -178,8 +176,8 @@ class Model(LEMSBase):
         """
         Adds a paramter to the model.
 
-        @param constant: Constant to be added.
-        @type constant: lems.model.component.Constant
+        :param constant: Constant to be added.
+        :type constant: lems.model.component.Constant
         """
 
         self.constants[constant.name] = constant
@@ -188,7 +186,7 @@ class Model(LEMSBase):
         """
         Adds a typed child object to the model.
 
-        @param child: Child object to be added.
+        :param child: Child object to be added.
         """
 
         if isinstance(child, Include):
@@ -212,8 +210,8 @@ class Model(LEMSBase):
         """
         Adds a directory to the include file search path.
 
-        @param path: Directory to be added.
-        @type path: str
+        :param path: Directory to be added.
+        :type path: str
         """
 
         self.include_directories.append(path)
@@ -222,11 +220,11 @@ class Model(LEMSBase):
         """
         Includes a file into the current model.
 
-        @param path: Path to the file to be included.
-        @type path: str
+        :param path: Path to the file to be included.
+        :type path: str
 
-        @param include_dirs: Optional alternate include search path.
-        @type include_dirs: list(str)
+        :param include_dirs: Optional alternate include search path.
+        :type include_dirs: list(str)
         """
         if self.include_includes:
             if self.debug: print("------------------                   Including a file: %s"%path)
@@ -262,8 +260,8 @@ class Model(LEMSBase):
         """
         Import a model from a file.
 
-        @param filepath: File to be imported.
-        @type filepath: str
+        :param filepath: File to be imported.
+        :type filepath: str
         """
 
         inc_dirs = self.include_directories[:]
@@ -315,8 +313,8 @@ class Model(LEMSBase):
         """
         Exports this model to a file.
 
-        @param filepath: File to be exported to.
-        @type filepath: str
+        :param filepath: File to be exported to.
+        :type filepath: str
         """
         xmldom = self.export_to_dom()
         xmlstr = xmldom.toprettyxml(level_prefix, '\n',)
@@ -351,8 +349,8 @@ class Model(LEMSBase):
         """
         Resolves references in the specified component type.
 
-        @param component_type: Component type to be resolved.
-        @type component_type: lems.model.component.ComponentType
+        :param component_type: Component type to be resolved.
+        :type component_type: lems.model.component.ComponentType
         """
 
         # Resolve component type from base types if present.
@@ -373,11 +371,11 @@ class Model(LEMSBase):
         Merge various maps in the given component type from a base
         component type.
 
-        @param ct: Component type to be resolved.
-        @type ct: lems.model.component.ComponentType
+        :param ct: Component type to be resolved.
+        :type ct: lems.model.component.ComponentType
 
-        @param base_ct: Component type to be resolved.
-        @type base_ct: lems.model.component.ComponentType
+        :param base_ct: Component type to be resolved.
+        :type base_ct: lems.model.component.ComponentType
         """
 
         #merge_maps(ct.parameters, base_ct.parameters)
@@ -432,11 +430,11 @@ class Model(LEMSBase):
         """
         Fatten a component but resolving all references into the corresponding component type.
 
-        @param c: Lean component to be fattened.
-        @type c: lems.model.component.Component
+        :param c: Lean component to be fattened.
+        :type c: lems.model.component.Component
 
-        @return: Fattened component.
-        @rtype: lems.model.component.FatComponent
+        :return: Fattened component.
+        :rtype: lems.model.component.FatComponent
         """
         if self.debug: print("Fattening %s"%c.id)
         try:
@@ -800,11 +798,11 @@ class Model(LEMSBase):
         """
         Get the numeric value for a parameter value specification.
 
-        @param value_str: Value string
-        @type value_str: str
+        :param value_str: Value string
+        :type value_str: str
 
-        @param dimension: Dimension of the value
-        @type dimension: str
+        :param dimension: Dimension of the value
+        :type dimension: str
         """
 
         n = None

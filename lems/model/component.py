@@ -1,9 +1,8 @@
 """
 Parameter, ComponentType and Component class definitions.
 
-@author: Gautham Ganapathy
-@organization: LEMS (http://neuroml.org/lems/, https://github.com/organizations/LEMS)
-@contact: gautham@lisphacker.org
+:author: Gautham Ganapathy
+:organization: LEMS (https://github.com/organizations/LEMS)
 """
 
 from lems.base.base import LEMSBase
@@ -29,31 +28,31 @@ class Parameter(LEMSBase):
         
         self.name = name
         """ Name of the parameter.
-        @type: str """
+        :type: str """
          
         self.dimension = dimension
         """ Physical dimension of the parameter.
-        @type: str """
+        :type: str """
 
         self.fixed = False
         """ Whether the parameter has been fixed or not.
-        @type: bool """
+        :type: bool """
         
         self.fixed_value = None
         """ Value if fixed.
-        @type: str """
+        :type: str """
 
         self.value = None
         """ Value of the parameter.
-        @type: str """
+        :type: str """
 
         self.numeric_value = None
         """ Resolved numeric value.
-        @type: float """
+        :type: float """
 
         self.description = description
         """ Description of this parameter.
-        @type: str """
+        :type: str """
 
     def toxml(self):
         """
@@ -111,19 +110,19 @@ class Property(LEMSBase):
 
         self.name = name
         """ Name of the property.
-        @type: str """
+        :type: str """
 
         self.dimension = dimension
         """ Physical dimensions of the property.
-        @type: str """
+        :type: str """
         
         self.description = description
         """ Description of the property.
-        @type: str """
+        :type: str """
         
         self.default_value = default_value
         """ Default value of the property.
-        @type: float """
+        :type: float """
 
     def toxml(self):
         """
@@ -148,11 +147,11 @@ class IndexParameter(LEMSBase):
 
         self.name = name
         """ Name of the parameter.
-        @type: str """
+        :type: str """
         
         self.description = description
         """ Description of this parameter.
-        @type: str """
+        :type: str """
         
         
     def toxml(self):
@@ -179,19 +178,19 @@ class DerivedParameter(LEMSBase):
 
         self.name = name
         """ Name of the derived parameter.
-        @type: str """
+        :type: str """
 
         self.dimension = dimension
         """ Physical dimensions of the derived parameter.
-        @type: str """
+        :type: str """
         
         self.value = value
         """ Value of the derived parameter.
-        @type: str """
+        :type: str """
         
         self.description = description
         """ Description of the derived parameter.
-        @type: str """
+        :type: str """
         
         try:
             ep = ExprParser(self.value)
@@ -229,27 +228,27 @@ class Constant(LEMSBase):
         
         self.name = name
         """ Name of the constant.
-        @type: str """
+        :type: str """
         
         self.symbol = symbol
         """ Symbol of the constant.
-        @type: str """
+        :type: str """
 
         self.value = value
         """ Value of the constant.
-        @type: str """
+        :type: str """
 
         self.dimension = dimension
         """ Physical dimensions of the constant.
-        @type: str """
+        :type: str """
 
         self.description = description
         """ Description of the constant.
-        @type: str """
+        :type: str """
 
         self.numeric_value = None
         """ Numeric value of the constant.
-        @type: float """
+        :type: float """
 
     def toxml(self):
         """
@@ -279,15 +278,15 @@ class Exposure(LEMSBase):
         
         self.name = name
         """ Name of the exposure.
-        @type: str """
+        :type: str """
          
         self.dimension = dimension
         """ Physical dimension of the exposure.
-        @type: str """
+        :type: str """
 
         self.description = description
         """ Description of this exposure.
-        @type: str """
+        :type: str """
 
     def toxml(self):
         """
@@ -312,15 +311,15 @@ class Requirement(LEMSBase):
         
         self.name = name
         """ Name of the requirement.
-        @type: str """
+        :type: str """
          
         self.dimension = dimension
         """ Physical dimension of the requirement.
-        @type: str """
+        :type: str """
         
         self.description = description
         """ Description of this requirement.
-        @type: str """
+        :type: str """
 
     def toxml(self):
         """
@@ -344,11 +343,11 @@ class ComponentRequirement(LEMSBase):
 
         self.name = name
         """ Name of the Component required.
-        @type: str """
+        :type: str """
         
         self.description = description
         """ Description of this ComponentRequirement.
-        @type: str """
+        :type: str """
         
         
     def toxml(self):
@@ -373,15 +372,15 @@ class InstanceRequirement(LEMSBase):
         
         self.name = name
         """ Name of the instance requirement.
-        @type: str """
+        :type: str """
          
         self.type = type
         """ Type of the instance required.
-        @type: str """
+        :type: str """
         
         self.description = description
         """ Description of this InstanceRequirement.
-        @type: str """
+        :type: str """
 
     def toxml(self):
         """
@@ -406,19 +405,19 @@ class Children(LEMSBase):
         
         self.name = name
         """ Name of the children.
-        @type: str """
+        :type: str """
          
         self.type = type_
         """ Component type of the children.
-        @type: str """
+        :type: str """
 
         self.description = description
         """ Description of the children.
-        @type: str """
+        :type: str """
 
         self.multiple = multiple
         """ Single child / multiple children.
-        @type: bool """
+        :type: bool """
 
     def toxml(self):
         """
@@ -441,15 +440,15 @@ class Text(LEMSBase):
         
         self.name = name
         """ Name of the text entry.
-        @type: str """
+        :type: str """
          
         self.description = description
         """ Description of the text entry.
-        @type: str """
+        :type: str """
 
         self.value = None
         """ Value of the text entry.
-        @type: str """
+        :type: str """
 
     def toxml(self):
         """
@@ -484,19 +483,19 @@ class Link(LEMSBase):
         
         self.name = name
         """ Name of the link entry.
-        @type: str """
+        :type: str """
 
         self.type = type_
         """ Type of the link.
-        @type: str """
+        :type: str """
          
         self.description = description
         """ Description of the link.
-        @type: str """
+        :type: str """
 
         self.value = None
         """ Value of the link.
-        @type: str """
+        :type: str """
 
     def toxml(self):
         """
@@ -522,15 +521,15 @@ class Path(LEMSBase):
         
         self.name = name
         """ Name of the path entry.
-        @type: str """
+        :type: str """
          
         self.description = description
         """ Description of the path entry.
-        @type: str """
+        :type: str """
 
         self.value = None
         """ Value of the path entry.
-        @type: str """
+        :type: str """
 
     def toxml(self):
         """
@@ -555,7 +554,7 @@ class EventPort(LEMSBase):
         
         self.name = name
         """ Name of the event port.
-        @type: str """
+        :type: str """
 
         d = direction.lower()
         if d != 'in' and d != 'out':
@@ -563,11 +562,11 @@ class EventPort(LEMSBase):
          
         self.direction = direction
         """ Direction - IN/OUT .
-        @type: str """
+        :type: str """
 
         self.description = description
         """ Description of the event port.
-        @type: str """
+        :type: str """
 
     def toxml(self):
         """
@@ -592,19 +591,19 @@ class ComponentReference(LEMSBase):
 
         self.name = name
         """ Name of the component reference.
-        @type: str """
+        :type: str """
 
         self.type = type_
         """ Type of the component reference.
-        @type: str """
+        :type: str """
 
         self.local = local
         """ ???
-        @type: str """
+        :type: str """
 
         self.referenced_component = None
         """ Component being referenced.
-        @type: FatComponent """
+        :type: FatComponent """
 
     def toxml(self):
         """
@@ -629,15 +628,15 @@ class Attachments(LEMSBase):
 
         self.name = name
         """ Name of the attachment collection.
-        @type: str """
+        :type: str """
 
         self.type = type_
         """ Type of attachment.
-        @type: str """
+        :type: str """
 
         self.description = description
         """ Description about the attachment.
-        @type: str """
+        :type: str """
 
     def toxml(self):
         """
@@ -662,90 +661,90 @@ class Fat(LEMSBase):
         
         self.parameters = Map()
         """ Map of parameters in this component type.
-        @type: Map(str -> lems.model.component.Parameter) """
+        :type: Map(str -> lems.model.component.Parameter) """
         
         self.properties = Map()
         """ Map of properties in this component type.
-        @type: Map(str -> lems.model.component.Property) """
+        :type: Map(str -> lems.model.component.Property) """
         
         self.derived_parameters = Map()
         """ Map of derived_parameters in this component type.
-        @type: Map(str -> lems.model.component.Parameter) """
+        :type: Map(str -> lems.model.component.Parameter) """
         
         self.index_parameters = Map()
         """ Map of index_parameters in this component type.
-        @type: Map(str -> lems.model.component.IndexParameter) """
+        :type: Map(str -> lems.model.component.IndexParameter) """
 
         self.constants = Map()
         """ Map of constants in this component type.
-        @type: Map(str -> lems.model.component.Constant) """
+        :type: Map(str -> lems.model.component.Constant) """
 
         self.exposures = Map()
         """ Map of exposures in this component type.
-        @type: Map(str -> lems.model.component.Exposure) """
+        :type: Map(str -> lems.model.component.Exposure) """
 
         self.requirements = Map()
         """ Map of requirements.
-        @type: Map(str -> lems.model.component.Requirement) """
+        :type: Map(str -> lems.model.component.Requirement) """
 
         self.component_requirements = Map()
         """ Map of component requirements.
-        @type: Map(str -> lems.model.component.ComponentRequirement) """
+        :type: Map(str -> lems.model.component.ComponentRequirement) """
 
         self.instance_requirements = Map()
         """ Map of instance requirements.
-        @type: Map(str -> lems.model.component.InstanceRequirement) """
+        :type: Map(str -> lems.model.component.InstanceRequirement) """
 
         self.children = Map()
         """ Map of children.
-        @type: Map(str -> lems.model.component.Children) """
+        :type: Map(str -> lems.model.component.Children) """
 
         self.texts = Map()
         """ Map of text entries.
-        @type: Map(str -> lems.model.component.Text) """
+        :type: Map(str -> lems.model.component.Text) """
 
         self.links = Map()
         """ Map of links.
-        @type: Map(str -> lems.model.component.Link) """
+        :type: Map(str -> lems.model.component.Link) """
 
         self.paths = Map()
         """ Map of path entries.
-        @type: Map(str -> lems.model.component.Path) """
+        :type: Map(str -> lems.model.component.Path) """
 
         self.event_ports = Map()
         """ Map of event ports.
-        @type: Map(str -> lems.model.component.EventPort """
+        :type: Map(str -> lems.model.component.EventPort """
 
         self.component_references = Map()
         """ Map of component references.
-        @type: Map(str -> lems.model.component.ComponentReference) """
+        :type: Map(str -> lems.model.component.ComponentReference) """
 
         self.attachments = Map()
         """ Map of attachment type specifications.
-        @type: Map(str -> lems.model.component.Attachments) """
+        :type: Map(str -> lems.model.component.Attachments) """
 
         self.dynamics = Dynamics()
         """ Behavioural dynamics object.
-        @type: lems.model.dynamics.Dynamics """
+        :type: lems.model.dynamics.Dynamics """
 
         self.structure = Structure()
         """ Structural properties object.
-        @type: lems.model.structure.Structure """
+        :type: lems.model.structure.Structure """
 
         self.simulation = Simulation()
         """ Simulation attributes.
-        @type: lems.model.simulation.Simulation """
+        :type: lems.model.simulation.Simulation """
 
         self.types = set()
         """ Set of compatible component types.
-        @type: set(str) """
+        :type: set(str) """
         
     def add_parameter(self, parameter):
         """
         Adds a paramter to this component type.
 
-        @param parameter: Parameter to be added.
-        @type parameter: lems.model.component.Parameter
+        :param parameter: Parameter to be added.
+        :type parameter: lems.model.component.Parameter
         """
 
         self.parameters[parameter.name] = parameter
@@ -755,8 +754,8 @@ class Fat(LEMSBase):
         """
         Adds a property to this component type.
 
-        @param property: Property to be added.
-        @type property: lems.model.component.Property
+        :param property: Property to be added.
+        :type property: lems.model.component.Property
         """
 
         self.properties[property.name] = property
@@ -765,8 +764,8 @@ class Fat(LEMSBase):
         """
         Adds a derived_parameter to this component type.
 
-        @param derived_parameter: Derived Parameter to be added.
-        @type derived_parameter: lems.model.component.DerivedParameter
+        :param derived_parameter: Derived Parameter to be added.
+        :type derived_parameter: lems.model.component.DerivedParameter
         """
 
         self.derived_parameters[derived_parameter.name] = derived_parameter
@@ -776,8 +775,8 @@ class Fat(LEMSBase):
         """
         Adds an index_parameter to this component type.
 
-        @param index_parameter: Index Parameter to be added.
-        @type index_parameter: lems.model.component.IndexParameter
+        :param index_parameter: Index Parameter to be added.
+        :type index_parameter: lems.model.component.IndexParameter
         """
 
         self.index_parameters[index_parameter.name] = index_parameter
@@ -787,8 +786,8 @@ class Fat(LEMSBase):
         """
         Adds a paramter to this component type.
 
-        @param constant: Constant to be added.
-        @type constant: lems.model.component.Constant
+        :param constant: Constant to be added.
+        :type constant: lems.model.component.Constant
         """
 
         self.constants[constant.name] = constant
@@ -798,8 +797,8 @@ class Fat(LEMSBase):
         """
         Adds a exposure to this component type.
 
-        @param exposure: Exposure to be added.
-        @type exposure: lems.model.component.Exposure
+        :param exposure: Exposure to be added.
+        :type exposure: lems.model.component.Exposure
         """
 
         self.exposures[exposure.name] = exposure
@@ -809,8 +808,8 @@ class Fat(LEMSBase):
         """
         Adds a requirement to this component type.
 
-        @param requirement: Requirement to be added.
-        @type requirement: lems.model.component.Requirement
+        :param requirement: Requirement to be added.
+        :type requirement: lems.model.component.Requirement
         """
 
         self.requirements[requirement.name] = requirement
@@ -820,8 +819,8 @@ class Fat(LEMSBase):
         """
         Adds a component requirement to this component type.
 
-        @param component_requirement: ComponentRequirement to be added.
-        @type component_requirement: lems.model.component.ComponentRequirement
+        :param component_requirement: ComponentRequirement to be added.
+        :type component_requirement: lems.model.component.ComponentRequirement
         """
 
         self.component_requirements[component_requirement.name] = component_requirement
@@ -831,8 +830,8 @@ class Fat(LEMSBase):
         """
         Adds an instance requirement to this component type.
 
-        @param instance_requirement: InstanceRequirement to be added.
-        @type instance_requirement: lems.model.component.InstanceRequirement
+        :param instance_requirement: InstanceRequirement to be added.
+        :type instance_requirement: lems.model.component.InstanceRequirement
         """
 
         self.instance_requirements[instance_requirement.name] = instance_requirement
@@ -842,8 +841,8 @@ class Fat(LEMSBase):
         """
         Adds children to this component type.
 
-        @param children: Children to be added.
-        @type children: lems.model.component.Children
+        :param children: Children to be added.
+        :type children: lems.model.component.Children
         """
 
         self.children[children.name] = children
@@ -852,8 +851,8 @@ class Fat(LEMSBase):
         """
         Adds a text to this component type.
 
-        @param text: Text to be added.
-        @type text: lems.model.component.Text
+        :param text: Text to be added.
+        :type text: lems.model.component.Text
         """
 
         self.texts[text.name] = text
@@ -862,8 +861,8 @@ class Fat(LEMSBase):
         """
         Adds a link to this component type.
 
-        @param link: Link to be added.
-        @type link: lems.model.component.Link
+        :param link: Link to be added.
+        :type link: lems.model.component.Link
         """
 
         self.links[link.name] = link
@@ -872,8 +871,8 @@ class Fat(LEMSBase):
         """
         Adds a path to this component type.
 
-        @param path: Path to be added.
-        @type path: lems.model.component.Path
+        :param path: Path to be added.
+        :type path: lems.model.component.Path
         """
 
         self.paths[path.name] = path
@@ -882,8 +881,8 @@ class Fat(LEMSBase):
         """
         Adds a event port to this component type.
 
-        @param event_port: Event port to be added.
-        @type event_port: lems.model.component.EventPort
+        :param event_port: Event port to be added.
+        :type event_port: lems.model.component.EventPort
         """
 
         self.event_ports[event_port.name] = event_port
@@ -892,8 +891,8 @@ class Fat(LEMSBase):
         """
         Adds a component reference to this component type.
 
-        @param component_reference: Component reference to be added.
-        @type component_reference: lems.model.component.ComponentReference
+        :param component_reference: Component reference to be added.
+        :type component_reference: lems.model.component.ComponentReference
         """
 
         self.component_references[component_reference.name] = component_reference
@@ -902,8 +901,8 @@ class Fat(LEMSBase):
         """
         Adds an attachments type specification to this component type.
 
-        @param attachments: Attachments specification to be added.
-        @type attachments: lems.model.component.Attachments
+        :param attachments: Attachments specification to be added.
+        :type attachments: lems.model.component.Attachments
         """
 
         self.attachments[attachments.name] = attachments
@@ -912,7 +911,7 @@ class Fat(LEMSBase):
         """
         Adds a typed child object to the component type.
 
-        @param child: Child object to be added.
+        :param child: Child object to be added.
         """
 
         if isinstance(child, Parameter):
@@ -966,15 +965,15 @@ class ComponentType(Fat):
     
         self.name = name
         """ Name of the component type.
-        @type: str """
+        :type: str """
          
         self.extends = extends
         """ Base component type.
-        @type: str """
+        :type: str """
 
         self.description = description
         """ Description of this component type.
-        @type: str """
+        :type: str """
 
         self.types.add(name)
 
@@ -1074,25 +1073,25 @@ class Component(LEMSBase):
 
         self.id = id_
         """ ID of the component.
-        @type: str """
+        :type: str """
 
         self.type = type_
         """ Type of the component.
-        @type: str """
+        :type: str """
 
         self.parameters = dict()
         """ Dictionary of parameter values.
-        @type: str """
+        :type: str """
         for key in params.keys():
             self.parameters[key] = params[key]
 
         self.children = list()
         """ List of child components.
-        @type: list(lems.model.component.Component) """
+        :type: list(lems.model.component.Component) """
         
         self.parent_id = None
         """ Optional id of parent
-        @type: str """
+        :type: str """
         
 
     def __str__(self):
@@ -1105,11 +1104,11 @@ class Component(LEMSBase):
         """
         Set a parameter.
 
-        @param parameter: Parameter to be set.
-        @type parameter: str
+        :param parameter: Parameter to be set.
+        :type parameter: str
 
-        @param value: Value to be set to.
-        @type value: str
+        :param value: Value to be set to.
+        :type value: str
         """
 
         self.parameters[parameter] = value
@@ -1118,8 +1117,8 @@ class Component(LEMSBase):
         """
         Adds a child component.
 
-        @param child: Child component to be added.
-        @type child: lems.model.component.Component
+        :param child: Child component to be added.
+        :type child: lems.model.component.Component
         """
 
         self.children.append(child)
@@ -1128,7 +1127,7 @@ class Component(LEMSBase):
         """
         Adds a typed child object to the component.
 
-        @param child: Child object to be added.
+        :param child: Child object to be added.
         """
 
         if isinstance(child, Component):
@@ -1140,8 +1139,8 @@ class Component(LEMSBase):
         """
         Sets the id of the parent Component
         
-        @param parent_id: id of the parent Component
-        @type parent_id: str
+        :param parent_id: id of the parent Component
+        :type parent_id: str
         """
         
         self.parent_id = parent_id
@@ -1184,19 +1183,19 @@ class FatComponent(Fat):
 
         self.id = id_
         """ ID of the component.
-        @type: str """
+        :type: str """
 
         self.type = type_
         """ Type of the component.
-        @type: str """
+        :type: str """
 
         self.child_components = list()
         """ List of child components.
-        @type: lems.model.component.FatComponent """
+        :type: lems.model.component.FatComponent """
         
         self.parent_id = None
         """ Optional id of parent
-        @type: str """
+        :type: str """
         
 
     def __str__(self):
@@ -1208,8 +1207,8 @@ class FatComponent(Fat):
         """
         Adds a child component to this fat component.
 
-        @param child_component: Child component to be added.
-        @type child_component: lems.model.component.FatComponent
+        :param child_component: Child component to be added.
+        :type child_component: lems.model.component.FatComponent
         """
 
         self.child_components.append(child_component)
@@ -1218,7 +1217,7 @@ class FatComponent(Fat):
         """
         Adds a typed child object to the component type.
 
-        @param child: Child object to be added.
+        :param child: Child object to be added.
         """
 
         if isinstance(child, FatComponent):
@@ -1230,8 +1229,8 @@ class FatComponent(Fat):
         """
         Sets the id of the parent Component
         
-        @param parent_id: id of the parent Component
-        @type parent_id: str
+        :param parent_id: id of the parent Component
+        :type parent_id: str
         """
         
         self.parent_id = parent_id

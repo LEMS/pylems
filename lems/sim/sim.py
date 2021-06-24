@@ -1,9 +1,8 @@
 """
 Simulation.
 
-@author: Gautham Ganapathy
-@organization: LEMS (http://neuroml.org/lems/, https://github.com/organizations/LEMS)
-@contact: gautham@lisphacker.org
+:author: Gautham Ganapathy
+:organization: LEMS (https://github.com/organizations/LEMS)
 """
 
 from lems.base.base import LEMSBase
@@ -24,23 +23,23 @@ class Simulation(LEMSBase):
 
         self.runnables = {}
         """ Dictionary of runnable components in this simulation.
-        @type: dict(string -> lems.sim.runnable.Runnable) """
+        :type: dict(string -> lems.sim.runnable.Runnable) """
 
         self.run_queue = []
         """ Priority of pairs of (time-to-next run, runnable).
-        @type: list((Integer, lems.sim.runnable.Runnable)) """
+        :type: list((Integer, lems.sim.runnable.Runnable)) """
 
         self.event_queue = []
         """ List of posted events.
-        @type: list(lems.sim.sim.Event) """
+        :type: list(lems.sim.sim.Event) """
 
     def add_runnable(self, runnable):
         """
         Adds a runnable component to the list of runnable components in
         this simulation.
 
-        @param runnable: A runnable component
-        @type runnable: lems.sim.runnable.Runnable
+        :param runnable: A runnable component
+        :type runnable: lems.sim.runnable.Runnable
         """
 
         if runnable.id in self.runnables:
@@ -157,8 +156,8 @@ class Event:
     def __init__(self, from_id, to_id):
         self.from_id = from_id
         """ ID of the source runnable for this event.
-        @type: Integer """
+        :type: Integer """
 
         self.to_id = to_id
         """ ID of the destination runnable for this event.
-        @type: Integer """
+        :type: Integer """

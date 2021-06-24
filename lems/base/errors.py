@@ -1,9 +1,8 @@
 """
 Error classes.
 
-@author: Gautham Ganapathy
-@organization: LEMS (http://neuroml.org/lems/, https://github.com/organizations/LEMS)
-@contact: gautham@lisphacker.org
+:author: Gautham Ganapathy
+:organization: LEMS (https://github.com/organizations/LEMS)
 """
 
 class LEMSError(Exception):
@@ -15,19 +14,19 @@ class LEMSError(Exception):
         """
         Constructor
 
-        @param message: Error message.
-        @type message: string
+        :param message: Error message.
+        :type message: string
 
-        @param params: Optional arguments for formatting.
-        @type params: list
+        :param params: Optional arguments for formatting.
+        :type params: list
 
-        @param key_params: Named arguments for formatting.
-        @type key_params: dict
+        :param key_params: Named arguments for formatting.
+        :type key_params: dict
         """
         
         self.message = None
         """ Error message
-        @type: string """
+        :type: string """
 
         if params:
             if key_params:
@@ -44,8 +43,8 @@ class LEMSError(Exception):
         """
         Returns the error message string.
 
-        @return: The error message
-        @rtype: string
+        :return: The error message
+        :rtype: string
         """
         
         return self.message

@@ -1,9 +1,8 @@
 """
 Base class for runnable components.
 
-@author: Gautham Ganapathy
-@organization: LEMS (http://neuroml.org/lems/, https://github.com/organizations/LEMS)
-@contact: gautham@lisphacker.org
+:author: Gautham Ganapathy
+:organization: LEMS (https://github.com/organizations/LEMS)
 """
 
 from lems.base.base import LEMSBase
@@ -598,8 +597,8 @@ class Runnable(Reflective):
         """
         Make a copy of this runnable.
 
-        @return: Copy of this runnable.
-        @rtype: lems.sim.runnable.Runnable
+        :return: Copy of this runnable.
+        :rtype: lems.sim.runnable.Runnable
         """
         if self.debug: print("Coping....."+self.id)
         r = Runnable(self.id, self.component, self.parent)

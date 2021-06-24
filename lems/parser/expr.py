@@ -1,9 +1,8 @@
 """
 Expression parser
 
-@author: Gautham Ganapathy
-@organization: LEMS (http://neuroml.org/lems/, https://github.com/organizations/LEMS)
-@contact: gautham@lisphacker.org
+:author: Gautham Ganapathy
+:organization: LEMS (https://github.com/organizations/LEMS)
 """
 
 from lems.base.base import LEMSBase
@@ -24,13 +23,13 @@ class ExprNode(LEMSBase):
         """
         Constructor.
 
-        @param type: Node type
-        @type type: enum(ExprNode.OP, ExprNode.VALUE)
+        :param type: Node type
+        :type type: enum(ExprNode.OP, ExprNode.VALUE)
         """
 
         self.type = type
         """ Node type.
-        @type: enum(ExprNode.OP, ExprNode.VALUE) """
+        :type: enum(ExprNode.OP, ExprNode.VALUE) """
 
 class ValueNode(ExprNode):
     """
@@ -41,14 +40,14 @@ class ValueNode(ExprNode):
         """
         Constructor.
 
-        @param value: Value to be stored in this node.
-        @type value: string
+        :param value: Value to be stored in this node.
+        :type value: string
         """
 
         ExprNode.__init__(self, ExprNode.VALUE)
         self.value = value
         """ Value to be stored in this node.
-        @type: string """
+        :type: string """
         
     def clean_up(self):
         """
@@ -82,29 +81,29 @@ class OpNode(ExprNode):
         """
         Constructor.
 
-        @param op: Operation to be stored in this node.
-        @type op: string
+        :param op: Operation to be stored in this node.
+        :type op: string
 
-        @param left: Left operand.
-        @type left: lems.parser.expr.ExprNode
+        :param left: Left operand.
+        :type left: lems.parser.expr.ExprNode
 
-        @param right: Right operand.
-        @type right: lems.parser.expr.ExprNode
+        :param right: Right operand.
+        :type right: lems.parser.expr.ExprNode
         """
 
         ExprNode.__init__(self, ExprNode.OP)
 
         self.op = op
         """ Operation stored in this node.
-        @type: string """
+        :type: string """
 
         self.left = left
         """ Left operand.
-        @type: lems.parser.expr.ExprNode """
+        :type: lems.parser.expr.ExprNode """
 
         self.right = right
         """ Right operand.
-        @type: lems.parser.expr.ExprNode """
+        :type: lems.parser.expr.ExprNode """
 
     def __str__(self):
         """
@@ -133,22 +132,22 @@ class Func1Node(ExprNode):
         """
         Constructor.
 
-        @param func: Function to be stored in this node.
-        @type func: string
+        :param func: Function to be stored in this node.
+        :type func: string
 
-        @param param: Parameter.
-        @type param: lems.parser.expr.ExprNode
+        :param param: Parameter.
+        :type param: lems.parser.expr.ExprNode
         """
 
         ExprNode.__init__(self, ExprNode.FUNC1)
 
         self.func = func
         """ Funcion stored in this node.
-        @type: string """
+        :type: string """
 
         self.param = param
         """ Parameter.
-        @type: lems.parser.expr.ExprNode """
+        :type: lems.parser.expr.ExprNode """
 
     def __str__(self):
         """
@@ -195,33 +194,33 @@ class ExprParser(LEMSBase):
     depth = 0
 
     """ Dictionary mapping operators to their priorities.
-    @type: dict(string -> Integer) """
+    :type: dict(string -> Integer) """
 
     def __init__(self, parse_string):
         """
         Constructor.
 
-        @param parse_string: Expression to be parsed.
-        @type parse_string: string
+        :param parse_string: Expression to be parsed.
+        :type parse_string: string
         """
 
         self.parse_string = parse_string
         """ Expression to be parsed.
-        @type: string """
+        :type: string """
 
         self.token_list = None
         """ List of tokens from the expression to be parsed.
-        @type: list(string) """
+        :type: list(string) """
 
     def is_op(self, str):
         """
         Checks if a token string contains an operator.
 
-        @param str: Token string to be checked.
-        @type str: string
+        :param str: Token string to be checked.
+        :type str: string
 
-        @return: True if the token string contains an operator.
-        @rtype: Boolean
+        :return: True if the token string contains an operator.
+        :rtype: Boolean
         """
 
         return str in self.op_priority
@@ -230,11 +229,11 @@ class ExprParser(LEMSBase):
         """
         Checks if a token string contains a function.
 
-        @param str: Token string to be checked.
-        @type str: string
+        :param str: Token string to be checked.
+        :type str: string
 
-        @return: True if the token string contains a function.
-        @rtype: Boolean
+        :return: True if the token string contains a function.
+        :rtype: Boolean
         """
 
         return str in known_functions
@@ -243,11 +242,11 @@ class ExprParser(LEMSBase):
         """
         Checks if a token string contains a symbol.
 
-        @param str: Token string to be checked.
-        @type str: string
+        :param str: Token string to be checked.
+        :type str: string
 
-        @return: True if the token string contains a symbol.
-        @rtype: Boolean
+        :return: True if the token string contains a symbol.
+        :rtype: Boolean
         """
 
         return str in ['+', '-', '~', '*', '/', '^', '(', ')']
@@ -354,8 +353,8 @@ class ExprParser(LEMSBase):
         Parses a tokenized arithmetic expression into a parse tree. It calls
         itself recursively to handle bracketed subexpressions.
 
-        @return: Returns a token string.
-        @rtype: lems.parser.expr.ExprNode
+        :return: Returns a token string.
+        :rtype: lems.parser.expr.ExprNode
 
         @attention: Does not handle unary minuses at the moment. Needs to be
         fixed.
@@ -479,8 +478,8 @@ class ExprParser(LEMSBase):
         """
         Tokenizes and parses an arithmetic expression into a parse tree.
 
-        @return: Returns a token string.
-        @rtype: lems.parser.expr.ExprNode
+        :return: Returns a token string.
+        :rtype: lems.parser.expr.ExprNode
         """
         #print("Parsing: %s"%self.parse_string)
         self.tokenize()
