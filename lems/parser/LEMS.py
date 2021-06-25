@@ -270,11 +270,10 @@ class LEMSFileParser(LEMSBase):
 
         if xml.ltag != 'lems' and xml.ltag != 'neuroml':
             raise ParseError('<Lems> expected as root element (or even <neuroml>), found: {0}'.format(xml.ltag))
-        '''
+
         if xml.ltag == 'lems':
             if 'description' in xml.lattrib:
-                self.description = xml.lattrib['description']
-        '''
+                self.model.description = xml.lattrib['description']
 
         self.process_nested_tags(xml)
 
