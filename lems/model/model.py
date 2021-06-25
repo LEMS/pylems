@@ -7,6 +7,7 @@ Model storage.
 
 import os
 from os.path import dirname
+from typing import List, Dict
 
 from lems import __schema_location__, __schema_version__
 from lems.base.base import LEMSBase
@@ -17,7 +18,7 @@ from lems.base.errors import ModelError
 from lems.base.errors import SimBuildError
 
 from lems.model.fundamental import Dimension,Unit,Include
-from lems.model.component import Constant,ComponentType,Component,FatComponent
+from lems.model.component import Constant,ComponentType,Component,FatComponent,Exposure
 from lems.model.simulation import Run,Record,EventRecord,DataDisplay,DataWriter,EventWriter
 from lems.model.structure import With,EventConnection,ChildInstance,MultiInstantiate
 
@@ -841,3 +842,66 @@ class Model(LEMSBase):
 
         #print("Have converted %s to value: %s, dimension %s"%(value_str, numeric_value, dimension))
         return numeric_value
+
+    def list_exposures(self, substring=None):
+        # type: (str) -> Dict[Component, List[Exposure]]
+        """Get exposures from model.
+
+        :param substring: substring to match for in component names
+        :type substring: str
+        :returns: dictionary of components and their exposures
+
+        The returned dictionary is of the form:
+        {
+            "component": ["exp1", "exp2"]
+        }
+
+        """
+        exposures = {}
+        comp_list = []
+        if substring:
+            for comp in self.components:
+                if substring in comp.id:
+                    comp_list.append(comp)
+        else:
+            comp_list = self.components
+
+        for comp in comp_list:
+            try:
+                exposures[comp] = self.component_types[comp.type].exposures
+            except KeyError:
+                pass  # found a component without any exposures
+        return exposures
+
+    def get_recording_path(self, comp, exposures):
+        # type: (Component, List[Exposure]) -> List[str]
+        """Create recording path from a component and its list of exposures.
+
+        :param comp: component
+        :type comp: Component
+        :param exposures: list of exposures
+        :type exposures: [Exposure]
+        :returns: list of strings, one for each recording path
+
+        """
+        retlist = []
+        for exposure in exposures:
+            retlist.append(comp.id + "/" + exposure.name)
+        return retlist
+
+    def list_recording_paths(self, substring=None):
+        # type: (str) -> List[str]
+        """Get the recording path strings for exposures of matching component
+        ids.
+
+        :param substring: substring to match component ids against
+        :type substring: str
+        :returns: list of recording paths
+
+        """
+        recording_paths = []
+        exposures = self.list_exposures(substring)
+
+        for comp, exps in exposures.items():
+            recording_paths.extend(self.get_recording_path(comp, exps))
+        return recording_paths
