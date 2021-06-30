@@ -5,7 +5,7 @@ results
 test*.sh
 build
 *~
-doc
+doc/_build
 *.pyc
 *.pyo
 .project

@@ -1,14 +1,15 @@
 """
 Model storage.
 
-@author: Gautham Ganapathy
-@organization: LEMS (http://neuroml.org/lems/, https://github.com/organizations/LEMS)
-@contact: gautham@lisphacker.org
+:author: Gautham Ganapathy
+:organization: LEMS (https://github.com/organizations/LEMS)
 """
 
 import os
 from os.path import dirname
+from typing import List, Dict
 
+from lems import __schema_location__, __schema_version__
 from lems.base.base import LEMSBase
 from lems.base.util import merge_maps, merge_lists
 from lems.base.map import Map
@@ -17,13 +18,14 @@ from lems.base.errors import ModelError
 from lems.base.errors import SimBuildError
 
 from lems.model.fundamental import Dimension,Unit,Include
-from lems.model.component import Constant,ComponentType,Component,FatComponent
+from lems.model.component import Constant,ComponentType,Component,FatComponent,Exposure
 from lems.model.simulation import Run,Record,EventRecord,DataDisplay,DataWriter,EventWriter
 from lems.model.structure import With,EventConnection,ChildInstance,MultiInstantiate
 
 import xml.dom.minidom as minidom
 
 import logging
+
 
 class Model(LEMSBase):
     """
@@ -32,97 +34,95 @@ class Model(LEMSBase):
 
     logging.basicConfig(level=logging.INFO)
 
-    target_lems_version = '0.7.3'
-    branch = 'development'
-    schema_location = 'https://raw.githubusercontent.com/LEMS/LEMS/{0}/Schemas/LEMS/LEMS_v{1}.xsd'.format(branch, target_lems_version)
+    target_lems_version = __schema_version__
+    schema_location = __schema_location__
     #schema_location = '/home/padraig/LEMS/Schemas/LEMS/LEMS_v%s.xsd'%target_lems_version
-    
+
     debug = False
-    
+
     def __init__(self, include_includes=True, fail_on_missing_includes=True):
         """
         Constructor.
         """
-        
+
         self.targets = list()
         """ List of targets to be run on startup.
-        @type: list(str) """
-        
+        :type: list(str) """
+
         self.includes = Map()
         """ Dictionary of includes defined in the model.
-        @type: dict(str -> lems.model.fundamental.Include """
-        
+        :type: dict(str -> lems.model.fundamental.Include """
+
         self.dimensions = Map()
         """ Dictionary of dimensions defined in the model.
-        @type: dict(str -> lems.model.fundamental.Dimension """
-        
+        :type: dict(str -> lems.model.fundamental.Dimension """
+
         self.units = Map()
         """ Map of units defined in the model.
-        @type: dict(str -> lems.model.fundamental.Unit """
-        
+        :type: dict(str -> lems.model.fundamental.Unit """
+
         self.component_types = Map()
         """ Map of component types defined in the model.
-        @type: dict(str -> lems.model.component.ComponentType) """
-        
+        :type: dict(str -> lems.model.component.ComponentType) """
+
         self.components = Map()
         """ Map of root components defined in the model.
-        @type: dict(str -> lems.model.component.Component) """
+        :type: dict(str -> lems.model.component.Component) """
 
         self.fat_components = Map()
         """ Map of root fattened components defined in the model.
-        @type: dict(str -> lems.model.component.FatComponent) """
+        :type: dict(str -> lems.model.component.FatComponent) """
 
         self.constants = Map()
         """ Map of constants in this component type.
-        @type: dict(str -> lems.model.component.Constant) """
+        :type: dict(str -> lems.model.component.Constant) """
 
         self.include_directories = []
         """ List of include directories to search for included LEMS files.
-        @type: list(str) """
-        
+        :type: list(str) """
+
         self.included_files = []
         """ List of files already included.
-        @type: list(str) """
-        
+        :type: list(str) """
+
         self.description = None
         """ Short description of contents of LEMS file
-        @type: str """
-        
+        :type: str """
+
         self.include_includes = include_includes
         """ Whether to include LEMS definitions in <Include> elements
-        @type: boolean """
-        
+        :type: boolean """
+
         self.fail_on_missing_includes = fail_on_missing_includes
         """ Whether to raise an Exception when a file in an <Include> element is not found
-        @type: boolean """
+        :type: boolean """
 
     def add_target(self, target):
         """
         Adds a simulation target to the model.
 
-        @param target: Name of the component to be added as a
-        simulation target.
-        @type target: str
+        :param target: Name of the component to be added as a simulation target.
+        :type target: str
         """
-        
+
         self.targets.append(target)
-        
+
     def add_include(self, include):
         """
         Adds an include to the model.
 
-        @param include: Include to be added.
-        @type include: lems.model.fundamental.Include
+        :param include: Include to be added.
+        :type include: lems.model.fundamental.Include
         """
 
         self.includes[include.file] = include
-        
+
     def add_dimension(self, dimension):
         """
         Adds a dimension to the model.
 
-        @param dimension: Dimension to be added.
-        @type dimension: lems.model.fundamental.Dimension
+        :param dimension: Dimension to be added.
+        :type dimension: lems.model.fundamental.Dimension
         """
 
         self.dimensions[dimension.name] = dimension
@@ -131,8 +131,8 @@ class Model(LEMSBase):
         """
         Adds a unit to the model.
 
-        @param unit: Unit to be added.
-        @type unit: lems.model.fundamental.Unit
+        :param unit: Unit to be added.
+        :type unit: lems.model.fundamental.Unit
         """
 
         self.units[unit.symbol] = unit
@@ -141,24 +141,24 @@ class Model(LEMSBase):
         """
         Adds a component type to the model.
 
-        @param component_type: Component type to be added.
-        @type component_type: lems.model.fundamental.ComponentType
+        :param component_type: Component type to be added.
+        :type component_type: lems.model.fundamental.ComponentType
         """
         name = component_type.name
-        
+
         # To handle colons in names in LEMS
         if ':' in name:
             name = name.replace(':', '_')
             component_type.name = name
-            
+
         self.component_types[name] = component_type
 
     def add_component(self, component):
         """
         Adds a component to the model.
 
-        @param component: Component to be added.
-        @type component: lems.model.fundamental.Component
+        :param component: Component to be added.
+        :type component: lems.model.fundamental.Component
         """
 
         self.components[component.id] = component
@@ -167,8 +167,8 @@ class Model(LEMSBase):
         """
         Adds a fattened component to the model.
 
-        @param fat_component: Fattened component to be added.
-        @type fat_component: lems.model.fundamental.Fat_component
+        :param fat_component: Fattened component to be added.
+        :type fat_component: lems.model.fundamental.Fat_component
         """
 
         self.fat_components[fat_component.id] = fat_component
@@ -177,8 +177,8 @@ class Model(LEMSBase):
         """
         Adds a paramter to the model.
 
-        @param constant: Constant to be added.
-        @type constant: lems.model.component.Constant
+        :param constant: Constant to be added.
+        :type constant: lems.model.component.Constant
         """
 
         self.constants[constant.name] = constant
@@ -187,7 +187,7 @@ class Model(LEMSBase):
         """
         Adds a typed child object to the model.
 
-        @param child: Child object to be added.
+        :param child: Child object to be added.
         """
 
         if isinstance(child, Include):
@@ -211,21 +211,21 @@ class Model(LEMSBase):
         """
         Adds a directory to the include file search path.
 
-        @param path: Directory to be added.
-        @type path: str
+        :param path: Directory to be added.
+        :type path: str
         """
-        
+
         self.include_directories.append(path)
 
     def include_file(self, path, include_dirs = []):
         """
         Includes a file into the current model.
 
-        @param path: Path to the file to be included.
-        @type path: str
+        :param path: Path to the file to be included.
+        :type path: str
 
-        @param include_dirs: Optional alternate include search path.
-        @type include_dirs: list(str)
+        :param include_dirs: Optional alternate include search path.
+        :type include_dirs: list(str)
         """
         if self.include_includes:
             if self.debug: print("------------------                   Including a file: %s"%path)
@@ -234,7 +234,7 @@ class Model(LEMSBase):
             parser = LEMSFileParser(self, inc_dirs, self.include_includes)
             if os.access(path, os.F_OK):
                 if not path in self.included_files:
-                    parser.parse(open(path).read()) 
+                    parser.parse(open(path).read())
                     self.included_files.append(path)
                     return
                 else:
@@ -254,24 +254,24 @@ class Model(LEMSBase):
             msg = 'Unable to open ' + path
             if self.fail_on_missing_includes:
                 raise Exception(msg)
-            elif self.debug: 
+            elif self.debug:
                 print(msg)
-            
+
     def import_from_file(self, filepath):
         """
         Import a model from a file.
 
-        @param filepath: File to be imported.
-        @type filepath: str
+        :param filepath: File to be imported.
+        :type filepath: str
         """
-        
+
         inc_dirs = self.include_directories[:]
         inc_dirs.append(dirname(filepath))
-                        
+
         parser = LEMSFileParser(self, inc_dirs, self.include_includes)
         with open(filepath) as f:
             parser.parse(f.read())
-        
+
     def export_to_dom(self):
         """
         Exports this model to a DOM.
@@ -292,19 +292,19 @@ class Model(LEMSBase):
 
         for dimension in self.dimensions:
             xmlstr += dimension.toxml()
-            
+
         for unit in self.units:
             xmlstr += unit.toxml()
-            
+
         for constant in self.constants:
             xmlstr += constant.toxml()
-            
+
         for component_type in self.component_types:
             xmlstr += component_type.toxml()
-            
+
         for component in self.components:
             xmlstr += component.toxml()
-            
+
         xmlstr += '</Lems>'
 
         xmldom = minidom.parseString(xmlstr)
@@ -314,8 +314,8 @@ class Model(LEMSBase):
         """
         Exports this model to a file.
 
-        @param filepath: File to be exported to.
-        @type filepath: str
+        :param filepath: File to be exported to.
+        :type filepath: str
         """
         xmldom = self.export_to_dom()
         xmlstr = xmldom.toprettyxml(level_prefix, '\n',)
@@ -331,7 +331,7 @@ class Model(LEMSBase):
         """
 
         model = self.copy()
-        
+
         for ct in model.component_types:
             model.resolve_component_type(ct)
 
@@ -343,17 +343,17 @@ class Model(LEMSBase):
             c2 = c.copy()
             c2.numeric_value = model.get_numeric_value(c2.value, c2.dimension)
             model.add(c2)
-            
+
         return model
 
     def resolve_component_type(self, component_type):
         """
         Resolves references in the specified component type.
 
-        @param component_type: Component type to be resolved.
-        @type component_type: lems.model.component.ComponentType
+        :param component_type: Component type to be resolved.
+        :type component_type: lems.model.component.ComponentType
         """
-        
+
         # Resolve component type from base types if present.
         if component_type.extends:
             try:
@@ -369,14 +369,14 @@ class Model(LEMSBase):
 
     def merge_component_types(self, ct, base_ct):
         """
-        Merge various maps in the given component type from a base 
+        Merge various maps in the given component type from a base
         component type.
 
-        @param ct: Component type to be resolved.
-        @type ct: lems.model.component.ComponentType
+        :param ct: Component type to be resolved.
+        :type ct: lems.model.component.ComponentType
 
-        @param base_ct: Component type to be resolved.
-        @type base_ct: lems.model.component.ComponentType
+        :param base_ct: Component type to be resolved.
+        :type base_ct: lems.model.component.ComponentType
         """
 
         #merge_maps(ct.parameters, base_ct.parameters)
@@ -389,9 +389,9 @@ class Model(LEMSBase):
                     p.dimension = basep.dimension
             else:
                 ct.parameters[parameter.name] = base_ct.parameters[parameter.name]
-            
+
         merge_maps(ct.properties, base_ct.properties)
-        
+
         merge_maps(ct.derived_parameters, base_ct.derived_parameters)
         merge_maps(ct.index_parameters, base_ct.index_parameters)
         merge_maps(ct.constants, base_ct.constants)
@@ -411,9 +411,9 @@ class Model(LEMSBase):
         merge_maps(ct.dynamics.derived_variables, base_ct.dynamics.derived_variables)
         merge_maps(ct.dynamics.conditional_derived_variables, base_ct.dynamics.conditional_derived_variables)
         merge_maps(ct.dynamics.time_derivatives, base_ct.dynamics.time_derivatives)
-        
+
         #merge_lists(ct.dynamics.event_handlers, base_ct.dynamics.event_handlers)
-        
+
         merge_maps(ct.dynamics.kinetic_schemes, base_ct.dynamics.kinetic_schemes)
 
         merge_lists(ct.structure.event_connections, base_ct.structure.event_connections)
@@ -431,19 +431,19 @@ class Model(LEMSBase):
         """
         Fatten a component but resolving all references into the corresponding component type.
 
-        @param c: Lean component to be fattened.
-        @type c: lems.model.component.Component
+        :param c: Lean component to be fattened.
+        :type c: lems.model.component.Component
 
-        @return: Fattened component.
-        @rtype: lems.model.component.FatComponent
+        :return: Fattened component.
+        :rtype: lems.model.component.FatComponent
         """
-        if self.debug: print("Fattening %s"%c.id) 
+        if self.debug: print("Fattening %s"%c.id)
         try:
             ct = self.component_types[c.type]
         except:
             raise ModelError("Unable to resolve type '{0}' for component '{1}'; existing: {2}",
                              c.type, c.id, self.component_types.keys())
-        
+
         fc = FatComponent(c.id, c.type)
         if c.parent_id: fc.set_parent_id(c.parent_id)
 
@@ -467,18 +467,18 @@ class Model(LEMSBase):
         for property in ct.properties:
             property2 = property.copy()
             fc.add(property2)
-            
+
         ### Resolve derived_parameters
         for derived_parameter in ct.derived_parameters:
             derived_parameter2 = derived_parameter.copy()
             fc.add(derived_parameter2)
-            
+
         ### Resolve derived_parameters
         for index_parameter in ct.index_parameters:
             raise ModelError("IndexParameter not yet implemented in PyLEMS!")
             index_parameter2 = index_parameter.copy()
             fc.add(index_parameter2)
-            
+
         ### Resolve constants
         for constant in ct.constants:
             constant2 = constant.copy()
@@ -490,7 +490,7 @@ class Model(LEMSBase):
             t = text.copy()
             t.value = c.parameters[text.name] if text.name in c.parameters else ''
             fc.add(t)
-                
+
         ### Resolve texts
         for link in ct.links:
             if link.name in c.parameters:
@@ -500,7 +500,7 @@ class Model(LEMSBase):
             else:
                 raise ModelError("Link parameter '{0}' not initialized for component '{1}'",
                                  link.name, c.id)
-                
+
         ### Resolve paths
         for path in ct.paths:
             if path.name in c.parameters:
@@ -532,7 +532,7 @@ class Model(LEMSBase):
             else:
                 raise ModelError("Component reference '{0}' not initialized for component '{1}'",
                                  cref.name, c.id)
-            
+
         merge_maps(fc.exposures, ct.exposures)
         merge_maps(fc.requirements, ct.requirements)
         merge_maps(fc.component_requirements, ct.component_requirements)
@@ -547,7 +547,7 @@ class Model(LEMSBase):
         fc.dynamics = ct.dynamics.copy()
         if len(fc.dynamics.regimes) != 0:
             fc.dynamics.clear()
-               
+
         self.resolve_structure(fc, ct)
         self.resolve_simulation(fc, ct)
 
@@ -558,33 +558,30 @@ class Model(LEMSBase):
             fc.add(self.fatten_component(child))
 
         return fc
-    
-    
+
     def get_parent_component(self, fc):
         """
         TODO: Replace with more efficient way to do this...
         """
-        if self.debug: print("Looking for parent of %s (%s)"%(fc.id, fc.parent_id)) 
+        if self.debug: print("Looking for parent of %s (%s)"%(fc.id, fc.parent_id))
         parent_comp = None
         for comp in self.components.values():
-            if self.debug: print(" - Checking "+comp.id) 
+            if self.debug: print(" - Checking "+comp.id)
             for child in comp.children:
                 if parent_comp == None:
                     if child.id == fc.id and comp.id == fc.parent_id:
-                        if self.debug: print("1) It is "+comp.id) 
+                        if self.debug: print("1) It is "+comp.id)
                         parent_comp = comp
                     else:
                         for child2 in child.children:
-                            if self.debug: print("    - Checking child: %s, %s"%(child.id,child2.id)) 
+                            if self.debug: print("    - Checking child: %s, %s"%(child.id,child2.id))
                             if parent_comp == None and child2.id == fc.id and child.id == fc.parent_id:
-                                if self.debug: print("2) It is "+child.id) 
+                                if self.debug: print("2) It is "+child.id)
                                 parent_comp = child
                                 break
                             else:
                                 if self.debug: print("No..."   )
         return parent_comp
-                        
-
 
     def resolve_structure(self, fc, ct):
         """
@@ -603,26 +600,26 @@ class Model(LEMSBase):
                                  "'{0}' in component '{1}'",
                                  w.as_, fc.id)
             fc.structure.add(w2)
-            
+
         if len(ct.structure.tunnels) > 0:
             raise ModelError("Tunnel is not yet supported in PyLEMS!");
-            
+
         for fe in ct.structure.for_eachs:
             fc.structure.add_for_each(fe)
-            
+
         for ev in ct.structure.event_connections:
             try:
-                
+
                 from_inst = fc.structure.withs[ev.from_].instance
                 to_inst = fc.structure.withs[ev.to].instance
-                
+
                 if self.debug: print("EC..: "+from_inst+" to "+to_inst+ " in "+str(fc.paths))
-                
+
                 if len(fc.texts) > 0 or len(fc.paths) > 0:
-                    
+
                     source_port = fc.texts[ev.source_port].value if ev.source_port and len(ev.source_port)>0 and ev.source_port in fc.texts else None
                     target_port = fc.texts[ev.target_port].value if ev.target_port and len(ev.target_port)>0 and ev.target_port in fc.texts else None
-                    
+
                     if self.debug: print("sp: %s"%source_port)
                     if self.debug: print("tp: %s"%target_port)
 
@@ -633,11 +630,11 @@ class Model(LEMSBase):
                         receiver_id = None
                         parent_attr = ev.receiver[3:]
                         if self.debug: print("Finding %s in the parent of: %s (%i)"%(parent_attr, fc, id(fc)))
-                        
+
                         for comp in self.components.values():
-                            if self.debug: print(" - Checking %s (%i)" %(comp.id,id(comp))) 
+                            if self.debug: print(" - Checking %s (%i)" %(comp.id,id(comp)))
                             for child in comp.children:
-                                if self.debug: print("    - Checking %s (%i)" %(child.id,id(child))) 
+                                if self.debug: print("    - Checking %s (%i)" %(child.id,id(child)))
                                 for child2 in child.children:
                                     if child2.id == fc.id and child2.type == fc.type and child.id == fc.parent_id:
                                         if self.debug: print("    - Got it?: %s (%i), child: %s"%(child.id, id(child), child2))
@@ -645,7 +642,7 @@ class Model(LEMSBase):
                                         if self.debug: print("Got it: "+receiver_id)
                                         break
 
-                        if receiver_id is not None:            
+                        if receiver_id is not None:
                             for comp in self.fat_components:
                                 if comp.id == receiver_id:
                                         receiver = comp
@@ -664,8 +661,8 @@ class Model(LEMSBase):
                 else:
                     #if from_inst == 'parent':
                         #par = fc.component_references[ev.receiver]
-                    
-                    if self.debug: 
+
+                    if self.debug:
                         print("+++++++++++++++++++")
                         print(ev.toxml())
                         print(ev.source_port)
@@ -674,14 +671,14 @@ class Model(LEMSBase):
                     target_port = ev.target_port
                     receiver = None
                     receiver_container = None
-                    
+
                 ev2 = EventConnection(from_inst,
                                       to_inst,
                                       source_port,
                                       target_port,
                                       receiver,
                                       receiver_container)
-                if self.debug: 
+                if self.debug:
                     print("Created EC: "+ev2.toxml())
                     print(receiver)
                     print(receiver_container)
@@ -689,7 +686,7 @@ class Model(LEMSBase):
                 logging.exception("Something awful happened!")
                 raise ModelError("Unable to resolve event connection parameters in component '{0}'",fc)
             fc.structure.add(ev2)
-                
+
         for ch in ct.structure.child_instances:
             try:
                 if self.debug: print(ch.toxml())
@@ -701,7 +698,7 @@ class Model(LEMSBase):
                     comp_id = parent.parameters[comp_ref]
                     comp = self.fat_components[comp_id]
                     ch2 = ChildInstance(ch.component, comp)
-                else:    
+                else:
                     ref_comp = fc.component_references[ch.component].referenced_component
                     ch2 = ChildInstance(ch.component, ref_comp)
             except Exception as e:
@@ -718,7 +715,7 @@ class Model(LEMSBase):
                                            number=int(fc.parameters[mi.number].numeric_value))
                 else:
                     mi2 = MultiInstantiate(component_type=fc.component_references[mi.component_type].referenced_component,
-                                           number=int(fc.parameters[mi.number].numeric_value))                    
+                                           number=int(fc.parameters[mi.number].numeric_value))
             except:
                 raise ModelError("Unable to resolve multi-instantiate parameters for "
                                  "'{0}' in component '{1}'",
@@ -770,26 +767,26 @@ class Model(LEMSBase):
                 raise ModelError("Unable to resolve simulation display parameters in component '{0}'",
                                  fc.id)
             fc.simulation.add(dd2)
-                
+
         for dw in ct.simulation.data_writers:
             try:
                 path = '.'
                 if fc.texts[dw.path] and fc.texts[dw.path].value:
                     path = fc.texts[dw.path].value
-                
+
                 dw2 = DataWriter(path,
                                  fc.texts[dw.file_name].value)
             except:
                 raise ModelError("Unable to resolve simulation writer parameters in component '{0}'",
                                  fc.id)
             fc.simulation.add(dw2)
-                
+
         for ew in ct.simulation.event_writers:
             try:
                 path = '.'
                 if fc.texts[ew.path] and fc.texts[ew.path].value:
                     path = fc.texts[ew.path].value
-                
+
                 ew2 = EventWriter(path,
                                  fc.texts[ew.file_name].value,
                                  fc.texts[ew.format].value)
@@ -797,17 +794,16 @@ class Model(LEMSBase):
                 raise ModelError("Unable to resolve simulation writer parameters in component '{0}'",
                                  fc.id)
             fc.simulation.add(ew2)
-                
-            
+
     def get_numeric_value(self, value_str, dimension = None):
         """
         Get the numeric value for a parameter value specification.
 
-        @param value_str: Value string
-        @type value_str: str
+        :param value_str: Value string
+        :type value_str: str
 
-        @param dimension: Dimension of the value
-        @type dimension: str
+        :param dimension: Dimension of the value
+        :type dimension: str
         """
 
         n = None
@@ -820,7 +816,6 @@ class Model(LEMSBase):
                 s = value_str[i:]
             except ValueError:
                 i = i-1
-
 
         number = n
         sym = s
@@ -844,6 +839,69 @@ class Model(LEMSBase):
             else:
                 raise SimBuildError("Unknown unit symbol '{0}'. Known: {1}",
                                     sym, self.units)
-                                    
-        #print("Have converted %s to value: %s, dimension %s"%(value_str, numeric_value, dimension))                            
+
+        #print("Have converted %s to value: %s, dimension %s"%(value_str, numeric_value, dimension))
         return numeric_value
+
+    def list_exposures(self, substring=None):
+        # type: (str) -> Dict[Component, List[Exposure]]
+        """Get exposures from model.
+
+        :param substring: substring to match for in component names
+        :type substring: str
+        :returns: dictionary of components and their exposures
+
+        The returned dictionary is of the form:
+        {
+            "component": ["exp1", "exp2"]
+        }
+
+        """
+        exposures = {}
+        comp_list = []
+        if substring:
+            for comp in self.components:
+                if substring in comp.id:
+                    comp_list.append(comp)
+        else:
+            comp_list = self.components
+
+        for comp in comp_list:
+            try:
+                exposures[comp] = self.component_types[comp.type].exposures
+            except KeyError:
+                pass  # found a component without any exposures
+        return exposures
+
+    def get_recording_path(self, comp, exposures):
+        # type: (Component, List[Exposure]) -> List[str]
+        """Create recording path from a component and its list of exposures.
+
+        :param comp: component
+        :type comp: Component
+        :param exposures: list of exposures
+        :type exposures: [Exposure]
+        :returns: list of strings, one for each recording path
+
+        """
+        retlist = []
+        for exposure in exposures:
+            retlist.append(comp.id + "/" + exposure.name)
+        return retlist
+
+    def list_recording_paths(self, substring=None):
+        # type: (str) -> List[str]
+        """Get the recording path strings for exposures of matching component
+        ids.
+
+        :param substring: substring to match component ids against
+        :type substring: str
+        :returns: list of recording paths
+
+        """
+        recording_paths = []
+        exposures = self.list_exposures(substring)
+
+        for comp, exps in exposures.items():
+            recording_paths.extend(self.get_recording_path(comp, exps))
+        return recording_paths

@@ -1,9 +1,8 @@
 """
 Stack class.
 
-@author: Gautham Ganapathy
-@organization: LEMS (http://neuroml.org/lems/, https://github.com/organizations/LEMS)
-@contact: gautham@lisphacker.org
+:author: Gautham Ganapathy
+:organization: LEMS (https://github.com/organizations/LEMS)
 """
 
 from lems.base.base import LEMSBase
@@ -21,14 +20,14 @@ class Stack(LEMSBase):
 
         self.stack = []
         """ List used to store the stack contents.
-        @type: list """
+        :type: list """
 
     def push(self, val):
         """
         Pushed a value onto the stack.
 
-        @param val: Value to be pushed.
-        @type val: *
+        :param val: Value to be pushed.
+        :type val: *
         """
 
         self.stack = [val] + self.stack
@@ -37,10 +36,10 @@ class Stack(LEMSBase):
         """
         Pops a value off the top of the stack.
 
-        @return: Value popped off the stack.
-        @rtype: *
+        :return: Value popped off the stack.
+        :rtype: *
 
-        @raise StackError: Raised when there is a stack underflow.
+        :raises StackError: Raised when there is a stack underflow.
         """
 
         if self.stack:
@@ -54,10 +53,10 @@ class Stack(LEMSBase):
         """
         Returns the value off the top of the stack without popping.
 
-        @return: Value on the top of the stack.
-        @rtype: *
+        :return: Value on the top of the stack.
+        :rtype: *
 
-        @raise StackError: Raised when there is a stack underflow.
+        :raises StackError: Raised when there is a stack underflow.
         """
 
         if self.stack:
@@ -69,8 +68,8 @@ class Stack(LEMSBase):
         """
         Checks if the stack is empty.
 
-        @return: True if the stack is empty, otherwise False.
-        @rtype: Boolean
+        :return: True if the stack is empty, otherwise False.
+        :rtype: Boolean
         """
 
         return self.stack == []

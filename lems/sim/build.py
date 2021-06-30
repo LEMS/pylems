@@ -1,9 +1,8 @@
 """
 Simulation builder.
 
-@author: Gautham Ganapathy
-@organization: LEMS (http://neuroml.org/lems/, https://github.com/organizations/LEMS)
-@contact: gautham@lisphacker.org
+:author: Gautham Ganapathy
+:organization: LEMS (https://github.com/organizations/LEMS)
 """
 
 import re
@@ -27,17 +26,17 @@ class SimulationBuilder(LEMSBase):
         """
         Constructor.
 
-        @param model: Model upon which the simulation is to be generated.
-        @type model: lems.model.model.Model
+        :param model: Model upon which the simulation is to be generated.
+        :type model: lems.model.model.Model
         """
 
         self.model = model
         """ Model to be used for constructing the simulation.
-        @type: lems.model.model.Model """
+        :type: lems.model.model.Model """
 
         self.sim = None
         """ Simulation built from the model.
-        @type: lems.sim.sim.Simulation """
+        :type: lems.sim.sim.Simulation """
 
         self.current_record_target = None
 
@@ -48,8 +47,8 @@ class SimulationBuilder(LEMSBase):
         """
         Build the simulation components from the model.
 
-        @return: A runnable simulation object
-        @rtype: lems.sim.sim.Simulation
+        :return: A runnable simulation object
+        :rtype: lems.sim.sim.Simulation
         """
 
         self.sim = Simulation()
@@ -70,17 +69,15 @@ class SimulationBuilder(LEMSBase):
         Build a runnable component from a component specification and add
         it to the simulation.
 
-        @param component: Component specification
-        @type component: lems.model.component.FatComponent
+        :param component: Component specification
+        :type component: lems.model.component.FatComponent
 
-        @param parent: Parent runnable component.
-        @type parent: lems.sim.runnable.Runnable
+        :param parent: Parent runnable component.
+        :type parent: lems.sim.runnable.Runnable
 
-        @param id_: Optional id for therunnable. If it's not passed in,
-        the runnable will inherit the id of the component.
+        :param id_: Optional id for therunnable. If it's not passed in, the runnable will inherit the id of the component.
 
-        @raise SimBuildError: Raised when a component reference cannot be
-        resolved.
+        :raises SimBuildError: Raised when a component reference cannot be resolved.
         """
         if self.debug: print("++++++++ Calling build_runnable of %s with parent %s"%(component, parent))
 
@@ -233,15 +230,14 @@ class SimulationBuilder(LEMSBase):
         Adds event connections to a runnable component based on the structure
         specifications in the component model.
 
-        @param component: Component model containing structure specifications.
-        @type component: lems.model.component.FatComponent
+        :param component: Component model containing structure specifications.
+        :type component: lems.model.component.FatComponent
 
-        @param runnable: Runnable component to which structure is to be added.
-        @type runnable: lems.sim.runnable.Runnable
+        :param runnable: Runnable component to which structure is to be added.
+        :type runnable: lems.sim.runnable.Runnable
 
-        @param structure: The structure object to be used to add
-        structure code in the runnable component.
-        @type structure: lems.model.structure.Structure
+        :param structure: The structure object to be used to add structure code in the runnable component.
+        :type structure: lems.model.structure.Structure
         """
         if self.debug: print("\n++++++++ Calling build_event_connections of %s with runnable %s, parent %s"%(component.id, runnable.id, runnable.parent))
         # Process event connections
@@ -295,15 +291,14 @@ class SimulationBuilder(LEMSBase):
         Adds structure to a runnable component based on the structure
         specifications in the component model.
 
-        @param component: Component model containing structure specifications.
-        @type component: lems.model.component.FatComponent
+        :param component: Component model containing structure specifications.
+        :type component: lems.model.component.FatComponent
 
-        @param runnable: Runnable component to which structure is to be added.
-        @type runnable: lems.sim.runnable.Runnable
+        :param runnable: Runnable component to which structure is to be added.
+        :type runnable: lems.sim.runnable.Runnable
 
-        @param structure: The structure object to be used to add
-        structure code in the runnable component.
-        @type structure: lems.model.structure.Structure
+        :param structure: The structure object to be used to add structure code in the runnable component.
+        :type structure: lems.model.structure.Structure
         """
         if self.debug: print("\n++++++++ Calling build_structure of %s with runnable %s, parent %s"%(component.id, runnable.id, runnable.parent))
         
@@ -339,15 +334,14 @@ class SimulationBuilder(LEMSBase):
         """
         Iterate over ForEach constructs and process nested elements.
 
-        @param component: Component model containing structure specifications.
-        @type component: lems.model.component.FatComponent
+        :param component: Component model containing structure specifications.
+        :type component: lems.model.component.FatComponent
 
-        @param runnable: Runnable component to which structure is to be added.
-        @type runnable: lems.sim.runnable.Runnable
+        :param runnable: Runnable component to which structure is to be added.
+        :type runnable: lems.sim.runnable.Runnable
 
-        @param foreach: The ForEach structure object to be used to add
-        structure code in the runnable component.
-        @type foreach: lems.model.structure.ForEach
+        :param foreach: The ForEach structure object to be used to add structure code in the runnable component.
+        :type foreach: lems.model.structure.ForEach
         """
         if self.debug: print("\n++++++++ Calling build_foreach of %s with runnable %s, parent %s, name_mappings: %s"%(component.id, runnable.id, runnable.parent, name_mappings))
 
@@ -401,27 +395,23 @@ class SimulationBuilder(LEMSBase):
 
         This method builds dynamics necessary for building child components.
 
-        @param component: Component model containing dynamics specifications.
-        @type component: lems.model.component.FatComponent
+        :param component: Component model containing dynamics specifications.
+        :type component: lems.model.component.FatComponent
 
-        @param runnable: Runnable component to which dynamics is to be added.
-        @type runnable: lems.sim.runnable.Runnable
+        :param runnable: Runnable component to which dynamics is to be added.
+        :type runnable: lems.sim.runnable.Runnable
 
-        @param regime: The dynamics regime to be used to generate
-        dynamics code in the runnable component.
-        @type regime: lems.model.dynamics.Regime
+        :param regime: The dynamics regime to be used to generate dynamics code in the runnable component.
+        :type regime: lems.model.dynamics.Regime
 
-        @param dynamics: Shared dynamics specifications.
-        @type dynamics: lems.model.dynamics.Regime
+        :param dynamics: Shared dynamics specifications.
+        :type dynamics: lems.model.dynamics.Regime
 
-        @raise SimBuildError: Raised when a time derivative expression refers
-        to an undefined variable.
+        :raises SimBuildError: Raised when a time derivative expression refers to an undefined variable.
 
-        @raise SimBuildError: Raised when there are invalid time
-        specifications for the <Run> statement.
+        :raises SimBuildError: Raised when there are invalid time specifications for the <Run> statement.
 
-        @raise SimBuildError: Raised when the component reference for <Run>
-        cannot be resolved.
+        :raises SimBuildError: Raised when the component reference for <Run> cannot be resolved.
         """
 
         if isinstance(regime, Dynamics) or regime.name == '':
@@ -525,27 +515,23 @@ class SimulationBuilder(LEMSBase):
 
         This method builds dynamics dependent on child components.
 
-        @param component: Component model containing dynamics specifications.
-        @type component: lems.model.component.FatComponent
+        :param component: Component model containing dynamics specifications.
+        :type component: lems.model.component.FatComponent
 
-        @param runnable: Runnable component to which dynamics is to be added.
-        @type runnable: lems.sim.runnable.Runnable
+        :param runnable: Runnable component to which dynamics is to be added.
+        :type runnable: lems.sim.runnable.Runnable
 
-        @param regime: The dynamics regime to be used to generate
-        dynamics code in the runnable component.
-        @type regime: lems.model.dynamics.Regime
+        :param regime: The dynamics regime to be used to generate dynamics code in the runnable component.
+        :type regime: lems.model.dynamics.Regime
 
-        @param dynamics: Shared dynamics specifications.
-        @type dynamics: lems.model.dynamics.Regime
+        :param dynamics: Shared dynamics specifications.
+        :type dynamics: lems.model.dynamics.Regime
 
-        @raise SimBuildError: Raised when a time derivative expression refers
-        to an undefined variable.
+        :raises SimBuildError: Raised when a time derivative expression refers to an undefined variable.
 
-        @raise SimBuildError: Raised when there are invalid time
-        specifications for the <Run> statement.
+        :raises SimBuildError: Raised when there are invalid time specifications for the <Run> statement.
 
-        @raise SimBuildError: Raised when the component reference for <Run>
-        cannot be resolved.
+        :raises SimBuildError: Raised when the component reference for <Run> cannot be resolved.
         """
 
         if isinstance(regime, Dynamics) or regime.name == '':
@@ -608,24 +594,20 @@ class SimulationBuilder(LEMSBase):
         Process simulation-related aspects to a runnable component based on the
         dynamics specifications in the component model.
 
-        @param component: Component model containing dynamics specifications.
-        @type component: lems.model.component.FatComponent
+        :param component: Component model containing dynamics specifications.
+        :type component: lems.model.component.FatComponent
 
-        @param runnable: Runnable component to which dynamics is to be added.
-        @type runnable: lems.sim.runnable.Runnable
+        :param runnable: Runnable component to which dynamics is to be added.
+        :type runnable: lems.sim.runnable.Runnable
 
-        @param simulation: The simulation-related aspects to be implemented
-        in the runnable component.
-        @type simulation: lems.model.simulation.Simulation
+        :param simulation: The simulation-related aspects to be implemented in the runnable component.
+        :type simulation: lems.model.simulation.Simulation
 
-        @raise SimBuildError: Raised when a time derivative expression refers
-        to an undefined variable
+        :raises SimBuildError: Raised when a time derivative expression refers to an undefined variable
 
-        @raise SimBuildError: Raised when there are invalid time
-        specifications for the <Run> statement.
+        :raises SimBuildError: Raised when there are invalid time specifications for the <Run> statement.
 
-        @raise SimBuildError: Raised when the component reference for <Run>
-        cannot be resolved.
+        :raises SimBuildError: Raised when the component reference for <Run> cannot be resolved.
         """
 
         # Process runs
@@ -644,12 +626,12 @@ class SimulationBuilder(LEMSBase):
         """
         Converts NeuroML arithmetic/logical operators to python equivalents.
 
-        @param op: NeuroML operator
-        @type op: string
+        :param op: NeuroML operator
+        :type op: string
 
 
-        @return: Python operator
-        @rtype: string
+        :return: Python operator
+        :rtype: string
         """
 
         if op == '.gt.':
@@ -679,12 +661,12 @@ class SimulationBuilder(LEMSBase):
         """
         Converts NeuroML arithmetic/logical functions to python equivalents.
 
-        @param func: NeuroML function
-        @type func: string
+        :param func: NeuroML function
+        :type func: string
 
 
-        @return: Python operator
-        @rtype: string
+        :return: Python operator
+        :rtype: string
         """
 
         if func == 'ln':
@@ -704,18 +686,17 @@ class SimulationBuilder(LEMSBase):
         """
         Recursively builds a Python expression from a parsed expression tree.
 
-        @param runnable: Runnable object to which this expression would be added.
-        @type runnable: lems.sim.runnable.Runnable
+        :param runnable: Runnable object to which this expression would be added.
+        :type runnable: lems.sim.runnable.Runnable
 
-        @param regime: Dynamics regime being built.
-        @type regime: lems.model.dynamics.Regime
+        :param regime: Dynamics regime being built.
+        :type regime: lems.model.dynamics.Regime
 
-        @param tree_node: Root node for the tree from which the expression
-        is to be built.
-        @type tree_node: lems.parser.expr.ExprNode
+        :param tree_node: Root node for the tree from which the expression is to be built.
+        :type tree_node: lems.parser.expr.ExprNode
 
-        @return: Generated Python expression.
-        @rtype: string
+        :return: Generated Python expression.
+        :rtype: string
         """
 
         component_type = self.model.component_types[runnable.component.type]
@@ -770,11 +751,11 @@ class SimulationBuilder(LEMSBase):
         """
         Build event handler code.
 
-        @param event_handler: Event handler object
-        @type event_handler: lems.model.dynamics.EventHandler
+        :param event_handler: Event handler object
+        :type event_handler: lems.model.dynamics.EventHandler
 
-        @return: Generated event handler code.
-        @rtype: list(string)
+        :return: Generated event handler code.
+        :rtype: list(string)
         """
 
         if isinstance(event_handler, OnCondition):
@@ -792,11 +773,11 @@ class SimulationBuilder(LEMSBase):
         """
         Build OnCondition event handler code.
 
-        @param on_condition: OnCondition event handler object
-        @type on_condition: lems.model.dynamics.OnCondition
+        :param on_condition: OnCondition event handler object
+        :type on_condition: lems.model.dynamics.OnCondition
 
-        @return: Generated OnCondition code
-        @rtype: list(string)
+        :return: Generated OnCondition code
+        :rtype: list(string)
         """
 
         on_condition_code = []
@@ -817,11 +798,11 @@ class SimulationBuilder(LEMSBase):
         """
         Build OnEvent event handler code.
 
-        @param on_event: OnEvent event handler object
-        @type on_event: lems.model.dynamics.OnEvent
+        :param on_event: OnEvent event handler object
+        :type on_event: lems.model.dynamics.OnEvent
 
-        @return: Generated OnEvent code
-        @rtype: list(string)
+        :return: Generated OnEvent code
+        :rtype: list(string)
         """
         on_event_code = []
 
@@ -847,11 +828,11 @@ class SimulationBuilder(LEMSBase):
         """
         Build OnStart start handler code.
 
-        @param on_start: OnStart start handler object
-        @type on_start: lems.model.dynamics.OnStart
+        :param on_start: OnStart start handler object
+        :type on_start: lems.model.dynamics.OnStart
 
-        @return: Generated OnStart code
-        @rtype: list(string)
+        :return: Generated OnStart code
+        :rtype: list(string)
         """
 
         on_start_code = []
@@ -867,11 +848,11 @@ class SimulationBuilder(LEMSBase):
         """
         Build OnEntry start handler code.
 
-        @param on_entry: OnEntry start handler object
-        @type on_entry: lems.model.dynamics.OnEntry
+        :param on_entry: OnEntry start handler object
+        :type on_entry: lems.model.dynamics.OnEntry
 
-        @return: Generated OnEntry code
-        @rtype: list(string)
+        :return: Generated OnEntry code
+        :rtype: list(string)
         """
 
         on_entry_code = []
@@ -890,11 +871,11 @@ class SimulationBuilder(LEMSBase):
         """
         Build event handler action code.
 
-        @param action: Event handler action object
-        @type action: lems.model.dynamics.Action
+        :param action: Event handler action object
+        :type action: lems.model.dynamics.Action
 
-        @return: Generated action code
-        @rtype: string
+        :return: Generated action code
+        :rtype: string
         """
 
         if isinstance(action, StateAssignment):
@@ -910,11 +891,11 @@ class SimulationBuilder(LEMSBase):
         """
         Build state assignment code.
 
-        @param state_assignment: State assignment object
-        @type state_assignment: lems.model.dynamics.StateAssignment
+        :param state_assignment: State assignment object
+        :type state_assignment: lems.model.dynamics.StateAssignment
 
-        @return: Generated state assignment code
-        @rtype: string
+        :return: Generated state assignment code
+        :rtype: string
         """
 
         return ['self.{0} = {1}'.format(\
@@ -927,11 +908,11 @@ class SimulationBuilder(LEMSBase):
         """
         Build event out code.
 
-        @param event_out: event out object
-        @type event_out: lems.model.dynamics.EventOut
+        :param event_out: event out object
+        :type event_out: lems.model.dynamics.EventOut
 
-        @return: Generated event out code
-        @rtype: string
+        :return: Generated event out code
+        :rtype: string
         """
 
         event_out_code = ['if "{0}" in self.event_out_callbacks:'.format(event_out.port),
@@ -944,11 +925,11 @@ class SimulationBuilder(LEMSBase):
         """
         Build regime transition code.
 
-        @param transition: Transition object
-        @type transition: lems.model.dynamics.Transition
+        :param transition: Transition object
+        :type transition: lems.model.dynamics.Transition
 
-        @return: Generated transition code
-        @rtype: string
+        :return: Generated transition code
+        :rtype: string
         """
 
         return ["self.new_regime = '{0}'".format(transition.regime)]
@@ -1040,12 +1021,11 @@ class SimulationBuilder(LEMSBase):
         Adds recording-related dynamics to a runnable component based on
         the dynamics specifications in the component model.
 
-        @param component: Component model containing dynamics specifications.
-        @type component: lems.model.component.FatComponent runnable: Runnable component to which dynamics is to be added.
-        @type runnable: lems.sim.runnable.Runnable
+        :param component: Component model containing dynamics specifications.
+        :type component: lems.model.component.FatComponent runnable: Runnable component to which dynamics is to be added.
+        :type runnable: lems.sim.runnable.Runnable
 
-        @raise SimBuildError: Raised when a target for recording could not be
-        found.
+        :raises SimBuildError: Raised when a target for recording could not be found.
         """
 
         simulation = component.simulation
@@ -1060,14 +1040,13 @@ def order_derived_parameters(component):
     """
     Finds ordering of derived_parameters.
 
-    @param component: Component containing derived parameters.
-    @type component: lems.model.component.Component
+    :param component: Component containing derived parameters.
+    :type component: lems.model.component.Component
 
-    @return: Returns ordered list of derived parameters.
-    @rtype: list(string)
+    :return: Returns ordered list of derived parameters.
+    :rtype: list(string)
 
-    @raise SimBuildError: Raised when a proper ordering of derived
-    parameters could not be found.
+    :raises SimBuildError: Raised when a proper ordering of derived parameters could not be found.
     """
 
     if len(component.derived_parameters) == 0:
@@ -1111,14 +1090,13 @@ def order_derived_variables(regime):
     """
     Finds ordering of derived_variables.
 
-    @param regime: Dynamics Regime containing derived variables.
-    @type regime: lems.model.dynamics.regime
+    :param regime: Dynamics Regime containing derived variables.
+    :type regime: lems.model.dynamics.regime
 
-    @return: Returns ordered list of derived variables.
-    @rtype: list(string)
+    :return: Returns ordered list of derived variables.
+    :rtype: list(string)
 
-    @raise SimBuildError: Raised when a proper ordering of derived
-    variables could not be found.
+    :raises SimBuildError: Raised when a proper ordering of derived variables could not be found.
     """
 
     ordering = []

@@ -1,9 +1,8 @@
 """
 Dimension and Unit definitions in terms of the fundamental SI units.
 
-@author: Gautham Ganapathy
-@organization: LEMS (http://neuroml.org/lems/, https://github.com/organizations/LEMS)
-@contact: gautham@lisphacker.org
+:author: Gautham Ganapathy
+:organization: LEMS (https://github.com/organizations/LEMS)
 """
 
 from lems.base.base import LEMSBase
@@ -17,14 +16,14 @@ class Include(LEMSBase):
         """
         Constructor.
 
-        @param filename: Name of the file.
-        @type name: str
+        :param filename: Name of the file.
+        :type name: str
 
         """
         
         self.file = filename
         """ Name of the file.
-        @type: str """
+        :type: str """
         
 
     def toxml(self):
@@ -43,49 +42,49 @@ class Dimension(LEMSBase):
         """
         Constructor.
 
-        @param name: Name of the dimension.
-        @type name: str
+        :param name: Name of the dimension.
+        :type name: str
 
-        @param params: Key arguments specifying powers for each of the 
+        :param params: Key arguments specifying powers for each of the 
         seven fundamental SI dimensions.
-        @type params: dict()
+        :type params: dict()
         """
         
         self.name = name
         """ Name of the dimension.
-        @type: str """
+        :type: str """
 
         self.m = params['m'] if 'm' in params else 0
         """ Power for the mass dimension.
-        @type: int """
+        :type: int """
         
         self.l = params['l'] if 'l' in params else 0
         """ Power for the length dimension.
-        @type: int """
+        :type: int """
         
         self.t = params['t'] if 't' in params else 0
         """ Power for the time dimension.
-        @type: int """
+        :type: int """
         
         self.i = params['i'] if 'i' in params else 0
         """ Power for the electic current dimension.
-        @type: int """
+        :type: int """
         
         self.k = params['k'] if 'k' in params else 0
         """ Power for the temperature dimension.
-        @type: int """
+        :type: int """
         
         self.n = params['n'] if 'n' in params else 0
         """ Power for the quantity dimension.
-        @type: int """
+        :type: int """
         
         self.j = params['j'] if 'j' in params else 0
         """ Power for the luminous intensity dimension.
-        @type: int """
+        :type: int """
 
         self.description = description
         """ Description of this dimension.
-        @type: str """
+        :type: str """
         
 
     def toxml(self):
@@ -117,31 +116,31 @@ class Unit(LEMSBase):
         
         self.name = name
         """ Name of the unit.
-        @type: str """
+        :type: str """
         
         self.symbol = symbol
         """ Symbol for the unit.
-        @type: str """
+        :type: str """
         
         self.dimension = dimension
         """ Dimension for the unit.
-        @type: str """
+        :type: str """
         
         self.power = power
         """ Scaling by power of 10.
-        @type: int """
+        :type: int """
         
         self.scale = scale
         """ Scaling.
-        @type: float """
+        :type: float """
         
         self.offset = offset
         """ Offset for non-zero units.
-        @type: float """
+        :type: float """
 
         self.description = description
         """ Description of this unit.
-        @type: str """
+        :type: str """
         
     def toxml(self):
         """

@@ -1,9 +1,8 @@
 """
 LEMS XML file format parser.
 
-@author: Gautham Ganapathy
-@organization: LEMS (http://neuroml.org/lems/, https://github.com/organizations/LEMS)
-@contact: gautham@lisphacker.org
+:author: Gautham Ganapathy
+:organization: LEMS (https://github.com/organizations/LEMS)
 """
 
 import xml.etree.ElementTree as xe
@@ -53,15 +52,15 @@ class LEMSXMLNode:
         self.children = list()
         for pyxmlchild in pyxmlnode:
             self.children.append(LEMSXMLNode(pyxmlchild))
-            
+
     def __str__(self):
         return 'LEMSXMLNode <{0} {1}>'.format(self.tag, self.attrib)
-        
+
 class LEMSFileParser(LEMSBase):
     """
     LEMS XML file format parser class.
     """
-    
+
     def __init__(self, model, include_dirs = [], include_includes=True):
         """
         Constructor.
@@ -71,28 +70,28 @@ class LEMSFileParser(LEMSBase):
 
         self.model = model
         """ Model instance to be populated from the parsed file.
-        @type: lems.model.model.Model """
+        :type: lems.model.model.Model """
 
         self.include_dirs = include_dirs
         """ List of directories to search for included files.
-        @type: list(str) """
+        :type: list(str) """
 
         self.tag_parse_table = None
         """ Dictionary of xml tags to parse methods
-        @type: dict(string -> function) """
+        :type: dict(string -> function) """
 
         self.valid_children = None
         """ Dictionary mapping each tag to it's list of valid child tags.
-        @type: dict(string -> string) """
+        :type: dict(string -> string) """
 
         self.id_counter = None
         """ Counter generator for generating unique ids.
-        @type: generator(int) """
-        
+        :type: generator(int) """
+
         self.include_includes = include_includes
         """ Whether to include LEMS definitions in <Include> elements
-        @type: boolean """
-        
+        :type: boolean """
+
         self.init_parser()
 
     def init_parser(self):
@@ -107,10 +106,10 @@ class LEMSFileParser(LEMSBase):
         self.valid_children['lems'] = ['component', 'componenttype',
                                        'target', 'include',
                                        'dimension', 'unit', 'assertion']
-                                       
+
         #TODO: make this generic for any domain specific language based on LEMS
         self.valid_children['neuroml'] = ['include', 'componenttype']
-                                       
+
         self.valid_children['componenttype'] = ['dynamics',
                                                 'child', 'children',
                                                 'componentreference',
@@ -124,18 +123,18 @@ class LEMSFileParser(LEMSBase):
                                                 'simulation', 'structure',
                                                 'text', 'attachments',
                                                 'constant', 'derivedparameter']
-                                                
+
         self.valid_children['dynamics'] = ['derivedvariable',
                                            'conditionalderivedvariable',
                                            'oncondition',
                                            'onevent', 'onstart',
                                            'statevariable', 'timederivative',
                                            'kineticscheme', 'regime']
-                                           
+
         self.valid_children['component'] = ['component']
-                                           
+
         self.valid_children['conditionalderivedvariable'] = ['case']
-        
+
         self.valid_children['regime'] = ['oncondition', 'onentry', 'timederivative']
         self.valid_children['oncondition'] = ['eventout', 'stateassignment', 'transition']
         self.valid_children['onentry'] = ['eventout', 'stateassignment', 'transition']
@@ -147,9 +146,9 @@ class LEMSFileParser(LEMSBase):
                                             'multiinstantiate',
                                             'with',
                                             'tunnel']
-                                       
-        self.valid_children['foreach'] = ['foreach', 'eventconnection']     
-                                            
+
+        self.valid_children['foreach'] = ['foreach', 'eventconnection']
+
         self.valid_children['simulation'] = ['record', 'eventrecord', 'run',
                                              'datadisplay', 'datawriter', 'eventwriter']
 
@@ -160,7 +159,7 @@ class LEMSFileParser(LEMSBase):
         self.tag_parse_table['childinstance'] = self.parse_child_instance
         self.tag_parse_table['children'] = self.parse_children
         self.tag_parse_table['component'] = self.parse_component
-        self.tag_parse_table['componentreference'] = self.parse_component_reference   
+        self.tag_parse_table['componentreference'] = self.parse_component_reference
         self.tag_parse_table['componentrequirement'] = self.parse_component_requirement
         self.tag_parse_table['componenttype'] = self.parse_component_type
         self.tag_parse_table['constant'] = self.parse_constant
@@ -195,7 +194,7 @@ class LEMSFileParser(LEMSBase):
         self.tag_parse_table['eventrecord'] = self.parse_event_record
         self.tag_parse_table['regime'] = self.parse_regime
         self.tag_parse_table['requirement'] = self.parse_requirement
-        self.tag_parse_table['instancerequirement'] = self.parse_instance_requirement     
+        self.tag_parse_table['instancerequirement'] = self.parse_instance_requirement
         self.tag_parse_table['run'] = self.parse_run
         #self.tag_parse_table['show'] = self.parse_show
         self.tag_parse_table['simulation'] = self.parse_simulation
@@ -219,7 +218,7 @@ class LEMSFileParser(LEMSBase):
         self.current_structure = None
         self.current_simulation = None
         self.current_component = None
-        
+
         def counter():
             count = 1
             while True:
@@ -228,15 +227,15 @@ class LEMSFileParser(LEMSBase):
 
         self.id_counter = counter()
 
-        
+
     def process_nested_tags(self, node, tag = ''):
         """
         Process child tags.
 
-        @param node: Current node being parsed.
-        @type node: xml.etree.Element
+        :param node: Current node being parsed.
+        :type node: xml.etree.Element
 
-        @raise ParseError: Raised when an unexpected nested tag is found.
+        :raises ParseError: Raised when an unexpected nested tag is found.
         """
         ##print("---------Processing: %s, %s"%(node.tag,tag))
 
@@ -244,7 +243,7 @@ class LEMSFileParser(LEMSBase):
             t = node.ltag
         else:
             t = tag.lower()
-        
+
         for child in node.children:
             self.xml_node_stack = [child] + self.xml_node_stack
 
@@ -263,19 +262,18 @@ class LEMSFileParser(LEMSBase):
         """
         Parse a string containing LEMS XML text.
 
-        @param xmltext: String containing LEMS XML formatted text.
-        @type xmltext: str
+        :param xmltext: String containing LEMS XML formatted text.
+        :type xmltext: str
         """
-        
+
         xml = LEMSXMLNode(xe.XML(xmltext))
 
         if xml.ltag != 'lems' and xml.ltag != 'neuroml':
             raise ParseError('<Lems> expected as root element (or even <neuroml>), found: {0}'.format(xml.ltag))
-        '''
+
         if xml.ltag == 'lems':
             if 'description' in xml.lattrib:
-                self.description = xml.lattrib['description']
-        '''
+                self.model.description = xml.lattrib['description']
 
         self.process_nested_tags(xml)
 
@@ -284,7 +282,7 @@ class LEMSFileParser(LEMSBase):
         """
         Raise a parse error.
         """
-        
+
         s = 'Parser error in '
 
         self.xml_node_stack.reverse()
@@ -359,8 +357,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <Assertion>
 
-        @param node: Node containing the <Assertion> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Assertion> element
+        :type node: xml.etree.Element
         """
 
         print('TODO - <Assertion>')
@@ -370,8 +368,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <Attachments>
 
-        @param node: Node containing the <Attachments> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Attachments> element
+        :type node: xml.etree.Element
         """
 
         if 'name' in node.lattrib:
@@ -392,8 +390,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <Child>
 
-        @param node: Node containing the <Child> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Child> element
+        :type node: xml.etree.Element
         """
 
         if 'name' in node.lattrib:
@@ -406,14 +404,15 @@ class LEMSFileParser(LEMSBase):
         else:
             self.raise_error("Child '{0}' must specify a type.", name)
 
-        self.current_component_type.add_children(Children(name, type_, False))
+        description = node.lattrib.get('description', '')
+        self.current_component_type.add_children(Children(name, type_, description, multiple=False))
 
     def parse_child_instance(self, node):
         """
         Parses <ChildInstance>
 
-        @param node: Node containing the <ChildInstance> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <ChildInstance> element
+        :type node: xml.etree.Element
         """
 
         if 'component' in node.lattrib:
@@ -427,8 +426,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <Children>
 
-        @param node: Node containing the <Children> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Children> element
+        :type node: xml.etree.Element
         """
 
         if 'name' in node.lattrib:
@@ -441,19 +440,20 @@ class LEMSFileParser(LEMSBase):
         else:
             self.raise_error("Children '{0}' must specify a type.", name)
 
-        self.current_component_type.add_children(Children(name, type_, True))
+        description = node.lattrib.get('description', '')
+        self.current_component_type.add_children(Children(name, type_, description, multiple=True))
 
     def parse_component_by_typename(self, node, type_):
         """
         Parses components defined directly by component name.
 
-        @param node: Node containing the <Component> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Component> element
+        :type node: xml.etree.Element
 
-        @param type_: Type of this component.
-        @type type_: string
+        :param type_: Type of this component.
+        :type type_: string
 
-        @raise ParseError: Raised when the component does not have an id.
+        :raises ParseError: Raised when the component does not have an id.
         """
         #print('Parsing component {0} by typename {1}'.format(node, type_))
         if 'id' in node.lattrib:
@@ -472,7 +472,7 @@ class LEMSFileParser(LEMSBase):
         if self.current_component:
             component.set_parent_id(self.current_component.id)
             self.current_component.add_child(component)
-            
+
         else:
             self.model.add_component(component)
 
@@ -489,8 +489,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <Component>
 
-        @param node: Node containing the <Component> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Component> element
+        :type node: xml.etree.Element
         """
 
         if 'id' in node.lattrib:
@@ -512,7 +512,7 @@ class LEMSFileParser(LEMSBase):
             self.current_component.add_child(component)
         else:
             self.model.add_component(component)
-                
+
         for key in node.attrib:
             if key.lower() not in ['id', 'type']:
                 component.set_parameter(key, node.attrib[key])
@@ -526,8 +526,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <ComponentReference>
 
-        @param node: Node containing the <ComponentTypeRef> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <ComponentTypeRef> element
+        :type node: xml.etree.Element
         """
 
         if 'name' in node.lattrib:
@@ -541,7 +541,7 @@ class LEMSFileParser(LEMSBase):
         else:
             self.raise_error('<ComponentReference> must specify a type for the ' +
                              'reference.')
-                             
+
         if 'local' in node.lattrib:
             local = node.lattrib['local']
         else:
@@ -553,11 +553,10 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <ComponentType>
 
-        @param node: Node containing the <ComponentType> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <ComponentType> element
+        :type node: xml.etree.Element
 
-        @raise ParseError: Raised when the component type does not have a
-        name.
+        :raises ParseError: Raised when the component type does not have a name.
         """
 
         try:
@@ -586,8 +585,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <Constant>
 
-        @param node: Node containing the <Constant> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Constant> element
+        :type node: xml.etree.Element
         """
 
         try:
@@ -602,7 +601,10 @@ class LEMSFileParser(LEMSBase):
         except:
             self.raise_error("Constant '{0}' must have a value.", name)
 
-        description = node.lattrib.get('description', '')
+        if 'description' in node.lattrib:
+            description = node.lattrib['description']
+        else:
+            description = None
 
         constant = Constant(name, value, dimension, description)
 
@@ -615,8 +617,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <DataDisplay>
 
-        @param node: Node containing the <DataDisplay> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <DataDisplay> element
+        :type node: xml.etree.Element
         """
 
         if 'title' in node.lattrib:
@@ -635,8 +637,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <DataWriter>
 
-        @param node: Node containing the <DataWriter> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <DataWriter> element
+        :type node: xml.etree.Element
         """
 
         if 'path' in node.lattrib:
@@ -656,8 +658,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <EventWriter>
 
-        @param node: Node containing the <EventWriter> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <EventWriter> element
+        :type node: xml.etree.Element
         """
 
         if 'path' in node.lattrib:
@@ -670,7 +672,7 @@ class LEMSFileParser(LEMSBase):
         else:
             self.raise_error("Event writer for '{0}' must specify a filename.",
                              path)
-                             
+
         if 'format' in node.lattrib:
             format = node.lattrib['format']
         else:
@@ -683,8 +685,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <DerivedParameter>
 
-        @param node: Node containing the <DerivedParameter> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <DerivedParameter> element
+        :type node: xml.etree.Element
         """
 
         #if self.current_context.context_type != Context.COMPONENT_TYPE:
@@ -706,22 +708,27 @@ class LEMSFileParser(LEMSBase):
         else:
             value = None
 
+        # TODO: this is not used in the DerivedParameter constructor
         if 'select' in node.lattrib:
             select = node.lattrib['select']
         else:
             select = None
 
-        self.current_component_type.add_derived_parameter(DerivedParameter(name, value,
-                                                                    dimension, select))
+        if 'description' in node.lattrib:
+            description = node.lattrib['description']
+        else:
+            description = None
+
+        self.current_component_type.add_derived_parameter(DerivedParameter(name, value, dimension, description))
 
     def parse_derived_variable(self, node):
         """
         Parses <DerivedVariable>
 
-        @param node: Node containing the <DerivedVariable> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <DerivedVariable> element
+        :type node: xml.etree.Element
 
-        @raise ParseError: Raised when no name of specified for the derived variable.
+        :raises ParseError: Raised when no name of specified for the derived variable.
         """
 
         if 'name' in node.lattrib:
@@ -737,16 +744,16 @@ class LEMSFileParser(LEMSBase):
                 params[attr_name] = node.lattrib[attr_name]
 
         self.current_regime.add_derived_variable(DerivedVariable(name, **params))
-        
-        
+
+
     def parse_conditional_derived_variable(self, node):
         """
         Parses <ConditionalDerivedVariable>
 
-        @param node: Node containing the <ConditionalDerivedVariable> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <ConditionalDerivedVariable> element
+        :type node: xml.etree.Element
 
-        @raise ParseError: Raised when no name or value is specified for the conditional derived variable.
+        :raises ParseError: Raised when no name or value is specified for the conditional derived variable.
         """
 
         if 'name' in node.lattrib:
@@ -755,41 +762,41 @@ class LEMSFileParser(LEMSBase):
             name = node.lattrib['exposure']
         else:
             self.raise_error('<ConditionalDerivedVariable> must specify a name')
-            
+
         if 'exposure' in node.lattrib:
             exposure = node.lattrib['exposure']
         else:
             exposure = None
-            
+
         if 'dimension' in node.lattrib:
             dimension = node.lattrib['dimension']
         else:
             dimension = None
 
         conditional_derived_variable = ConditionalDerivedVariable(name, dimension, exposure)
-        
+
         self.current_regime.add_conditional_derived_variable(conditional_derived_variable)
-        
+
         self.current_conditional_derived_variable = conditional_derived_variable
-        
+
         self.process_nested_tags(node)
-        
-        
+
+
     def parse_case(self, node):
         """
         Parses <Case>
 
-        @param node: Node containing the <Case> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Case> element
+        :type node: xml.etree.Element
 
-        @raise ParseError: When no condition or value is specified
+        :raises ParseError: When no condition or value is specified
         """
-        
+
         try:
             condition = node.lattrib['condition']
         except:
             condition = None
-            
+
         try:
             value = node.lattrib['value']
         except:
@@ -801,11 +808,10 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <Dimension>
 
-        @param node: Node containing the <Dimension> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Dimension> element
+        :type node: xml.etree.Element
 
-        @raise ParseError: When the name is not a string or if the
-        dimension is not a signed integer.
+        :raises ParseError: When the name is not a string or if the dimension is not a signed integer.
         """
 
         try:
@@ -825,8 +831,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <Dynamics>
 
-        @param node: Node containing the <Behaviour> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Behaviour> element
+        :type node: xml.etree.Element
         """
 
         self.current_dynamics = self.current_component_type.dynamics
@@ -839,8 +845,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <EventConnection>
 
-        @param node: Node containing the <EventConnection> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <EventConnection> element
+        :type node: xml.etree.Element
         """
 
         if 'from' in node.lattrib:
@@ -865,8 +871,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <EventOut>
 
-        @param node: Node containing the <EventOut> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <EventOut> element
+        :type node: xml.etree.Element
         """
 
         try:
@@ -882,8 +888,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <EventPort>
 
-        @param node: Node containing the <EventPort> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <EventPort> element
+        :type node: xml.etree.Element
         """
 
         if 'name' in node.lattrib:
@@ -902,18 +908,17 @@ class LEMSFileParser(LEMSBase):
                               'or \'out\''))
 
         description = node.lattrib.get('description', '')
-        
+
         self.current_component_type.add_event_port(EventPort(name, direction, description))
 
     def parse_exposure(self, node):
         """
         Parses <Exposure>
 
-        @param node: Node containing the <Exposure> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Exposure> element
+        :type node: xml.etree.Element
 
-        @raise ParseError: Raised when the exposure name is not
-        being defined in the context of a component type.
+        :raises ParseError: Raised when the exposure name is not being defined in the context of a component type.
         """
 
         if self.current_component_type == None:
@@ -938,8 +943,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <Fixed>
 
-        @param node: Node containing the <Fixed> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Fixed> element
+        :type node: xml.etree.Element
         """
 
         try:
@@ -953,17 +958,17 @@ class LEMSFileParser(LEMSBase):
             self.raise_error("Fixed parameter '{0}'must specify a value.", parameter)
 
         description = node.lattrib.get('description', '')
-        
+
         self.current_component_type.add_parameter(Fixed(parameter, value, description))
 
     def parse_for_each(self, node):
         """
         Parses <ForEach>
 
-        @param node: Node containing the <ForEach> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <ForEach> element
+        :type node: xml.etree.Element
         """
-        
+
         if self.current_structure == None:
             self.raise_error('<ForEach> can only be made within ' +
                              'a structure definition')
@@ -984,7 +989,7 @@ class LEMSFileParser(LEMSBase):
         fe = ForEach(instances, as_)
         self.current_structure.add_for_each(fe)
         self.current_structure = fe
-        
+
         self.process_nested_tags(node)
 
         self.current_structure = old_structure
@@ -993,10 +998,10 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <Include>
 
-        @param node: Node containing the <Include> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Include> element
+        :type node: xml.etree.Element
 
-        @raise ParseError: Raised when the file to be included is not specified. 
+        :raises ParseError: Raised when the file to be included is not specified.
         """
         if not self.include_includes:
             if self.model.debug: print("Ignoring included LEMS file: %s"%node.lattrib['file'])
@@ -1016,8 +1021,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <KineticScheme>
 
-        @param node: Node containing the <KineticScheme> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <KineticScheme> element
+        :type node: xml.etree.Element
         """
 
         if 'name' in node.lattrib:
@@ -1068,8 +1073,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <Link>
 
-        @param node: Node containing the <Link> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Link> element
+        :type node: xml.etree.Element
         """
 
         if 'name' in node.lattrib:
@@ -1090,8 +1095,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <MultiInstantiate>
 
-        @param node: Node containing the <MultiInstantiate> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <MultiInstantiate> element
+        :type node: xml.etree.Element
         """
 
         if 'component' in node.lattrib:
@@ -1111,15 +1116,15 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <OnCondition>
 
-        @param node: Node containing the <OnCondition> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <OnCondition> element
+        :type node: xml.etree.Element
         """
 
         try:
             test = node.lattrib['test']
         except:
             self.raise_error('<OnCondition> must specify a test.')
-            
+
         event_handler = OnCondition(test)
 
         self.current_regime.add_event_handler(event_handler)
@@ -1127,13 +1132,13 @@ class LEMSFileParser(LEMSBase):
         self.current_event_handler = event_handler
         self.process_nested_tags(node)
         self.current_event_handler = None
-        
+
     def parse_on_entry(self, node):
         """
         Parses <OnEntry>
 
-        @param node: Node containing the <OnEntry> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <OnEntry> element
+        :type node: xml.etree.Element
         """
 
         event_handler = OnEntry()
@@ -1149,15 +1154,15 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <OnEvent>
 
-        @param node: Node containing the <OnEvent> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <OnEvent> element
+        :type node: xml.etree.Element
         """
 
         try:
             port = node.lattrib['port']
         except:
             self.raise_error('<OnEvent> must specify a port.')
-            
+
         event_handler = OnEvent(port)
 
         self.current_regime.add_event_handler(event_handler)
@@ -1170,8 +1175,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <OnStart>
 
-        @param node: Node containing the <OnStart> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <OnStart> element
+        :type node: xml.etree.Element
         """
 
         event_handler = OnStart()
@@ -1186,12 +1191,11 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <Parameter>
 
-        @param node: Node containing the <Parameter> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Parameter> element
+        :type node: xml.etree.Element
 
-        @raise ParseError: Raised when the parameter does not have a name.
-        @raise ParseError: Raised when the parameter does not have a
-        dimension.
+        :raises ParseError: Raised when the parameter does not have a name.
+        :raises ParseError: Raised when the parameter does not have a dimension.
         """
 
         if self.current_component_type == None:
@@ -1209,7 +1213,8 @@ class LEMSFileParser(LEMSBase):
             self.raise_error("Parameter '{0}' has no dimension",
                              name)
 
-        parameter = Parameter(name, dimension)
+        description = node.lattrib.get('description', '')
+        parameter = Parameter(name, dimension, description)
 
         self.current_component_type.add_parameter(parameter)
 
@@ -1217,12 +1222,11 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <Property>
 
-        @param node: Node containing the <Property> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Property> element
+        :type node: xml.etree.Element
 
-        @raise ParseError: Raised when the property does not have a name.
-        @raise ParseError: Raised when the property does not have a
-        dimension.
+        :raises ParseError: Raised when the property does not have a name.
+        :raises ParseError: Raised when the property does not have a dimension.
         """
 
         if self.current_component_type == None:
@@ -1239,22 +1243,22 @@ class LEMSFileParser(LEMSBase):
         except:
             self.raise_error("Property '{0}' has no dimension",
                              name)
-                             
+
         default_value = node.lattrib.get('defaultvalue', None)
-        
+
         property = Property(name, dimension, default_value=default_value)
 
         self.current_component_type.add_property(property)
-        
-        
+
+
     def parse_index_parameter(self, node):
         """
         Parses <IndexParameter>
 
-        @param node: Node containing the <IndexParameter> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <IndexParameter> element
+        :type node: xml.etree.Element
 
-        @raise ParseError: Raised when the IndexParameter does not have a name.
+        :raises ParseError: Raised when the IndexParameter does not have a name.
         """
 
         if self.current_component_type == None:
@@ -1270,16 +1274,16 @@ class LEMSFileParser(LEMSBase):
         index_parameter = IndexParameter(name)
 
         self.current_component_type.add_index_parameter(index_parameter)
-        
-        
+
+
     def parse_tunnel(self, node):
         """
         Parses <Tunnel>
 
-        @param node: Node containing the <Tunnel> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Tunnel> element
+        :type node: xml.etree.Element
 
-        @raise ParseError: Raised when the Tunnel does not have a name.
+        :raises ParseError: Raised when the Tunnel does not have a name.
         """
 
         try:
@@ -1307,14 +1311,14 @@ class LEMSFileParser(LEMSBase):
         tunnel = Tunnel(name, end_a, end_b, component_a, component_b)
 
         self.current_structure.add_tunnel(tunnel)
-        
+
 
     def parse_path(self, node):
         """
         Parses <Path>
 
-        @param node: Node containing the <Path> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Path> element
+        :type node: xml.etree.Element
         """
 
         if 'name' in node.lattrib:
@@ -1330,8 +1334,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <Record>
 
-        @param node: Node containing the <Record> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Record> element
+        :type node: xml.etree.Element
         """
 
         if self.current_simulation == None:
@@ -1353,8 +1357,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <EventRecord>
 
-        @param node: Node containing the <EventRecord> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <EventRecord> element
+        :type node: xml.etree.Element
         """
 
         if self.current_simulation == None:
@@ -1378,8 +1382,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <Regime>
 
-        @param node: Node containing the <Behaviour> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Behaviour> element
+        :type node: xml.etree.Element
         """
 
         if 'name' in node.lattrib:
@@ -1405,8 +1409,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <Requirement>
 
-        @param node: Node containing the <Requirement> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Requirement> element
+        :type node: xml.etree.Element
         """
 
         if 'name' in node.lattrib:
@@ -1419,14 +1423,15 @@ class LEMSFileParser(LEMSBase):
         else:
             self.raise_error("Requirement \{0}' must specify a dimension.", name)
 
-        self.current_component_type.add_requirement(Requirement(name, dimension))
-    
+        description = node.lattrib.get('description', '')
+        self.current_component_type.add_requirement(Requirement(name, dimension, description))
+
     def parse_component_requirement(self, node):
         """
         Parses <ComponentRequirement>
 
-        @param node: Node containing the <ComponentRequirement> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <ComponentRequirement> element
+        :type node: xml.etree.Element
         """
 
         if 'name' in node.lattrib:
@@ -1435,13 +1440,13 @@ class LEMSFileParser(LEMSBase):
             self.raise_error('<ComponentRequirement> must specify a name')
 
         self.current_component_type.add_component_requirement(ComponentRequirement(name))
-    
+
     def parse_instance_requirement(self, node):
         """
         Parses <InstanceRequirement>
 
-        @param node: Node containing the <InstanceRequirement> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <InstanceRequirement> element
+        :type node: xml.etree.Element
         """
 
         if 'name' in node.lattrib:
@@ -1455,13 +1460,13 @@ class LEMSFileParser(LEMSBase):
             self.raise_error("InstanceRequirement \{0}' must specify a type.", name)
 
         self.current_component_type.add_instance_requirement(InstanceRequirement(name, type))
-    
+
     def parse_run(self, node):
         """
         Parses <Run>
 
-        @param node: Node containing the <Run> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Run> element
+        :type node: xml.etree.Element
         """
 
         if 'component' in node.lattrib:
@@ -1492,8 +1497,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <Show>
 
-        @param node: Node containing the <Show> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Show> element
+        :type node: xml.etree.Element
         """
 
         pass
@@ -1502,8 +1507,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <Simulation>
 
-        @param node: Node containing the <Simulation> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Simulation> element
+        :type node: xml.etree.Element
         """
 
         self.current_simulation = self.current_component_type.simulation
@@ -1516,8 +1521,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <StateAssignment>
 
-        @param node: Node containing the <StateAssignment> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <StateAssignment> element
+        :type node: xml.etree.Element
         """
 
         if 'variable' in node.lattrib:
@@ -1540,11 +1545,10 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <StateVariable>
 
-        @param node: Node containing the <StateVariable> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <StateVariable> element
+        :type node: xml.etree.Element
 
-        @raise ParseError: Raised when the state variable is not
-        being defined in the context of a component type.
+        :raises ParseError: Raised when the state variable is not being defined in the context of a component type.
         """
 
         if 'name' in node.lattrib:
@@ -1568,8 +1572,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <Structure>
 
-        @param node: Node containing the <Structure> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Structure> element
+        :type node: xml.etree.Element
         """
 
         self.current_structure = self.current_component_type.structure
@@ -1580,8 +1584,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <Target>
 
-        @param node: Node containing the <Target> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Target> element
+        :type node: xml.etree.Element
         """
 
         self.model.add_target(node.lattrib['component'])
@@ -1590,8 +1594,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <Text>
 
-        @param node: Node containing the <Text> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Text> element
+        :type node: xml.etree.Element
         """
 
         if 'name' in node.lattrib:
@@ -1607,11 +1611,10 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <TimeDerivative>
 
-        @param node: Node containing the <TimeDerivative> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <TimeDerivative> element
+        :type node: xml.etree.Element
 
-        @raise ParseError: Raised when the time derivative does not hava a variable
-        name of a value.
+        :raises ParseError: Raised when the time derivative does not hava a variable name of a value.
         """
 
         if 'variable' in node.lattrib:
@@ -1631,8 +1634,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <Transition>
 
-        @param node: Node containing the <Transition> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Transition> element
+        :type node: xml.etree.Element
         """
 
         if 'regime' in node.lattrib:
@@ -1648,13 +1651,11 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <Unit>
 
-        @param node: Node containing the <Unit> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <Unit> element
+        :type node: xml.etree.Element
 
-        @raise ParseError: When the name is not a string or the unit
-        specfications are incorrect.
-
-        @raise ModelError: When the unit refers to an undefined dimension.
+        :raises ParseError: When the name is not a string or the unit specfications are incorrect.
+        :raises ModelError: When the unit refers to an undefined dimension.
         """
 
         try:
@@ -1672,12 +1673,12 @@ class LEMSFileParser(LEMSBase):
             name = node.lattrib['name']
         else:
             name = ''
-            
+
         if 'scale' in node.lattrib:
             scale = float(node.lattrib['scale'])
         else:
             scale = 1.0
-            
+
         if 'offset' in node.lattrib:
             offset = float(node.lattrib['offset'])
         else:
@@ -1689,8 +1690,8 @@ class LEMSFileParser(LEMSBase):
         """
         Parses <With>
 
-        @param node: Node containing the <With> element
-        @type node: xml.etree.Element
+        :param node: Node containing the <With> element
+        :type node: xml.etree.Element
         """
 
         if 'instance' in node.lattrib:
@@ -1711,4 +1712,3 @@ class LEMSFileParser(LEMSBase):
                              'target instance')
 
         self.current_structure.add_with(With(instance, as_, list, index))
-

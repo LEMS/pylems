@@ -9,6 +9,7 @@ python:
 # command to install dependencies
 install:
   - "pip install ."
+  - "pip install pytest"
   - git clone https://github.com/NeuroML/NeuroML2
   - cd NeuroML2
   # Use the development branch of NeuroML2
@@ -20,7 +21,7 @@ install:
 script:
   ###       Run main python unit tests (not many yet...)
 
-  - nosetests -vs
+  - pytest -v
 
   ###      Try running "standard" LEMS examples
   - ./pylems examples/example1.xml -nogui
