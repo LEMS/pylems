@@ -7,7 +7,11 @@ Model storage.
 
 import os
 from os.path import dirname
-from typing import List, Dict
+# For python versions where typing isn't available at all
+try:
+    from typing import List, Dict
+except ImportError:
+    pass
 
 from lems import __schema_location__, __schema_version__
 from lems.base.base import LEMSBase
