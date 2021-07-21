@@ -34,15 +34,16 @@
 
     <ComponentType name="iaf2" extends="iaf1">
         <Fixed parameter="threshold" value="-45mV" />
+        <Exposure name="v" dimension="voltage" />
     </ComponentType>
+    <Component id="ctd" type="iaf2" threshold="-30 mV" refractoryPeriod="2 ms" capacitance="1uF" />
 
-    <ComponentType name="iaf3" extends="iaf1">
+    <ComponentType name="iaf3" extends="iaf2">
         <Parameter name="leakConductance" dimension="conductance" />
         <Parameter name="leakReversal" dimension="voltage" />
         <Parameter name="deltaV" dimension="voltage" />
 
         <EventPort name="spikes-in" direction="in" />
-        <Exposure name="v" dimension="voltage" />
 
         <Dynamics>
             <StateVariable name="v" exposure="v" dimension="voltage" />

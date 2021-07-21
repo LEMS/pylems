@@ -22,6 +22,14 @@ class TestExposure(unittest.TestCase):
         model.import_from_file(file_name)
         exp_list = model.list_exposures()
         for c, es in exp_list.items():
+            # iaf1 does not define v as an exposure
+            if c.id == "ctb":
+                self.assertTrue('v' not in es)
+            # iaf2 extends iaf1 and adds the v exposure
+            if c.id == "ctd":
+                self.assertTrue('v' in es)
+                self.assertTrue('tsince' not in es)
+            # iaf3 extends iaf2 so inherits the v exposure
             if c.id == "celltype_c":
                 self.assertTrue('v' in es)
                 self.assertTrue('tsince' not in es)
