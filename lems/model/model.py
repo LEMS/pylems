@@ -848,7 +848,7 @@ class Model(LEMSBase):
         return numeric_value
 
     def list_exposures(self, substring=None):
-        # type: (str) -> Dict[Component, List[Exposure]]
+        # type: (str) -> Dict[Component, Map]
         """Get exposures from model.
 
         :param substring: substring to match for in component names
@@ -871,10 +871,26 @@ class Model(LEMSBase):
             comp_list = self.components
 
         for comp in comp_list:
+            cur_type = self.component_types[comp.type]
+            allexps = Map()
+            # Add exposures of the component type itself
             try:
-                exposures[comp] = self.component_types[comp.type].exposures
+                allexps.update(self.component_types[comp.type].exposures)
             except KeyError:
-                pass  # found a component without any exposures
+                if self.debug:
+                    print("No exposures found for {}".format(comp.type))
+
+            # Also get exposures inherited from parents
+            while cur_type.extends:
+                parent = cur_type.extends
+                try:
+                    allexps.update(self.component_types[parent].exposures)
+                except KeyError:
+                    if self.debug:
+                        print("No exposures found for {}".format(parent.type))
+                cur_type = self.component_types[parent]
+            exposures[comp] = allexps
+
         return exposures
 
     def get_recording_path(self, comp, exposures):
