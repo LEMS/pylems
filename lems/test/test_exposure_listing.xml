@@ -1,0 +1,81 @@
+<Lems>
+    <!-- Dummy file for test -->
+    <Target component="sim1" />
+
+    <Dimension name="voltage" m="1" l="2" t="-3" i="-1" />
+    <Dimension name="time" t="1" />
+    <Dimension name="per_time" t="-1" />
+    <Dimension name="conductance" m="-1" l="-2" t="3" i="2" />
+    <Dimension name="capacitance" m="-1" l="-2" t="4" i="2" />
+    <Dimension name="current" i="1" />
+
+    <Unit symbol="mV" dimension="voltage" power="-3" />
+    <Unit symbol="ms" dimension="time" power="-3" />
+    <Unit symbol="pS" dimension="conductance" power="-12" />
+    <Unit symbol="nS" dimension="conductance" power="-9" />
+    <Unit symbol="uF" dimension="capacitance" power="-6" />
+    <Unit symbol="nF" dimension="capacitance" power="-9" />
+    <Unit symbol="pF" dimension="capacitance" power="-12" />
+    <Unit symbol="per_ms" dimension="per_time" power="3" />
+    <Unit symbol="pA" dimension="current" power="-12" />
+
+    <ComponentType name="Network">
+        <Children name="populations" type="Population"/>
+    </ComponentType>
+
+
+    <ComponentType name="Population">
+        <ComponentReference name="component" type="Component"/>
+        <Parameter name="size" dimension="none"/>
+        <Structure>
+            <MultiInstantiate number="size" component="component"/>
+        </Structure>
+    </ComponentType>
+
+    <ComponentType name="Simulation">
+        <Parameter name="length" dimension="time"/>
+        <Parameter name="step" dimension="time"/>
+
+        <ComponentReference name="target" type="Component"/>
+
+        <Dynamics>
+            <StateVariable name="t" dimension="time"/>
+        </Dynamics>
+
+        <Simulation>
+            <Run component="target" variable="t" increment="step" total="length"/>
+        </Simulation>
+    </ComponentType>
+
+    <ComponentType name="iaf1">
+        <Parameter name="threshold" dimension="voltage" />
+        <Parameter name="refractoryPeriod" dimension="time" />
+        <Parameter name="capacitance" dimension="capacitance" />
+        <Parameter name="leakConductance" dimension="conductance" />
+        <Parameter name="leakReversal" dimension="voltage" />
+        <Parameter name="deltaV" dimension="voltage" />
+
+        <Exposure name="v" dimension="voltage" />
+        <EventPort name="spikes-in" direction="in" />
+        <Dynamics>
+            <StateVariable name="v" exposure="v" dimension="voltage" />
+            <TimeDerivative variable="v" value="leakConductance * (leakReversal - v) / capacitance" />
+
+            <OnEvent port="spikes-in">
+                <StateAssignment variable="v" value="v + deltaV" />
+            </OnEvent>
+        </Dynamics>
+    </ComponentType>
+
+    <ComponentType name="iaf2" extends="iaf1" />
+
+    <!-- dummy components with nonsensical values -->
+    <Component id="example_iaf1_cell" type="iaf1" threshold="-30 mV" refractoryPeriod="2 ms" capacitance="1uF" leakConductance="1nS" leakReversal="1mV" deltaV="1mV"/>
+    <Component id="example_iaf2_cell" type="iaf2" threshold="-30 mV" refractoryPeriod="2 ms" capacitance="1uF" leakConductance="1nS" leakReversal="1mV" deltaV="1mV"/>
+
+    <Network id="net1">
+        <Population id="p1" component="example_iaf1_cell" size="1" />
+        <Population id="p1" component="example_iaf2_cell" size="1" />
+    </Network>
+    <Simulation id="sim1" length="80ms" step="0.01ms" target="net1" />
+</Lems>
