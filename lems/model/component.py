@@ -13,6 +13,7 @@ from lems.model.dynamics import Dynamics
 from lems.model.structure import Structure
 from lems.model.simulation import Simulation
 from lems.parser.expr import ExprParser
+from xml.sax.saxutils import quoteattr
 
 class Parameter(LEMSBase):
     """
@@ -210,7 +211,7 @@ class DerivedParameter(LEMSBase):
 
         return '<DerivedParameter name="{0}"'.format(self.name) +\
           (' dimension="{0}"'.format(self.dimension) if self.dimension else '') +\
-          (' description="{0}"'.format(self.description) if self.description else '') +\
+          (' description={0}'.format(quoteattr(self.description) if self.description else '""')) +\
           (' value="{0}"'.format(self.value) if self.value else '') +\
           '/>'
 
@@ -424,7 +425,7 @@ class Children(LEMSBase):
         Exports this object into a LEMS XML object
         """
 
-        return '<{3} name="{0}" type="{1}" description="{2}"/>'.format(self.name, self.type, self.description, 'Children' if self.multiple else 'Child')
+        return '<{3} name="{0}" type="{1}" description={2}/>'.format(self.name, self.type, quoteattr(self.description) if self.description else '""', 'Children' if self.multiple else 'Child')
 
 class Text(LEMSBase):
     """
@@ -987,7 +988,7 @@ class ComponentType(Fat):
 
         xmlstr = '<ComponentType name="{0}"'.format(self.name) +\
           (' extends="{0}"'.format(self.extends) if self.extends else '') +\
-          (' description="{0}"'.format(self.description) if self.description else '')
+          (' description={0}'.format(quoteattr(self.description) if self.description else '""'))
 
         chxmlstr = ''
 

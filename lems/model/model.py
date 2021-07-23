@@ -27,6 +27,9 @@ from lems.model.simulation import Run,Record,EventRecord,DataDisplay,DataWriter,
 from lems.model.structure import With,EventConnection,ChildInstance,MultiInstantiate
 
 import xml.dom.minidom as minidom
+from xml.parsers.expat import ExpatError, errors
+from xml.sax.saxutils import quoteattr
+
 
 import logging
 
@@ -311,7 +314,12 @@ class Model(LEMSBase):
 
         xmlstr += '</Lems>'
 
-        xmldom = minidom.parseString(xmlstr)
+        try:
+            xmldom = minidom.parseString(xmlstr)
+        except ExpatError as er:
+            print("Parsing error:", errors.messages[er.code])
+            print("at: " + xmlstr[er.offset:er.offset+20])
+            raise
         return xmldom
 
     def export_to_file(self, filepath, level_prefix = '  '):
