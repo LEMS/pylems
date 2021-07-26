@@ -24,82 +24,85 @@ class TestIssue20Regression(unittest.TestCase):
 
     PyLEMS does not initialise initMembPotential correctly.
     """
-    initmembpot = -20.0
-    reg_20_nml = textwrap.dedent(
-        """<neuroml xmlns="http://www.neuroml.org/schema/neuroml2"  xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.neuroml.org/schema/neuroml2 https://raw.github.com/NeuroML/NeuroML2/development/Schemas/NeuroML2/NeuroML_v2beta3.xsd" id="TestDoc">
 
-    <!-- regression test data for https://github.com/LEMS/pylems/issues/20 -->
-    <ionChannel id="chnl_lk" type="ionChannelPassive" conductance="1nS" />
+    def test_initMembPotential_init(self):
+        """Test for https://github.com/LEMS/pylems/issues/20"""
+        initmembpot = -20.0
+        reg_20_nml = textwrap.dedent(
+            """<neuroml xmlns="http://www.neuroml.org/schema/neuroml2"  xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.neuroml.org/schema/neuroml2 https://raw.github.com/NeuroML/NeuroML2/development/Schemas/NeuroML2/NeuroML_v2beta3.xsd" id="TestDoc">
 
-    <cell id="cell1">
-      <morphology id="morpho">
-        <segment id ="0" name="Soma">
-          <proximal x="0" y="0" z="0" diameter="10"/>
-          <distal x="10" y="0" z="0" diameter="10"/>
-        </segment>
+        <!-- regression test data for https://github.com/LEMS/pylems/issues/20 -->
+        <ionChannel id="chnl_lk" type="ionChannelPassive" conductance="1nS" />
 
-        <!-- Segment group probably not needed? -->
-        <segmentGroup id="segs_soma">
-          <member segment="0" />
-        </segmentGroup>
-      </morphology>
+        <cell id="cell1">
+          <morphology id="morpho">
+            <segment id ="0" name="Soma">
+              <proximal x="0" y="0" z="0" diameter="10"/>
+              <distal x="10" y="0" z="0" diameter="10"/>
+            </segment>
 
-      <biophysicalProperties id="bio_cell">
-        <membraneProperties>
-          <channelPopulation id="chn_pop_lk" ionChannel="chnl_lk" number="1" erev="-50mV" />
-          <spikeThresh value="0mV" />
-          <specificCapacitance value="1.0 uF_per_cm2" segmentGroup="segs_soma" />
-          <initMembPotential value="{}mV" />
-        </membraneProperties>
-        <intracellularProperties />
-      </biophysicalProperties>
-    </cell>
-</neuroml>
-        """.format(initmembpot)
-    )
-    nml_file = tempfile.NamedTemporaryFile(mode='w+b')
-    nml_file.write(str.encode(reg_20_nml))
-    nml_file.flush()
+            <!-- Segment group probably not needed? -->
+            <segmentGroup id="segs_soma">
+              <member segment="0" />
+            </segmentGroup>
+          </morphology>
 
-    reg_20_xml = textwrap.dedent(
-        """<Lems>
-    <!-- regression test data for https://github.com/LEMS/pylems/issues/20 -->
-    <Target component="sim1"/>
+          <biophysicalProperties id="bio_cell">
+            <membraneProperties>
+              <channelPopulation id="chn_pop_lk" ionChannel="chnl_lk" number="1" erev="-50mV" />
+              <spikeThresh value="0mV" />
+              <specificCapacitance value="1.0 uF_per_cm2" segmentGroup="segs_soma" />
+              <initMembPotential value="{}mV" />
+            </membraneProperties>
+            <intracellularProperties />
+          </biophysicalProperties>
+        </cell>
+    </neuroml>
+            """.format(initmembpot)
+        )
+        nml_file = tempfile.NamedTemporaryFile(mode='w+b')
+        nml_file.write(str.encode(reg_20_nml))
+        nml_file.flush()
 
-    <Include file="Simulation.xml"/>
-    <Include file="Cells.xml"/>
-    <Include file="{}"/>
+        reg_20_xml = textwrap.dedent(
+            """<Lems>
+        <!-- regression test data for https://github.com/LEMS/pylems/issues/20 -->
+        <Target component="sim1"/>
 
-    <Simulation id="sim1" length="100ms" step="0.1ms" target="cell1">
-      <!-- (x|y)(min|max) don't appear to do anything with PyLEMS, but error if not included... -->
-        <OutputFile path="." fileName="reg_20.dat">
-            <OutputColumn quantity="v" />
-        </OutputFile>
-    </Simulation>
-</Lems>
-        """.format(nml_file.name)
-    )
+        <Include file="Simulation.xml"/>
+        <Include file="Cells.xml"/>
+        <Include file="{}"/>
 
-    xml_file = tempfile.NamedTemporaryFile(mode='w+b')
-    xml_file.write(str.encode(reg_20_xml))
-    xml_file.flush()
+        <Simulation id="sim1" length="100ms" step="0.1ms" target="cell1">
+          <!-- (x|y)(min|max) don't appear to do anything with PyLEMS, but error if not included... -->
+            <OutputFile path="." fileName="reg_20.dat">
+                <OutputColumn quantity="v" />
+            </OutputFile>
+        </Simulation>
+    </Lems>
+            """.format(nml_file.name)
+        )
 
-    # TODO: replace this with pynml's extract LEMS files function when that has
-    # been merged and released. We won't need to carry a copy of the coretypes
-    # then.
-    coretype_files_dir = os.path.dirname(os.path.abspath(__file__)) + '/NeuroML2CoreTypes'
-    lems_run(xml_file.name, include_dirs=[coretype_files_dir])
+        xml_file = tempfile.NamedTemporaryFile(mode='w+b')
+        xml_file.write(str.encode(reg_20_xml))
+        xml_file.flush()
 
-    nml_file.close()
-    xml_file.close()
+        # TODO: replace this with pynml's extract LEMS files function when that has
+        # been merged and released. We won't need to carry a copy of the coretypes
+        # then.
+        coretype_files_dir = os.path.dirname(os.path.abspath(__file__)) + '/NeuroML2CoreTypes'
+        lems_run(xml_file.name, include_dirs=[coretype_files_dir])
 
-    with open("reg_20.dat", 'r') as res:
-        for line in res:
-            ln = line.split()
-            time = float(ln[0])
-            value = float(ln[1])
-            assert(time == 0)
-            assert(value == initmembpot)
-            # We only want to check the first line
-            break
-    #  os.remove("reg_20.dat")
+        nml_file.close()
+        xml_file.close()
+
+        with open("reg_20.dat", 'r') as res:
+            for line in res:
+                ln = line.split()
+                time = float(ln[0])
+                value = float(ln[1])
+                assert(time == 0)
+                assert(value == initmembpot)
+                # We only want to check the first line
+                break
+        #  os.remove("reg_20.dat")
