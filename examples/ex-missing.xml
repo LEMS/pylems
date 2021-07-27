@@ -1,0 +1,57 @@
+<Lems>
+
+<Target component="sim"/> 
+  
+	<Dimension name="length" l="1" />
+	<Dimension name="time" t="1" />
+	<Unit symbol="ms" dimension="time" power="-3" />
+	<Unit symbol="um" dimension="length" power="-6" />
+
+
+    <ComponentType name="spikeGenerator">
+        <Property name="period" dimension="time"/>
+        <EventPort name="a" direction="out"/>
+        <Exposure name="tsince" dimension="time"/>
+        <Dynamics>
+            <StateVariable name="tsince" exposure="tsince" dimension="time"/>
+            <TimeDerivative variable="tsince" value="1"/>
+            <OnCondition test="tsince .gt. period">
+                 <StateAssignment variable="tsince" value="0"/>
+                 <EventOut port="a"/>
+            </OnCondition>
+        </Dynamics>
+    </ComponentType>
+        
+
+	<ComponentType name="generators">
+		<Parameter name="n" dimension="none" />
+		<Parameter name="minPeriod" dimension="time" />
+		<Parameter name="maxPeriod" dimension="time" />
+		 
+		<Structure>
+			<MultiInstantiate componentType="spikeGenerator" number="n">
+				<Assign property="period" 
+					   value="minPeriod + (maxPeriod - minPeriod) * index/n"/>
+			</MultiInstantiate>
+		</Structure>
+	</ComponentType>
+
+ 
+	<generators id="gens" maxPeriod="40ms" n="30"/>
+	
+	
+	<Include file="SingleSimulation.xml" />
+ 
+
+
+<Simulation id="sim" length="200ms" step="0.05ms" target="gens">
+	<Display id="disp1" title="Net1" xmin="0" xmax="80" ymin="-80" ymax="50" timeScale="1ms">
+	    <Line id="g0"  timeScale="1ms" quantity="[0]/tsince" scale="1ms" color="#0000f0"/>
+        <Line id="g1"  timeScale="1ms" quantity="[5]/tsince" scale="1ms" color="#00f0f0"/>
+        <Line id="g2"  timeScale="1ms" quantity="[10]/tsince" scale="1ms" color="#f0f0f0"/>
+        <Line id="g3"  timeScale="1ms" quantity="[20]/tsince" scale="1ms" color="#0000f0"/>
+ 	</Display>
+ 	 
+ </Simulation>
+
+</Lems>

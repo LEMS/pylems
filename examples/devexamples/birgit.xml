@@ -1,0 +1,190 @@
+<lems>
+
+        <!-- NOTE: Example added at Antwerp Oct10 NineML meeting. May not work yet!! -->
+
+
+	<ComponentType name="GridPoint">
+	</ComponentType>
+	  
+	  	
+	<ComponentType name="GridPoint1D" extends="GridPoint">
+	   <InstanceProperty name="position" dimension="size"/>	
+	</ComponentType>  	
+	  	
+	<ComponentType name="PosGrid1D">
+        <Parameter name="min" dimension="length"/>
+        <Parameter name="max" dimension="length"/>
+        <Parameter name="step" dimension="length"/>
+		<DerivedParameter name="n" value= "(max - min) / size"/>
+
+		<Behavior>
+		  <Build>
+			<MultiInstantiate type="GridPoint" number="n">
+			     <Assign property="position" value="min + step * index"/>
+			</MultiInstantiate>
+		  </Build>
+		</Behavior>
+	</ComponentType>
+
+
+    <ComponentType name="GridPoint2D" extends="GridPoint">
+       <InstanceProperty name="xpos" dimension="length"/>
+       <InstanceProperty name="ypos" dimension="length"/>
+    </ComponentType>
+      
+
+
+    <ComponentType name="PosGrid2D" extends="Grid">
+         <Parameter name="xmin" dimension="length"/>
+        <Parameter name="xmax" dimension="length"/>
+        <Parameter name="xstep" dimension="length"/>
+        <DerivedParameter name="nx" value= "(xmax - xmin) / xstep"/>
+
+         <Parameter name="ymin" dimension="length"/>
+        <Parameter name="ymax" dimension="length"/>
+        <Parameter name="ystep" dimension="length"/>
+        <DerivedParameter name="ny" value= "(ymax - ymin) / ystep"/>
+        
+        
+        <Behavior>
+            <Build>
+                <MultiInstantiate number="ny" indexVariable="yindex">
+                    <MultiInstantiate number="nx" indexVariable="xindex" type="GridPoint2D">
+                        <Assign property="xpos" value="xmin + xstep * xindex"/>
+                        <Assign property="ypos" value="ymin + xstep * yindex"/>
+                    </MultiInstantiate>
+                </MultiInstantiate>
+            </Build>
+            
+        </Behavior>
+            
+    </ComponentType>
+
+
+    
+  
+   <ComponentType name="Group">
+        <TypeRef name="of"/>
+        <SelectParameter name="select"/>
+        <Behavior>
+            <Build>
+                <Select select="select"/>
+            </Build>
+        </Behavior> 
+    </ComponentType>
+
+    
+
+	<ComponentType name="GridBasedNetwork">
+  		<Children type="Grid"/>
+  		<Children type="Group"/>
+ 		<Children type="Population"/>
+   		<Children type="Projection"/>
+    </ComponentType>
+	
+	
+	
+	<ComponentType name="PointBasedPopulation" extends="Population">
+        <Link type="Group" name="points"/>
+        <Link type="Cell" name="celltype"/>
+        <Build>
+            <CoInstantiate at="points" type="cell"/>
+        </Build>
+    </ComponentType>
+    
+    
+    
+    
+    <ComponentType name="Projection">
+        <ComponentReference name="pattern" type="ProjectionPattern"/>
+        <Link name="from" type="Population"/>
+        <Link name="to" type="Population"/>
+    </ComponentType>
+    
+    
+    
+    
+    <ComponentType name="RandomCP" extends="ProjectionPattern">
+        <Parameter name="probability" dimension="none"/>
+        <Build>
+            <ForEach instances="../from" as="src">
+            <ForEach instances="../to" as="tgt">
+                <If test="random() .lt. prob">
+                    <EventConnect from="src" to="tgt"/>
+                </If> 
+            </ForEach>
+            </ForEach>
+        </Build>
+    </ComponentType>
+    
+   
+   
+    <Function name="distance">
+        <Realization>
+            <Arguments>
+                <InstanceOf type="GridPoint2D" as="a"/>
+                <InstanceOf type="GridPoint2D" as="b"/>
+            </Arguments>
+            <Return value="sqrt(pow((a.xpos - b.xpos), 2) + pow((a.ypos - b.ypos),2))"/>
+        </Realization>
+      
+        <Realization>
+            <Arguments>
+                 <InstanceOf type="GridPoint1D" as="a"/>
+                 <InstanceOf type="GridPoint1D" as="b"/>
+            </Arguments>
+            <Return value="abs(a.xpos - b.xpos)"/>
+        </Realization>
+    
+    </Function>
+   
+   
+   
+   
+    <ComponentType name="BoxCarCP" extends="ProjectionPattern">
+        <Parameter name="range" dimension="length"/>
+   
+        <Behavior>
+            <Build>
+                <ForPairs a="../from" b="../to" where="distance() .lt. range">
+                    <EventConnect/>
+                </ForPairs>
+            </Build>
+        </Behavior>     
+        
+    </ComponentType>
+
+    
+   <Component id="rand" type="RandomCP" probability="0.1"/>
+
+	
+    <Component type="GridBasedNetwork">
+        <PosGrid1D id="line" min="0um" max="20um" step="2um"/>
+        <PosGrid2D id="rect" xmin="0um" xmax="20um" xstep="2um" ymin="2um" ymax="10um" ystep="1um"/>
+        
+        
+        <Group of="GridPoint" id="ipoints" select="gr[index % 5 .eq. 0]"/>
+        <Group if="GridPoint" id="epoints" select="gr .minus. ipoints"/>
+        
+        <PointBasedPopulation id="pe" celltype="excit_cell" group="epoints"/>
+        <PointBasedPopulation id="pi" celltype="inhib_cell" group="ipoints"/>
+      
+        <Group of="Cell" id="all" select="pe .and. pi"/>
+      
+        <Projection id="proj1" from="pe" to="pi">
+            <BoxCarCP range="2um"/>
+        </Projection>
+        
+        <Projection id="proj2" pattern="rand0.1" from="pe" to="all"/>
+        
+        <Projection id="proj3" from="pi" to="all">
+            <RandomCP probability="0.1"/>
+        </Projection>
+        
+     </Component>   
+      
+    
+	 
+
+
+</lems>

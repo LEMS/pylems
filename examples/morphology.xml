@@ -1,0 +1,190 @@
+<Lems>
+ 
+<Target component="simset"/> 
+  
+<Dimension name="time" t="1"/>  
+<Dimension name="voltage" m="1" l="2" t="-3" i="-1"/>
+<Dimension name="conductance" m="-1" l="-2" t="3" i="2"/>
+<Dimension name="conductivity" m="-1" l="-3" t="3" i="2"/>
+    
+    
+<Dimension name="distance" l="1"/>  
+
+<!--  position and distance have the same dimensionality. we define both so we 
+can distinguish quantities that are positions from those that are distances. As yet,
+the interpreter is indifferent to the distinction -->
+<Dimension name="position" l="1"/>  
+
+<Dimension name="capacitance" m="-1" l="-2" t="4" i="2"/>
+<Dimension name="capacitance_per_distance" m="-1" l="-3" t="4" i="2"/>
+<Dimension name="capacitance_per_area" m="-1" l="-4" t="4" i="2"/>
+ 
+<Assertion dimension="capacitance_per_distance" matches="capacitance / distance"/>
+ 	
+ 	
+<Unit symbol="um" dimension="distance" power="-6"/>   
+<unit symbol="uF_per_um" dimension="capacitance_per_diatance" power="0"/>  
+  
+  
+<Include file="MultiRunSimulation.xml"/>
+
+ 
+<!--  a point with a radius. At this stage there is nothing to say this is a 
+point in space - it is just a collection of a distance and three positions -->
+<ComponentType name="RPoint">
+ 	<Parameter name="x" dimension="distance"/>
+ 	<Parameter name="y" dimension="position"/>
+ 	<Parameter name="z" dimension="position"/>
+ 	<Parameter name="r" dimension="position"/>
+</ComponentType>
+ 
+<!--  a segment is made of two RPoints for the two ends. Optionally you can supply
+the parent instead of an explicit RPoint for the proximal point, in which case it will
+fall back to using the distal point of the parent segment -->
+<ComponentType name="Segment">
+	<ComponentReference name="parent" type="Segment" root="../"/>
+	<Child name="proximal" type="RPoint" substitute="parent/distal"/>
+	<Child name="distal" type="RPoint"/>
+
+	<!--  the geometry block attaches lems semantics to the quantities in the RPoint 
+	 elements. In this case, the positions and radii are to be interpreted as defining a 
+	 Frustum -->
+	<Geometry>
+		<Frustum xa="proximal/x" ya="proximal/y" za="proximal/z" ra="proximal/r"
+				 xb="distal/x" yb="distal/y" zb="distal/z" rb="distal/r"/>
+	</Geometry>
+</ComponentType>
+ 
+ 
+ <!--  a cell made of one or more segments -->
+<ComponentType name="SegmentCell">
+	<Children name="segments" type="Segment"/>
+
+	<!--  the geometry here requires that the geometry elements from each of the children
+	should form a continuous structure that is topologically equivalent to a sphere
+	(no breaks, no loops, no holes etc). If this fails (eg if the segments
+	are disjoint) this will throw an exception when the model is processed-->
+	<Geometry>
+		<Solid name="tree" elements="segments" topologyConstraint="sphere"/>
+	</Geometry>
+</ComponentType>
+ 
+ 
+ <ComponentType name="PointConductance">
+ 	<Exposure name="e" dimension="voltage"/>
+ 	<Exposure name="g" dimension="conductance"/>
+	<!-- a point conductance has a path parameter, which contains an XPath-like reference 
+	 specifying where the conductance is on the parent solid -->
+
+	<!--  a point conductance can only be defined within a context that defines a solid 
+	geometry for the conductance to be located on. The 
+	presence of a Location child in a component type is a bit like a Requirement.
+	A component can only be defined in a context where a parent defines a solid -->
+	<Location name="at"/>
+	 
+		<!--  Its not clear if we need any Geometry element here or not. We could have something 
+		here (or in Dynamics) to say the e and g exposures apply at the position set
+		by the Location property. -->
+ 
+ </ComponentType> 
+
+  
+  
+<ComponentType name="FixedPointConductance" extends="PointConductance">
+	<Parameter name="reversal" dimension="voltage" exposure="e"/>
+	<Parameter name="couductance" dimension="conductance" exposure="g"/>
+</ComponentType>  
+  
+
+
+
+<!--  the active cell combines a morphology with some inputs and a capacitance  -->
+<ComponentType name="ActiveBranchedCell">
+    <ComponentReference name="morphology" type="SegmentCell"/>
+	<Parameter name="membraneCapacitance" dimension="capacitance_per_area"/>
+	<Parameter name="conductivity" dimension="conductivity"/>
+	<Children name="inputs" type="PointConductance"/>
+	
+	<SimulatorShortcut for="jLEMS">
+		<CableCell conductivityField="conductivity" capacitanceField="membraneCapacitance"
+					morphologyField="morphology" morphologyFormat="proximal,distal,x,y,z,r">
+			<InputSource field="inputs" format=""/>
+		</CableCell>
+	</SimulatorShortcut>
+	
+	
+	<!--  the equations will actually be solved over the 1-dimensional space 
+	that is the skeleton the 3-D tree volume in the morphology specification 
+	"Skeleton" is another primary geometrical construct understood by LEMS along with 
+	"Frustum" and "Solid". The radius() and pathLength() functions are core functions that 
+	are meaningful within the skeleton element. They and yield scalar fields over 
+	the resulting skeleton based on properties of the original solid. 
+	-->
+	<Geometry>
+		<Skeleton name="skel" solid="morphology/tree">
+			<ScalarField name="r" dimension="length" value="radius()"/>
+			<ScalarField name="p" dimension="length" value="pathLength()"/>
+		</Skeleton>
+	</Geometry>
+	
+	
+	<Dynamics>
+		<!--  the state of the system is defined by the potential v on the skeleton -->
+		<StateScalarField name="v" dimension="voltage" region="skel"/>
+	
+		<!--  more scalar fields over the skeleton. These don't in fact change over
+		the course of a simulation, so the interpreter should be smart enough to realize this -->
+		<DerivedScalarField name="c" dimension="c_per_l" region="skel" 
+				value="2 * PI * r * cmem"/>
+		<DerivedScalarField name="g" dimension="conductance_l2" region="skel"
+			value="PI * r^2 * gax"/>
+
+		<!--  a punctate field is a scalar field that is zero almost everywhere. In this 
+		case, the inputs are synapses at particular points on the surface. Each provides
+		a time-varying conductance and driving potential. -->			
+		<DerivedPunctateField name="g_in" region="skel" select="inputs/g"/>
+		<DerivedPunctateField name="e_in" region="skel" select="inputs/e"/>
+			
+		<!--  time derivative as normal except all the terms are now scalar fields.
+		The laplacian function here reduces to d^2v/dx^2 if x is path distance along the 
+		structure. But since the geometry of skeleton is already understood by lems we don't 
+		need to explicitly define x (which is good because handling the branching explicitly
+		here would just complicate things unnecessarily). -->
+			
+		<TimeDerivative variable="v" value="g / c * laplacian(v) + sum(gin * (ein - v)) / c"/> 
+	</Dynamics>
+
+</ComponentType>
+
+
+
+<!-- a simple cell with a couple of segments  -->
+<SegmentCell id="sc1">
+	<Segment id="a">
+		<Proxmial x="0um" y="0um" z="0um" r="1um"/>
+		<Distal x="50um" y="0um" z="0um" r="1um"/>
+    </Segment>
+    <Segment parent="a">
+    	<Distal x="100um" y="50um" z="0um" r="1um"/>
+    </Segment>		
+</SegmentCell>
+
+
+<!--  and the active model -->
+<ActiveExtendedCell morphology="sc1" membraneCapacitance="1 uF_per_cm2"
+	conductivity="1ohm_cm2">
+	<!--  a single input of a fixed conductance and driving potential -->
+	<FixedPointConductance at="p=50um" reversal="20mV" couductance="50pS"/>
+</ActiveExtendedCell>
+
+
+
+
+
+<SimulationSet id="simset">
+	<Display id="disp1"/>
+ 	<!--  display and simulation stuff... -->
+</SimulationSet>
+
+
+</Lems>

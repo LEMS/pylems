@@ -1,0 +1,274 @@
+<Lems>
+     
+    <DefaultRun component="sim1"/>
+    
+    <Dimension name="length" l="1"/>
+    <Dimension name="time" t="1"/>
+    <Unit symbol="ms" dimension="time" power="-3"/> 
+    <Unit symbol="um" dimension="length" power="-6"/> 
+ 
+ 
+	<ComponentType name="GridPoint">
+	</ComponentType>
+	  
+	  	
+	<ComponentType name="GridPoint1D" extends="GridPoint">
+	   <Property name="position" dimension="length"/>	
+	</ComponentType>  	
+	
+	
+	<ComponentType name="Grid">
+	</ComponentType>
+	
+	  	
+	<ComponentType name="PosGrid1D" extends="Grid">
+        <Parameter name="min" dimension="length"/>
+        <Parameter name="max" dimension="length"/>
+        <Parameter name="step" dimension="length"/>
+		<DerivedParameter name="n" dimension="none" value= "(max - min) / step"/>
+        <Text name="quantity"/>
+    
+		<Behavior>
+		  <Build>
+			<MultiInstantiate componentType="GridPoint1D" number="n">
+			     <Assign property="position" value="min + step * index" exposeAs="quantity"/>
+			</MultiInstantiate>
+		  </Build>
+		</Behavior>
+	</ComponentType>
+
+
+    <ComponentType name="GridPoint2D" extends="GridPoint">
+       <Property name="xpos" dimension="length"/>
+       <Property name="ypos" dimension="length"/>
+    </ComponentType>
+      
+
+
+<!-- 
+    <ComponentType name="PosGrid2D" extends="Grid">
+         <Parameter name="xmin" dimension="length"/>
+        <Parameter name="xmax" dimension="length"/>
+        <Parameter name="xstep" dimension="length"/>
+        <DerivedParameter name="nx" value= "(xmax - xmin) / xstep"/>
+
+         <Parameter name="ymin" dimension="length"/>
+        <Parameter name="ymax" dimension="length"/>
+        <Parameter name="ystep" dimension="length"/>
+        <DerivedParameter name="ny" value= "(ymax - ymin) / ystep"/>
+                
+        <Behavior>
+            <Build>
+                <MultiInstantiate number="ny" indexVariable="yindex">
+                    <MultiInstantiate number="nx" indexVariable="xindex" componentType="GridPoint2D">
+                        <Assign property="xpos" value="xmin + xstep * xindex"/>
+                        <Assign property="ypos" value="ymin + xstep * yindex"/>
+                    </MultiInstantiate>
+                </MultiInstantiate>
+            </Build>
+            
+        </Behavior>
+            
+    </ComponentType>
+-->
+
+    
+   <ComponentType name="Group">
+        <ComponentTypeRef name="of"/>
+        <PathParameter name="select"/>
+        <Collection name="elements"/>
+        <Behavior>
+            <Build>
+                <Gather pathParameter="select" collection="elements"/>
+            </Build>
+        </Behavior> 
+    </ComponentType>
+ 
+
+   
+
+	<ComponentType name="GridBasedNetwork">
+  		<Children type="Grid"/>
+   		<Children type="Group"/>
+ 		<Children type="Population"/>
+ 		<Children type="FromToConnections"/>
+ <!--
+   		<Children type="Projection"/>
+  --> 
+    </ComponentType>
+	
+	
+	<ComponentType name="Cell">
+	      <EventPort name="spikes-in" direction="in"/>
+          <EventPort name="spikes-out" direction="out"/>
+ 
+	       <Behavior>
+              <StateVariable name="n" dimension="none"/>
+               <OnEvent port="spikes-in">
+                    <StateAssignment variable="n" value="n + 1"/>
+             </OnEvent>      
+             
+              <OnCondition test="n .eq. 100">
+                   <EventOut port="spikes-out"/>
+              </OnCondition>
+            </Behavior>
+	      
+	</ComponentType>
+	
+	
+	
+    <ComponentType name="Population">
+         <ComponentReference name="component" type="Component"/>
+         
+    </ComponentType>
+	
+	
+	<ComponentType name="PointBasedPopulation" extends="Population">
+        <Link type="Group" name="points"/>
+     
+        <Behavior>
+        <Build>
+            <CoInstantiate at="points" component="component"/>
+        </Build>
+        </Behavior>
+    </ComponentType>
+    
+    
+    
+    <ComponentType name="PairSelector">
+         <PairCollection name="pairs"/>
+    </ComponentType>
+    
+    
+    <ComponentType name="FromToConnections">
+        <Children name="selectors" type="PairSelector"/>
+        <Link name="from" type="Population"/>
+        <Link name="to" type="Population"/>
+        <Behavior>
+            <Build>
+                <Apply components="selectors">
+                    <PairsEventConnection pairs="pairs"/>  
+                </Apply>
+            </Build>
+        </Behavior>
+    </ComponentType>
+    
+    
+    
+     <ComponentType name="BoxCarSelector" extends="PairSelector">
+        <Parameter name="range" dimension="length"/>
+        <Text name="fromQuantity"/>
+        <Text name="toQuantity"/>
+      
+        <Behavior>
+            <Build>
+                <GatherPairs collection="pairs" pFrom="../from" qFrom="../to">
+                    <PairFilter select="x[abs(p:fromQuantity - q:toQuantity) .lt. range]"/>
+                 </GatherPairs>
+            </Build>
+        </Behavior>     
+        
+    </ComponentType>
+    
+    
+
+    
+    <ComponentType name="RandomPairs" extends="PairSelector">
+        <Parameter name="probability" dimension="none"/>
+        <Behavior>
+        <Build>
+            <ForEach instances="../from" as="src">
+            <ForEach instances="../to" as="tgt">
+                <If test="random() .lt. prob">
+                    <IncludePair collection="pairs"/>                    
+                </If> 
+            </ForEach>
+            </ForEach>
+        </Build>
+        </Behavior>
+    </ComponentType>
+    
+   
+
+	
+	<Cell id="excit_cell">
+	</Cell>
+	
+	<Cell id="inhib_cell">
+	</Cell>
+	
+	
+    <Component type="GridBasedNetwork" id="net2">
+        <PosGrid1D id="line" min="0um" max="20um" step="2um" quantity="distance"/>
+     <!--
+        <PosGrid2D id="rect" xmin="0um" xmax="20um" xstep="2um" ymin="2um" ymax="10um" ystep="1um"/>
+        -->
+        
+        <Group of="GridPoint" id="ipoints" select="line[index % 5 .eq. 0]"/>
+        <Group of="GridPoint" id="epoints" select="line .minus. ipoints"/>
+        
+        <PointBasedPopulation id="pe" component="excit_cell" points="epoints"/>
+        <PointBasedPopulation id="pi" component="inhib_cell" points="ipoints"/>
+      
+        <Group of="Cell" id="all" select="pe .or. pi"/>
+      
+      
+        <FromToConnections id="proj1" from="pe" to="pi">
+            <BoxCarSelector range="5um" fromQuantity="distance" toQuantity="distance"/>
+        </FromToConnections>
+       
+        
+      <!--    
+        <Projection id="proj2" pattern="rand0.1" from="pe" to="all"/>
+        
+        <Projection id="proj3" from="pi" to="all">
+            <RandomCP probability="0.1"/>
+        </Projection>
+       -->
+        
+     </Component>   
+      
+    
+	 
+ <!-- 
+    <Function name="distance">
+        <Realization>
+            <Arguments>
+                <InstanceOf type="GridPoint2D" as="a"/>
+                <InstanceOf type="GridPoint2D" as="b"/>
+            </Arguments>
+            <Return value="sqrt(pow((a.xpos - b.xpos), 2) + pow((a.ypos - b.ypos),2))"/>
+        </Realization>
+      
+        <Realization>
+            <Arguments>
+                 <InstanceOf type="GridPoint1D" as="a"/>
+                 <InstanceOf type="GridPoint1D" as="b"/>
+            </Arguments>
+            <Return value="abs(a.xpos - b.xpos)"/>
+        </Realization>
+    
+    </Function>
+ -->
+
+<GridBasedNetwork id="net1">
+     <PosGrid1D id="line" min="0um" max="20um" step="2um"/>
+</GridBasedNetwork>
+
+
+
+
+<Include file="SimpleSimulation.xml"/>
+
+<Simulation id="sim1" length="80ms" step="0.05ms" target="net2">
+    <Display id="d0" timeScale="1ms" title="Example 1: Dimensions, Units, ComponentTypes and Components">
+        <!-- 
+        <Line id="a" quantity="line[3]/position" scale="1um" color="#00c000"/>     
+        <Line id="b" quantity="line[4]/position" scale="1um" color="#0000f0"/>
+         -->   
+    
+    </Display>
+</Simulation>
+
+
+</Lems>

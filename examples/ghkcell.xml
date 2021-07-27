@@ -1,0 +1,119 @@
+<Lems>
+
+
+<Include file="hhchannel.xml"/>
+
+<Dimension name="voltage" m="1" l="2" t="-3" i="-1"/>
+<Dimension name="capacitance" m="-1" l="-2" t="4" i="2"/>
+<Dimension name="current" i="1"/>
+
+ <Unit name="mMolar" dimension="concentration" power="0"/>
+
+<ComponentType name="ChannelPopulation">
+    <ComponentReference name="channel" type="HHChannel"/>
+    <Parameter name="number" dimension="none"/>
+    <Parameter name="erev" dimension="voltage"/>
+    <Requirement name="v" dimension="voltage"/>
+    <Exposure name="current" dimension="current"/>
+    <Exposure name="geff" dimension="conductance"/>
+    <Behavior>
+         <Build>
+            <ChildInstance component="channel"/>
+        </Build>
+        <DerivedVariable name="channelg" dimension="conductance" select="channel/g"/>
+        <DerivedVariable name="geff" exposure="geff" value="channelg * number"/>
+        <DerivedVariable name="current" exposure="current" value="geff * (erev - v)"/>
+    </Behavior>    
+</ComponentType>
+
+
+<ComponentType name="ExtConditions">
+		<Parameter name="concentration" dimension="concentration"/>
+		<Parameter name="temp" dimension="temperature"/>
+</ComponentType>
+
+
+
+
+
+<ComponentType name="GHKChannelPopulation">
+    <ComponentReference name="channel" type="GHK_HHChannel"/>
+    <Parameter name="number" dimension="none"/>
+    
+    <DerivedVariable name="extconc" 
+           select="//ExtConditions/Solution/Solute[specie = channel/permeant_ion]"/>
+     <Requirement name="extconc" dimensions="concentration"/>
+   
+    <Requirement name="temp" dimension="temperature"/>
+    
+    <Requirement name="v" dimension="voltage"/>
+    <Exposure name="current" dimension="current"/>
+    <Exposure name="peff" dimension="permeability"/>
+    <Behavior>
+         <Build>
+            <ChildInstance component="channel"/>
+        </Build>
+     
+        
+        <DerivedVariable name="channelp" dimension="conductance" select="channel/p"/>
+        <DerivedVariable name="peff" exposure="peff" value="channelp * number"/>
+        <DerivedVariable name="ezf" value="exp(-z * F * v / (R * T))"/>
+        <DerivedVariable name="current" exposure="current" 
+        value="peff * z*z * F*F * v / (R * T) * (intconc - extconc * ezf)/(1 - ezf)"/>
+    </Behavior>     
+</ComponentType>
+
+
+<ComponentType name="HHCell">
+    <Parameter name="capacitance" dimension="capacitance"/>
+    <Children name="populations" type="ChannelPopulation"/>
+    <Parameter name="injection" dimension="current"/>
+    <Parameter name="v0" dimension="voltage"/>
+    <Exposure name="v" dimension="voltage"/>
+    <Behavior>
+        <OnStart>
+             <StateAssignment variable="v" value="v0"/>
+        </OnStart>
+  
+         <DerivedVariable name="totcurrent" dimension="current" select="populations[*]/current" reduce="add"/>
+        <StateVariable name="v" exposure="v" dimension="voltage"/> 
+        <TimeDerivative variable="v" value="(totcurrent + injection) / capacitance"/>
+    </Behavior>
+</ComponentType>
+
+
+<ComponentType name="Specie">
+	<Text name="symbol"/>
+	<Parameter name="valence" dimension="none"/>
+</ComponentType>
+
+<Component name="Solute">
+	<ComponentReference name="specie"/>
+	<Parameter name="concentration" dimension="concentration"/>
+</Component>
+
+<ComponentType name="Solution">
+	<Children type="Solute" name="solutes"/>
+</ComponentType>
+
+
+<ExtConditions temp="25 degC">
+	<Solution name="extsol">
+		<Solute specie="Ca" concentration="2mMolar"/>
+	</Solution>
+</ExtConditions>
+
+<Specie name="Calcium" symbol="Ca" valence="2"/>
+<Specie name="Potassium" symbol="K" valence="1"/>
+
+
+<GHKChannelPopulation channnel="ghk1"/>
+
+<GHK_HHChannel permeant_species="Ca">
+	...gates
+</GHK_HHChannel>
+
+ <Solution name="extsol"/>
+
+ 
+</Lems>

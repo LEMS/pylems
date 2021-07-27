@@ -1,0 +1,28 @@
+
+<Lems>
+<Dimension name="pertime" T="-1"/>
+<Unit name="perms" dimension="pertime" powten="-3"/>
+
+
+<ComponentType name="prob">
+	<Parameter name="p0" dimensio="none"/>
+	<Parameter name="a" dimension="pertime"/>
+	<Parameter name="b" dimension="pertime"/>
+	
+	<Behavior>
+		<OnStart>
+			<StateAssignment variable="p" expression="p0"/>
+		</OnStart>
+	
+		<StateVariabe name="p" dimension="none"/>
+		<Derivedvariable name="rf" expression="a * p - b * (1-p)"/>
+		
+		<TimeDerivative variable="p" expression="rf"/>
+	
+	</Behavior>
+
+</ComponentType>
+
+
+<Component type="prob" p0="0.4" a="3 perms" b="5 perms"/>
+</Lems>

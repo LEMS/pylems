@@ -1,0 +1,149 @@
+
+<Lems>
+ 
+    <DefaultRun component="sim1"/>
+ 
+    <Include file="ex2dims.xml"/>
+    <Include file="spikegenerators.xml"/>
+    <Include file="SimpleSimulation.xml"/>
+    <Include file="misciaf.xml"/>
+ 
+ 
+
+    <Component id="iaf3cpt" type="iaf3" leakReversal="-50mV" deltaV="50mV" threshold="-30mV" leakConductance="50pS"
+refractoryPeriod="4ms" capacitance="1pF"/>
+ 
+    <Component id="gena" type="spikeGenerator2" period="50ms"/>
+    <Component id="genb" type="spikeGenerator2" period="50ms"/>
+
+
+    <ComponentType name="Synapse">
+    
+		<Property name="weight" dimension="none" />
+     
+        <Parameter name="deltaG" dimension="conductance"/>
+        <Parameter name="erev" dimension="voltage"/>
+        <Parameter name="tfall" dimension="time"/>
+        <EventPort name="in" direction="in"/>
+        <Requirement name="v" dimension="voltage"/>
+        <Exposure name="current" dimension="current"/>
+    
+        <Behavior>
+            <StateVariable name="geff" dimension="conductance"/>
+            <TimeDerivative variable="geff" value="-geff / tfall"/>
+       
+            <OnStart>
+                <StateAssignment variable="geff" value="0"/>
+            </OnStart>
+
+            <OnEvent port="in">
+            
+              <StateAssignment variable="geff" value="geff + (weight*deltaG)"/>
+             <!-- 
+              <StateAssignment variable="geff" value="geff + deltaG"/>
+              --> 
+            </OnEvent>
+        
+            <DerivedVariable name="current" exposure="current" dimension="current" value="geff * (erev - v)"/>
+        </Behavior>
+    </ComponentType>
+
+
+
+
+    <Synapse id="sy1" deltaG="30pS" erev="50mV"  tfall="5ms"/>
+
+    <ComponentType name="Cell"/>
+ 
+    <ComponentType name="synapseCell" extends="Cell">
+        <Parameter name="capacitance" dimension="capacitance"/>
+        <Parameter name="leakConductance" dimension="conductance"/>
+        <Parameter name="leakReversal" dimension="voltage"/>
+        <Exposure name="v" dimension="voltage"/>
+        <Attachments name="synapses" type="Synapse"/>
+    
+        <Behavior>
+            <StateVariable name="v" dimension="voltage" exposure="v"/>
+            <DerivedVariable name="synapticCurrent" dimension="current" select="synapses[*]/current" reduce="add"/>
+            <TimeDerivative variable="v" value="(leakConductance * (leakReversal - v) + synapticCurrent) / capacitance"/>
+        </Behavior>
+
+    </ComponentType>
+
+    <synapseCell id="sycell" leakReversal="-50mV"  leakConductance="50pS"  capacitance="1pF"/>
+
+
+  
+
+    <ComponentType name="ExplicitNetwork">
+        <Children name="populations" type="Population"/>
+        <Children name="connections" type="ExplicitConnection"/>
+    </ComponentType>
+
+
+    <ComponentType name="Population">
+        <ComponentReference name="component" type="Component"/>
+        <Parameter name="size" dimension="none"/>
+        <Behavior>
+            <Build>
+                <MultiInstantiate number="size" component="component"/>
+            </Build>
+        </Behavior>
+    </ComponentType>
+  
+  
+  
+  
+    <ComponentType name="ExplicitConnection">
+
+        <Parameter name="weight" dimension="none"/>
+        <Parameter name="delay" dimension="time"/>
+   
+        <Path name="from"/>
+        <Path name="to"/>
+     
+        <ComponentReference name="synapse" type="Synapse"/>
+      
+        <Text name="destination"/>
+        <Text name="sourcePort"/>
+        <Text name="targetPort"/>
+        <Behavior>
+            <Build>
+                <With instance="from" as="a"/>
+                <With instance="to" as="b"/>
+                    <EventConnection from="a" to="b" receiver="synapse" receiverContainer="destination"
+                        sourcePort="sourcePort" targetPort="targetPort" delay="delay">
+                        <Assign property="weight" value="weight"/>       
+                    </EventConnection>
+            </Build>
+        </Behavior>
+    </ComponentType>
+
+
+
+
+    <ExplicitNetwork id="net1">
+        <Population id="p1" component="gena" size="1"/>
+        <Population id="p2" component="genb" size="1"/>
+        <Population id="p3" component="sycell" size="3"/>
+    
+        <ExplicitConnection from="p1[0]" to="p3[0]" synapse="sy1" weight="3.5" delay="10ms"/>
+        <ExplicitConnection from="p2[0]" to="p3[1]" synapse="sy1" weight="0.5" delay="20ms"/>
+    </ExplicitNetwork>
+
+
+    <Simulation id="sim1" length="200ms" step="0.05ms" target="net1">
+        <Display timeScale="1ms" title = "Example 3: User defined types for networks and populations">
+            <Line id="gen0_tsince" quantity="p1[0]/tsince" scale="1ms" color="#a0a000"/>
+            <Line id="gen1_tsince" quantity="p2[0]/tsince" scale="1ms" color="#00e000"/>
+            <Line id="c0_v" quantity="p3[0]/v" scale="1mV" color="#a000a0"/>
+            <Line id="c1_v" quantity="p3[1]/v" scale="1mV" color="#0000f0"/>
+        </Display>
+    </Simulation>
+
+  
+  
+  
+  
+
+</Lems>

@@ -1,0 +1,40 @@
+<lems>
+<!-- 
+//NeuroML/LEMS
+/* translation of SKchannel of	Tom Sheehan tsheeha2@gmu.edu	thsheeha@vt.edu	703-538-8361
+by Avrama Blackwell
+******************************************************************************/
+ -->
+
+<ComponentType name="CaDepGate">     
+   <Parameter name="power" dimension="none" />      
+   <Parameter name="tau" dimension="time" />      
+   <Parameter name="Kd" dimension="concentration" />     
+   <Exposure name="x" dimension="none" /> 
+   <Exposure name="SK" dimension="none" />   
+   <Requirement name="Ca" dimension="concentration" />     
+   <Behavior>         
+      <DerivedVariable name="x" value="Ca/Kd" />     
+      <DerivedVariable name="Skss" value="x^power/(x^power+1)" />
+     <StateVariable name="SK" exposure="SK" dimension="none"/>
+     <TimeDerivative variable="SK" value="(SKss-SK)/tau" />
+   </Behavior>
+</ComponentType>
+
+<ComponentType name="SKChannel">     
+   <Parameter name="conductance" dimension="conductance" />     
+   <Child name="gates" type="CaDepGate" min="1" max="1" />     
+   <Requirement name="Ca" dimension="concentration" />
+   <Exposure name="g" dimension="conductance" />          
+   <Behavior>                  
+      <DerivedVariable name="gatefeff" select="gates/SK"  />         
+      <DerivedVariable name="g" exposure="g" value="conductance * gatefeff" />     
+   </Behavior>
+</ComponentType>
+
+<SKChannel id="SK" conductance="20pS">
+  <CaDepGate id="SKact" kd="0.57uM" tau="4.3ms" power="5.6"/>
+</SKChannel>
+
+</lems>
+

@@ -1,0 +1,27 @@
+<Lems>
+
+
+	<ComponentType name="PeakCa">
+			<Parameter name="alpha" dimension="concentration"/>
+			<Parameter name="gamma" dimension="none"/>
+			<Parameter name="eta" dimension="per_concentration"/>
+			<Parameter name="cagl" dimension="concentration"/>
+			
+			<Port name="events" direction="in"/>
+			
+			<Exposure name="ca" dimension="concentration"/>
+			
+			<Behaviour>
+				<OnStart>
+					<StateAssignment variable="deltaCa" expression="0"/>
+				</OnStart>
+			
+				<StateVariable name="deltaCa" dimension="concentration"/>
+				
+				
+				
+			</Behaviour>
+			
+	</ComponentType>
+
+</Lems>

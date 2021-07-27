@@ -1,0 +1,61 @@
+<Lems>
+
+<Target component="sim"/> 
+  
+	<Dimension name="length" l="1" />
+	<Dimension name="time" t="1" />
+	<Dimension name="speed" l="1" t="-1"/>
+	<Dimension name="acceleration" l="1" t="-2"/>
+	
+	<Unit symbol="s" dimension="time"/>
+	<Unit symbol="m" dimension="length"/>
+	<Unit symbol="m_per_s" dimension="speed"/>
+
+	<Constant name="Acceleration due to gravity" symbol="AccG" dimension="acceleration" value="9.8"/>
+
+
+    <ComponentType name="ball">
+    	<Parameter name="y0" dimension="length"/>
+    	<Parameter name="fbounce" dimension="none"/>
+        <Exposure name="height" dimension="time"/>
+        <Dynamics>
+            <StateVariable name="height" exposure="height" dimension="length"/>
+			<StateVariable name="vel" dimension="speed"/>
+			
+			<OnStart>
+				<StateAssignment variable="height" value="y0"/>
+				<StateAssignment variable="vel" value="0"/>
+			</OnStart>
+	
+
+            <TimeDerivative variable="vel" value="-1 * AccG"/>
+			<TimeDerivative variable="height" value="vel"/>
+
+            <OnCondition test="height .lt. 0">
+                 <StateAssignment variable="vel" value="fbounce * -vel"/>
+				 <StateAssignment variable="height" value="0"/>
+            </OnCondition>
+        </Dynamics>
+    </ComponentType>
+        
+ 
+
+ 
+	<ball id="ball" fbounce="0.9" y0="5m"/>
+	
+	
+	<Include file="SingleSimulation.xml" />
+ 
+
+
+<Simulation id="sim" length="20s" step="0.01s" target="ball">
+	<Display id="disp1" title="Net1" xmin="0" xmax="30" ymin="-1" ymax="6" timeScale="1s">
+	    <Line id="g0"  timeScale="1s" quantity="height" scale="1m" color="#0000f0"/>
+        
+ 	</Display> 
+ 	
+  
+ 
+ </Simulation>
+
+</Lems>

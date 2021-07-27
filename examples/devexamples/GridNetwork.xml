@@ -1,0 +1,52 @@
+<Lems>
+
+
+<ComponentType name="CartesianGrid">
+    <Children name="axes" type="GridAxis"/>
+    <Behavior>
+        <Build>
+            <CrossInstantiate/>
+            <!--  make one multidim point for each combination of points one from each axis -->        
+        </Build>
+    </Behavior>
+
+</ComponentType>
+
+
+<ComponentType name="GridAxis">
+    <Text name="label"/>
+    <Parameter name="min" dimension="length"/>
+    <Parameter name="max" dimension="length"/>
+    <Parameter name="increment" dimension="length"/>
+    
+    <DerivedParameter name="nel" value="(max - min) / increment"/>
+
+    <Behavior>
+        <Build>
+            <MultiInstantiate/>
+        </Build>
+    </Behavior>
+
+</ComponentType>
+
+
+<Component type="GridPopulation">
+    
+    
+    <Build>
+        <CoInstantiate set="x" component="y"/>
+        <!--  make a y instance at each instance of set x -->
+    </Build>
+
+</Component>
+
+
+<CartesianGrid id="grid1">
+    <GridAxis name="x" min="-100um" max="100um" increment="20um"/>
+    <GridAxis name="y" min="0um" max="100um" increment="10um"/>
+</CartesianGrid>
+
+
+
+
+</Lems>

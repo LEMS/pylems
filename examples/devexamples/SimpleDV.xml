@@ -1,0 +1,53 @@
+<Lems>
+
+    <Target component="sim1"/>
+
+    <Include file="../SingleSimulation.xml" />
+    
+    <Dimension name="voltage" m="1" l="2" t="-3" i="-1" />
+    <Dimension name="per_voltage" m="-1" l="-2" t="3" i="1"/>
+    <Dimension name="time" t="1" />
+    
+    <Unit symbol="mV" dimension="voltage" power="-3"/>        
+    <Unit symbol="per_mV" dimension="per_voltage" power="3"/>
+    <Unit symbol="ms" dimension="time" power="-3"/>            
+
+
+    <ComponentType name="simpleCell">
+
+        <Parameter name="v0" dimension="voltage"/>
+        <Parameter name="v1" dimension="voltage"/>
+        <Parameter name="tau" dimension="time"/>
+
+        <Exposure name="v" dimension="voltage" description="Membrane potential"/>
+        <Exposure name="rv" dimension="voltage" description="Membrane potential"/>
+
+        <DerivedParameter name="mid_v" dimension="voltage" value="(v1-v0)/2"/>
+
+        <Dynamics>
+            <DerivedVariable name="v" dimension="voltage" exposure="v" value="v0 + (t*(v1-v0)/tau)"/>
+            <DerivedVariable name="rv" dimension="per_voltage" exposure="rv" value="1/v"/>
+        </Dynamics>
+
+    </ComponentType>
+
+
+
+
+    <simpleCell id="cell0" v0=".2 mV" v1="10 mV" tau="200 ms"/>
+
+
+    <Simulation id="sim1" length="200ms" step="0.01ms" target="cell0">
+
+        <Display id="d1" title="Voltage" timeScale="1ms" xmin="-20" xmax="220" ymin="-110" ymax="110">
+            <Line id="v" quantity="v" scale="1mV"  color="#ffffff" timeScale="1ms"/>
+            <Line id="1/v" quantity="rv" scale="1per_mV"  color="#f333ff" timeScale="1ms"/>
+        </Display>
+
+
+    </Simulation>
+    
+
+
+
+</Lems>

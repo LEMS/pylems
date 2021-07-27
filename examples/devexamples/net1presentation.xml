@@ -1,0 +1,88 @@
+<Lems>
+  <ComponentType name="GridPoint"></ComponentType>
+
+  <ComponentType name="GridPoint1D" extends="GridPoint">
+    <Property name="position" dimension="length" />
+  </ComponentType>
+
+  <ComponentType name="Grid"></ComponentType>
+
+  <ComponentType name="PosGrid1D" extends="Grid">
+    <Parameter name="min" dimension="length" />
+    <Parameter name="max" dimension="length" />
+    <Parameter name="step" dimension="length" />
+    <DerivedParameter name="n" dimension="none" value="(max - min) / step" />
+    <Text name="quantity" />
+    <Structure>
+      <MultiInstantiate componentType="GridPoint1D" number="n">
+        <Assign property="position" value="min + step * index" exposeAs="quantity" />
+      </MultiInstantiate>
+    </Structure>
+  </ComponentType>
+
+  <ComponentType name="Group">
+    <ComponentTypeRef name="of" />
+    <PathParameter name="select" />
+    <Collection name="elements" />
+    <Structure>
+      <Gather pathParameter="select" collection="elements" />
+    </Structure>
+  </ComponentType>
+
+
+  <ComponentType name="Population">
+    <ComponentReference name="component" type="Component" />
+  </ComponentType>
+
+  <ComponentType name="PointBasedPopulation" extends="Population">
+    <Link type="Group" name="points" />
+    <Structure>
+      <CoInstantiate at="points" component="component" />
+    </Structure>
+  </ComponentType>
+
+
+  <ComponentType name="PairSelector">
+    <PairCollection name="pairs" />
+  </ComponentType>
+
+  <ComponentType name="FromToConnections">
+    <Children name="selectors" type="PairSelector" />
+    <Link name="from" type="Population" />
+    <Link name="to" type="Population" />
+    <Structure>
+      <Apply components="selectors">
+        <PairsEventConnection pairs="pairs" />
+      </Apply>
+    </Structure>
+  </ComponentType>
+
+
+  <ComponentType name="BoxCarSelector" extends="PairSelector">
+    <Parameter name="range" dimension="length" />
+    <Text name="fromQuantity" />
+    <Text name="toQuantity" />
+    <Structure>
+      <GatherPairs collection="pairs" pFrom="../from" qFrom="../to">
+        <PairFilter select="x[abs(p:fromQuantity - q:toQuantity) .lt. range]" />
+      </GatherPairs>
+    </Structure>
+  </ComponentType>
+
+
+  <Component type="GridBasedNetwork" id="net2">
+    <PosGrid1D id="line" min="0um" max="20um" step="2um" quantity="distance" />
+    <Group of="GridPoint" id="ipoints" select="line[index % 5 .eq. 0]" />
+    <Group of="GridPoint" id="epoints" select="line .minus. ipoints" />
+
+    <PointBasedPopulation id="pe" component="excit_cell" points="epoints" />
+    <PointBasedPopulation id="pi" component="inhib_cell" points="ipoints" />
+
+    <Group of="Cell" id="all" select="pe .or. pi" />
+    <FromToConnections id="proj1" from="pi" to="pe">
+      <BoxCarSelector range="5um" fromQuantity="distance"
+				toQuantity="distance" />
+    </FromToConnections>
+  </Component>
+</Lems>
+

@@ -1,0 +1,103 @@
+
+<Lems>
+
+    <DefaultRun component="sim1" />
+
+    <Dimension name="length" l="1" />
+    <Dimension name="time" t="1" />
+    <Unit symbol="ms" dimension="time" power="-3" />
+    <Unit symbol="um" dimension="length" power="-6" />
+
+
+    <ComponentType name="spikeGenerator">
+        <Parameter name="period" dimension="time"/>
+        <EventPort name="a" direction="out"/>
+        <Exposure name="tsince" dimension="time"/>
+        <Behavior>
+            <StateVariable name="tsince" exposure="tsince" dimension="time"/>
+            <TimeDerivative variable="tsince" value="1"/>
+            <OnCondition test="tsince .gt. period">
+                <StateAssignment variable="tsince" value="0"/>
+                <EventOut port="a"/>
+            </OnCondition>
+        </Behavior>
+    </ComponentType>
+
+    <ComponentType name="Cell">
+        <EventPort name="spikes-in" direction="in" />
+        <EventPort name="spikes-out" direction="out" />
+
+        <Exposure name="n" dimension="none" />
+
+        <Behavior>
+            <StateVariable name="n" exposure="n" dimension="none" />
+            <OnEvent port="spikes-in">
+                <StateAssignment variable="n" value="n + 1" />
+            </OnEvent>
+
+            <OnCondition test="n .eq. 100">
+                <EventOut port="spikes-out" />
+            </OnCondition>
+        </Behavior>
+
+    </ComponentType>
+
+
+
+    <spikeGenerator id="spiker" period="10ms"/>
+
+
+    <Cell id="countCell"/>
+
+
+    <Include file="SimpleNetwork.xml"/>
+
+
+    <ComponentType name="ConnectionX">
+
+        <Path name="preCell"/>
+        <Path name="postCell"/>
+
+        <Behavior>
+            <Build>
+              <With instance="preCell" as="a"/>
+              <With instance="postCell" as="b"/>
+              <EventConnection from="a" to="b"/>
+            </Build>
+        </Behavior>
+
+    </ComponentType>
+
+    <ComponentType name="NetworkX">
+
+        <Children name="Populations" type="Population"/>
+        <Children name="ConnectionXs" type="ConnectionX"/>
+
+    </ComponentType>
+
+
+    <NetworkX id="net1">
+        <Population id="spikerPop" component="spiker" size="1"/>
+        <Population id="countCellPop" component="countCell" size="1"/>
+
+
+		<ConnectionX id="conn0" preCell="spikerPop[0]" postCell="countCellPop[0]"/>
+
+
+    </NetworkX>
+    
+
+
+    <Include file="SimpleSimulation.xml" />
+
+    <Simulation id="sim1" length="200ms" step="0.05ms" target="net1">
+        <Display id="d0" timeScale="1ms" title="Network example: spikerPop">
+            <Line id="ve0" quantity="spikerPop[0]/tsince" scale="1ms" color="#0000f0" save="pe0.dat"/>
+        </Display>
+        <Display id="d2" timeScale="1ms" title="Network example: countCellPop">
+            <Line id="vi0" quantity="countCellPop[0]/n" scale="1" color="#0000f0" save="pi0.dat"/>
+        </Display>
+    </Simulation>
+
+
+</Lems>

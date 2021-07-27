@@ -1,0 +1,205 @@
+<Lems>
+
+
+<ComponentType name="ReleaseProbability">
+	<Parameter name="pRest" dimension="none"/>
+	<Exposure name="p" dimension="none"/>
+	<EventPort name="in" direction="IN"/>
+	<Parameter name="decayRate" dimension="time"/>
+	<Behavior>
+		<StateVariable name="p" dimension="none" exposure="p"/>
+		<OnStart>
+			<StateAssignment variable="p" value="pRest"/>
+		</OnStart>
+		<TimeDerivative variable="p" rate="(p - pRest) / decayRate"/>
+		<OnEvent>
+			<StateAssigment variable="p" value="p + pRest * (1 - p) * p"/>
+		</OnEvent>
+	</Behavior>
+</ComponentType>
+
+
+<ComponentType name="VesiclePool">
+	<Child type="ReleaseProbability" name="releaseProbability"/>
+	<Exposure name="nReleased" dimension="none"/>
+	<EventPort name="in" direction="IN"/>
+</ComponentType>
+
+
+<ComponentType name="SingleVesiclePool" extends="VesiclePool">
+	<Parameter name="ntot" dimension="none"/>
+	<Parameter name="k" dimension="per_time"/>
+
+	<Child name="refillRate" type="RefillRate"/>
+	
+	<Behavior>
+		<DerivedVaraible name="releaseProbability" select="releaseProbbability/p"/>
+	
+		<StateVariable name="nrel" dimension="none" exposure="nReleased"/>
+		<StateVariable name="n" dimension="none"/>
+		<OnStart>
+			<StateAssignment variable="n" value="ntot"/>
+			<StateAssignment variable="nrel" value="0"/>
+		</OnStart>
+		<DeriedVariable name="k" dimension="per_time" value="refilRate/kRefill"/>
+		<TimeDerivative variable="n" value="k (ntot - n)"/>
+		
+		<OnEvent>
+			<StateAssignment variable="nrel" value="binomial(n, releaseProbability)"/>
+			<StateAssignment variable="n" value="n - nrel"/>
+		</OnEvent>
+	</Behavior>
+</ComponentType>
+
+
+<ComponentType name="RefillRate">
+	<Exposure name="kRefill" dimension="per_time"/>
+</ComponentType>
+
+
+<ComponentType name="ConstantRefillRate">
+	<Parameter name="k" exposure="kRefill"/>
+</ComponentType>
+
+<ComponentType name="CaDepRefillRate">
+	<Requirement name="deltaCa" dimension="concentration"/>
+	<Parameter name="KD" dimension="per_concentration"/>
+	<Parameter name="k0" dimension="per_time"/>
+	<Parameter name="kmax" dimension="per_time"/>
+	
+	<Benavior>
+		<DerivedVariable name="keff" exposure="kRefill" 
+		   value="k0 + ( kmax - k0) / (1 + Kd * deltaCa)"/>	
+	</Benavior>
+</ComponentType>
+	
+	
+	
+<ComponentType name="DoubleVesiclePool">
+	<Parameter name="N2Sites" dimension="none">Maximum number in pool 2</Parameter>
+	<Parameter name="N2RefilRate" dimensin="per_time"/>
+	<Parameter name="r_1_2" dimension="per_time"/>
+	<Parameter name="r_2_1" dimension="per_time"/>
+	<Parameter name="r_0_1" dimension="per_time"/>
+	<Parameter name="r_1_0" dimension="per_time"/>
+	<Parameter name="r_0_in" dimension="per_time"/>
+	<Parameter name="r_0_out" dimension="per_time"/>
+	
+	
+	<Behavior>
+		<DerivedVariable name="pr2" dimension="none" select="releaseProbbability/p"/>
+		<DerivedVaraible name="pr1" value="0.5 * pr2"/>
+	
+		<StateVariable name="n0" dimension="none"/>
+		<StateVariable name="n1" dimension="none"/>
+		<StateVariable name="n2" dimension="none"/>
+		
+		<StateVaraible name="nr1" dimension="none"/>
+		<StateVariable name="nr2" dimension="none"/>
+		<StateVariable name="nrtot" dimension="none" exposure="nReleased"/>
+		
+		<DerivedVariable name="flux12" dimension="per_time" value="r_1_2 * n1 * (N2sites - n2)"/>
+		
+		<DerivedVariable name="flux01" dimension="per_time" value="r_0_1 * n0"/>
+		<DerivedVariable name="flux10" dimension="per_time" value="r_1_0 * n1"/>
+		
+		<TimeDerivative variable="n0" value="r_0_in - r_0_out * n0 + flux10 - flux01"/>
+		<TimeDerivative variable="n1" value="flux01 - fkux10 - flux12"/>
+		<TimeDerivative variable="n2" value="flux12"/>
+		
+		
+		<OnEvent>
+			<StateAssignment variable="nr1" value="binomial(n1, pr1)"/>
+			<StateAssignment variable="nr2" value="binomial(n2, pr2)"/>
+			<StateAssignment varialbe="n1" value="n1 - nr1"/>
+			<StateAssignment variable="n2" value="n2 - nr2"/>
+			<StateAssignment variable="nrtot" value="nr1 + nr2"/>
+		</OnEvent>		
+	</Behavior>
+</ComponentType>
+
+
+
+
+
+<ComponentType name="VesicleSynapse">
+	<Child name="pool" type="VesiclePool"/>
+	<Parameter name="conductanceDecayRate" dimension="per_time"/>
+	<Exposure name="conductance" dimension="none"/>
+	<EventPort name="in" direction="in"/>
+	
+	<Behavior>
+		<StateVariable name="conductance" dimension="none" exposure="conductance"/>
+		<TimeDerivative variable="conductance" value="-1 * conductanceDecayRate * conductance"/>
+	
+		<OnEvent>
+			<Relay to="pool"/>
+			<DerivedVariable name="nrel" dimension="none" select="pool/nReleased"/>
+			<StateAssignment variable="conductance" value="conductance + nrel"/>
+		</OnEvent>
+	</Behavior>
+</ComponentType>
+
+
+<ComponentType name="StimItem">
+	<Parameter name="duration" dimension="time"/>
+</ComponentType>
+
+<ComponentType name="StimQuiet" extends="StimItem">
+   <Behavior>
+   		<StateVariable name="tin" dimension="time"/>
+   		<OnStart>
+   			<StateAssignment variable="tin" value="t"/>
+   		</OnStart>
+   		<OnCondition test="t .gt. tin + duration">
+   			<DeliverEvent port="../advancePort"/>
+   		</OnCondition>
+   </Behavior>
+</ComponentType>
+
+
+<ComponentType name="StimTrain" extends="StimItem">
+	<Parameter name="frequency" dimension="per_time"/>
+</ComponentType>
+
+
+<ComponentType name="StimSequence">
+	<Children name="trains" type="StimTrain"/>
+	<EventPort direction="IN" name="advancePort"/>
+	<EventPort direction="OUT" name="stims"/>
+	
+	<Behavior>
+		<SingleActiveInstance name="train"/>
+		<OnStart>
+			<InstanceAssignment instance="train" select="trains[0]"/>
+		</OnStart>			
+		
+		<OnEvent port="advancePort">
+			<InstanceAssignment instance="train" select="next-sibling(train)"/>
+		</OnEvent>
+		
+	</Behavior>
+</ComponentType>
+
+
+
+<StimSequence>
+	<StimQuet duration="200ms"/>
+	<StimEvents duration="100ms" frequency="20Hz"/>
+     <StimQuet duration="200ms"/>
+	<StimEvents duration="100ms" frequency="100Hz"/>
+	<StimQuet duration="200ms"/>
+	<StimEvents duration="100ms" frequency="200Hz"/>
+	
+	<StimQuet duration="200ms"/>
+	<StimEvents duration="100ms" frequency="20Hz"/>
+	
+	<StimQuet duration="200ms"/>
+	<StimEvents duration="100ms" frequency="10Hz"/>
+	
+	<StimQuet duration="200ms"/>
+	<StimEvents duration="100ms" frequency="50Hz"/>
+ 
+</StimSequence>
+
+</Lems>
