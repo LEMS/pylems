@@ -4,6 +4,8 @@ name: Check LEMS examples
 on:
   push:
     branches:  [ master, development, experimental ]
+  pull_request:
+    branches:  [ master, development, experimental ]
 
 jobs:
   verify:
@@ -29,8 +31,10 @@ jobs:
 
     - name: check examples
       run: |
-        rm -f examples/*.py
-        if ! diff -ur jlems/src/test/resources/ examples/ ; then
-          echo "Examples files are not identical"
-          exit -1
-        fi
+        for ex in "example1.xml" "example2.xml" "example3.xml" "example4.xml" "example5.xml" "example6.xml" "example7.xml" "example8.xml" "bounce-conditional.xml" "bounce.xml" "ex-flat.xml" "test_regime_iaf.xml" "ex-properties.xml"; do
+
+          if ! diff -ur "examples/$ex" "jlems/src/test/resources/$ex" ; then
+            echo "Example file $ex is not identical"
+            exit -1
+          fi
+        done
