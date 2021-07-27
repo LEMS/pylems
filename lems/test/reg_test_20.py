@@ -2,7 +2,7 @@
 """
 Regression test for https://github.com/LEMS/pylems/issues/20
 
-File: reg_20_test.py
+File: reg_test_20.py
 
 Copyright 2021 LEMS contributors
 Author: Ankur Sinha <sanjay DOT ankur AT gmail DOT com>
@@ -27,7 +27,7 @@ class TestIssue20Regression(unittest.TestCase):
 
     def test_initMembPotential_init(self):
         """Test for https://github.com/LEMS/pylems/issues/20"""
-        initmembpot = -20.0
+        initmembpot = -20.000000000000000000000
         reg_20_nml = textwrap.dedent(
             """<neuroml xmlns="http://www.neuroml.org/schema/neuroml2"  xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.neuroml.org/schema/neuroml2 https://raw.github.com/NeuroML/NeuroML2/development/Schemas/NeuroML2/NeuroML_v2beta3.xsd" id="TestDoc">
 
@@ -50,7 +50,7 @@ class TestIssue20Regression(unittest.TestCase):
           <biophysicalProperties id="bio_cell">
             <membraneProperties>
               <channelPopulation id="chn_pop_lk" ionChannel="chnl_lk" number="1" erev="-50mV" />
-              <spikeThresh value="0mV" />
+              <spikeThresh value="20mV" />
               <specificCapacitance value="1.0 uF_per_cm2" segmentGroup="segs_soma" />
               <initMembPotential value="{}mV" />
             </membraneProperties>
@@ -93,6 +93,7 @@ class TestIssue20Regression(unittest.TestCase):
         coretype_files_dir = os.path.dirname(os.path.abspath(__file__)) + '/NeuroML2CoreTypes'
         lems_run(xml_file.name, include_dirs=[coretype_files_dir])
 
+        # Deletes the files also
         nml_file.close()
         xml_file.close()
 
@@ -102,7 +103,7 @@ class TestIssue20Regression(unittest.TestCase):
                 time = float(ln[0])
                 value = float(ln[1])
                 assert(time == 0)
-                assert(value == initmembpot)
+                self.assertAlmostEqual(value, initmembpot/1000., delta=0.01)
                 # We only want to check the first line
                 break
-        #  os.remove("reg_20.dat")
+        os.remove("reg_20.dat")
