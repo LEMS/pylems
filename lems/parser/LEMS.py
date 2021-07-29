@@ -1421,7 +1421,7 @@ class LEMSFileParser(LEMSBase):
         if 'dimension' in node.lattrib:
             dimension = node.lattrib['dimension']
         else:
-            self.raise_error("Requirement \{0}' must specify a dimension.", name)
+            self.raise_error("Requirement %s must specify a dimension." % name)
 
         description = node.lattrib.get('description', '')
         self.current_component_type.add_requirement(Requirement(name, dimension, description))
@@ -1457,7 +1457,7 @@ class LEMSFileParser(LEMSBase):
         if 'type' in node.lattrib:
             type = node.lattrib['type']
         else:
-            self.raise_error("InstanceRequirement \{0}' must specify a type.", name)
+            self.raise_error("InstanceRequirement %s must specify a type." % name)
 
         self.current_component_type.add_instance_requirement(InstanceRequirement(name, type))
 
