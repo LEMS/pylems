@@ -29,7 +29,7 @@ jobs:
 
     - name: check examples
       run: |
-        for ex in "example1.xml" "example2.xml" "example3.xml" "example4.xml" "example5.xml" "example6.xml" "example7.xml" "example8.xml" "bounce-conditional.xml" "bounce.xml" "ex-flat.xml" "test_regime_iaf.xml" "ex-properties.xml"; do
+        for ex in "example1.xml" "example2.xml" "example3.xml" "example4.xml" "example5.xml" "example6.xml" "example7.xml" "example8.xml" "bounce-conditional.xml" ; do
 
           if ! diff -ur "examples/$ex" "jlems/src/test/resources/$ex" ; then
             echo "Example file $ex is not identical"
