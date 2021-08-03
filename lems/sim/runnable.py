@@ -536,7 +536,6 @@ class Runnable(Reflective):
             child.do_startup()
         
         #if getattr(self, "xxx", None): 
-        if getattr(self, "run_startup_event_handlers", None): self.run_startup_event_handlers(self)
         if getattr(self, "update_derived_parameters", None): self.update_derived_parameters(self)
         
         try:
@@ -545,12 +544,14 @@ class Runnable(Reflective):
             print("Problem setting initial value of DerivedVariable in %s: %s"%(self.id,e))
             print("Continuing...")
       
+        # Run start up handlers after all the variables have been set up
+        if getattr(self, "run_startup_event_handlers", None): self.run_startup_event_handlers(self)
+
         for cid in self.uchildren:
             self.uchildren[cid].do_startup()
 
         for child in self.array:
             child.do_startup()
-             
 
     def record_variables(self):
         for recording in self.recorded_variables:
