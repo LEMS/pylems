@@ -901,7 +901,7 @@ class Model(LEMSBase):
 
         return exposures
 
-    def get_recording_path(self, comp, exposures):
+    def get_recording_path_for_exposures(self, comp, exposures):
         # type: (Component, List[Exposure]) -> List[str]
         """Create recording path from a component and its list of exposures.
 
@@ -917,7 +917,7 @@ class Model(LEMSBase):
             retlist.append(comp.id + "/" + exposure.name)
         return retlist
 
-    def list_recording_paths(self, substring=None):
+    def list_recording_paths_for_exposures(self, substring=None):
         # type: (str) -> List[str]
         """Get the recording path strings for exposures of matching component
         ids.
@@ -931,5 +931,5 @@ class Model(LEMSBase):
         exposures = self.list_exposures(substring)
 
         for comp, exps in exposures.items():
-            recording_paths.extend(self.get_recording_path(comp, exps))
+            recording_paths.extend(self.get_recording_path_for_exposures(comp, exps))
         return recording_paths
