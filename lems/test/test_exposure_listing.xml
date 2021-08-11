@@ -75,7 +75,7 @@
 
     <Network id="net1">
         <Population id="p1" component="example_iaf1_cell" size="1" />
-        <Population id="p1" component="example_iaf2_cell" size="1" />
+        <Population id="p2" component="example_iaf2_cell" size="1" />
     </Network>
     <Simulation id="sim1" length="80ms" step="0.01ms" target="net1" />
 </Lems>
