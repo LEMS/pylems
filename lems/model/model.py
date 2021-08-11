@@ -855,7 +855,54 @@ class Model(LEMSBase):
         #print("Have converted %s to value: %s, dimension %s"%(value_str, numeric_value, dimension))
         return numeric_value
 
-    def list_exposures(self, substring=None):
+    def get_component_list(self, substring=""):
+        """Get all components whose id matches the given substring.
+
+        Note that in PyLEMS, if a component does not have an id attribute,
+        PyLEMS uses the name of the component as its ID.
+        See the parser methods in LEMSFileParser.
+
+        This function is required because the component attribute of the model
+        class only holds the top level components and not its child/children
+        elements. So we need to manually fetch them.
+
+        :param substring: substring to match components against
+        :type substring: str
+        :returns: list of components matching the substring
+
+        """
+        comp_list = []
+        ret_list = []
+        # For each top level component, recursively get to all children
+        for comp in self.components:
+            comp_list.extend(self.get_nested_components(comp))
+
+        # Remove duplicates
+        comp_list = list(dict.fromkeys(comp_list))
+
+        for c in comp_list:
+            if substring in c.id:
+                ret_list.append(c)
+
+        return ret_list
+
+    def get_nested_components(self, comp):
+        """Get all nested (child/children) components in the comp component
+
+        :param comp: component to get all nested (child/children) components for
+        :type comp: Component
+        :returns: list of components
+
+        """
+        comp_list = []
+        comp_list.append(comp)
+
+        for c in comp.children:
+            comp_list.extend(self.get_nested_components(c))
+
+        return comp_list
+
+    def list_exposures(self, substring=""):
         # type: (str) -> Dict[Component, Map]
         """Get exposures from model.
 
@@ -870,13 +917,7 @@ class Model(LEMSBase):
 
         """
         exposures = {}
-        comp_list = []
-        if substring:
-            for comp in self.components:
-                if substring in comp.id:
-                    comp_list.append(comp)
-        else:
-            comp_list = self.components
+        comp_list = self.get_component_list(substring)
 
         for comp in comp_list:
             cur_type = self.component_types[comp.type]
@@ -917,7 +958,7 @@ class Model(LEMSBase):
             retlist.append(comp.id + "/" + exposure.name)
         return retlist
 
-    def list_recording_paths_for_exposures(self, substring=None):
+    def list_recording_paths_for_exposures(self, substring=""):
         # type: (str) -> List[str]
         """Get the recording path strings for exposures of matching component
         ids.
