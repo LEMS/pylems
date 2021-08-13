@@ -995,16 +995,22 @@ class Model(LEMSBase):
         possible paths as individual lists. These can then be passed to the
         construct_path method to construct string paths.
 
+        Additionally, note that this generates paths from the model
+        declaration, not from a built simulation instance of the model.
+        Therefore, it does not find paths that are constructed during build
+        time.
+
         :param comp: Component to get all paths for
         :type comp: Component
         """
+        debug = False
         # ref_map = self.get_comp_ref_map()
         fat_components = self.get_fattened_component_list()
-        if self.debug:
+        if debug:
             print("Processing {}".format(comp.id))
         self.temp_vec.append(comp.id)
         if comptext:
-            if self.debug:
+            if debug:
                 print("for {}, text given: {}".format(comp.id, comptext))
             self.path_vec.append(comptext)
         else:
@@ -1016,15 +1022,24 @@ class Model(LEMSBase):
         for ch in comp.children:
             if ch.name in fat_components:
                 nextchildren.append(fat_components[ch.name])
-                if self.debug:
+                if debug:
                     print("children {} for {} added".format(fat_components[ch.name], comp.id))
         # check if any child components are used in the model for this comp
         nextchild = []
         for cc in comp.child_components:
             if cc.id in fat_components:
                 nextchild.append(cc)
-                if self.debug:
+                if debug:
                     print("child {} for {} added".format(cc, comp.id))
+
+        nextattachment = []
+        # attachments
+        # TODO: not sure what function these serve before build time
+        for at in comp.attachments:
+            if at.name in fat_components:
+                nextattachment.append(fat_components[at.name])
+                if debug:
+                    print("attachment {} for {} added".format(cc, comp.id))
 
         # structure
         # multi instantiates
@@ -1034,18 +1049,29 @@ class Model(LEMSBase):
             self.path_vec[-1] = "SKIP"
             for mi_n in range(mi.number):
                 nextmi.append(mi.component)
-            if self.debug:
+            if debug:
                 print("MI {} for {} added".format(mi.component.id, comp.id))
         # child instances
         nextci = []
         for ci in comp.structure.child_instances:
             nextci.append(ci.referenced_component)
-            if self.debug:
+            if debug:
                 print("CI {} for {} added".format(ci.referenced_component.id, comp.id))
+        # nothing to be done for Withs
+        # event connections: note: when the simulation is built, the event
+        # connections are processes and the sources attached to the necessary
+        # target instances. Since we are not building the simulation here, we
+        # cannot list the exposures from event connection inputs at the target
+        # instances.
+        nextec = []
+        for ec in comp.structure.event_connections:
+            nextec.append(fat_components[ec.receiver.id])
+            if debug:
+                print("EC {} appended for {}".format(ec.receiver.id, comp.id))
 
-        # if no children or child components are used, this is a leaf node
-        if not len(nextchildren) and not len(nextchild) and not len(nextmi) and not len(nextci):
-            if self.debug:
+        # a leaf node
+        if not len(nextchildren) and not len(nextchild) and not len(nextattachment) and not len(nextmi) and not len(nextci) and not len(nextec):
+            if debug:
                 print("{} is leaf".format(comp.id))
                 print("Append {} to recording_paths".format(self.temp_vec))
                 print("Append {} to recording_paths_text".format(self.path_vec))
@@ -1059,12 +1085,16 @@ class Model(LEMSBase):
         # process all next level nodes
         for nextnode in (nextchildren + nextchild):
             self.get_full_comp_paths_with_comp_refs(nextnode)
+        for nextnode in nextattachment:
+            self.get_full_comp_paths_with_comp_refs(nextnode, "SKIP")
         i = 0
         for nextnode in nextmi:
             self.get_full_comp_paths_with_comp_refs(nextnode, "{}[{}]".format(comp.id, i))
             i += 1
         for nextnode in nextci:
             self.get_full_comp_paths_with_comp_refs(nextnode, "SKIP")
+        for nextnode in nextec:
+            self.get_full_comp_paths_with_comp_refs(nextnode)
 
         self.temp_vec.pop()
         self.path_vec.pop()
@@ -1084,6 +1114,7 @@ class Model(LEMSBase):
         return '/'.join(pathlist)
 
     def list_recording_paths_for_exposures(self, substring="", target=""):
+        # (str, str) -> List[str]
         if not len(target):
             print("Please provide a target element.")
             return []
@@ -1124,12 +1155,13 @@ class Model(LEMSBase):
                             if newpath not in exp_paths:
                                 exp_paths.append(newpath)
                 else:
+                    if self.debug:
+                        print("No exposures for {}".format(p[i]))
                     pass
-                    # print("No exposures for {}".format(p[i]))
 
-        print("{} paths obtained".format(len(exp_paths)))
         exp_paths.sort()
-        print("\n".join(exp_paths))
+        if self.debug:
+            print("\n".join(exp_paths))
         return exp_paths
 
     def get_comp_ref_map(self):
