@@ -124,8 +124,8 @@ class EventConnection(LEMSBase):
         :type: str """
 
         self.receiver = receiver
-        """ Name of the proxy receiver component attached to the target component that actually receiving the event.
-        :type: str """
+        """ Proxy receiver component attached to the target component that actually receiving the event.
+        :type: Component """
 
         self.receiver_container = receiver_container
         """ Name of the child component grouping to add the receiver to.

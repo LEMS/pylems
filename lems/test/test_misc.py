@@ -30,6 +30,14 @@ class TestExposure(unittest.TestCase):
             if c.id == "example_iaf2_cell":
                 self.assertTrue('v' in es)
 
+        paths = model.list_recording_paths_for_exposures(substring="", target="net1")
+        self.assertTrue("net1/p1[0]/v" in paths)
+        self.assertTrue("net1/p1[1]/v" in paths)
+        self.assertTrue("net1/p1[2]/v" in paths)
+        self.assertTrue("net1/p1[3]/v" in paths)
+        self.assertTrue("net1/p1[4]/v" in paths)
+        self.assertTrue("net1/p2[0]/v" in paths)
+
 
 if __name__ == '__main__':
     unittest.main()
