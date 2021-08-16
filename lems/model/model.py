@@ -12,6 +12,7 @@ try:
     from typing import List, Dict, Union, Tuple
 except ImportError:
     pass
+import copy
 
 from lems import __schema_location__, __schema_version__
 from lems.base.base import LEMSBase
@@ -1082,8 +1083,8 @@ class Model(LEMSBase):
                 print("Append {} to recording_paths".format(self.temp_vec))
                 print("Append {} to recording_paths_text".format(self.path_vec))
             # append a copy since the path_vec is emptied out each time
-            self.recording_paths.append(self.temp_vec.copy())
-            self.recording_paths_text.append(self.path_vec.copy())
+            self.recording_paths.append(copy.deepcopy(self.temp_vec))
+            self.recording_paths_text.append(copy.deepcopy(self.path_vec))
             self.temp_vec.pop()
             self.path_vec.pop()
             return
