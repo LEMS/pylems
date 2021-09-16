@@ -17,7 +17,7 @@ setup(
     description = "A Python library for working with the Low Entropy Model Specification language (LEMS)",
     long_description = long_description,
     long_description_content_type="text/markdown",
-    install_requires=['lxml','typing'],
+    install_requires=['lxml','typing; python_version<"3.5"'],
     license = "LGPL",
     url="https://github.com/LEMS/pylems",
     classifiers = [
