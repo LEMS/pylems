@@ -58,9 +58,11 @@ class TestIssue20Regression(unittest.TestCase):
           </biophysicalProperties>
         </cell>
     </neuroml>
-            """.format(initmembpot)
+            """.format(
+                initmembpot
+            )
         )
-        nml_file = tempfile.NamedTemporaryFile(mode='w+b')
+        nml_file = tempfile.NamedTemporaryFile(mode="w+b")
         nml_file.write(str.encode(reg_20_nml))
         nml_file.flush()
 
@@ -80,30 +82,34 @@ class TestIssue20Regression(unittest.TestCase):
             </OutputFile>
         </Simulation>
     </Lems>
-            """.format(nml_file.name)
+            """.format(
+                nml_file.name
+            )
         )
 
-        xml_file = tempfile.NamedTemporaryFile(mode='w+b')
+        xml_file = tempfile.NamedTemporaryFile(mode="w+b")
         xml_file.write(str.encode(reg_20_xml))
         xml_file.flush()
 
         # TODO: replace this with pynml's extract LEMS files function when that has
         # been merged and released. We won't need to carry a copy of the coretypes
         # then.
-        coretype_files_dir = os.path.dirname(os.path.abspath(__file__)) + '/NeuroML2CoreTypes'
+        coretype_files_dir = (
+            os.path.dirname(os.path.abspath(__file__)) + "/NeuroML2CoreTypes"
+        )
         lems_run(xml_file.name, include_dirs=[coretype_files_dir])
 
         # Deletes the files also
         nml_file.close()
         xml_file.close()
 
-        with open("reg_20.dat", 'r') as res:
+        with open("reg_20.dat", "r") as res:
             for line in res:
                 ln = line.split()
                 time = float(ln[0])
                 value = float(ln[1])
-                assert(time == 0)
-                self.assertAlmostEqual(value, initmembpot/1000., delta=0.01)
+                assert time == 0
+                self.assertAlmostEqual(value, initmembpot / 1000.0, delta=0.01)
                 # We only want to check the first line
                 break
         os.remove("reg_20.dat")

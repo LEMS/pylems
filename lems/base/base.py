@@ -7,6 +7,7 @@ PyLEMS base class.
 
 import copy
 
+
 class LEMSBase(object):
     """
     Base object for PyLEMS.
@@ -16,4 +17,4 @@ class LEMSBase(object):
         return copy.deepcopy(self)
 
     def toxml(self):
-        return ''
+        return ""

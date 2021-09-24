@@ -7,6 +7,7 @@ Model storage.
 
 import os
 from os.path import dirname
+
 # For python versions where typing isn't available at all
 try:
     from typing import List, Dict, Union, Tuple
@@ -22,10 +23,23 @@ from lems.parser.LEMS import LEMSFileParser
 from lems.base.errors import ModelError
 from lems.base.errors import SimBuildError
 
-from lems.model.fundamental import Dimension,Unit,Include
-from lems.model.component import Constant,ComponentType,Component,FatComponent,Exposure
-from lems.model.simulation import Run,Record,EventRecord,DataDisplay,DataWriter,EventWriter
-from lems.model.structure import With,EventConnection,ChildInstance,MultiInstantiate
+from lems.model.fundamental import Dimension, Unit, Include
+from lems.model.component import (
+    Constant,
+    ComponentType,
+    Component,
+    FatComponent,
+    Exposure,
+)
+from lems.model.simulation import (
+    Run,
+    Record,
+    EventRecord,
+    DataDisplay,
+    DataWriter,
+    EventWriter,
+)
+from lems.model.structure import With, EventConnection, ChildInstance, MultiInstantiate
 
 import xml.dom.minidom as minidom
 from xml.parsers.expat import ExpatError, errors
@@ -44,7 +58,7 @@ class Model(LEMSBase):
 
     target_lems_version = __schema_version__
     schema_location = __schema_location__
-    #schema_location = '/home/padraig/LEMS/Schemas/LEMS/LEMS_v%s.xsd'%target_lems_version
+    # schema_location = '/home/padraig/LEMS/Schemas/LEMS/LEMS_v%s.xsd'%target_lems_version
 
     debug = False
 
@@ -166,8 +180,8 @@ class Model(LEMSBase):
         name = component_type.name
 
         # To handle colons in names in LEMS
-        if ':' in name:
-            name = name.replace(':', '_')
+        if ":" in name:
+            name = name.replace(":", "_")
             component_type.name = name
 
         self.component_types[name] = component_type
@@ -224,7 +238,7 @@ class Model(LEMSBase):
         elif isinstance(child, Constant):
             self.add_constant(child)
         else:
-            raise ModelError('Unsupported child element')
+            raise ModelError("Unsupported child element")
 
     def add_include_directory(self, path):
         """
@@ -236,7 +250,7 @@ class Model(LEMSBase):
 
         self.include_directories.append(path)
 
-    def include_file(self, path, include_dirs = []):
+    def include_file(self, path, include_dirs=[]):
         """
         Includes a file into the current model.
 
@@ -247,7 +261,10 @@ class Model(LEMSBase):
         :type include_dirs: list(str)
         """
         if self.include_includes:
-            if self.debug: print("------------------                   Including a file: %s"%path)
+            if self.debug:
+                print(
+                    "------------------                   Including a file: %s" % path
+                )
             inc_dirs = include_dirs if include_dirs else self.include_dirs
 
             parser = LEMSFileParser(self, inc_dirs, self.include_includes)
@@ -257,20 +274,22 @@ class Model(LEMSBase):
                     self.included_files.append(path)
                     return
                 else:
-                    if self.debug: print("Already included: %s"%path)
+                    if self.debug:
+                        print("Already included: %s" % path)
                     return
             else:
                 for inc_dir in inc_dirs:
-                    new_path = (inc_dir + '/' + path)
+                    new_path = inc_dir + "/" + path
                     if os.access(new_path, os.F_OK):
                         if not new_path in self.included_files:
                             parser.parse(open(new_path).read())
                             self.included_files.append(new_path)
                             return
                         else:
-                            if self.debug: print("Already included: %s"%path)
+                            if self.debug:
+                                print("Already included: %s" % path)
                             return
-            msg = 'Unable to open ' + path
+            msg = "Unable to open " + path
             if self.fail_on_missing_includes:
                 raise Exception(msg)
             elif self.debug:
@@ -295,13 +314,19 @@ class Model(LEMSBase):
         """
         Exports this model to a DOM.
         """
-        namespaces = 'xmlns="http://www.neuroml.org/lems/%s" ' + \
-                     'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' + \
-                     'xsi:schemaLocation="http://www.neuroml.org/lems/%s %s"'
+        namespaces = (
+            'xmlns="http://www.neuroml.org/lems/%s" '
+            + 'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
+            + 'xsi:schemaLocation="http://www.neuroml.org/lems/%s %s"'
+        )
 
-        namespaces = namespaces%(self.target_lems_version,self.target_lems_version,self.schema_location)
+        namespaces = namespaces % (
+            self.target_lems_version,
+            self.target_lems_version,
+            self.schema_location,
+        )
 
-        xmlstr = '<Lems %s>'%namespaces
+        xmlstr = "<Lems %s>" % namespaces
 
         for include in self.includes:
             xmlstr += include.toxml()
@@ -324,17 +349,17 @@ class Model(LEMSBase):
         for component in self.components:
             xmlstr += component.toxml()
 
-        xmlstr += '</Lems>'
+        xmlstr += "</Lems>"
 
         try:
             xmldom = minidom.parseString(xmlstr)
         except ExpatError as er:
             print("Parsing error:", errors.messages[er.code])
-            print("at: " + xmlstr[er.offset:er.offset+20])
+            print("at: " + xmlstr[er.offset : er.offset + 20])
             raise
         return xmldom
 
-    def export_to_file(self, filepath, level_prefix = '  '):
+    def export_to_file(self, filepath, level_prefix="  "):
         """
         Exports this model to a file.
 
@@ -342,10 +367,12 @@ class Model(LEMSBase):
         :type filepath: str
         """
         xmldom = self.export_to_dom()
-        xmlstr = xmldom.toprettyxml(level_prefix, '\n',)
+        xmlstr = xmldom.toprettyxml(
+            level_prefix,
+            "\n",
+        )
 
-
-        f = open(filepath, 'w')
+        f = open(filepath, "w")
         f.write(xmlstr)
         f.close()
 
@@ -390,8 +417,11 @@ class Model(LEMSBase):
             try:
                 base_ct = self.component_types[component_type.extends]
             except:
-                raise ModelError("Component type '{0}' trying to extend unknown component type '{1}'",
-                                 component_type.name, component_type.extends)
+                raise ModelError(
+                    "Component type '{0}' trying to extend unknown component type '{1}'",
+                    component_type.name,
+                    component_type.extends,
+                )
 
             self.resolve_component_type(base_ct)
             self.merge_component_types(component_type, base_ct)
@@ -410,7 +440,7 @@ class Model(LEMSBase):
         :type base_ct: lems.model.component.ComponentType
         """
 
-        #merge_maps(ct.parameters, base_ct.parameters)
+        # merge_maps(ct.parameters, base_ct.parameters)
         for parameter in base_ct.parameters:
             if parameter.name in ct.parameters:
                 p = ct.parameters[parameter.name]
@@ -440,16 +470,21 @@ class Model(LEMSBase):
 
         merge_maps(ct.dynamics.state_variables, base_ct.dynamics.state_variables)
         merge_maps(ct.dynamics.derived_variables, base_ct.dynamics.derived_variables)
-        merge_maps(ct.dynamics.conditional_derived_variables, base_ct.dynamics.conditional_derived_variables)
+        merge_maps(
+            ct.dynamics.conditional_derived_variables,
+            base_ct.dynamics.conditional_derived_variables,
+        )
         merge_maps(ct.dynamics.time_derivatives, base_ct.dynamics.time_derivatives)
 
-        #merge_lists(ct.dynamics.event_handlers, base_ct.dynamics.event_handlers)
+        # merge_lists(ct.dynamics.event_handlers, base_ct.dynamics.event_handlers)
 
         merge_maps(ct.dynamics.kinetic_schemes, base_ct.dynamics.kinetic_schemes)
 
         merge_lists(ct.structure.event_connections, base_ct.structure.event_connections)
         merge_lists(ct.structure.child_instances, base_ct.structure.child_instances)
-        merge_lists(ct.structure.multi_instantiates, base_ct.structure.multi_instantiates)
+        merge_lists(
+            ct.structure.multi_instantiates, base_ct.structure.multi_instantiates
+        )
 
         merge_maps(ct.simulation.runs, base_ct.simulation.runs)
         merge_maps(ct.simulation.records, base_ct.simulation.records)
@@ -468,19 +503,26 @@ class Model(LEMSBase):
         :return: Fattened component.
         :rtype: lems.model.component.FatComponent
         """
-        if self.debug: print("Fattening %s"%c.id)
+        if self.debug:
+            print("Fattening %s" % c.id)
         try:
             ct = self.component_types[c.type]
         except:
-            raise ModelError("Unable to resolve type '{0}' for component '{1}'; existing: {2}",
-                             c.type, c.id, self.component_types.keys())
+            raise ModelError(
+                "Unable to resolve type '{0}' for component '{1}'; existing: {2}",
+                c.type,
+                c.id,
+                self.component_types.keys(),
+            )
 
         fc = FatComponent(c.id, c.type)
-        if c.parent_id: fc.set_parent_id(c.parent_id)
+        if c.parent_id:
+            fc.set_parent_id(c.parent_id)
 
         ### Resolve parameters
         for parameter in ct.parameters:
-            if self.debug: print("Checking: %s"%parameter)
+            if self.debug:
+                print("Checking: %s" % parameter)
             if parameter.name in c.parameters:
                 p = parameter.copy()
                 p.value = c.parameters[parameter.name]
@@ -491,8 +533,11 @@ class Model(LEMSBase):
                 p.numeric_value = self.get_numeric_value(p.value, p.dimension)
                 fc.add_parameter(p)
             else:
-                raise ModelError("Parameter '{0}' not initialized for component '{1}'",
-                                 parameter.name, c.id)
+                raise ModelError(
+                    "Parameter '{0}' not initialized for component '{1}'",
+                    parameter.name,
+                    c.id,
+                )
 
         ### Resolve properties
         for property in ct.properties:
@@ -513,13 +558,15 @@ class Model(LEMSBase):
         ### Resolve constants
         for constant in ct.constants:
             constant2 = constant.copy()
-            constant2.numeric_value = self.get_numeric_value(constant2.value, constant2.dimension)
+            constant2.numeric_value = self.get_numeric_value(
+                constant2.value, constant2.dimension
+            )
             fc.add(constant2)
 
         ### Resolve texts
         for text in ct.texts:
             t = text.copy()
-            t.value = c.parameters[text.name] if text.name in c.parameters else ''
+            t.value = c.parameters[text.name] if text.name in c.parameters else ""
             fc.add(t)
 
         ### Resolve texts
@@ -529,8 +576,11 @@ class Model(LEMSBase):
                 l.value = c.parameters[link.name]
                 fc.add(l)
             else:
-                raise ModelError("Link parameter '{0}' not initialized for component '{1}'",
-                                 link.name, c.id)
+                raise ModelError(
+                    "Link parameter '{0}' not initialized for component '{1}'",
+                    link.name,
+                    c.id,
+                )
 
         ### Resolve paths
         for path in ct.paths:
@@ -539,18 +589,23 @@ class Model(LEMSBase):
                 p.value = c.parameters[path.name]
                 fc.add(p)
             else:
-                raise ModelError("Path parameter '{0}' not initialized for component '{1}'",
-                                 path.name, c.id)
+                raise ModelError(
+                    "Path parameter '{0}' not initialized for component '{1}'",
+                    path.name,
+                    c.id,
+                )
 
-        if len(ct.component_requirements)>0:
+        if len(ct.component_requirements) > 0:
             raise ModelError("ComponentRequirement not yet implemented in PyLEMS!")
-        if len(ct.instance_requirements)>0:
+        if len(ct.instance_requirements) > 0:
             raise ModelError("InstanceRequirement not yet implemented in PyLEMS!")
 
         ### Resolve component references.
         for cref in ct.component_references:
             if cref.local:
-                raise ModelError("Attribute local on ComponentReference not yet implemented in PyLEMS!")
+                raise ModelError(
+                    "Attribute local on ComponentReference not yet implemented in PyLEMS!"
+                )
             if cref.name in c.parameters:
                 cref2 = cref.copy()
                 cid = c.parameters[cref.name]
@@ -561,8 +616,11 @@ class Model(LEMSBase):
                 cref2.referenced_component = self.fat_components[cid]
                 fc.add(cref2)
             else:
-                raise ModelError("Component reference '{0}' not initialized for component '{1}'",
-                                 cref.name, c.id)
+                raise ModelError(
+                    "Component reference '{0}' not initialized for component '{1}'",
+                    cref.name,
+                    c.id,
+                )
 
         merge_maps(fc.exposures, ct.exposures)
         merge_maps(fc.requirements, ct.requirements)
@@ -594,46 +652,61 @@ class Model(LEMSBase):
         """
         TODO: Replace with more efficient way to do this...
         """
-        if self.debug: print("Looking for parent of %s (%s)"%(fc.id, fc.parent_id))
+        if self.debug:
+            print("Looking for parent of %s (%s)" % (fc.id, fc.parent_id))
         parent_comp = None
         for comp in self.components.values():
-            if self.debug: print(" - Checking "+comp.id)
+            if self.debug:
+                print(" - Checking " + comp.id)
             for child in comp.children:
                 if parent_comp == None:
                     if child.id == fc.id and comp.id == fc.parent_id:
-                        if self.debug: print("1) It is "+comp.id)
+                        if self.debug:
+                            print("1) It is " + comp.id)
                         parent_comp = comp
                     else:
                         for child2 in child.children:
-                            if self.debug: print("    - Checking child: %s, %s"%(child.id,child2.id))
-                            if parent_comp == None and child2.id == fc.id and child.id == fc.parent_id:
-                                if self.debug: print("2) It is "+child.id)
+                            if self.debug:
+                                print(
+                                    "    - Checking child: %s, %s"
+                                    % (child.id, child2.id)
+                                )
+                            if (
+                                parent_comp == None
+                                and child2.id == fc.id
+                                and child.id == fc.parent_id
+                            ):
+                                if self.debug:
+                                    print("2) It is " + child.id)
                                 parent_comp = child
                                 break
                             else:
-                                if self.debug: print("No..."   )
+                                if self.debug:
+                                    print("No...")
         return parent_comp
 
     def resolve_structure(self, fc, ct):
         """
         Resolve structure specifications.
         """
-        if self.debug: print("++++++++ Resolving structure of (%s) with %s"%(fc, ct))
+        if self.debug:
+            print("++++++++ Resolving structure of (%s) with %s" % (fc, ct))
         for w in ct.structure.withs:
             try:
-                if w.instance == 'parent' or w.instance == 'this':
+                if w.instance == "parent" or w.instance == "this":
                     w2 = With(w.instance, w.as_)
                 else:
-                    w2 = With(fc.paths[w.instance].value,
-                              w.as_)
+                    w2 = With(fc.paths[w.instance].value, w.as_)
             except:
-                raise ModelError("Unable to resolve With parameters for "
-                                 "'{0}' in component '{1}'",
-                                 w.as_, fc.id)
+                raise ModelError(
+                    "Unable to resolve With parameters for " "'{0}' in component '{1}'",
+                    w.as_,
+                    fc.id,
+                )
             fc.structure.add(w2)
 
         if len(ct.structure.tunnels) > 0:
-            raise ModelError("Tunnel is not yet supported in PyLEMS!");
+            raise ModelError("Tunnel is not yet supported in PyLEMS!")
 
         for fe in ct.structure.for_eachs:
             fc.structure.add_for_each(fe)
@@ -644,54 +717,99 @@ class Model(LEMSBase):
                 from_inst = fc.structure.withs[ev.from_].instance
                 to_inst = fc.structure.withs[ev.to].instance
 
-                if self.debug: print("EC..: "+from_inst+" to "+to_inst+ " in "+str(fc.paths))
+                if self.debug:
+                    print(
+                        "EC..: " + from_inst + " to " + to_inst + " in " + str(fc.paths)
+                    )
 
                 if len(fc.texts) > 0 or len(fc.paths) > 0:
 
-                    source_port = fc.texts[ev.source_port].value if ev.source_port and len(ev.source_port)>0 and ev.source_port in fc.texts else None
-                    target_port = fc.texts[ev.target_port].value if ev.target_port and len(ev.target_port)>0 and ev.target_port in fc.texts else None
+                    source_port = (
+                        fc.texts[ev.source_port].value
+                        if ev.source_port
+                        and len(ev.source_port) > 0
+                        and ev.source_port in fc.texts
+                        else None
+                    )
+                    target_port = (
+                        fc.texts[ev.target_port].value
+                        if ev.target_port
+                        and len(ev.target_port) > 0
+                        and ev.target_port in fc.texts
+                        else None
+                    )
 
-                    if self.debug: print("sp: %s"%source_port)
-                    if self.debug: print("tp: %s"%target_port)
+                    if self.debug:
+                        print("sp: %s" % source_port)
+                    if self.debug:
+                        print("tp: %s" % target_port)
 
                     receiver = None
 
                     # TODO: Get more efficient way to find parent comp
-                    if '../' in ev.receiver:
+                    if "../" in ev.receiver:
                         receiver_id = None
                         parent_attr = ev.receiver[3:]
-                        if self.debug: print("Finding %s in the parent of: %s (%i)"%(parent_attr, fc, id(fc)))
+                        if self.debug:
+                            print(
+                                "Finding %s in the parent of: %s (%i)"
+                                % (parent_attr, fc, id(fc))
+                            )
 
                         for comp in self.components.values():
-                            if self.debug: print(" - Checking %s (%i)" %(comp.id,id(comp)))
+                            if self.debug:
+                                print(" - Checking %s (%i)" % (comp.id, id(comp)))
                             for child in comp.children:
-                                if self.debug: print("    - Checking %s (%i)" %(child.id,id(child)))
+                                if self.debug:
+                                    print(
+                                        "    - Checking %s (%i)" % (child.id, id(child))
+                                    )
                                 for child2 in child.children:
-                                    if child2.id == fc.id and child2.type == fc.type and child.id == fc.parent_id:
-                                        if self.debug: print("    - Got it?: %s (%i), child: %s"%(child.id, id(child), child2))
+                                    if (
+                                        child2.id == fc.id
+                                        and child2.type == fc.type
+                                        and child.id == fc.parent_id
+                                    ):
+                                        if self.debug:
+                                            print(
+                                                "    - Got it?: %s (%i), child: %s"
+                                                % (child.id, id(child), child2)
+                                            )
                                         receiver_id = child.parameters[parent_attr]
-                                        if self.debug: print("Got it: "+receiver_id)
+                                        if self.debug:
+                                            print("Got it: " + receiver_id)
                                         break
 
                         if receiver_id is not None:
                             for comp in self.fat_components:
                                 if comp.id == receiver_id:
-                                        receiver = comp
-                                        if self.debug: print("receiver is: %s"%receiver)
+                                    receiver = comp
+                                    if self.debug:
+                                        print("receiver is: %s" % receiver)
 
-                    if self.debug: print("rec1: %s"%receiver)
+                    if self.debug:
+                        print("rec1: %s" % receiver)
                     if not receiver:
-                        receiver = fc.component_references[ev.receiver].referenced_component if ev.receiver else None
-                    receiver_container = fc.texts[ev.receiver_container].value if (fc.texts and ev.receiver_container) else ''
+                        receiver = (
+                            fc.component_references[ev.receiver].referenced_component
+                            if ev.receiver
+                            else None
+                        )
+                    receiver_container = (
+                        fc.texts[ev.receiver_container].value
+                        if (fc.texts and ev.receiver_container)
+                        else ""
+                    )
 
-                    if self.debug: print("rec2: %s"%receiver)
-                    if len(receiver_container)==0:
+                    if self.debug:
+                        print("rec2: %s" % receiver)
+                    if len(receiver_container) == 0:
                         # TODO: remove this hard coded check!
-                        receiver_container = 'synapses'
+                        receiver_container = "synapses"
 
                 else:
-                    #if from_inst == 'parent':
-                        #par = fc.component_references[ev.receiver]
+                    # if from_inst == 'parent':
+                    # par = fc.component_references[ev.receiver]
 
                     if self.debug:
                         print("+++++++++++++++++++")
@@ -703,54 +821,79 @@ class Model(LEMSBase):
                     receiver = None
                     receiver_container = None
 
-                ev2 = EventConnection(from_inst,
-                                      to_inst,
-                                      source_port,
-                                      target_port,
-                                      receiver,
-                                      receiver_container)
+                ev2 = EventConnection(
+                    from_inst,
+                    to_inst,
+                    source_port,
+                    target_port,
+                    receiver,
+                    receiver_container,
+                )
                 if self.debug:
-                    print("Created EC: "+ev2.toxml())
+                    print("Created EC: " + ev2.toxml())
                     print(receiver)
                     print(receiver_container)
             except:
                 logging.exception("Something awful happened!")
-                raise ModelError("Unable to resolve event connection parameters in component '{0}'",fc)
+                raise ModelError(
+                    "Unable to resolve event connection parameters in component '{0}'",
+                    fc,
+                )
             fc.structure.add(ev2)
 
         for ch in ct.structure.child_instances:
             try:
-                if self.debug: print(ch.toxml())
-                if '../' in ch.component:
+                if self.debug:
+                    print(ch.toxml())
+                if "../" in ch.component:
                     parent = self.get_parent_component(fc)
-                    if self.debug: print("Parent: %s"%parent)
+                    if self.debug:
+                        print("Parent: %s" % parent)
                     comp_ref = ch.component[3:]
-                    if self.debug: print("comp_ref: %s"%comp_ref)
+                    if self.debug:
+                        print("comp_ref: %s" % comp_ref)
                     comp_id = parent.parameters[comp_ref]
                     comp = self.fat_components[comp_id]
                     ch2 = ChildInstance(ch.component, comp)
                 else:
-                    ref_comp = fc.component_references[ch.component].referenced_component
+                    ref_comp = fc.component_references[
+                        ch.component
+                    ].referenced_component
                     ch2 = ChildInstance(ch.component, ref_comp)
             except Exception as e:
-                if self.debug: print(e)
-                raise ModelError("Unable to resolve child instance parameters for "
-                                 "'{0}' in component '{1}'",
-                                 ch.component, fc.id)
+                if self.debug:
+                    print(e)
+                raise ModelError(
+                    "Unable to resolve child instance parameters for "
+                    "'{0}' in component '{1}'",
+                    ch.component,
+                    fc.id,
+                )
             fc.structure.add(ch2)
 
         for mi in ct.structure.multi_instantiates:
             try:
                 if mi.component:
-                    mi2 = MultiInstantiate(component=fc.component_references[mi.component].referenced_component,
-                                           number=int(fc.parameters[mi.number].numeric_value))
+                    mi2 = MultiInstantiate(
+                        component=fc.component_references[
+                            mi.component
+                        ].referenced_component,
+                        number=int(fc.parameters[mi.number].numeric_value),
+                    )
                 else:
-                    mi2 = MultiInstantiate(component_type=fc.component_references[mi.component_type].referenced_component,
-                                           number=int(fc.parameters[mi.number].numeric_value))
+                    mi2 = MultiInstantiate(
+                        component_type=fc.component_references[
+                            mi.component_type
+                        ].referenced_component,
+                        number=int(fc.parameters[mi.number].numeric_value),
+                    )
             except:
-                raise ModelError("Unable to resolve multi-instantiate parameters for "
-                                 "'{0}' in component '{1}'",
-                                 mi.component, fc)
+                raise ModelError(
+                    "Unable to resolve multi-instantiate parameters for "
+                    "'{0}' in component '{1}'",
+                    mi.component,
+                    fc,
+                )
             fc.structure.add(mi2)
 
     def resolve_simulation(self, fc, ct):
@@ -760,73 +903,89 @@ class Model(LEMSBase):
 
         for run in ct.simulation.runs:
             try:
-                run2 = Run(fc.component_references[run.component].referenced_component,
-                           run.variable,
-                           fc.parameters[run.increment].numeric_value,
-                           fc.parameters[run.total].numeric_value)
+                run2 = Run(
+                    fc.component_references[run.component].referenced_component,
+                    run.variable,
+                    fc.parameters[run.increment].numeric_value,
+                    fc.parameters[run.total].numeric_value,
+                )
             except:
-                raise ModelError("Unable to resolve simulation run parameters in component '{0}'",
-                                 fc.id)
+                raise ModelError(
+                    "Unable to resolve simulation run parameters in component '{0}'",
+                    fc.id,
+                )
             fc.simulation.add(run2)
 
         for record in ct.simulation.records:
             try:
-                record2 = Record(fc.paths[record.quantity].value,
-                                 fc.parameters[record.scale].numeric_value if record.scale else 1,
-                                 fc.texts[record.color].value if record.color else '#000000')
+                record2 = Record(
+                    fc.paths[record.quantity].value,
+                    fc.parameters[record.scale].numeric_value if record.scale else 1,
+                    fc.texts[record.color].value if record.color else "#000000",
+                )
             except:
-                raise ModelError("Unable to resolve simulation record parameters in component '{0}'",
-                                 fc.id)
+                raise ModelError(
+                    "Unable to resolve simulation record parameters in component '{0}'",
+                    fc.id,
+                )
             fc.simulation.add(record2)
 
         for event_record in ct.simulation.event_records:
             try:
-                event_record2 = EventRecord(fc.paths[event_record.quantity].value,
-                                 fc.texts[event_record.eventPort].value)
+                event_record2 = EventRecord(
+                    fc.paths[event_record.quantity].value,
+                    fc.texts[event_record.eventPort].value,
+                )
             except:
-                raise ModelError("Unable to resolve simulation event_record parameters in component '{0}'",
-                                 fc.id)
+                raise ModelError(
+                    "Unable to resolve simulation event_record parameters in component '{0}'",
+                    fc.id,
+                )
             fc.simulation.add(event_record2)
 
         for dd in ct.simulation.data_displays:
             try:
-                dd2 = DataDisplay(fc.texts[dd.title].value,
-                                  '')
-                if 'timeScale' in fc.parameters:
-                    dd2.timeScale = fc.parameters['timeScale'].numeric_value
+                dd2 = DataDisplay(fc.texts[dd.title].value, "")
+                if "timeScale" in fc.parameters:
+                    dd2.timeScale = fc.parameters["timeScale"].numeric_value
             except:
-                raise ModelError("Unable to resolve simulation display parameters in component '{0}'",
-                                 fc.id)
+                raise ModelError(
+                    "Unable to resolve simulation display parameters in component '{0}'",
+                    fc.id,
+                )
             fc.simulation.add(dd2)
 
         for dw in ct.simulation.data_writers:
             try:
-                path = '.'
+                path = "."
                 if fc.texts[dw.path] and fc.texts[dw.path].value:
                     path = fc.texts[dw.path].value
 
-                dw2 = DataWriter(path,
-                                 fc.texts[dw.file_name].value)
+                dw2 = DataWriter(path, fc.texts[dw.file_name].value)
             except:
-                raise ModelError("Unable to resolve simulation writer parameters in component '{0}'",
-                                 fc.id)
+                raise ModelError(
+                    "Unable to resolve simulation writer parameters in component '{0}'",
+                    fc.id,
+                )
             fc.simulation.add(dw2)
 
         for ew in ct.simulation.event_writers:
             try:
-                path = '.'
+                path = "."
                 if fc.texts[ew.path] and fc.texts[ew.path].value:
                     path = fc.texts[ew.path].value
 
-                ew2 = EventWriter(path,
-                                 fc.texts[ew.file_name].value,
-                                 fc.texts[ew.format].value)
+                ew2 = EventWriter(
+                    path, fc.texts[ew.file_name].value, fc.texts[ew.format].value
+                )
             except:
-                raise ModelError("Unable to resolve simulation writer parameters in component '{0}'",
-                                 fc.id)
+                raise ModelError(
+                    "Unable to resolve simulation writer parameters in component '{0}'",
+                    fc.id,
+                )
             fc.simulation.add(ew2)
 
-    def get_numeric_value(self, value_str, dimension = None):
+    def get_numeric_value(self, value_str, dimension=None):
         """
         Get the numeric value for a parameter value specification.
 
@@ -846,32 +1005,35 @@ class Model(LEMSBase):
                 n = nn
                 s = value_str[i:]
             except ValueError:
-                i = i-1
+                i = i - 1
 
         number = n
         sym = s
 
         numeric_value = None
 
-        if sym == '':
+        if sym == "":
             numeric_value = number
         else:
             if sym in self.units:
                 unit = self.units[sym]
                 if dimension:
-                    if dimension != unit.dimension and dimension != '*':
-                        raise SimBuildError("Unit symbol '{0}' cannot "
-                                            "be used for dimension '{1}'",
-                                            sym, dimension)
+                    if dimension != unit.dimension and dimension != "*":
+                        raise SimBuildError(
+                            "Unit symbol '{0}' cannot " "be used for dimension '{1}'",
+                            sym,
+                            dimension,
+                        )
                 else:
                     dimension = unit.dimension
 
                 numeric_value = (number * (10 ** unit.power) * unit.scale) + unit.offset
             else:
-                raise SimBuildError("Unknown unit symbol '{0}'. Known: {1}",
-                                    sym, self.units)
+                raise SimBuildError(
+                    "Unknown unit symbol '{0}'. Known: {1}", sym, self.units
+                )
 
-        #print("Have converted %s to value: %s, dimension %s"%(value_str, numeric_value, dimension))
+        # print("Have converted %s to value: %s, dimension %s"%(value_str, numeric_value, dimension))
         return numeric_value
 
     def get_component_list(self, substring=""):
@@ -1030,7 +1192,11 @@ class Model(LEMSBase):
             if ch.name in fat_components:
                 nextchildren.append(fat_components[ch.name])
                 if debug:
-                    print("children {} for {} added".format(fat_components[ch.name], comp.id))
+                    print(
+                        "children {} for {} added".format(
+                            fat_components[ch.name], comp.id
+                        )
+                    )
         # check if any child components are used in the model for this comp
         nextchild = []
         for cc in comp.child_components:
@@ -1077,7 +1243,14 @@ class Model(LEMSBase):
                 print("EC {} appended for {}".format(ec.receiver.id, comp.id))
 
         # a leaf node
-        if not len(nextchildren) and not len(nextchild) and not len(nextattachment) and not len(nextmi) and not len(nextci) and not len(nextec):
+        if (
+            not len(nextchildren)
+            and not len(nextchild)
+            and not len(nextattachment)
+            and not len(nextmi)
+            and not len(nextci)
+            and not len(nextec)
+        ):
             if debug:
                 print("{} is leaf".format(comp.id))
                 print("Append {} to recording_paths".format(self.temp_vec))
@@ -1090,13 +1263,15 @@ class Model(LEMSBase):
             return
 
         # process all next level nodes
-        for nextnode in (nextchildren + nextchild):
+        for nextnode in nextchildren + nextchild:
             self.get_full_comp_paths_with_comp_refs(nextnode)
         for nextnode in nextattachment:
             self.get_full_comp_paths_with_comp_refs(nextnode, "SKIP")
         i = 0
         for nextnode in nextmi:
-            self.get_full_comp_paths_with_comp_refs(nextnode, "{}[{}]".format(comp.id, i))
+            self.get_full_comp_paths_with_comp_refs(
+                nextnode, "{}[{}]".format(comp.id, i)
+            )
             i += 1
         for nextnode in nextci:
             self.get_full_comp_paths_with_comp_refs(nextnode, "SKIP")
@@ -1121,7 +1296,7 @@ class Model(LEMSBase):
         if skip:
             while skip in pathlist:
                 pathlist.remove(skip)
-        return '/'.join(pathlist)
+        return "/".join(pathlist)
 
     def list_recording_paths_for_exposures(self, substring="", target=""):
         # (str, str) -> List[str]
@@ -1173,12 +1348,14 @@ class Model(LEMSBase):
             # go over each element, appending exposures where needed
             for i in range(len(p)):
                 compid = p[i]
-                comppath = t[0:i+1]
+                comppath = t[0 : i + 1]
                 for acomp, exps in exposures.items():
                     if acomp.id == compid:
                         for exp in exps:
                             if self.debug:
-                                print("full comppath is {}".format(comppath + [exp.name]))
+                                print(
+                                    "full comppath is {}".format(comppath + [exp.name])
+                                )
                             newpath = self.construct_path(comppath + [exp.name], "SKIP")
                             if newpath not in exp_paths:
                                 exp_paths.append(newpath)

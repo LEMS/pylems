@@ -19,16 +19,18 @@ class TestExposure(unittest.TestCase):
 
     def test_exposure_getters(self):
         model = Model(include_includes=True, fail_on_missing_includes=True)
-        file_name = os.path.dirname(os.path.abspath(__file__)) + '/test_exposure_listing.xml'
+        file_name = (
+            os.path.dirname(os.path.abspath(__file__)) + "/test_exposure_listing.xml"
+        )
         model.import_from_file(file_name)
         exp_list = model.list_exposures()
         for c, es in exp_list.items():
             # iaf1 defines v as an exposure
             if c.id == "example_iaf1_cell":
-                self.assertTrue('v' in es)
+                self.assertTrue("v" in es)
             # iaf2 extends iaf1 and so should inherit v
             if c.id == "example_iaf2_cell":
-                self.assertTrue('v' in es)
+                self.assertTrue("v" in es)
 
         paths = model.list_recording_paths_for_exposures(substring="", target="net1")
         self.assertTrue("net1/p1[0]/v" in paths)
@@ -39,5 +41,5 @@ class TestExposure(unittest.TestCase):
         self.assertTrue("net1/p2[0]/v" in paths)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
