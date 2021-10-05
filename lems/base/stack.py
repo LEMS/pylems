@@ -8,6 +8,7 @@ Stack class.
 from lems.base.base import LEMSBase
 from lems.base.errors import StackError
 
+
 class Stack(LEMSBase):
     """
     Basic stack implementation.
@@ -47,7 +48,7 @@ class Stack(LEMSBase):
             self.stack = self.stack[1:]
             return val
         else:
-            raise StackError('Stack empty')
+            raise StackError("Stack empty")
 
     def top(self):
         """
@@ -62,7 +63,7 @@ class Stack(LEMSBase):
         if self.stack:
             return self.stack[0]
         else:
-            raise StackError('Stack empty')
+            raise StackError("Stack empty")
 
     def is_empty(self):
         """
@@ -83,12 +84,12 @@ class Stack(LEMSBase):
         """
 
         if len(self.stack) == 0:
-            s = '[]'
+            s = "[]"
         else:
-            s = '[' + str(self.stack[0])
+            s = "[" + str(self.stack[0])
             for i in range(1, len(self.stack)):
-                s += ', ' + str(self.stack[i])
-            s += ']'
+                s += ", " + str(self.stack[i])
+            s += "]"
         return s
 
     def __repr__(self):

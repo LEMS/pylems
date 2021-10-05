@@ -21,21 +21,22 @@ from lems.base.util import make_id
 
 def get_nons_tag_from_node(node):
     tag = node.tag
-    bits = tag.split('}')
+    bits = tag.split("}")
     if len(bits) == 1:
         return tag
-    elif '/lems/' in bits[0]:
+    elif "/lems/" in bits[0]:
         return bits[1]
-    elif 'neuroml2' in bits[0]:
+    elif "neuroml2" in bits[0]:
         return bits[1]
-    elif 'rdf' in bits[0]:
-        return "rdf_"+bits[1]
-    elif 'model-qualifiers' in bits[0]:
-        return "bqmodel_"+bits[1]
-    elif 'biology-qualifiers' in bits[0]:
-        return "bqbiol_"+bits[1]
+    elif "rdf" in bits[0]:
+        return "rdf_" + bits[1]
+    elif "model-qualifiers" in bits[0]:
+        return "bqmodel_" + bits[1]
+    elif "biology-qualifiers" in bits[0]:
+        return "bqbiol_" + bits[1]
     else:
-        return "%s:%s"%(bits[0],bits[1])
+        return "%s:%s" % (bits[0], bits[1])
+
 
 class LEMSXMLNode:
     def __init__(self, pyxmlnode):
@@ -54,14 +55,15 @@ class LEMSXMLNode:
             self.children.append(LEMSXMLNode(pyxmlchild))
 
     def __str__(self):
-        return 'LEMSXMLNode <{0} {1}>'.format(self.tag, self.attrib)
+        return "LEMSXMLNode <{0} {1}>".format(self.tag, self.attrib)
+
 
 class LEMSFileParser(LEMSBase):
     """
     LEMS XML file format parser class.
     """
 
-    def __init__(self, model, include_dirs = [], include_includes=True):
+    def __init__(self, model, include_dirs=[], include_includes=True):
         """
         Constructor.
 
@@ -99,115 +101,150 @@ class LEMSFileParser(LEMSBase):
         Initializes the parser
         """
 
-        #self.token_list = None
-        #self.prev_token_lists = None
+        # self.token_list = None
+        # self.prev_token_lists = None
 
         self.valid_children = dict()
-        self.valid_children['lems'] = ['component', 'componenttype',
-                                       'target', 'include',
-                                       'dimension', 'unit', 'assertion']
+        self.valid_children["lems"] = [
+            "component",
+            "componenttype",
+            "target",
+            "include",
+            "dimension",
+            "unit",
+            "assertion",
+        ]
 
-        #TODO: make this generic for any domain specific language based on LEMS
-        self.valid_children['neuroml'] = ['include', 'componenttype']
+        # TODO: make this generic for any domain specific language based on LEMS
+        self.valid_children["neuroml"] = ["include", "componenttype"]
 
-        self.valid_children['componenttype'] = ['dynamics',
-                                                'child', 'children',
-                                                'componentreference',
-                                                'exposure', 'eventport',
-                                                'fixed', 'link', 'parameter',
-                                                'property',
-                                                'indexparameter',
-                                                'path', 'requirement',
-                                                'componentrequirement',
-                                                'instancerequirement',
-                                                'simulation', 'structure',
-                                                'text', 'attachments',
-                                                'constant', 'derivedparameter']
+        self.valid_children["componenttype"] = [
+            "dynamics",
+            "child",
+            "children",
+            "componentreference",
+            "exposure",
+            "eventport",
+            "fixed",
+            "link",
+            "parameter",
+            "property",
+            "indexparameter",
+            "path",
+            "requirement",
+            "componentrequirement",
+            "instancerequirement",
+            "simulation",
+            "structure",
+            "text",
+            "attachments",
+            "constant",
+            "derivedparameter",
+        ]
 
-        self.valid_children['dynamics'] = ['derivedvariable',
-                                           'conditionalderivedvariable',
-                                           'oncondition',
-                                           'onevent', 'onstart',
-                                           'statevariable', 'timederivative',
-                                           'kineticscheme', 'regime']
+        self.valid_children["dynamics"] = [
+            "derivedvariable",
+            "conditionalderivedvariable",
+            "oncondition",
+            "onevent",
+            "onstart",
+            "statevariable",
+            "timederivative",
+            "kineticscheme",
+            "regime",
+        ]
 
-        self.valid_children['component'] = ['component']
+        self.valid_children["component"] = ["component"]
 
-        self.valid_children['conditionalderivedvariable'] = ['case']
+        self.valid_children["conditionalderivedvariable"] = ["case"]
 
-        self.valid_children['regime'] = ['oncondition', 'onentry', 'timederivative']
-        self.valid_children['oncondition'] = ['eventout', 'stateassignment', 'transition']
-        self.valid_children['onentry'] = ['eventout', 'stateassignment', 'transition']
-        self.valid_children['onevent'] = ['eventout', 'stateassignment', 'transition']
-        self.valid_children['onstart'] = ['eventout', 'stateassignment', 'transition']
-        self.valid_children['structure'] = ['childinstance',
-                                            'eventconnection',
-                                            'foreach',
-                                            'multiinstantiate',
-                                            'with',
-                                            'tunnel']
+        self.valid_children["regime"] = ["oncondition", "onentry", "timederivative"]
+        self.valid_children["oncondition"] = [
+            "eventout",
+            "stateassignment",
+            "transition",
+        ]
+        self.valid_children["onentry"] = ["eventout", "stateassignment", "transition"]
+        self.valid_children["onevent"] = ["eventout", "stateassignment", "transition"]
+        self.valid_children["onstart"] = ["eventout", "stateassignment", "transition"]
+        self.valid_children["structure"] = [
+            "childinstance",
+            "eventconnection",
+            "foreach",
+            "multiinstantiate",
+            "with",
+            "tunnel",
+        ]
 
-        self.valid_children['foreach'] = ['foreach', 'eventconnection']
+        self.valid_children["foreach"] = ["foreach", "eventconnection"]
 
-        self.valid_children['simulation'] = ['record', 'eventrecord', 'run',
-                                             'datadisplay', 'datawriter', 'eventwriter']
+        self.valid_children["simulation"] = [
+            "record",
+            "eventrecord",
+            "run",
+            "datadisplay",
+            "datawriter",
+            "eventwriter",
+        ]
 
         self.tag_parse_table = dict()
-        #self.tag_parse_table['assertion'] = self.parse_assertion
-        self.tag_parse_table['attachments'] = self.parse_attachments
-        self.tag_parse_table['child'] = self.parse_child
-        self.tag_parse_table['childinstance'] = self.parse_child_instance
-        self.tag_parse_table['children'] = self.parse_children
-        self.tag_parse_table['component'] = self.parse_component
-        self.tag_parse_table['componentreference'] = self.parse_component_reference
-        self.tag_parse_table['componentrequirement'] = self.parse_component_requirement
-        self.tag_parse_table['componenttype'] = self.parse_component_type
-        self.tag_parse_table['constant'] = self.parse_constant
-        self.tag_parse_table['datadisplay'] = self.parse_data_display
-        self.tag_parse_table['datawriter'] = self.parse_data_writer
-        self.tag_parse_table['eventwriter'] = self.parse_event_writer
-        self.tag_parse_table['derivedparameter'] = self.parse_derived_parameter
-        self.tag_parse_table['derivedvariable'] = self.parse_derived_variable
-        self.tag_parse_table['conditionalderivedvariable'] = self.parse_conditional_derived_variable
-        self.tag_parse_table['case'] = self.parse_case
-        self.tag_parse_table['dimension'] = self.parse_dimension
-        self.tag_parse_table['dynamics'] = self.parse_dynamics
-        self.tag_parse_table['eventconnection'] = self.parse_event_connection
-        self.tag_parse_table['eventout'] = self.parse_event_out
-        self.tag_parse_table['eventport'] = self.parse_event_port
-        self.tag_parse_table['exposure'] = self.parse_exposure
-        self.tag_parse_table['fixed'] = self.parse_fixed
-        self.tag_parse_table['foreach'] = self.parse_for_each
-        self.tag_parse_table['include'] = self.parse_include
-        self.tag_parse_table['indexparameter'] = self.parse_index_parameter
-        self.tag_parse_table['kineticscheme'] = self.parse_kinetic_scheme
-        self.tag_parse_table['link'] = self.parse_link
-        self.tag_parse_table['multiinstantiate'] = self.parse_multi_instantiate
-        self.tag_parse_table['oncondition'] = self.parse_on_condition
-        self.tag_parse_table['onentry'] = self.parse_on_entry
-        self.tag_parse_table['onevent'] = self.parse_on_event
-        self.tag_parse_table['onstart'] = self.parse_on_start
-        self.tag_parse_table['parameter'] = self.parse_parameter
-        self.tag_parse_table['property'] = self.parse_property
-        self.tag_parse_table['path'] = self.parse_path
-        self.tag_parse_table['record'] = self.parse_record
-        self.tag_parse_table['eventrecord'] = self.parse_event_record
-        self.tag_parse_table['regime'] = self.parse_regime
-        self.tag_parse_table['requirement'] = self.parse_requirement
-        self.tag_parse_table['instancerequirement'] = self.parse_instance_requirement
-        self.tag_parse_table['run'] = self.parse_run
-        #self.tag_parse_table['show'] = self.parse_show
-        self.tag_parse_table['simulation'] = self.parse_simulation
-        self.tag_parse_table['stateassignment'] = self.parse_state_assignment
-        self.tag_parse_table['statevariable'] = self.parse_state_variable
-        self.tag_parse_table['structure'] = self.parse_structure
-        self.tag_parse_table['target'] = self.parse_target
-        self.tag_parse_table['text'] = self.parse_text
-        self.tag_parse_table['timederivative'] = self.parse_time_derivative
-        self.tag_parse_table['transition'] = self.parse_transition
-        self.tag_parse_table['tunnel'] = self.parse_tunnel
-        self.tag_parse_table['unit'] = self.parse_unit
-        self.tag_parse_table['with'] = self.parse_with
+        # self.tag_parse_table['assertion'] = self.parse_assertion
+        self.tag_parse_table["attachments"] = self.parse_attachments
+        self.tag_parse_table["child"] = self.parse_child
+        self.tag_parse_table["childinstance"] = self.parse_child_instance
+        self.tag_parse_table["children"] = self.parse_children
+        self.tag_parse_table["component"] = self.parse_component
+        self.tag_parse_table["componentreference"] = self.parse_component_reference
+        self.tag_parse_table["componentrequirement"] = self.parse_component_requirement
+        self.tag_parse_table["componenttype"] = self.parse_component_type
+        self.tag_parse_table["constant"] = self.parse_constant
+        self.tag_parse_table["datadisplay"] = self.parse_data_display
+        self.tag_parse_table["datawriter"] = self.parse_data_writer
+        self.tag_parse_table["eventwriter"] = self.parse_event_writer
+        self.tag_parse_table["derivedparameter"] = self.parse_derived_parameter
+        self.tag_parse_table["derivedvariable"] = self.parse_derived_variable
+        self.tag_parse_table[
+            "conditionalderivedvariable"
+        ] = self.parse_conditional_derived_variable
+        self.tag_parse_table["case"] = self.parse_case
+        self.tag_parse_table["dimension"] = self.parse_dimension
+        self.tag_parse_table["dynamics"] = self.parse_dynamics
+        self.tag_parse_table["eventconnection"] = self.parse_event_connection
+        self.tag_parse_table["eventout"] = self.parse_event_out
+        self.tag_parse_table["eventport"] = self.parse_event_port
+        self.tag_parse_table["exposure"] = self.parse_exposure
+        self.tag_parse_table["fixed"] = self.parse_fixed
+        self.tag_parse_table["foreach"] = self.parse_for_each
+        self.tag_parse_table["include"] = self.parse_include
+        self.tag_parse_table["indexparameter"] = self.parse_index_parameter
+        self.tag_parse_table["kineticscheme"] = self.parse_kinetic_scheme
+        self.tag_parse_table["link"] = self.parse_link
+        self.tag_parse_table["multiinstantiate"] = self.parse_multi_instantiate
+        self.tag_parse_table["oncondition"] = self.parse_on_condition
+        self.tag_parse_table["onentry"] = self.parse_on_entry
+        self.tag_parse_table["onevent"] = self.parse_on_event
+        self.tag_parse_table["onstart"] = self.parse_on_start
+        self.tag_parse_table["parameter"] = self.parse_parameter
+        self.tag_parse_table["property"] = self.parse_property
+        self.tag_parse_table["path"] = self.parse_path
+        self.tag_parse_table["record"] = self.parse_record
+        self.tag_parse_table["eventrecord"] = self.parse_event_record
+        self.tag_parse_table["regime"] = self.parse_regime
+        self.tag_parse_table["requirement"] = self.parse_requirement
+        self.tag_parse_table["instancerequirement"] = self.parse_instance_requirement
+        self.tag_parse_table["run"] = self.parse_run
+        # self.tag_parse_table['show'] = self.parse_show
+        self.tag_parse_table["simulation"] = self.parse_simulation
+        self.tag_parse_table["stateassignment"] = self.parse_state_assignment
+        self.tag_parse_table["statevariable"] = self.parse_state_variable
+        self.tag_parse_table["structure"] = self.parse_structure
+        self.tag_parse_table["target"] = self.parse_target
+        self.tag_parse_table["text"] = self.parse_text
+        self.tag_parse_table["timederivative"] = self.parse_time_derivative
+        self.tag_parse_table["transition"] = self.parse_transition
+        self.tag_parse_table["tunnel"] = self.parse_tunnel
+        self.tag_parse_table["unit"] = self.parse_unit
+        self.tag_parse_table["with"] = self.parse_with
 
         self.xml_node_stack = []
 
@@ -227,8 +264,7 @@ class LEMSFileParser(LEMSBase):
 
         self.id_counter = counter()
 
-
-    def process_nested_tags(self, node, tag = ''):
+    def process_nested_tags(self, node, tag=""):
         """
         Process child tags.
 
@@ -239,7 +275,7 @@ class LEMSFileParser(LEMSBase):
         """
         ##print("---------Processing: %s, %s"%(node.tag,tag))
 
-        if tag == '':
+        if tag == "":
             t = node.ltag
         else:
             t = tag.lower()
@@ -250,10 +286,10 @@ class LEMSFileParser(LEMSBase):
             ctagl = child.ltag
 
             if ctagl in self.tag_parse_table and ctagl in self.valid_children[t]:
-                #print("Processing known type: %s"%ctagl)
+                # print("Processing known type: %s"%ctagl)
                 self.tag_parse_table[ctagl](child)
             else:
-                #print("Processing unknown type: %s"%ctagl)
+                # print("Processing unknown type: %s"%ctagl)
                 self.parse_component_by_typename(child, child.tag)
 
             self.xml_node_stack = self.xml_node_stack[1:]
@@ -268,90 +304,88 @@ class LEMSFileParser(LEMSBase):
 
         xml = LEMSXMLNode(xe.XML(xmltext))
 
-        if xml.ltag != 'lems' and xml.ltag != 'neuroml':
-            raise ParseError('<Lems> expected as root element (or even <neuroml>), found: {0}'.format(xml.ltag))
+        if xml.ltag != "lems" and xml.ltag != "neuroml":
+            raise ParseError(
+                "<Lems> expected as root element (or even <neuroml>), found: {0}".format(
+                    xml.ltag
+                )
+            )
 
-        if xml.ltag == 'lems':
-            if 'description' in xml.lattrib:
-                self.model.description = xml.lattrib['description']
+        if xml.ltag == "lems":
+            if "description" in xml.lattrib:
+                self.model.description = xml.lattrib["description"]
 
         self.process_nested_tags(xml)
-
 
     def raise_error(self, message, *params, **key_params):
         """
         Raise a parse error.
         """
 
-        s = 'Parser error in '
+        s = "Parser error in "
 
         self.xml_node_stack.reverse()
         if len(self.xml_node_stack) > 1:
             node = self.xml_node_stack[0]
-            s += '<{0}'.format(node.tag)
-            if 'name' in node.lattrib:
-                s += ' name=\"{0}\"'.format(node.lattrib['name'])
-            if 'id' in node.lattrib:
-                s += ' id=\"{0}\"'.format(node.lattrib['id'])
-            s += '>'
+            s += "<{0}".format(node.tag)
+            if "name" in node.lattrib:
+                s += ' name="{0}"'.format(node.lattrib["name"])
+            if "id" in node.lattrib:
+                s += ' id="{0}"'.format(node.lattrib["id"])
+            s += ">"
 
         for node in self.xml_node_stack[1:]:
-            s += '.<{0}'.format(node.tag)
-            if 'name' in node.lattrib:
-                s += ' name=\"{0}\"'.format(node.lattrib['name'])
-            if 'id' in node.lattrib:
-                s += ' id=\"{0}\"'.format(node.lattrib['id'])
-            s += '>'
+            s += ".<{0}".format(node.tag)
+            if "name" in node.lattrib:
+                s += ' name="{0}"'.format(node.lattrib["name"])
+            if "id" in node.lattrib:
+                s += ' id="{0}"'.format(node.lattrib["id"])
+            s += ">"
 
-        s += ':\n  ' + message
+        s += ":\n  " + message
 
         raise ParseError(s, *params, **key_params)
 
         self.xml_node_stack.reverse()
 
-
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-#####################################################################################
-
-
-
-
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
 
     def parse_assertion(self, node):
         """
@@ -361,8 +395,7 @@ class LEMSFileParser(LEMSBase):
         :type node: xml.etree.Element
         """
 
-        print('TODO - <Assertion>')
-
+        print("TODO - <Assertion>")
 
     def parse_attachments(self, node):
         """
@@ -372,19 +405,20 @@ class LEMSFileParser(LEMSBase):
         :type node: xml.etree.Element
         """
 
-        if 'name' in node.lattrib:
-            name = node.lattrib['name']
+        if "name" in node.lattrib:
+            name = node.lattrib["name"]
         else:
-            self.raise_error('<Attachments> must specify a name.')
+            self.raise_error("<Attachments> must specify a name.")
 
-        if 'type' in node.lattrib:
-            type_ = node.lattrib['type']
+        if "type" in node.lattrib:
+            type_ = node.lattrib["type"]
         else:
-            self.raise_error("Attachment '{0}' must specify a type.",
-                             name)
+            self.raise_error("Attachment '{0}' must specify a type.", name)
 
-        description = node.lattrib.get('description', '')
-        self.current_component_type.add_attachments(Attachments(name, type_, description))
+        description = node.lattrib.get("description", "")
+        self.current_component_type.add_attachments(
+            Attachments(name, type_, description)
+        )
 
     def parse_child(self, node):
         """
@@ -394,18 +428,20 @@ class LEMSFileParser(LEMSBase):
         :type node: xml.etree.Element
         """
 
-        if 'name' in node.lattrib:
-            name = node.lattrib['name']
+        if "name" in node.lattrib:
+            name = node.lattrib["name"]
         else:
-            self.raise_error('<Child> must specify a name.')
+            self.raise_error("<Child> must specify a name.")
 
-        if 'type' in node.lattrib:
-            type_ = node.lattrib['type']
+        if "type" in node.lattrib:
+            type_ = node.lattrib["type"]
         else:
             self.raise_error("Child '{0}' must specify a type.", name)
 
-        description = node.lattrib.get('description', '')
-        self.current_component_type.add_children(Children(name, type_, description, multiple=False))
+        description = node.lattrib.get("description", "")
+        self.current_component_type.add_children(
+            Children(name, type_, description, multiple=False)
+        )
 
     def parse_child_instance(self, node):
         """
@@ -415,10 +451,10 @@ class LEMSFileParser(LEMSBase):
         :type node: xml.etree.Element
         """
 
-        if 'component' in node.lattrib:
-            component = node.lattrib['component']
+        if "component" in node.lattrib:
+            component = node.lattrib["component"]
         else:
-            self.raise_error('<ChildInstance> must specify a component reference')
+            self.raise_error("<ChildInstance> must specify a component reference")
 
         self.current_structure.add_child_instance(ChildInstance(component))
 
@@ -430,18 +466,20 @@ class LEMSFileParser(LEMSBase):
         :type node: xml.etree.Element
         """
 
-        if 'name' in node.lattrib:
-            name = node.lattrib['name']
+        if "name" in node.lattrib:
+            name = node.lattrib["name"]
         else:
-            self.raise_error('<Children> must specify a name.')
+            self.raise_error("<Children> must specify a name.")
 
-        if 'type' in node.lattrib:
-            type_ = node.lattrib['type']
+        if "type" in node.lattrib:
+            type_ = node.lattrib["type"]
         else:
             self.raise_error("Children '{0}' must specify a type.", name)
 
-        description = node.lattrib.get('description', '')
-        self.current_component_type.add_children(Children(name, type_, description, multiple=True))
+        description = node.lattrib.get("description", "")
+        self.current_component_type.add_children(
+            Children(name, type_, description, multiple=True)
+        )
 
     def parse_component_by_typename(self, node, type_):
         """
@@ -455,15 +493,15 @@ class LEMSFileParser(LEMSBase):
 
         :raises ParseError: Raised when the component does not have an id.
         """
-        #print('Parsing component {0} by typename {1}'.format(node, type_))
-        if 'id' in node.lattrib:
-            id_ = node.lattrib['id']
+        # print('Parsing component {0} by typename {1}'.format(node, type_))
+        if "id" in node.lattrib:
+            id_ = node.lattrib["id"]
         else:
-            #self.raise_error('Component must have an id')
-            id_ = node.tag #make_id()
+            # self.raise_error('Component must have an id')
+            id_ = node.tag  # make_id()
 
-        if 'type' in node.lattrib:
-            type_ = node.lattrib['type']
+        if "type" in node.lattrib:
+            type_ = node.lattrib["type"]
         else:
             type_ = node.tag
 
@@ -477,12 +515,12 @@ class LEMSFileParser(LEMSBase):
             self.model.add_component(component)
 
         for key in node.attrib:
-            if key.lower() not in ['id', 'type']:
+            if key.lower() not in ["id", "type"]:
                 component.set_parameter(key, node.attrib[key])
 
         old_component = self.current_component
         self.current_component = component
-        self.process_nested_tags(node, 'component')
+        self.process_nested_tags(node, "component")
         self.current_component = old_component
 
     def parse_component(self, node):
@@ -493,17 +531,16 @@ class LEMSFileParser(LEMSBase):
         :type node: xml.etree.Element
         """
 
-        if 'id' in node.lattrib:
-            id_ = node.lattrib['id']
+        if "id" in node.lattrib:
+            id_ = node.lattrib["id"]
         else:
-            #self.raise_error('Component must have an id')
+            # self.raise_error('Component must have an id')
             id_ = make_id()
 
-        if 'type' in node.lattrib:
-            type_ = node.lattrib['type']
+        if "type" in node.lattrib:
+            type_ = node.lattrib["type"]
         else:
-                self.raise_error("Component {0} must have a type.",
-                                 id_)
+            self.raise_error("Component {0} must have a type.", id_)
 
         component = Component(id_, type_)
 
@@ -514,7 +551,7 @@ class LEMSFileParser(LEMSBase):
             self.model.add_component(component)
 
         for key in node.attrib:
-            if key.lower() not in ['id', 'type']:
+            if key.lower() not in ["id", "type"]:
                 component.set_parameter(key, node.attrib[key])
 
         old_component = self.current_component
@@ -530,24 +567,28 @@ class LEMSFileParser(LEMSBase):
         :type node: xml.etree.Element
         """
 
-        if 'name' in node.lattrib:
-            name = node.lattrib['name']
+        if "name" in node.lattrib:
+            name = node.lattrib["name"]
         else:
-            self.raise_error('<ComponentReference> must specify a name for the ' +
-                             'reference.')
+            self.raise_error(
+                "<ComponentReference> must specify a name for the " + "reference."
+            )
 
-        if 'type' in node.lattrib:
-            type_ = node.lattrib['type']
+        if "type" in node.lattrib:
+            type_ = node.lattrib["type"]
         else:
-            self.raise_error('<ComponentReference> must specify a type for the ' +
-                             'reference.')
+            self.raise_error(
+                "<ComponentReference> must specify a type for the " + "reference."
+            )
 
-        if 'local' in node.lattrib:
-            local = node.lattrib['local']
+        if "local" in node.lattrib:
+            local = node.lattrib["local"]
         else:
             local = None
 
-        self.current_component_type.add_component_reference(ComponentReference(name, type_, local))
+        self.current_component_type.add_component_reference(
+            ComponentReference(name, type_, local)
+        )
 
     def parse_component_type(self, node):
         """
@@ -560,19 +601,19 @@ class LEMSFileParser(LEMSBase):
         """
 
         try:
-            name = node.lattrib['name']
+            name = node.lattrib["name"]
         except:
-            self.raise_error('<ComponentType> must specify a name')
+            self.raise_error("<ComponentType> must specify a name")
 
-        if 'extends' in node.lattrib:
-            extends = node.lattrib['extends']
+        if "extends" in node.lattrib:
+            extends = node.lattrib["extends"]
         else:
             extends = None
 
-        if 'description' in node.lattrib:
-            description = node.lattrib['description']
+        if "description" in node.lattrib:
+            description = node.lattrib["description"]
         else:
-            description = ''
+            description = ""
 
         component_type = ComponentType(name, description, extends)
         self.model.add_component_type(component_type)
@@ -590,19 +631,19 @@ class LEMSFileParser(LEMSBase):
         """
 
         try:
-            name = node.lattrib['name']
+            name = node.lattrib["name"]
         except:
-            self.raise_error('<Constant> must specify a name.')
+            self.raise_error("<Constant> must specify a name.")
 
-        dimension = node.lattrib.get('dimension', None)
+        dimension = node.lattrib.get("dimension", None)
 
         try:
-            value = node.lattrib['value']
+            value = node.lattrib["value"]
         except:
             self.raise_error("Constant '{0}' must have a value.", name)
 
-        if 'description' in node.lattrib:
-            description = node.lattrib['description']
+        if "description" in node.lattrib:
+            description = node.lattrib["description"]
         else:
             description = None
 
@@ -621,13 +662,13 @@ class LEMSFileParser(LEMSBase):
         :type node: xml.etree.Element
         """
 
-        if 'title' in node.lattrib:
-            title = node.lattrib['title']
+        if "title" in node.lattrib:
+            title = node.lattrib["title"]
         else:
-            self.raise_error('<DataDisplay> must have a title.')
+            self.raise_error("<DataDisplay> must have a title.")
 
-        if 'dataregion' in node.lattrib:
-            data_region = node.lattrib['dataregion']
+        if "dataregion" in node.lattrib:
+            data_region = node.lattrib["dataregion"]
         else:
             data_region = None
 
@@ -641,16 +682,15 @@ class LEMSFileParser(LEMSBase):
         :type node: xml.etree.Element
         """
 
-        if 'path' in node.lattrib:
-            path = node.lattrib['path']
+        if "path" in node.lattrib:
+            path = node.lattrib["path"]
         else:
-            self.raise_error('<DataWriter> must specify a path.')
+            self.raise_error("<DataWriter> must specify a path.")
 
-        if 'filename' in node.lattrib:
-            file_path = node.lattrib['filename']
+        if "filename" in node.lattrib:
+            file_path = node.lattrib["filename"]
         else:
-            self.raise_error("Data writer for '{0}' must specify a filename.",
-                             path)
+            self.raise_error("Data writer for '{0}' must specify a filename.", path)
 
         self.current_simulation.add_data_writer(DataWriter(path, file_path))
 
@@ -662,22 +702,20 @@ class LEMSFileParser(LEMSBase):
         :type node: xml.etree.Element
         """
 
-        if 'path' in node.lattrib:
-            path = node.lattrib['path']
+        if "path" in node.lattrib:
+            path = node.lattrib["path"]
         else:
-            self.raise_error('<EventWriter> must specify a path.')
+            self.raise_error("<EventWriter> must specify a path.")
 
-        if 'filename' in node.lattrib:
-            file_path = node.lattrib['filename']
+        if "filename" in node.lattrib:
+            file_path = node.lattrib["filename"]
         else:
-            self.raise_error("Event writer for '{0}' must specify a filename.",
-                             path)
+            self.raise_error("Event writer for '{0}' must specify a filename.", path)
 
-        if 'format' in node.lattrib:
-            format = node.lattrib['format']
+        if "format" in node.lattrib:
+            format = node.lattrib["format"]
         else:
-            self.raise_error("Event writer for '{0}' must specify a format.",
-                             path)
+            self.raise_error("Event writer for '{0}' must specify a format.", path)
 
         self.current_simulation.add_event_writer(EventWriter(path, file_path, format))
 
@@ -689,37 +727,39 @@ class LEMSFileParser(LEMSBase):
         :type node: xml.etree.Element
         """
 
-        #if self.current_context.context_type != Context.COMPONENT_TYPE:
+        # if self.current_context.context_type != Context.COMPONENT_TYPE:
         #    self.raise_error('Dynamics must be defined inside a ' +
         #                     'component type')
 
-        if 'name' in node.lattrib:
-            name = node.lattrib['name']
+        if "name" in node.lattrib:
+            name = node.lattrib["name"]
         else:
-            self.raise_error('A derived parameter must have a name')
+            self.raise_error("A derived parameter must have a name")
 
-        if 'dimension' in node.lattrib:
-            dimension = node.lattrib['dimension']
+        if "dimension" in node.lattrib:
+            dimension = node.lattrib["dimension"]
         else:
             dimension = None
 
-        if 'value' in node.lattrib:
-            value = node.lattrib['value']
+        if "value" in node.lattrib:
+            value = node.lattrib["value"]
         else:
             value = None
 
         # TODO: this is not used in the DerivedParameter constructor
-        if 'select' in node.lattrib:
-            select = node.lattrib['select']
+        if "select" in node.lattrib:
+            select = node.lattrib["select"]
         else:
             select = None
 
-        if 'description' in node.lattrib:
-            description = node.lattrib['description']
+        if "description" in node.lattrib:
+            description = node.lattrib["description"]
         else:
             description = None
 
-        self.current_component_type.add_derived_parameter(DerivedParameter(name, value, dimension, description))
+        self.current_component_type.add_derived_parameter(
+            DerivedParameter(name, value, dimension, description)
+        )
 
     def parse_derived_variable(self, node):
         """
@@ -731,20 +771,26 @@ class LEMSFileParser(LEMSBase):
         :raises ParseError: Raised when no name of specified for the derived variable.
         """
 
-        if 'name' in node.lattrib:
-            name = node.lattrib['name']
-        elif 'exposure' in node.lattrib:
-            name = node.lattrib['exposure']
+        if "name" in node.lattrib:
+            name = node.lattrib["name"]
+        elif "exposure" in node.lattrib:
+            name = node.lattrib["exposure"]
         else:
-            self.raise_error('<DerivedVariable> must specify a name')
+            self.raise_error("<DerivedVariable> must specify a name")
 
         params = dict()
-        for attr_name in ['dimension', 'exposure', 'select', 'value', 'reduce', 'required']:
+        for attr_name in [
+            "dimension",
+            "exposure",
+            "select",
+            "value",
+            "reduce",
+            "required",
+        ]:
             if attr_name in node.lattrib:
                 params[attr_name] = node.lattrib[attr_name]
 
         self.current_regime.add_derived_variable(DerivedVariable(name, **params))
-
 
     def parse_conditional_derived_variable(self, node):
         """
@@ -756,31 +802,34 @@ class LEMSFileParser(LEMSBase):
         :raises ParseError: Raised when no name or value is specified for the conditional derived variable.
         """
 
-        if 'name' in node.lattrib:
-            name = node.lattrib['name']
-        elif 'exposure' in node.lattrib:
-            name = node.lattrib['exposure']
+        if "name" in node.lattrib:
+            name = node.lattrib["name"]
+        elif "exposure" in node.lattrib:
+            name = node.lattrib["exposure"]
         else:
-            self.raise_error('<ConditionalDerivedVariable> must specify a name')
+            self.raise_error("<ConditionalDerivedVariable> must specify a name")
 
-        if 'exposure' in node.lattrib:
-            exposure = node.lattrib['exposure']
+        if "exposure" in node.lattrib:
+            exposure = node.lattrib["exposure"]
         else:
             exposure = None
 
-        if 'dimension' in node.lattrib:
-            dimension = node.lattrib['dimension']
+        if "dimension" in node.lattrib:
+            dimension = node.lattrib["dimension"]
         else:
             dimension = None
 
-        conditional_derived_variable = ConditionalDerivedVariable(name, dimension, exposure)
+        conditional_derived_variable = ConditionalDerivedVariable(
+            name, dimension, exposure
+        )
 
-        self.current_regime.add_conditional_derived_variable(conditional_derived_variable)
+        self.current_regime.add_conditional_derived_variable(
+            conditional_derived_variable
+        )
 
         self.current_conditional_derived_variable = conditional_derived_variable
 
         self.process_nested_tags(node)
-
 
     def parse_case(self, node):
         """
@@ -793,14 +842,14 @@ class LEMSFileParser(LEMSBase):
         """
 
         try:
-            condition = node.lattrib['condition']
+            condition = node.lattrib["condition"]
         except:
             condition = None
 
         try:
-            value = node.lattrib['value']
+            value = node.lattrib["value"]
         except:
-            self.raise_error('<Case> must specify a value')
+            self.raise_error("<Case> must specify a value")
 
         self.current_conditional_derived_variable.add_case(Case(condition, value))
 
@@ -815,14 +864,14 @@ class LEMSFileParser(LEMSBase):
         """
 
         try:
-            name = node.lattrib['name']
+            name = node.lattrib["name"]
         except:
-            self.raise_error('<Dimension> must specify a name')
+            self.raise_error("<Dimension> must specify a name")
 
-        description = node.lattrib.get('description', '')
+        description = node.lattrib.get("description", "")
 
         dim = dict()
-        for d in ['l', 'm', 't', 'i', 'k', 'c', 'n']:
+        for d in ["l", "m", "t", "i", "k", "c", "n"]:
             dim[d] = int(node.lattrib.get(d, 0))
 
         self.model.add_dimension(Dimension(name, description, **dim))
@@ -849,22 +898,28 @@ class LEMSFileParser(LEMSBase):
         :type node: xml.etree.Element
         """
 
-        if 'from' in node.lattrib:
-            from_ = node.lattrib['from']
+        if "from" in node.lattrib:
+            from_ = node.lattrib["from"]
         else:
-            self.raise_error('<EventConnection> must provide a source (from) component reference.')
+            self.raise_error(
+                "<EventConnection> must provide a source (from) component reference."
+            )
 
-        if 'to' in node.lattrib:
-            to = node.lattrib['to']
+        if "to" in node.lattrib:
+            to = node.lattrib["to"]
         else:
-            self.raise_error('<EventConnection> must provide a target (to) component reference.')
+            self.raise_error(
+                "<EventConnection> must provide a target (to) component reference."
+            )
 
-        source_port = node.lattrib.get('sourceport', '')
-        target_port = node.lattrib.get('targetport', '')
-        receiver = node.lattrib.get('receiver', '')
-        receiver_container = node.lattrib.get('receivercontainer', '')
+        source_port = node.lattrib.get("sourceport", "")
+        target_port = node.lattrib.get("targetport", "")
+        receiver = node.lattrib.get("receiver", "")
+        receiver_container = node.lattrib.get("receivercontainer", "")
 
-        ec = EventConnection(from_, to, source_port, target_port, receiver, receiver_container)
+        ec = EventConnection(
+            from_, to, source_port, target_port, receiver, receiver_container
+        )
         self.current_structure.add_event_connection(ec)
 
     def parse_event_out(self, node):
@@ -876,9 +931,9 @@ class LEMSFileParser(LEMSBase):
         """
 
         try:
-            port = node.lattrib['port']
+            port = node.lattrib["port"]
         except:
-            self.raise_error('<EventOut> must be specify a port.')
+            self.raise_error("<EventOut> must be specify a port.")
 
         action = EventOut(port)
 
@@ -892,24 +947,25 @@ class LEMSFileParser(LEMSBase):
         :type node: xml.etree.Element
         """
 
-        if 'name' in node.lattrib:
-            name = node.lattrib['name']
+        if "name" in node.lattrib:
+            name = node.lattrib["name"]
         else:
-            self.raise_error(('<EventPort> must specify a name.'))
+            self.raise_error(("<EventPort> must specify a name."))
 
-        if 'direction' in node.lattrib:
-            direction = node.lattrib['direction']
+        if "direction" in node.lattrib:
+            direction = node.lattrib["direction"]
         else:
             self.raise_error("Event port '{0}' must specify a direction.")
 
         direction = direction.lower()
-        if direction != 'in' and direction != 'out':
-            self.raise_error(('Event port direction must be \'in\' '
-                              'or \'out\''))
+        if direction != "in" and direction != "out":
+            self.raise_error(("Event port direction must be 'in' " "or 'out'"))
 
-        description = node.lattrib.get('description', '')
+        description = node.lattrib.get("description", "")
 
-        self.current_component_type.add_event_port(EventPort(name, direction, description))
+        self.current_component_type.add_event_port(
+            EventPort(name, direction, description)
+        )
 
     def parse_exposure(self, node):
         """
@@ -922,20 +978,19 @@ class LEMSFileParser(LEMSBase):
         """
 
         if self.current_component_type == None:
-            self.raise_error('Exposures must be defined in a component type')
+            self.raise_error("Exposures must be defined in a component type")
 
         try:
-            name = node.lattrib['name']
+            name = node.lattrib["name"]
         except:
-            self.raise_error('<Exposure> must specify a name')
+            self.raise_error("<Exposure> must specify a name")
 
         try:
-            dimension = node.lattrib['dimension']
+            dimension = node.lattrib["dimension"]
         except:
-            self.raise_error("Exposure '{0}' must specify a dimension",
-                             name)
+            self.raise_error("Exposure '{0}' must specify a dimension", name)
 
-        description = node.lattrib.get('description', '')
+        description = node.lattrib.get("description", "")
 
         self.current_component_type.add_exposure(Exposure(name, dimension, description))
 
@@ -948,16 +1003,16 @@ class LEMSFileParser(LEMSBase):
         """
 
         try:
-            parameter = node.lattrib['parameter']
+            parameter = node.lattrib["parameter"]
         except:
-            self.raise_error('<Fixed> must specify a parameter to be fixed.')
+            self.raise_error("<Fixed> must specify a parameter to be fixed.")
 
         try:
-            value = node.lattrib['value']
+            value = node.lattrib["value"]
         except:
             self.raise_error("Fixed parameter '{0}'must specify a value.", parameter)
 
-        description = node.lattrib.get('description', '')
+        description = node.lattrib.get("description", "")
 
         self.current_component_type.add_parameter(Fixed(parameter, value, description))
 
@@ -970,20 +1025,21 @@ class LEMSFileParser(LEMSBase):
         """
 
         if self.current_structure == None:
-            self.raise_error('<ForEach> can only be made within ' +
-                             'a structure definition')
+            self.raise_error(
+                "<ForEach> can only be made within " + "a structure definition"
+            )
 
-        if 'instances' in node.lattrib:
-            instances = node.lattrib['instances']
+        if "instances" in node.lattrib:
+            instances = node.lattrib["instances"]
         else:
-            self.raise_error('<ForEach> must specify a reference to target'
-                             'instances')
+            self.raise_error("<ForEach> must specify a reference to target" "instances")
 
-        if 'as' in node.lattrib:
-            as_ = node.lattrib['as']
+        if "as" in node.lattrib:
+            as_ = node.lattrib["as"]
         else:
-            self.raise_error('<ForEach> must specify a name for the '
-                             'enumerated target instances')
+            self.raise_error(
+                "<ForEach> must specify a name for the " "enumerated target instances"
+            )
 
         old_structure = self.current_structure
         fe = ForEach(instances, as_)
@@ -1004,18 +1060,19 @@ class LEMSFileParser(LEMSBase):
         :raises ParseError: Raised when the file to be included is not specified.
         """
         if not self.include_includes:
-            if self.model.debug: print("Ignoring included LEMS file: %s"%node.lattrib['file'])
+            if self.model.debug:
+                print("Ignoring included LEMS file: %s" % node.lattrib["file"])
         else:
 
-            #TODO: remove this hard coding for reading NeuroML includes...
-            if 'file' not in node.lattrib:
-                if 'href' in node.lattrib:
-                    self.model.include_file(node.lattrib['href'], self.include_dirs)
+            # TODO: remove this hard coding for reading NeuroML includes...
+            if "file" not in node.lattrib:
+                if "href" in node.lattrib:
+                    self.model.include_file(node.lattrib["href"], self.include_dirs)
                     return
                 else:
-                    self.raise_error('<Include> must specify the file to be included.')
+                    self.raise_error("<Include> must specify the file to be included.")
 
-            self.model.include_file(node.lattrib['file'], self.include_dirs)
+            self.model.include_file(node.lattrib["file"], self.include_dirs)
 
     def parse_kinetic_scheme(self, node):
         """
@@ -1025,49 +1082,68 @@ class LEMSFileParser(LEMSBase):
         :type node: xml.etree.Element
         """
 
-        if 'name' in node.lattrib:
-            name = node.lattrib['name']
+        if "name" in node.lattrib:
+            name = node.lattrib["name"]
         else:
-            self.raise_error('<KineticScheme> must specify a name.')
+            self.raise_error("<KineticScheme> must specify a name.")
 
-        if 'nodes' in node.lattrib:
-            nodes = node.lattrib['nodes']
+        if "nodes" in node.lattrib:
+            nodes = node.lattrib["nodes"]
         else:
             self.raise_error("Kinetic scheme '{0}' must specify nodes.", name)
 
-        if 'statevariable' in node.lattrib:
-            state_variable = node.lattrib['statevariable']
+        if "statevariable" in node.lattrib:
+            state_variable = node.lattrib["statevariable"]
         else:
-            self.raise_error("Kinetic scheme '{0}' must specify a state variable.", name)
+            self.raise_error(
+                "Kinetic scheme '{0}' must specify a state variable.", name
+            )
 
-        if 'edges' in node.lattrib:
-            edges = node.lattrib['edges']
+        if "edges" in node.lattrib:
+            edges = node.lattrib["edges"]
         else:
             self.raise_error("Kinetic scheme '{0}' must specify edges.", name)
 
-        if 'edgesource' in node.lattrib:
-            edge_source = node.lattrib['edgesource']
+        if "edgesource" in node.lattrib:
+            edge_source = node.lattrib["edgesource"]
         else:
-            self.raise_error("Kinetic scheme '{0}' must specify the edge source attribute.", name)
+            self.raise_error(
+                "Kinetic scheme '{0}' must specify the edge source attribute.", name
+            )
 
-        if 'edgetarget' in node.lattrib:
-            edge_target = node.lattrib['edgetarget']
+        if "edgetarget" in node.lattrib:
+            edge_target = node.lattrib["edgetarget"]
         else:
-            self.raise_error("Kinetic scheme '{0}' must specify the edge target attribute.", name)
+            self.raise_error(
+                "Kinetic scheme '{0}' must specify the edge target attribute.", name
+            )
 
-        if 'forwardrate' in node.lattrib:
-            forward_rate = node.lattrib['forwardrate']
+        if "forwardrate" in node.lattrib:
+            forward_rate = node.lattrib["forwardrate"]
         else:
-            self.raise_error("Kinetic scheme '{0}' must specify the forward rate attribute.", name)
+            self.raise_error(
+                "Kinetic scheme '{0}' must specify the forward rate attribute.", name
+            )
 
-        if 'reverserate' in node.lattrib:
-            reverse_rate = node.lattrib['reverserate']
+        if "reverserate" in node.lattrib:
+            reverse_rate = node.lattrib["reverserate"]
         else:
-            self.raise_error("Kinetic scheme '{0}' must specify the reverse rate attribute", name)
+            self.raise_error(
+                "Kinetic scheme '{0}' must specify the reverse rate attribute", name
+            )
 
-        self.current_regime.add_kinetic_scheme(KineticScheme(name, nodes, state_variable,
-                                                             edges, edge_source, edge_target,
-                                                             forward_rate, reverse_rate))
+        self.current_regime.add_kinetic_scheme(
+            KineticScheme(
+                name,
+                nodes,
+                state_variable,
+                edges,
+                edge_source,
+                edge_target,
+                forward_rate,
+                reverse_rate,
+            )
+        )
 
     def parse_link(self, node):
         """
@@ -1077,17 +1153,17 @@ class LEMSFileParser(LEMSBase):
         :type node: xml.etree.Element
         """
 
-        if 'name' in node.lattrib:
-            name = node.lattrib['name']
+        if "name" in node.lattrib:
+            name = node.lattrib["name"]
         else:
-            self.raise_error('<Link> must specify a name')
+            self.raise_error("<Link> must specify a name")
 
-        if 'type' in node.lattrib:
-            type_ = node.lattrib['type']
+        if "type" in node.lattrib:
+            type_ = node.lattrib["type"]
         else:
             self.raise_error("Link '{0}' must specify a type", name)
 
-        description = node.lattrib.get('description', '')
+        description = node.lattrib.get("description", "")
 
         self.current_component_type.add_link(Link(name, type_, description))
 
@@ -1099,18 +1175,22 @@ class LEMSFileParser(LEMSBase):
         :type node: xml.etree.Element
         """
 
-        if 'component' in node.lattrib:
-            component = node.lattrib['component']
+        if "component" in node.lattrib:
+            component = node.lattrib["component"]
         else:
-            self.raise_error('<MultiInstantiate> must specify a component reference.')
+            self.raise_error("<MultiInstantiate> must specify a component reference.")
 
-        if 'number' in node.lattrib:
-            number = node.lattrib['number']
+        if "number" in node.lattrib:
+            number = node.lattrib["number"]
         else:
-            self.raise_error("Multi instantiation of '{0}' must specify a parameter specifying the number.",
-                             component)
+            self.raise_error(
+                "Multi instantiation of '{0}' must specify a parameter specifying the number.",
+                component,
+            )
 
-        self.current_structure.add_multi_instantiate(MultiInstantiate(component, number))
+        self.current_structure.add_multi_instantiate(
+            MultiInstantiate(component, number)
+        )
 
     def parse_on_condition(self, node):
         """
@@ -1121,9 +1201,9 @@ class LEMSFileParser(LEMSBase):
         """
 
         try:
-            test = node.lattrib['test']
+            test = node.lattrib["test"]
         except:
-            self.raise_error('<OnCondition> must specify a test.')
+            self.raise_error("<OnCondition> must specify a test.")
 
         event_handler = OnCondition(test)
 
@@ -1159,9 +1239,9 @@ class LEMSFileParser(LEMSBase):
         """
 
         try:
-            port = node.lattrib['port']
+            port = node.lattrib["port"]
         except:
-            self.raise_error('<OnEvent> must specify a port.')
+            self.raise_error("<OnEvent> must specify a port.")
 
         event_handler = OnEvent(port)
 
@@ -1199,21 +1279,19 @@ class LEMSFileParser(LEMSBase):
         """
 
         if self.current_component_type == None:
-            self.raise_error('Parameters can only be defined in ' +
-                             'a component type')
+            self.raise_error("Parameters can only be defined in " + "a component type")
 
         try:
-            name = node.lattrib['name']
+            name = node.lattrib["name"]
         except:
-            self.raise_error('<Parameter> must specify a name')
+            self.raise_error("<Parameter> must specify a name")
 
         try:
-            dimension = node.lattrib['dimension']
+            dimension = node.lattrib["dimension"]
         except:
-            self.raise_error("Parameter '{0}' has no dimension",
-                             name)
+            self.raise_error("Parameter '{0}' has no dimension", name)
 
-        description = node.lattrib.get('description', '')
+        description = node.lattrib.get("description", "")
         parameter = Parameter(name, dimension, description)
 
         self.current_component_type.add_parameter(parameter)
@@ -1230,26 +1308,23 @@ class LEMSFileParser(LEMSBase):
         """
 
         if self.current_component_type == None:
-            self.raise_error('Property can only be defined in ' +
-                             'a component type')
+            self.raise_error("Property can only be defined in " + "a component type")
 
         try:
-            name = node.lattrib['name']
+            name = node.lattrib["name"]
         except:
-            self.raise_error('<Property> must specify a name')
+            self.raise_error("<Property> must specify a name")
 
         try:
-            dimension = node.lattrib['dimension']
+            dimension = node.lattrib["dimension"]
         except:
-            self.raise_error("Property '{0}' has no dimension",
-                             name)
+            self.raise_error("Property '{0}' has no dimension", name)
 
-        default_value = node.lattrib.get('defaultvalue', None)
+        default_value = node.lattrib.get("defaultvalue", None)
 
         property = Property(name, dimension, default_value=default_value)
 
         self.current_component_type.add_property(property)
-
 
     def parse_index_parameter(self, node):
         """
@@ -1262,19 +1337,18 @@ class LEMSFileParser(LEMSBase):
         """
 
         if self.current_component_type == None:
-            self.raise_error('IndexParameters can only be defined in ' +
-                             'a component type')
+            self.raise_error(
+                "IndexParameters can only be defined in " + "a component type"
+            )
 
         try:
-            name = node.lattrib['name']
+            name = node.lattrib["name"]
         except:
-            self.raise_error('<IndexParameter> must specify a name')
-
+            self.raise_error("<IndexParameter> must specify a name")
 
         index_parameter = IndexParameter(name)
 
         self.current_component_type.add_index_parameter(index_parameter)
-
 
     def parse_tunnel(self, node):
         """
@@ -1287,31 +1361,29 @@ class LEMSFileParser(LEMSBase):
         """
 
         try:
-            name = node.lattrib['name']
+            name = node.lattrib["name"]
         except:
-            self.raise_error('<Tunnel> must specify a name')
+            self.raise_error("<Tunnel> must specify a name")
         try:
-            end_a = node.lattrib['enda']
+            end_a = node.lattrib["enda"]
         except:
-            self.raise_error('<Tunnel> must specify: endA')
+            self.raise_error("<Tunnel> must specify: endA")
         try:
-            end_b = node.lattrib['enda']
+            end_b = node.lattrib["enda"]
         except:
-            self.raise_error('<Tunnel> must specify: endB')
+            self.raise_error("<Tunnel> must specify: endB")
         try:
-            component_a = node.lattrib['componenta']
+            component_a = node.lattrib["componenta"]
         except:
-            self.raise_error('<Tunnel> must specify: componentA')
+            self.raise_error("<Tunnel> must specify: componentA")
         try:
-            component_b = node.lattrib['componentb']
+            component_b = node.lattrib["componentb"]
         except:
-            self.raise_error('<Tunnel> must specify: componentB')
-
+            self.raise_error("<Tunnel> must specify: componentB")
 
         tunnel = Tunnel(name, end_a, end_b, component_a, component_b)
 
         self.current_structure.add_tunnel(tunnel)
-
 
     def parse_path(self, node):
         """
@@ -1321,12 +1393,12 @@ class LEMSFileParser(LEMSBase):
         :type node: xml.etree.Element
         """
 
-        if 'name' in node.lattrib:
-            name = node.lattrib['name']
+        if "name" in node.lattrib:
+            name = node.lattrib["name"]
         else:
-            self.raise_error('<Path> must specify a name.')
+            self.raise_error("<Path> must specify a name.")
 
-        description = node.lattrib.get('description', '')
+        description = node.lattrib.get("description", "")
 
         self.current_component_type.add_path(Path(name, description))
 
@@ -1339,17 +1411,18 @@ class LEMSFileParser(LEMSBase):
         """
 
         if self.current_simulation == None:
-            self.raise_error('<Record> must be only be used inside a ' +
-                             'simulation specification')
+            self.raise_error(
+                "<Record> must be only be used inside a " + "simulation specification"
+            )
 
-        if 'quantity' in node.lattrib:
-            quantity = node.lattrib['quantity']
+        if "quantity" in node.lattrib:
+            quantity = node.lattrib["quantity"]
         else:
-            self.raise_error('<Record> must specify a quantity.')
+            self.raise_error("<Record> must specify a quantity.")
 
-        scale = node.lattrib.get('scale', None)
-        color  = node.lattrib.get('color', None)
-        id  = node.lattrib.get('id', None)
+        scale = node.lattrib.get("scale", None)
+        color = node.lattrib.get("color", None)
+        id = node.lattrib.get("id", None)
 
         self.current_simulation.add_record(Record(quantity, scale, color, id))
 
@@ -1362,19 +1435,20 @@ class LEMSFileParser(LEMSBase):
         """
 
         if self.current_simulation == None:
-            self.raise_error('<EventRecord> must be only be used inside a ' +
-                             'simulation specification')
+            self.raise_error(
+                "<EventRecord> must be only be used inside a "
+                + "simulation specification"
+            )
 
-        if 'quantity' in node.lattrib:
-            quantity = node.lattrib['quantity']
+        if "quantity" in node.lattrib:
+            quantity = node.lattrib["quantity"]
         else:
-            self.raise_error('<EventRecord> must specify a quantity.')
+            self.raise_error("<EventRecord> must specify a quantity.")
 
-        if 'eventport' in node.lattrib:
-            eventPort = node.lattrib['eventport']
+        if "eventport" in node.lattrib:
+            eventPort = node.lattrib["eventport"]
         else:
-            self.raise_error('<EventRecord> must specify an eventPort.')
-
+            self.raise_error("<EventRecord> must specify an eventPort.")
 
         self.current_simulation.add_event_record(EventRecord(quantity, eventPort))
 
@@ -1386,13 +1460,13 @@ class LEMSFileParser(LEMSBase):
         :type node: xml.etree.Element
         """
 
-        if 'name' in node.lattrib:
-            name = node.lattrib['name']
+        if "name" in node.lattrib:
+            name = node.lattrib["name"]
         else:
-            name = ''
+            name = ""
 
-        if 'initial' in node.lattrib:
-            initial = (node.lattrib['initial'].strip().lower() == 'true')
+        if "initial" in node.lattrib:
+            initial = node.lattrib["initial"].strip().lower() == "true"
         else:
             initial = False
 
@@ -1413,18 +1487,20 @@ class LEMSFileParser(LEMSBase):
         :type node: xml.etree.Element
         """
 
-        if 'name' in node.lattrib:
-            name = node.lattrib['name']
+        if "name" in node.lattrib:
+            name = node.lattrib["name"]
         else:
-            self.raise_error('<Requirement> must specify a name')
+            self.raise_error("<Requirement> must specify a name")
 
-        if 'dimension' in node.lattrib:
-            dimension = node.lattrib['dimension']
+        if "dimension" in node.lattrib:
+            dimension = node.lattrib["dimension"]
         else:
             self.raise_error("Requirement %s must specify a dimension." % name)
 
-        description = node.lattrib.get('description', '')
-        self.current_component_type.add_requirement(Requirement(name, dimension, description))
+        description = node.lattrib.get("description", "")
+        self.current_component_type.add_requirement(
+            Requirement(name, dimension, description)
+        )
 
     def parse_component_requirement(self, node):
         """
@@ -1434,12 +1510,14 @@ class LEMSFileParser(LEMSBase):
         :type node: xml.etree.Element
         """
 
-        if 'name' in node.lattrib:
-            name = node.lattrib['name']
+        if "name" in node.lattrib:
+            name = node.lattrib["name"]
         else:
-            self.raise_error('<ComponentRequirement> must specify a name')
+            self.raise_error("<ComponentRequirement> must specify a name")
 
-        self.current_component_type.add_component_requirement(ComponentRequirement(name))
+        self.current_component_type.add_component_requirement(
+            ComponentRequirement(name)
+        )
 
     def parse_instance_requirement(self, node):
         """
@@ -1449,17 +1527,19 @@ class LEMSFileParser(LEMSBase):
         :type node: xml.etree.Element
         """
 
-        if 'name' in node.lattrib:
-            name = node.lattrib['name']
+        if "name" in node.lattrib:
+            name = node.lattrib["name"]
         else:
-            self.raise_error('<InstanceRequirement> must specify a name')
+            self.raise_error("<InstanceRequirement> must specify a name")
 
-        if 'type' in node.lattrib:
-            type = node.lattrib['type']
+        if "type" in node.lattrib:
+            type = node.lattrib["type"]
         else:
             self.raise_error("InstanceRequirement %s must specify a type." % name)
 
-        self.current_component_type.add_instance_requirement(InstanceRequirement(name, type))
+        self.current_component_type.add_instance_requirement(
+            InstanceRequirement(name, type)
+        )
 
     def parse_run(self, node):
         """
@@ -1469,27 +1549,29 @@ class LEMSFileParser(LEMSBase):
         :type node: xml.etree.Element
         """
 
-        if 'component' in node.lattrib:
-            component = node.lattrib['component']
+        if "component" in node.lattrib:
+            component = node.lattrib["component"]
         else:
-            self.raise_error('<Run> must specify a target component')
+            self.raise_error("<Run> must specify a target component")
 
-        if 'variable' in node.lattrib:
-            variable = node.lattrib['variable']
+        if "variable" in node.lattrib:
+            variable = node.lattrib["variable"]
         else:
-            self.raise_error('<Run> must specify a state variable')
+            self.raise_error("<Run> must specify a state variable")
 
-        if 'increment' in node.lattrib:
-            increment = node.lattrib['increment']
+        if "increment" in node.lattrib:
+            increment = node.lattrib["increment"]
         else:
-            self.raise_error('<Run> must specify an increment for the ' +
-                             'state variable')
+            self.raise_error(
+                "<Run> must specify an increment for the " + "state variable"
+            )
 
-        if 'total' in node.lattrib:
-            total = node.lattrib['total']
+        if "total" in node.lattrib:
+            total = node.lattrib["total"]
         else:
-            self.raise_error('<Run> must specify a final value for the ' +
-                             'state variable')
+            self.raise_error(
+                "<Run> must specify a final value for the " + "state variable"
+            )
 
         self.current_simulation.add_run(Run(component, variable, increment, total))
 
@@ -1525,21 +1607,21 @@ class LEMSFileParser(LEMSBase):
         :type node: xml.etree.Element
         """
 
-        if 'variable' in node.lattrib:
-            variable = node.lattrib['variable']
+        if "variable" in node.lattrib:
+            variable = node.lattrib["variable"]
         else:
-            self.raise_error('<StateAssignment> must specify a variable name')
+            self.raise_error("<StateAssignment> must specify a variable name")
 
-        if 'value' in node.lattrib:
-            value = node.lattrib['value']
+        if "value" in node.lattrib:
+            value = node.lattrib["value"]
         else:
-            self.raise_error("State assignment for '{0}' must specify a value.",
-                             variable)
+            self.raise_error(
+                "State assignment for '{0}' must specify a value.", variable
+            )
 
         action = StateAssignment(variable, value)
 
         self.current_event_handler.add_action(action)
-
 
     def parse_state_variable(self, node):
         """
@@ -1551,18 +1633,18 @@ class LEMSFileParser(LEMSBase):
         :raises ParseError: Raised when the state variable is not being defined in the context of a component type.
         """
 
-        if 'name' in node.lattrib:
-            name = node.lattrib['name']
+        if "name" in node.lattrib:
+            name = node.lattrib["name"]
         else:
-            self.raise_error('<StateVariable> must specify a name')
+            self.raise_error("<StateVariable> must specify a name")
 
-        if 'dimension' in node.lattrib:
-            dimension = node.lattrib['dimension']
+        if "dimension" in node.lattrib:
+            dimension = node.lattrib["dimension"]
         else:
             self.raise_error("State variable '{0}' must specify a dimension", name)
 
-        if 'exposure' in node.lattrib:
-            exposure = node.lattrib['exposure']
+        if "exposure" in node.lattrib:
+            exposure = node.lattrib["exposure"]
         else:
             exposure = None
 
@@ -1588,7 +1670,7 @@ class LEMSFileParser(LEMSBase):
         :type node: xml.etree.Element
         """
 
-        self.model.add_target(node.lattrib['component'])
+        self.model.add_target(node.lattrib["component"])
 
     def parse_text(self, node):
         """
@@ -1598,12 +1680,12 @@ class LEMSFileParser(LEMSBase):
         :type node: xml.etree.Element
         """
 
-        if 'name' in node.lattrib:
-            name = node.lattrib['name']
+        if "name" in node.lattrib:
+            name = node.lattrib["name"]
         else:
-            self.raise_error('<Text> must specify a name.')
+            self.raise_error("<Text> must specify a name.")
 
-        description = node.lattrib.get('description', '')
+        description = node.lattrib.get("description", "")
 
         self.current_component_type.add_text(Text(name, description))
 
@@ -1617,16 +1699,17 @@ class LEMSFileParser(LEMSBase):
         :raises ParseError: Raised when the time derivative does not hava a variable name of a value.
         """
 
-        if 'variable' in node.lattrib:
-            variable = node.lattrib['variable']
+        if "variable" in node.lattrib:
+            variable = node.lattrib["variable"]
         else:
-            self.raise_error('<TimeDerivative> must specify a variable.')
+            self.raise_error("<TimeDerivative> must specify a variable.")
 
-        if 'value' in node.lattrib:
-            value = node.lattrib['value']
+        if "value" in node.lattrib:
+            value = node.lattrib["value"]
         else:
-            self.raise_error("Time derivative for '{0}' must specify an expression.",
-                             variable)
+            self.raise_error(
+                "Time derivative for '{0}' must specify an expression.", variable
+            )
 
         self.current_regime.add_time_derivative(TimeDerivative(variable, value))
 
@@ -1638,10 +1721,10 @@ class LEMSFileParser(LEMSBase):
         :type node: xml.etree.Element
         """
 
-        if 'regime' in node.lattrib:
-            regime = node.lattrib['regime']
+        if "regime" in node.lattrib:
+            regime = node.lattrib["regime"]
         else:
-            self.raise_error('<Transition> mut specify a regime.')
+            self.raise_error("<Transition> mut specify a regime.")
 
         action = Transition(regime)
 
@@ -1659,28 +1742,28 @@ class LEMSFileParser(LEMSBase):
         """
 
         try:
-            symbol = node.lattrib['symbol']
-            dimension = node.lattrib['dimension']
+            symbol = node.lattrib["symbol"]
+            dimension = node.lattrib["dimension"]
         except:
-            self.raise_error('Unit must have a symbol and dimension.')
+            self.raise_error("Unit must have a symbol and dimension.")
 
-        if 'power' in node.lattrib:
-            power = int(node.lattrib['power'])
+        if "power" in node.lattrib:
+            power = int(node.lattrib["power"])
         else:
             power = 0
 
-        if 'name' in node.lattrib:
-            name = node.lattrib['name']
+        if "name" in node.lattrib:
+            name = node.lattrib["name"]
         else:
-            name = ''
+            name = ""
 
-        if 'scale' in node.lattrib:
-            scale = float(node.lattrib['scale'])
+        if "scale" in node.lattrib:
+            scale = float(node.lattrib["scale"])
         else:
             scale = 1.0
 
-        if 'offset' in node.lattrib:
-            offset = float(node.lattrib['offset'])
+        if "offset" in node.lattrib:
+            offset = float(node.lattrib["offset"])
         else:
             offset = 0.0
 
@@ -1694,21 +1777,20 @@ class LEMSFileParser(LEMSBase):
         :type node: xml.etree.Element
         """
 
-        if 'instance' in node.lattrib:
-            instance = node.lattrib['instance']
+        if "instance" in node.lattrib:
+            instance = node.lattrib["instance"]
             list = None
             index = None
-        elif 'list' in node.lattrib and 'index' in node.lattrib:
+        elif "list" in node.lattrib and "index" in node.lattrib:
             instance = None
-            list = node.lattrib['list']
-            index = node.lattrib['index']
+            list = node.lattrib["list"]
+            index = node.lattrib["index"]
         else:
-            self.raise_error('<With> must specify EITHER instance OR list & index')
+            self.raise_error("<With> must specify EITHER instance OR list & index")
 
-        if 'as' in node.lattrib:
-            as_ = node.lattrib['as']
+        if "as" in node.lattrib:
+            as_ = node.lattrib["as"]
         else:
-            self.raise_error('<With> must specify a name for the '
-                             'target instance')
+            self.raise_error("<With> must specify a name for the " "target instance")
 
         self.current_structure.add_with(With(instance, as_, list, index))
