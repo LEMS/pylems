@@ -7,7 +7,7 @@ import logging
 
 logger = logging.getLogger("LEMS")
 
-__version__ = "0.5.7"
+__version__ = "0.5.8"
 
 __schema_version__ = "0.7.6"
 __schema_branch__ = "development"
