@@ -1,6 +1,6 @@
-## PyLEMS 
+## PyLEMS
 
-[![Documentation Status](https://readthedocs.org/projects/pylems/badge/?version=latest)](https://pylems.readthedocs.io/en/latest/?badge=latest)
+[![Build](https://github.com/LEMS/pylems/actions/workflows/ci.yml/badge.svg)](https://github.com/LEMS/pylems/actions/workflows/ci.yml) [![Documentation Status](https://readthedocs.org/projects/pylems/badge/?version=latest)](https://pylems.readthedocs.io/en/latest/?badge=latest)
 
 
 A LEMS (http://lems.github.io/LEMS) simulator written in Python which can be used to run NeuroML2 (http://neuroml.org/neuroml2.php) models.
@@ -13,10 +13,10 @@ Michael Vella, Robert C. Cannon, Sharon Crook, Andrew P. Davison, Gautham Ganapa
 
 _**PLEASE CITE THE PAPER ABOVE IF YOU USE PYLEMS!**_
 
-For more details on LEMS see: 
+For more details on LEMS see:
 
-Robert C. Cannon, Padraig Gleeson, Sharon Crook, Gautham Ganapathy, Boris Marin, Eugenio Piasini and R. Angus Silver, 
-**LEMS: A language for expressing complex biological models in concise and hierarchical form and its use in underpinning NeuroML 2**, 
+Robert C. Cannon, Padraig Gleeson, Sharon Crook, Gautham Ganapathy, Boris Marin, Eugenio Piasini and R. Angus Silver,
+**LEMS: A language for expressing complex biological models in concise and hierarchical form and its use in underpinning NeuroML 2**,
 [Frontiers in Neuroinformatics 2014](http://journal.frontiersin.org/Journal/10.3389/fninf.2014.00079/abstract), doi: 10.3389/fninf.2014.00079
 
 
@@ -33,7 +33,7 @@ To install as root:
 Alternatively, you can obtain the latest version with
 
     git clone https://github.com/LEMS/pylems.git
-    cd pylems 
+    cd pylems
     git checkout development   # optional
     sudo python setup.py install
 
@@ -81,9 +81,9 @@ Alternatively, you can obtain the latest version with
 - example5.xml --  Not working (Unsupported in PyLEMS: KSChannel)
 - example6.xml --  Working
 -- TODO: Rest of examples require an update to the `<Simulation>` element,
-   i.e. use `<Simulation...>` not `<SimulationSet...>`, to work in PyLEMS 
+   i.e. use `<Simulation...>` not `<SimulationSet...>`, to work in PyLEMS
 
-      
+
 **LEMS elements that do not work**
 
 - KSChannel
@@ -105,5 +105,3 @@ pylems is integrated with the the [Travis Continuous Integration service](http:/
 [![Build Status](https://travis-ci.com/LEMS/pylems.png?branch=master)](https://travis-ci.com/LEMS/pylems)
 
 This code is distributed under the terms of the GNU Lesser General Public License.
-
-
