@@ -9,6 +9,7 @@ from lems.base.base import LEMSBase
 from lems.base.errors import ModelError
 from lems.base.map import Map
 
+
 class Run(LEMSBase):
     """
     Stores the description of an object to be run according to an independent
@@ -45,27 +46,29 @@ class Run(LEMSBase):
         Exports this object into a LEMS XML object
         """
 
-        return '<Run component="{0}" variable="{1}" increment="{2}" total="{3}"/>'.format(self.component,
-                                                                                          self.variable,
-                                                                                          self.increment,
-                                                                                          self.total)
+        return (
+            '<Run component="{0}" variable="{1}" increment="{2}" total="{3}"/>'.format(
+                self.component, self.variable, self.increment, self.total
+            )
+        )
+
 
 class Record(LEMSBase):
     """
     Stores the parameters of a <Record> statement.
     """
 
-    def __init__(self, quantity, scale = None, color = None, id = None):
+    def __init__(self, quantity, scale=None, color=None, id=None):
         """
         Constructor.
 
         See instance variable documentation for information on parameters.
         """
 
-        self.id = ''
+        self.id = ""
         """ Id of the quantity
         :type: str """
-        
+
         self.quantity = quantity
         """ Path to the quantity to be recorded.
         :type: str """
@@ -87,10 +90,11 @@ class Record(LEMSBase):
         Exports this object into a LEMS XML object
         """
 
-        return '<Record quantity="{0}" scale="{1}" color="{2}" id="{3}"/>'.format(self.quantity,
-                                                                         self.scale,
-                                                                         self.color,
-                                                                         self.id)
+        return '<Record quantity="{0}" scale="{1}" color="{2}" id="{3}"/>'.format(
+            self.quantity, self.scale, self.color, self.id
+        )
+
+
 class EventRecord(LEMSBase):
     """
     Stores the parameters of an <EventRecord> statement.
@@ -103,10 +107,10 @@ class EventRecord(LEMSBase):
         See instance variable documentation for information on parameters.
         """
 
-        self.id = ''
+        self.id = ""
         """ Id of the quantity
         :type: str """
-        
+
         self.quantity = quantity
         """ Path to the quantity to be recorded.
         :type: str """
@@ -120,8 +124,10 @@ class EventRecord(LEMSBase):
         Exports this object into a LEMS XML object
         """
 
-        return '<EventRecord quantity="{0}" eventPort="{1}"/>'.format(self.quantity,
-                                                                         self.eventPort)
+        return '<EventRecord quantity="{0}" eventPort="{1}"/>'.format(
+            self.quantity, self.eventPort
+        )
+
 
 class DataOutput(LEMSBase):
     """
@@ -134,6 +140,7 @@ class DataOutput(LEMSBase):
         """
 
         pass
+
 
 class DataDisplay(DataOutput):
     """
@@ -160,14 +167,16 @@ class DataDisplay(DataOutput):
         self.time_scale = 1
         """ Time scale
         :type: Number """
-        
+
     def toxml(self):
         """
         Exports this object into a LEMS XML object
         """
 
-        return '<DataDisplay title="{0}" dataRegion="{1}"/>'.format(self.title,
-                                                                    self.data_region)
+        return '<DataDisplay title="{0}" dataRegion="{1}"/>'.format(
+            self.title, self.data_region
+        )
+
 
 class DataWriter(DataOutput):
     """
@@ -182,7 +191,7 @@ class DataWriter(DataOutput):
         """
 
         DataOutput.__init__(self)
-        
+
         self.path = path
         """ Path to the quantity to be saved to file.
         :type: string """
@@ -191,19 +200,19 @@ class DataWriter(DataOutput):
         """ Text parameter to be used for the file name
         :type: string """
 
-
     def toxml(self):
         """
         Exports this object into a LEMS XML object
         """
 
-        return '<DataWriter path="{0}" fileName="{1}"/>'.format(self.path,
-                                                                self.file_name)
-                                                                
+        return '<DataWriter path="{0}" fileName="{1}"/>'.format(
+            self.path, self.file_name
+        )
+
     def __str__(self):
-        return 'DataWriter, path: {0}, fileName: {1}'.format(self.path, self.file_name)
-    
-    
+        return "DataWriter, path: {0}, fileName: {1}".format(self.path, self.file_name)
+
+
 class EventWriter(DataOutput):
     """
     Stores specification for an event writer.
@@ -217,7 +226,7 @@ class EventWriter(DataOutput):
         """
 
         DataOutput.__init__(self)
-        
+
         self.path = path
         """ Path to the quantity to be saved to file.
         :type: string """
@@ -230,18 +239,19 @@ class EventWriter(DataOutput):
         """ Text parameter to be used for the format
         :type: string """
 
-
     def toxml(self):
         """
         Exports this object into a LEMS XML object
         """
 
-        return '<EventWriter path="{0}" fileName="{1}" format="{2}"/>'.format(self.path,
-                                                                self.file_name, self.format)
-                                                                
-    def __str__(self):
-        return 'EventWriter, path: {0}, fileName: {1}, format: {2}'.format(self.path, self.file_name, self.format)
+        return '<EventWriter path="{0}" fileName="{1}" format="{2}"/>'.format(
+            self.path, self.file_name, self.format
+        )
 
+    def __str__(self):
+        return "EventWriter, path: {0}, fileName: {1}, format: {2}".format(
+            self.path, self.file_name, self.format
+        )
 
 
 class Simulation(LEMSBase):
@@ -361,14 +371,14 @@ class Simulation(LEMSBase):
         elif isinstance(child, EventWriter):
             self.add_event_writer(child)
         else:
-            raise ModelError('Unsupported child element')
-        
+            raise ModelError("Unsupported child element")
+
     def toxml(self):
         """
         Exports this object into a LEMS XML object
         """
 
-        chxmlstr = ''
+        chxmlstr = ""
 
         for run in self.runs:
             chxmlstr += run.toxml()
@@ -389,8 +399,8 @@ class Simulation(LEMSBase):
             chxmlstr += event_writer.toxml()
 
         if chxmlstr:
-            xmlstr = '<Simulation>' + chxmlstr + '</Simulation>'
+            xmlstr = "<Simulation>" + chxmlstr + "</Simulation>"
         else:
-            xmlstr = ''
+            xmlstr = ""
 
         return xmlstr

@@ -9,6 +9,7 @@ from lems.base.base import LEMSBase
 from lems.base.map import Map
 from lems.base.errors import ModelError
 
+
 class With(LEMSBase):
     """
     Stores a with-as statement.
@@ -17,7 +18,7 @@ class With(LEMSBase):
     def __init__(self, instance, as_, list=None, index=None):
         """
         Constructor referencing single identified instance, or list/index.
-        
+
         """
 
         self.instance = instance
@@ -35,20 +36,21 @@ class With(LEMSBase):
         self.index = index
         """ index in list to be referenced.
         :type: str """
-        
 
     def toxml(self):
         """
         Exports this object into a LEMS XML object
         """
 
-        return '<With ' + \
-          (' instance="{0}"'.format(self.instance) if self.instance else '') +\
-          (' list="{0}"'.format(self.list) if self.list else '') + \
-          (' index="{0}"'.format(self.index) if self.index else '') + \
-          ' as="{1}"/>'.format(self.instance, self.as_)
-          
-          
+        return (
+            "<With "
+            + (' instance="{0}"'.format(self.instance) if self.instance else "")
+            + (' list="{0}"'.format(self.list) if self.list else "")
+            + (' index="{0}"'.format(self.index) if self.index else "")
+            + ' as="{1}"/>'.format(self.instance, self.as_)
+        )
+
+
 class Tunnel(LEMSBase):
     """
     Stores a Tunnel.
@@ -57,7 +59,7 @@ class Tunnel(LEMSBase):
     def __init__(self, name, end_a, end_b, component_a, component_b):
         """
         Constructor.
-        
+
         """
 
         self.name = name
@@ -75,35 +77,37 @@ class Tunnel(LEMSBase):
         self.component_a = component_a
         """ Component to create at A.
         :type: str """
-        
+
         self.component_b = component_b
         """ Component to create at B.
         :type: str """
-
-        
 
     def toxml(self):
         """
         Exports this object into a LEMS XML object
         """
 
-        return '<Tunnel name="{0}"'.format(self.name) + \
-               ' endA="{0}"'.format(self.end_a) + \
-               ' endB="{0}"'.format(self.end_b) + \
-               ' componentA="{0}"'.format(self.component_a) + \
-               ' componentB="{0}"'.format(self.component_b) + '/>'
+        return (
+            '<Tunnel name="{0}"'.format(self.name)
+            + ' endA="{0}"'.format(self.end_a)
+            + ' endB="{0}"'.format(self.end_b)
+            + ' componentA="{0}"'.format(self.component_a)
+            + ' componentB="{0}"'.format(self.component_b)
+            + "/>"
+        )
+
 
 class EventConnection(LEMSBase):
     """
     Stores an event connection specification.
     """
 
-    def __init__(self, from_, to, 
-                 source_port, target_port,
-                 receiver, receiver_container):
+    def __init__(
+        self, from_, to, source_port, target_port, receiver, receiver_container
+    ):
         """
         Constructor.
-        
+
         See instance variable documentation for more details on parameters.
         """
 
@@ -124,41 +128,51 @@ class EventConnection(LEMSBase):
         :type: str """
 
         self.receiver = receiver
-        """ Name of the proxy receiver component attached to the target component that actually receiving the event.
-        :type: str """
+        """ Proxy receiver component attached to the target component that actually receiving the event.
+        :type: Component """
 
         self.receiver_container = receiver_container
         """ Name of the child component grouping to add the receiver to.
         :type: str """
 
     def __eq__(self, o):
-        return (self.from_ == o.from_ and self.to == o.to and
-                self.source_port == o.source_port and self.target_port == o.target_port)
-
+        return (
+            self.from_ == o.from_
+            and self.to == o.to
+            and self.source_port == o.source_port
+            and self.target_port == o.target_port
+        )
 
     def toxml(self):
         """
         Exports this object into a LEMS XML object
         """
 
-        return '<EventConnection' +\
-          (' from="{0}"'.format(self.from_) if self.from_ else '') +\
-          (' to="{0}"'.format(self.to) if self.to else '') +\
-          (' sourcePort="{0}"'.format(self.source_port) if self.source_port else '') +\
-          (' targetPort="{0}"'.format(self.target_port) if self.target_port else '') +\
-          (' receiver="{0}"'.format(self.receiver) if self.receiver else '') +\
-          (' receiverContainer="{0}"'.format(self.receiver_container) if self.receiver_container else '') +\
-          '/>'
+        return (
+            "<EventConnection"
+            + (' from="{0}"'.format(self.from_) if self.from_ else "")
+            + (' to="{0}"'.format(self.to) if self.to else "")
+            + (' sourcePort="{0}"'.format(self.source_port) if self.source_port else "")
+            + (' targetPort="{0}"'.format(self.target_port) if self.target_port else "")
+            + (' receiver="{0}"'.format(self.receiver) if self.receiver else "")
+            + (
+                ' receiverContainer="{0}"'.format(self.receiver_container)
+                if self.receiver_container
+                else ""
+            )
+            + "/>"
+        )
+
 
 class ChildInstance(LEMSBase):
     """
     Stores a child instantiation specification.
     """
 
-    def __init__(self, component, referenced_component = None):
+    def __init__(self, component, referenced_component=None):
         """
         Constructor.
-        
+
         See instance variable documentation for more details on parameters.
         """
 
@@ -169,7 +183,7 @@ class ChildInstance(LEMSBase):
         self.referenced_component = referenced_component
         """ Target component being referenced after resolution.
         :type: lems.model.component.FatComponent """
-        
+
     def __eq__(self, o):
         return self.component == o.component
 
@@ -180,6 +194,7 @@ class ChildInstance(LEMSBase):
 
         return '<ChildInstance component="{0}"/>'.format(self.component)
 
+
 class Assign(LEMSBase):
     """
     Stores a child assign specification.
@@ -188,7 +203,7 @@ class Assign(LEMSBase):
     def __init__(self, property, value):
         """
         Constructor.
-        
+
         See instance variable documentation for more details on parameters.
         """
 
@@ -218,13 +233,15 @@ class MultiInstantiate(LEMSBase):
     def __init__(self, component=None, number=None, component_type=None):
         """
         Constructor.
-        
+
         See instance variable documentation for more details on parameters.
         """
         if component and component_type:
-            raise AttributeError("MultiInstantiate should contain either"
-                                 " an attribute component or an attribute"
-                                 " component_type, not both.")
+            raise AttributeError(
+                "MultiInstantiate should contain either"
+                " an attribute component or an attribute"
+                " component_type, not both."
+            )
 
         self.component = component
         """ Name of the component reference to be used for instantiation.
@@ -242,7 +259,7 @@ class MultiInstantiate(LEMSBase):
         self.assignments = []
         """ List of assignments included in MultiInstantiate.
         :type: list(Assign) """
-        
+
     def __eq__(self, o):
         if self.component:
             flag = self.component == o.component and self.number == o.number
@@ -269,13 +286,13 @@ class MultiInstantiate(LEMSBase):
         if isinstance(child, Assign):
             self.add_assign(child)
         else:
-            raise ModelError('Unsupported child element')
+            raise ModelError("Unsupported child element")
 
     def toxml(self):
         """
         Exports this object into a LEMS XML object
         """
-        argstr = ''
+        argstr = ""
         if self.component:
             argstr += 'component="{0}" '.format(self.component)
         if self.component_type:
@@ -283,32 +300,35 @@ class MultiInstantiate(LEMSBase):
         if self.number:
             argstr += 'number="{0}" '.format(self.number)
         if self.assignments:
-            chxmlstr = ''
+            chxmlstr = ""
             for assign in self.assignments:
                 chxmlstr += assign.toxml()
-            return '<MultiInstantiate {0}>{1}</MultiInstantiate>'.format(argstr, chxmlstr)
+            return "<MultiInstantiate {0}>{1}</MultiInstantiate>".format(
+                argstr, chxmlstr
+            )
         else:
-            return '<MultiInstantiate {0}/>'.format(argstr)
+            return "<MultiInstantiate {0}/>".format(argstr)
+
 
 class ForEach(LEMSBase):
     """
     ForEach specification.
     """
+
     def __init__(self, instances, as_):
 
         self.instances = instances
-        
+
         self.as_ = as_
-        
+
         self.event_connections = list()
         """ List of event connections.
         :type: list(lems.model.structure.EventConnection) """
-        
+
         self.for_eachs = list()
         """ List of for each specs.
         :type: list(lems.model.structure.ForEach) """
-        
-        
+
     def add_for_each(self, fe):
         """
         Adds a for-each specification.
@@ -318,8 +338,7 @@ class ForEach(LEMSBase):
         """
 
         self.for_eachs.append(fe)
-        
-        
+
     def add_event_connection(self, ec):
         """
         Adds an event conenction to the structure.
@@ -329,12 +348,12 @@ class ForEach(LEMSBase):
         """
 
         self.event_connections.append(ec)
-        
+
     def toxml(self):
         """
         Exports this object into a LEMS XML object
         """
-        chxmlstr = ''
+        chxmlstr = ""
 
         for event_connection in self.event_connections:
             chxmlstr += event_connection.toxml()
@@ -342,10 +361,11 @@ class ForEach(LEMSBase):
         for for_each in self.for_eachs:
             chxmlstr += for_each.toxml()
 
+        return '<ForEach instances="{0}" as="{1}">{2}</ForEach>'.format(
+            self.instances, self.as_, chxmlstr
+        )
 
-        return '<ForEach instances="{0}" as="{1}">{2}</ForEach>'.format(self.instances, self.as_, chxmlstr)
-        
-        
+
 class Structure(LEMSBase):
     """
     Stores structural properties of a component type.
@@ -359,7 +379,7 @@ class Structure(LEMSBase):
         self.withs = Map()
         """ Map of With statements.
         :type: Map(str -> lems.model.structure.With) """
-        
+
         self.tunnels = Map()
         """ Map of tunnel statements.
         :type: Map(str -> lems.model.structure.Tunnel) """
@@ -379,14 +399,16 @@ class Structure(LEMSBase):
         self.for_eachs = list()
         """ List of for each specs.
         :type: list(lems.model.structure.ForEach) """
-        
+
     def has_content(self):
-        if len(self.withs)==0 and \
-           len(self.event_connections)==0 and \
-           len(self.child_instances)==0 and \
-           len(self.multi_instantiates)==0 and \
-           len(self.for_eachs)==0:
-               return False
+        if (
+            len(self.withs) == 0
+            and len(self.event_connections) == 0
+            and len(self.child_instances) == 0
+            and len(self.multi_instantiates) == 0
+            and len(self.for_eachs) == 0
+        ):
+            return False
         else:
             return True
 
@@ -409,7 +431,7 @@ class Structure(LEMSBase):
         """
 
         self.tunnels[tunnel.name] = tunnel
-        
+
     def add_event_connection(self, ec):
         """
         Adds an event conenction to the structure.
@@ -468,13 +490,13 @@ class Structure(LEMSBase):
         elif isinstance(child, ForEach):
             self.add_for_each(child)
         else:
-            raise ModelError('Unsupported child element')
+            raise ModelError("Unsupported child element")
 
     def toxml(self):
         """
         Exports this object into a LEMS XML object
         """
-        chxmlstr = ''
+        chxmlstr = ""
 
         for with_ in self.withs:
             chxmlstr += with_.toxml()
@@ -492,8 +514,8 @@ class Structure(LEMSBase):
             chxmlstr += for_each.toxml()
 
         if chxmlstr:
-            xmlstr = '<Structure>' + chxmlstr + '</Structure>'
+            xmlstr = "<Structure>" + chxmlstr + "</Structure>"
         else:
-            xmlstr = ''
+            xmlstr = ""
 
         return xmlstr

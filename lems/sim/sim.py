@@ -10,10 +10,12 @@ from lems.base.errors import SimError
 
 import heapq
 
+
 class Simulation(LEMSBase):
     """
     Simulation class.
     """
+
     debug = False
 
     def __init__(self):
@@ -43,7 +45,7 @@ class Simulation(LEMSBase):
         """
 
         if runnable.id in self.runnables:
-            raise SimError('Duplicate runnable component {0}'.format(runnable.id))
+            raise SimError("Duplicate runnable component {0}".format(runnable.id))
 
         self.runnables[runnable.id] = runnable
 
@@ -62,8 +64,7 @@ class Simulation(LEMSBase):
         (current_time, runnable) = heapq.heappop(self.run_queue)
         time = current_time
         while time == current_time:
-            next_time = current_time + runnable.single_step(\
-                runnable.time_step)
+            next_time = current_time + runnable.single_step(runnable.time_step)
 
             if next_time > current_time:
                 heapq.heappush(self.run_queue, (next_time, runnable))
@@ -88,11 +89,12 @@ class Simulation(LEMSBase):
         """
 
         self.init_run()
-        if self.debug: self.dump("AfterInit: ")
-        #print("++++++++++++++++ Time: %f"%self.current_time)
+        if self.debug:
+            self.dump("AfterInit: ")
+        # print("++++++++++++++++ Time: %f"%self.current_time)
         while self.step():
-            #self.dump("Time: %f"%self.current_time)
-            #print("++++++++++++++++ Time: %f"%self.current_time)
+            # self.dump("Time: %f"%self.current_time)
+            # print("++++++++++++++++ Time: %f"%self.current_time)
             pass
 
     def push_state(self):
@@ -111,42 +113,43 @@ class Simulation(LEMSBase):
         for id in self.runnables:
             self.runnables[id].plastic = False
 
-    def dump_runnable(self, runnable, prefix = '.'):
+    def dump_runnable(self, runnable, prefix="."):
         r = runnable
-        print('{0}...............  {1} ({2})'.format(prefix, r.id, r.component.type))
-        print(prefix+str(r))
+        print("{0}...............  {1} ({2})".format(prefix, r.id, r.component.type))
+        print(prefix + str(r))
         ignores = ["Display", "Line", "OutputColumn", "OutputFile", "Simulation"]
         verbose = r.component.type not in ignores
         if verbose:
             if r.instance_variables:
-                print('{0}    Instance variables'.format(prefix))
+                print("{0}    Instance variables".format(prefix))
                 for vn in r.instance_variables:
-                    print('{0}      {1} = {2}'.format(prefix, vn, r.__dict__[vn]))
+                    print("{0}      {1} = {2}".format(prefix, vn, r.__dict__[vn]))
             if r.derived_variables:
-                print('{0}    Derived variables'.format(prefix))
+                print("{0}    Derived variables".format(prefix))
                 for vn in r.derived_variables:
-                    print('{0}      {1} = {2}'.format(prefix, vn, r.__dict__[vn]))
-                
+                    print("{0}      {1} = {2}".format(prefix, vn, r.__dict__[vn]))
+
         if verbose:
             keys = list(r.__dict__.keys())
             keys.sort()
-            print('{0}    Keys for {1}'.format(prefix, r.id))
+            print("{0}    Keys for {1}".format(prefix, r.id))
             for k in keys:
                 key_str = str(r.__dict__[k])
                 if len(key_str) > 0 and not key_str == "[]" and not key_str == "{}":
-                    print('{0}       {1} -> {2}'.format(prefix, k, key_str))
-                    
+                    print("{0}       {1} -> {2}".format(prefix, k, key_str))
+
         if r.array:
             for c in r.array:
-                self.dump_runnable(c, prefix + '    .')
+                self.dump_runnable(c, prefix + "    .")
         if r.uchildren:
             for cn in r.uchildren:
-                self.dump_runnable(r.uchildren[cn], prefix + '    .')
+                self.dump_runnable(r.uchildren[cn], prefix + "    .")
 
-    def dump(self, prefix=''):
-        print('Runnables:')
+    def dump(self, prefix=""):
+        print("Runnables:")
         for id in self.runnables:
             self.dump_runnable(self.runnables[id], prefix)
+
 
 class Event:
     """

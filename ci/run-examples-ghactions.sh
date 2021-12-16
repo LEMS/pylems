@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Copyright 2021 LEMS contributors
-# Author: Ankur Sinha <sanjay DOT ankur AT gmail DOT com> 
+# Author: Ankur Sinha <sanjay DOT ankur AT gmail DOT com>
 # File : run-examples-ghactions.sh
 #
 # Run tests on GitHub actions
@@ -16,6 +16,7 @@ echo "Running standard LEMS examples"
 #./pylems examples/example4.xml -nogui     # Not working (Unsupported in PyLEMS: KSChannel)
 #./pylems examples/example5.xml -nogui     # Not working (Unsupported in PyLEMS: KSChannel)
 ./pylems examples/example6.xml -nogui
+./pylems examples/bounce-conditional.xml -nogui
 # Rest of examples require an update to the <Simulation> element, i.e. use <Simulation...> not <SimulationSet...>, to work in PyLEMS
 
 ###      Try running NeuroML 2 examples

@@ -5,6 +5,7 @@ Error classes.
 :organization: LEMS (https://github.com/organizations/LEMS)
 """
 
+
 class LEMSError(Exception):
     """
     Base exception class.
@@ -23,7 +24,7 @@ class LEMSError(Exception):
         :param key_params: Named arguments for formatting.
         :type key_params: dict
         """
-        
+
         self.message = None
         """ Error message
         :type: string """
@@ -37,7 +38,7 @@ class LEMSError(Exception):
             if key_params:
                 self.message = message(**key_params)
             else:
-                self.message = message    
+                self.message = message
 
     def __str__(self):
         """
@@ -46,8 +47,9 @@ class LEMSError(Exception):
         :return: The error message
         :rtype: string
         """
-        
+
         return self.message
+
 
 class StackError(LEMSError):
     """
@@ -56,12 +58,14 @@ class StackError(LEMSError):
 
     pass
 
+
 class ParseError(LEMSError):
     """
     Exception class to signal errors found during parsing.
     """
 
     pass
+
 
 class ModelError(LEMSError):
     """
@@ -70,12 +74,14 @@ class ModelError(LEMSError):
 
     pass
 
+
 class SimBuildError(LEMSError):
     """
     Exception class to signal errors in building the simulation.
     """
 
     pass
+
 
 class SimError(LEMSError):
     """
