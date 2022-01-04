@@ -1147,8 +1147,9 @@ class Model(LEMSBase):
 
         return exposures
 
-    def get_full_comp_paths_with_comp_refs(self, comp: FatComponent, comptext:
-                                           typing.Optional[str] = None):
+    def get_full_comp_paths_with_comp_refs(
+        self, comp: FatComponent, comptext: typing.Optional[str] = None
+    ):
         """Get list of component paths with all component references also
         resolved for the given component `comp`.
 
@@ -1278,7 +1279,9 @@ class Model(LEMSBase):
         self.temp_vec.pop()
         self.path_vec.pop()
 
-    def construct_path(self, pathlist: list[str], skip: typing.Optional[str] = None) -> str:
+    def construct_path(
+        self, pathlist: list[str], skip: typing.Optional[str] = None
+    ) -> str:
         """Construct path from a list.
 
         :param vec: list of text strings to generate path from
@@ -1294,8 +1297,9 @@ class Model(LEMSBase):
                 pathlist.remove(skip)
         return "/".join(pathlist)
 
-    def list_recording_paths_for_exposures(self, substring: str = "", target:
-                                           str = "") -> list[str]:
+    def list_recording_paths_for_exposures(
+        self, substring: str = "", target: str = ""
+    ) -> list[str]:
         """List recording paths for exposures in the model for components
         matching the given substring, and for the given simulation target.
 
