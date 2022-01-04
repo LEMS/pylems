@@ -5,16 +5,18 @@ Model storage.
 :organization: LEMS (https://github.com/organizations/LEMS)
 """
 
+from __future__ import annotations
 import os
 from os.path import dirname
 
 # For python versions where typing isn't available at all
 try:
-    from typing import List, Dict, Union, Tuple
+    import typing
 except ImportError:
     pass
 import copy
 
+import lems
 from lems import __schema_location__, __schema_version__
 from lems.base.base import LEMSBase
 from lems.base.util import merge_maps, merge_lists
@@ -376,8 +378,7 @@ class Model(LEMSBase):
         f.write(xmlstr)
         f.close()
 
-    def resolve(self):
-        # type: () -> Model
+    def resolve(self) -> lems.model.Model:
         """
         Resolves references in this model and returns resolved model.
 
@@ -1036,8 +1037,7 @@ class Model(LEMSBase):
         # print("Have converted %s to value: %s, dimension %s"%(value_str, numeric_value, dimension))
         return numeric_value
 
-    def get_component_list(self, substring=""):
-        # type: (str) -> Dict[str, Component]
+    def get_component_list(self, substring: str = "") -> dict[str, Component]:
         """Get all components whose id matches the given substring.
 
         Note that in PyLEMS, if a component does not have an id attribute,
@@ -1071,8 +1071,7 @@ class Model(LEMSBase):
 
         return ret_list
 
-    def get_fattened_component_list(self, substring=""):
-        # type: (str) -> Map
+    def get_fattened_component_list(self, substring: str = "") -> Map:
         """Get a list of fattened components whose ids include the substring.
 
         A "fattened component" is one where all elements of the components have
@@ -1092,8 +1091,7 @@ class Model(LEMSBase):
 
         return fattened_comp_list
 
-    def get_nested_components(self, comp):
-        # type: (Component) -> Dict[str, Component]
+    def get_nested_components(self, comp: Component) -> dict[str, Component]:
         """Get all nested (child/children) components in the comp component
 
         :param comp: component to get all nested (child/children) components for
@@ -1109,8 +1107,7 @@ class Model(LEMSBase):
 
         return comp_list
 
-    def list_exposures(self, substring=""):
-        # type: (str) -> Dict[FatComponent, Map]
+    def list_exposures(self, substring: str = "") -> dict[FatComponent, Map]:
         """Get exposures from model belonging to components which contain the
         given substring.
 
@@ -1150,8 +1147,8 @@ class Model(LEMSBase):
 
         return exposures
 
-    def get_full_comp_paths_with_comp_refs(self, comp, comptext=None):
-        # type: (FatComponent, Union[None, str]) -> None
+    def get_full_comp_paths_with_comp_refs(self, comp: FatComponent, comptext:
+                                           typing.Optional[str] = None):
         """Get list of component paths with all component references also
         resolved for the given component `comp`.
 
@@ -1281,8 +1278,7 @@ class Model(LEMSBase):
         self.temp_vec.pop()
         self.path_vec.pop()
 
-    def construct_path(self, pathlist, skip=None):
-        # type: (List[str], str) -> str
+    def construct_path(self, pathlist: list[str], skip: typing.Optional[str] = None) -> str:
         """Construct path from a list.
 
         :param vec: list of text strings to generate path from
@@ -1298,8 +1294,8 @@ class Model(LEMSBase):
                 pathlist.remove(skip)
         return "/".join(pathlist)
 
-    def list_recording_paths_for_exposures(self, substring="", target=""):
-        # (str, str) -> List[str]
+    def list_recording_paths_for_exposures(self, substring: str = "", target:
+                                           str = "") -> list[str]:
         """List recording paths for exposures in the model for components
         matching the given substring, and for the given simulation target.
 
@@ -1369,8 +1365,7 @@ class Model(LEMSBase):
             print("\n".join(exp_paths))
         return exp_paths
 
-    def get_comp_ref_map(self):
-        # type () -> Map[str, List[FatComponent]]
+    def get_comp_ref_map(self) -> Map:
         """Get a Map of ComponentReferences in the model.
 
         :returns: Map with target -> [source] entries
