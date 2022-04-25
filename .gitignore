@@ -16,3 +16,4 @@ comp_*
 /lems/__init__$py.class
 /PyLEMS.egg-info
 /dist
+*ken.sh
