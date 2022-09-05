@@ -2,17 +2,17 @@ name: Build
 
 on:
   push:
-    branches: [ master, development ]
+    branches: [ master, development, experimental ]
   pull_request:
-    branches: [ master, development ]
+    branches: [ master, development, experimental ]
 
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: [ ubuntu-latest, windows-latest ]
     strategy:
       matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10"]
+        python-version: ["3.7", "3.9", "3.10"]
 
     steps:
     - uses: actions/checkout@v2
