@@ -2,17 +2,19 @@ name: Build
 
 on:
   push:
-    branches: [ master, development ]
+    branches: [ master, development, experimental ]
   pull_request:
-    branches: [ master, development ]
+    branches: [ master, development, experimental ]
 
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runs-on }}
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10"]
+        python-version: ["3.7", "3.9", "3.10"]
+        runs-on: [ubuntu-latest, windows-latest]
 
     steps:
     - uses: actions/checkout@v2
@@ -26,7 +28,6 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install pytest pytest-cov
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
     - name: Checkout NeuroML2
       uses: actions/checkout@v2
