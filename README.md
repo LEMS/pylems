@@ -1,6 +1,8 @@
 ## PyLEMS
 
-[![Build](https://github.com/LEMS/pylems/actions/workflows/ci.yml/badge.svg)](https://github.com/LEMS/pylems/actions/workflows/ci.yml) [![Documentation Status](https://readthedocs.org/projects/pylems/badge/?version=latest)](https://pylems.readthedocs.io/en/latest/?badge=latest)
+[![Build](https://github.com/LEMS/pylems/actions/workflows/ci.yml/badge.svg)](https://github.com/LEMS/pylems/actions/workflows/ci.yml)
+[![Check LEMS examples](https://github.com/LEMS/pylems/actions/workflows/examples.yml/badge.svg)](https://github.com/LEMS/pylems/actions/workflows/examples.yml)
+[![Documentation Status](https://readthedocs.org/projects/pylems/badge/?version=latest)](https://pylems.readthedocs.io/en/latest/?badge=latest)
 
 
 A LEMS (http://lems.github.io/LEMS) simulator written in Python which can be used to run NeuroML2 (http://neuroml.org/neuroml2.php) models.
