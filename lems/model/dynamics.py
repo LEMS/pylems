@@ -16,7 +16,7 @@ class StateVariable(LEMSBase):
     Store the specification of a state variable.
     """
 
-    def __init__(self, name, minval, maxval, dimension, exposure=None):
+    def __init__(self, name, dimension, minval=None, maxval=None, exposure=None):
         """
         Constructor.
 

@@ -21,7 +21,7 @@ class Parameter(LEMSBase):
     Stores a parameter declaration.
     """
 
-    def __init__(self, name, dimension, minval, maxval, description=""):
+    def __init__(self, name, dimension, minval=None, maxval=None, description=""):
         """
         Constructor.
 
@@ -317,7 +317,7 @@ class Exposure(LEMSBase):
     Stores a exposure specification.
     """
 
-    def __init__(self, name, minval, maxval, dimension, description=""):
+    def __init__(self, name, dimension, minval=None, maxval=None, description=""):
         """
         Constructor.
 
