@@ -4,7 +4,7 @@ Regression test for https://github.com/LEMS/pylems/issues/20
 
 File: reg_test_20.py
 
-Copyright 2021 LEMS contributors
+Copyright 2023 LEMS contributors
 Author: Ankur Sinha <sanjay DOT ankur AT gmail DOT com>
 """
 
