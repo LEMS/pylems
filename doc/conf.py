@@ -55,7 +55,7 @@ master_doc = "index"
 
 # General information about the project.
 project = u"PyLEMS"
-copyright = u"2021, LEMS authors and contributors"
+copyright = u"2023, LEMS authors and contributors"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

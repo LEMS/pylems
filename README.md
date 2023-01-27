@@ -5,7 +5,7 @@
 [![Documentation Status](https://readthedocs.org/projects/pylems/badge/?version=latest)](https://pylems.readthedocs.io/en/latest/?badge=latest)
 
 
-A LEMS (http://lems.github.io/LEMS) simulator written in Python which can be used to run NeuroML2 (http://neuroml.org/neuroml2.php) models.
+A LEMS (http://lems.github.io/LEMS) simulator written in Python which can be used to run NeuroML2  models (see [here](https://docs.neuroml.org/Userdocs/Software/pyLEMS.html)).
 
 For more about PyLEMS see:
 

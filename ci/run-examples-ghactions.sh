@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2021 LEMS contributors
+# Copyright 2023 LEMS contributors
 # Author: Ankur Sinha <sanjay DOT ankur AT gmail DOT com>
 # File : run-examples-ghactions.sh
 #
