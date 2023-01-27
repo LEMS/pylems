@@ -1002,7 +1002,7 @@ class LEMSFileParser(LEMSBase):
 
         description = node.lattrib.get("description", "")
 
-        self.current_component_type.add_exposure(Exposure(name, minval, maxval, dimension, description))
+        self.current_component_type.add_exposure(Exposure(name, dimension, minval, maxval, description))
 
     def parse_fixed(self, node):
         """
@@ -1678,7 +1678,7 @@ class LEMSFileParser(LEMSBase):
         else:
             exposure = None
 
-        self.current_regime.add_state_variable(StateVariable(name, minval, maxval, dimension, exposure))
+        self.current_regime.add_state_variable(StateVariable(name, dimension, minval, maxval, exposure))
 
     def parse_structure(self, node):
         """
