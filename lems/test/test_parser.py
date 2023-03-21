@@ -10,7 +10,6 @@ from lems.parser.expr import ExprParser
 
 class TestParser(unittest.TestCase):
     def test_parser(self):
-
         x = 0.5
 
         exprs = {}

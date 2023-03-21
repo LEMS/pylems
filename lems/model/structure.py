@@ -316,7 +316,6 @@ class ForEach(LEMSBase):
     """
 
     def __init__(self, instances, as_):
-
         self.instances = instances
 
         self.as_ = as_

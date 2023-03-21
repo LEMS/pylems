@@ -50,7 +50,6 @@ def merge_lists(l, base):
 
 
 def validate_lems(file_name):
-
     from lxml import etree
 
     try:
