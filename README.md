@@ -99,11 +99,4 @@ Alternatively, you can obtain the latest version with
 - Decouple events from runnables
 - Improve dimension-checking on expressions.
 
-
-### Travis integration
-
-pylems is integrated with the the [Travis Continuous Integration service](http://travis-ci.com/).
-
-[![Build Status](https://travis-ci.com/LEMS/pylems.png?branch=master)](https://travis-ci.com/LEMS/pylems)
-
 This code is distributed under the terms of the GNU Lesser General Public License.
