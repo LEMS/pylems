@@ -99,5 +99,4 @@ Alternatively, you can obtain the latest version with
 - Decouple events from runnables
 - Improve dimension-checking on expressions.
 
-
 This code is distributed under the terms of the GNU Lesser General Public License.
