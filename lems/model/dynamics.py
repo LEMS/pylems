@@ -179,7 +179,6 @@ class Case(LEMSBase):
         Exports this object into a LEMS XML object
         """
         cond = ' condition="{0}"'.format(self.condition) if self.condition is not None else ''
-        print(cond)
         return (
             '<Case{0} value="{1}"'.format(cond, self.value)
             + "/>"
