@@ -47,7 +47,6 @@ def any_svs_plotted(disp, svs):
 
 
 def inequality_to_condition(ineq):
-
     r = re.compile("(.+)(?:\.([glneqt]+)\.)(.+)")
     s = r.search(ineq)
     expr = "".join([s.group(1).strip(), " - (", s.group(3).strip() + ")"])
@@ -56,7 +55,6 @@ def inequality_to_condition(ineq):
 
 
 def export_component(model, comp, sim_comp, parent_pop="", file_name=None):
-
     comp_type = model.component_types[comp.type]
 
     dlems = OrderedDict()
@@ -133,13 +131,11 @@ def export_component(model, comp, sim_comp, parent_pop="", file_name=None):
     disps = []
 
     for d in sim_comp.children:
-
         if (
             d.type == "Display"
             and has_display(d, parent_pop)
             and any_svs_plotted(d, svs.keys())
         ):
-
             di = OrderedDict()
             abax = OrderedDict()
             abax["min"] = d.parameters["xmin"]
@@ -224,11 +220,8 @@ if __name__ == "__main__":
     target_comp = model.components[target_net]
 
     if target_comp.type == "network":
-
         for child in target_comp.children:
-
             if child.type == "population":
-
                 comp = model.components[child.parameters["component"]]
 
                 export_component(model, comp, sim_comp, child.id)

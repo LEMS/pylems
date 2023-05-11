@@ -616,7 +616,6 @@ class SimulationBuilder(LEMSBase):
         # Process kinetic schemes
         ks_code = []
         for ks in regime.kinetic_schemes:
-
             raise NotImplementedError(
                 "KineticScheme element is not stable in PyLEMS yet, see https://github.com/LEMS/pylems/issues/15"
             )

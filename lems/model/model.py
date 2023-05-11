@@ -714,7 +714,6 @@ class Model(LEMSBase):
 
         for ev in ct.structure.event_connections:
             try:
-
                 from_inst = fc.structure.withs[ev.from_].instance
                 to_inst = fc.structure.withs[ev.to].instance
 
@@ -724,7 +723,6 @@ class Model(LEMSBase):
                     )
 
                 if len(fc.texts) > 0 or len(fc.paths) > 0:
-
                     source_port = (
                         fc.texts[ev.source_port].value
                         if ev.source_port
@@ -1028,7 +1026,7 @@ class Model(LEMSBase):
                 else:
                     dimension = unit.dimension
 
-                numeric_value = (number * (10 ** unit.power) * unit.scale) + unit.offset
+                numeric_value = (number * (10**unit.power) * unit.scale) + unit.offset
             else:
                 raise SimBuildError(
                     "Unknown unit symbol '{0}'. Known: {1}", sym, self.units

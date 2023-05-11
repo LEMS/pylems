@@ -1073,7 +1073,6 @@ class LEMSFileParser(LEMSBase):
             if self.model.debug:
                 print("Ignoring included LEMS file: %s" % node.lattrib["file"])
         else:
-
             # TODO: remove this hard coding for reading NeuroML includes...
             if "file" not in node.lattrib:
                 if "href" in node.lattrib:

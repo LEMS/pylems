@@ -20,7 +20,7 @@ setup(
         "lems.dlems",
     ],
     scripts=["pylems"],
-    data_files=[("man/man1", ['man/man1/pylems.1'])],
+    data_files=[("man/man1", ["man/man1/pylems.1"])],
     author="PyLEMS authors and contributors",
     author_email="gautham@lisphacker.org, p.gleeson@gmail.com",
     description="A Python library for working with the Low Entropy Model Specification language (LEMS)",
@@ -39,6 +39,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Topic :: Scientific/Engineering",
     ],
 )

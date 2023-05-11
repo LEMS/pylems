@@ -1284,7 +1284,7 @@ class Component(LEMSBase):
 
         xmlstr = '<Component id="{0}" type="{1}"'.format(self.id, self.type)
 
-        for (k, v) in self.parameters.items():
+        for k, v in self.parameters.items():
             xmlstr += ' {0}="{1}"'.format(k, v)
 
         if self.children:

@@ -101,11 +101,8 @@ def main(args=None):
             dlems_file_name = args.lems_file + ".json"
 
         if target_comp.type == "network":
-
             for child in target_comp.children:
-
                 if child.type == "population":
-
                     comp = model.components[child.parameters["component"]]
 
                     export_component(
@@ -174,7 +171,7 @@ def process_simulation_output(sim, model, options):
                     data_output = recording.data_output
                     times = []
                     vals = []
-                    for (x, y) in recording.values:
+                    for x, y in recording.values:
                         times.append(x)
                         vals.append(y)
                     file_times[data_output.file_name] = times
@@ -234,7 +231,6 @@ displays = {}
 
 
 def plot_recording(recording):
-
     import matplotlib.pyplot as pylab
     import numpy
 
@@ -246,7 +242,7 @@ def plot_recording(recording):
     x = numpy.empty(len(recording.values))
     y = numpy.empty(len(recording.values))
     i = 0
-    for (xv, yv) in recording.values:
+    for xv, yv in recording.values:
         x[i] = xv / data_output.timeScale
         y[i] = yv / recorder.scale
         i = i + 1
