@@ -28,16 +28,13 @@ A stable version of PyLEMS is [available on PyPI](https://pypi.python.org/pypi/P
 
     pip install pylems
 
-To install as root:
-
-    sudo pip install pylems
-
 Alternatively, you can obtain the latest version with
 
     git clone https://github.com/LEMS/pylems.git
     cd pylems
     git checkout development   # optional
-    sudo python setup.py install
+    pip install .
+
 
 ### Usage as a LEMS model simulator
 
