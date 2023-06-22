@@ -4,7 +4,6 @@
 [![Check LEMS examples](https://github.com/LEMS/pylems/actions/workflows/examples.yml/badge.svg)](https://github.com/LEMS/pylems/actions/workflows/examples.yml)
 [![Documentation Status](https://readthedocs.org/projects/pylems/badge/?version=latest)](https://pylems.readthedocs.io/en/latest/?badge=latest)
 
-
 A LEMS (http://lems.github.io/LEMS) simulator written in Python which can be used to run NeuroML2  models (see [here](https://docs.neuroml.org/Userdocs/Software/pyLEMS.html)).
 
 For more about PyLEMS see:
@@ -21,32 +20,34 @@ Robert C. Cannon, Padraig Gleeson, Sharon Crook, Gautham Ganapathy, Boris Marin,
 **LEMS: A language for expressing complex biological models in concise and hierarchical form and its use in underpinning NeuroML 2**,
 [Frontiers in Neuroinformatics 2014](http://journal.frontiersin.org/Journal/10.3389/fninf.2014.00079/abstract), doi: 10.3389/fninf.2014.00079
 
-
 ### Installation
 
 A stable version of PyLEMS is [available on PyPI](https://pypi.python.org/pypi/PyLEMS) using [pip](https://pip.pypa.io/en/latest/installing.html):
 
-    pip install pylems
+```
+pip install pylems
+```
 
 Alternatively, you can obtain the latest version with
 
-    git clone https://github.com/LEMS/pylems.git
-    cd pylems
-    git checkout development   # optional
-    pip install .
-
+```
+git clone https://github.com/LEMS/pylems.git
+cd pylems
+git checkout development   # optional
+pip install .
+```
 
 ### Usage as a LEMS model simulator
 
-    pylems [options] LEMS_file
+```
+pylems [options] LEMS_file
+```
 
 **Options**
 
 - -I/-include path - Adds a directory to the model file include search path
 
-
 ### Examples
-
 
 **NeuroML examples (from https://github.com/NeuroML/NeuroML2/tree/development/NeuroML2CoreTypes)**
 
@@ -70,7 +71,6 @@ Alternatively, you can obtain the latest version with
 - Example 17 -- Working
 - Example 18 -- Working
 
-
 **LEMS examples (in directory examples)**
 
 - example1.xml --  Working
@@ -79,9 +79,8 @@ Alternatively, you can obtain the latest version with
 - example4.xml --  Not working (Unsupported in PyLEMS: KSChannel)
 - example5.xml --  Not working (Unsupported in PyLEMS: KSChannel)
 - example6.xml --  Working
--- TODO: Rest of examples require an update to the `<Simulation>` element,
-   i.e. use `<Simulation...>` not `<SimulationSet...>`, to work in PyLEMS
 
+TODO: Rest of examples require an update to the `<Simulation>` element, i.e. use `<Simulation...>` not `<SimulationSet...>`, to work in PyLEMS
 
 **LEMS elements that do not work**
 
