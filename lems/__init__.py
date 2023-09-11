@@ -4,11 +4,14 @@
 """
 
 import logging
+
 try:
     import importlib.metadata
+
     __version__ = importlib.metadata.version("PyLEMS")
 except ImportError:
     import importlib_metadata
+
     __version__ = importlib_metadata.version("PyLEMS")
 
 logger = logging.getLogger("LEMS")
