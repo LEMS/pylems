@@ -4,7 +4,7 @@ import lems.api as lems
 
 model = lems.Model()
 
-model.add(lems.Include("maxmin.xml"))
+#model.add(lems.Include("maxmin.xml"))
 
 model.add(lems.Dimension("voltage", m=1, l=3, t=-3, i=-1))
 model.add(lems.Dimension("time", t=1))
@@ -21,7 +21,7 @@ iaf1.add(lems.Parameter("threshold", "voltage", minval=-44, maxval=55))
 iaf1.add(lems.Parameter("reset", "voltage"))
 
 
-fn = "/tmp/maxmin.xml"
+fn = "maxmin.xml"
 model.export_to_file(fn)
 
 print("----------------------------------------------")
