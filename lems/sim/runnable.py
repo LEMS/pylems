@@ -29,7 +29,6 @@ from math import *
 
 
 class Reflective(LEMSBase):
-
     debug = False
 
     def __init__(self):
@@ -346,7 +345,6 @@ class Runnable(Reflective):
         )
 
     def add_variable_recorder2(self, data_output, recorder, path, full_path):
-
         if path[0] == "/":
             self.parent.add_variable_recorder2(data_output, recorder, path, full_path)
         elif path.find("../") == 0:
@@ -587,7 +585,6 @@ class Runnable(Reflective):
             return dt
 
     def do_startup(self):
-
         if self.debug and False:
             print("  Doing startup: " + self.id)
             for iv in self.instance_variables:

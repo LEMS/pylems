@@ -12,7 +12,6 @@ from lems.model.model import Model
 
 class TestUnitParsing(unittest.TestCase):
     def get_model(self):
-
         model = Model()
 
         model.add(Dimension("voltage", m=1, l=3, t=-3, i=-1))

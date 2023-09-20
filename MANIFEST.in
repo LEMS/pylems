@@ -2,3 +2,4 @@ include README.md
 include examples/*.xml
 include examples/*.py
 include LICENSE.lesser
+recursive-include man *.1

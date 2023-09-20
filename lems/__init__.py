@@ -5,9 +5,16 @@
 
 import logging
 
-logger = logging.getLogger("LEMS")
+try:
+    import importlib.metadata
 
-__version__ = "0.5.9"
+    __version__ = importlib.metadata.version("PyLEMS")
+except ImportError:
+    import importlib_metadata
+
+    __version__ = importlib_metadata.version("PyLEMS")
+
+logger = logging.getLogger("LEMS")
 
 __schema_version__ = "0.7.6"
 __schema_branch__ = "development"
