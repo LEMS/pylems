@@ -647,7 +647,14 @@ class LEMSFileParser(LEMSBase):
         else:
             description = None
 
-        constant = Constant(name, value, dimension, description)
+        if "symbol" in node.lattrib:
+            symbol = node.lattrib["symbol"]
+        else:
+            symbol = None
+
+        constant = Constant(
+            name, value, dimension=dimension, description=description, symbol=symbol
+        )
 
         if self.current_component_type:
             self.current_component_type.add_constant(constant)
