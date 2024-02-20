@@ -272,7 +272,8 @@ class Model(LEMSBase):
             parser = LEMSFileParser(self, inc_dirs, self.include_includes)
             if os.access(path, os.F_OK):
                 if not path in self.included_files:
-                    parser.parse(open(path).read())
+                    with open(path) as f:
+                        parser.parse(f.read())
                     self.included_files.append(path)
                     return
                 else:
@@ -284,7 +285,8 @@ class Model(LEMSBase):
                     new_path = inc_dir + "/" + path
                     if os.access(new_path, os.F_OK):
                         if not new_path in self.included_files:
-                            parser.parse(open(new_path).read())
+                            with open(new_path) as f:
+                                parser.parse(f.read())
                             self.included_files.append(new_path)
                             return
                         else:
@@ -376,7 +378,9 @@ class Model(LEMSBase):
 
         f = open(filepath, "w")
         f.write(xmlstr)
-        f.close()
+        f.flush()
+        os.fsync(f.fileno())
+
 
     def resolve(self) -> lems.model.Model:
         """
