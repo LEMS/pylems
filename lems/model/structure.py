@@ -23,18 +23,22 @@ class With(LEMSBase):
 
         self.instance = instance
         """ Instance to be referenced.
+
         :type: str """
 
         self.as_ = as_
         """ Alternative name.
+
         :type: str """
 
         self.list = list
         """ list of components, e.g. population
+
         :type: str """
 
         self.index = index
         """ index in list to be referenced.
+
         :type: str """
 
     def toxml(self):
@@ -64,22 +68,27 @@ class Tunnel(LEMSBase):
 
         self.name = name
         """ name of Tunnel.
+
         :type: str """
 
         self.end_a = end_a
         """ 'A' end of Tunnel.
+
         :type: str """
 
         self.end_b = end_b
         """ 'B' end of Tunnel.
+
         :type: str """
 
         self.component_a = component_a
         """ Component to create at A.
+
         :type: str """
 
         self.component_b = component_b
         """ Component to create at B.
+
         :type: str """
 
     def toxml(self):
@@ -113,26 +122,32 @@ class EventConnection(LEMSBase):
 
         self.from_ = from_
         """ Name of the source component for event.
+
         :type: str """
 
         self.to = to
         """ Name of the target component for the event.
+
         :type: str """
 
         self.source_port = source_port
         """ Source port name.
+
         :type: str """
 
         self.target_port = target_port
         """ Target port name.
+
         :type: str """
 
         self.receiver = receiver
         """ Proxy receiver component attached to the target component that actually receiving the event.
+
         :type: Component """
 
         self.receiver_container = receiver_container
         """ Name of the child component grouping to add the receiver to.
+
         :type: str """
 
     def __eq__(self, o):
@@ -178,10 +193,12 @@ class ChildInstance(LEMSBase):
 
         self.component = component
         """ Name of the component reference to be used for instantiation.
+
         :type: str """
 
         self.referenced_component = referenced_component
         """ Target component being referenced after resolution.
+
         :type: lems.model.component.FatComponent """
 
     def __eq__(self, o):
@@ -209,10 +226,12 @@ class Assign(LEMSBase):
 
         self.property_ = property
         """ Name of the property reference to be used for instantiation.
+
         :type: str """
 
         self.value = value
         """ Value of the property.
+
         :type: str"""
 
     def __eq__(self, o):
@@ -245,19 +264,23 @@ class MultiInstantiate(LEMSBase):
 
         self.component = component
         """ Name of the component reference to be used for instantiation.
+
         :type: str """
 
         self.component_type = component_type
         """ Name of the component type reference to be used for instantiation.
+
         :type: str """
 
         self.number = number
         """ Name of the paramter specifying the number of times the component 
         reference is to be instantiated.
+
         :type: str"""
 
         self.assignments = []
         """ List of assignments included in MultiInstantiate.
+
         :type: list(Assign) """
 
     def __eq__(self, o):
@@ -322,10 +345,12 @@ class ForEach(LEMSBase):
 
         self.event_connections = list()
         """ List of event connections.
+
         :type: list(lems.model.structure.EventConnection) """
 
         self.for_eachs = list()
         """ List of for each specs.
+
         :type: list(lems.model.structure.ForEach) """
 
     def add_for_each(self, fe):
@@ -377,26 +402,32 @@ class Structure(LEMSBase):
 
         self.withs = Map()
         """ Map of With statements.
-        :type: Map(str -> lems.model.structure.With) """
+
+        :type: Map(str, lems.model.structure.With) """
 
         self.tunnels = Map()
         """ Map of tunnel statements.
-        :type: Map(str -> lems.model.structure.Tunnel) """
+
+        :type: Map(str, lems.model.structure.Tunnel) """
 
         self.event_connections = list()
         """ List of event connections.
+
         :type: list(lems.model.structure.EventConnection) """
 
         self.child_instances = list()
         """ List of child instantations.
+
         :type: list(lems.model.structure.ChildInstance) """
 
         self.multi_instantiates = list()
         """ List of child multi-instantiations.
+
         :type: list(lems.model.structure.MultiInstantiate) """
 
         self.for_eachs = list()
         """ List of for each specs.
+
         :type: list(lems.model.structure.ForEach) """
 
     def has_content(self):

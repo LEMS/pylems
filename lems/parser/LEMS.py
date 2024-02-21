@@ -72,26 +72,32 @@ class LEMSFileParser(LEMSBase):
 
         self.model = model
         """ Model instance to be populated from the parsed file.
+
         :type: lems.model.model.Model """
 
         self.include_dirs = include_dirs
         """ List of directories to search for included files.
+
         :type: list(str) """
 
         self.tag_parse_table = None
         """ Dictionary of xml tags to parse methods
-        :type: dict(string -> function) """
+
+        :type: dict(string, function) """
 
         self.valid_children = None
         """ Dictionary mapping each tag to it's list of valid child tags.
-        :type: dict(string -> string) """
+
+        :type: dict(string, string) """
 
         self.id_counter = None
         """ Counter generator for generating unique ids.
+
         :type: generator(int) """
 
         self.include_includes = include_includes
         """ Whether to include LEMS definitions in <Include> elements
+
         :type: boolean """
 
         self.init_parser()

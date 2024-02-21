@@ -33,10 +33,12 @@ class SimulationBuilder(LEMSBase):
 
         self.model = model
         """ Model to be used for constructing the simulation.
+
         :type: lems.model.model.Model """
 
         self.sim = None
         """ Simulation built from the model.
+
         :type: lems.sim.sim.Simulation """
 
         self.current_record_target = None

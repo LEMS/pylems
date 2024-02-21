@@ -25,14 +25,17 @@ class Simulation(LEMSBase):
 
         self.runnables = {}
         """ Dictionary of runnable components in this simulation.
-        :type: dict(string -> lems.sim.runnable.Runnable) """
+
+        :type: dict(string, lems.sim.runnable.Runnable) """
 
         self.run_queue = []
         """ Priority of pairs of (time-to-next run, runnable).
+
         :type: list((Integer, lems.sim.runnable.Runnable)) """
 
         self.event_queue = []
         """ List of posted events.
+
         :type: list(lems.sim.sim.Event) """
 
     def add_runnable(self, runnable):
@@ -159,8 +162,10 @@ class Event:
     def __init__(self, from_id, to_id):
         self.from_id = from_id
         """ ID of the source runnable for this event.
+
         :type: Integer """
 
         self.to_id = to_id
         """ ID of the destination runnable for this event.
+
         :type: Integer """
