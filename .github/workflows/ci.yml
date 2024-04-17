@@ -14,13 +14,16 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
-        runs-on: [ubuntu-latest, windows-latest, macos-latest]
+        runs-on: [ubuntu-latest, windows-latest, macos-latest, macos-14]
+        exclude:
+          - runs-on: macos-14
+            python-version: "3.9"
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -30,7 +33,7 @@ jobs:
         python -m pip install pytest pytest-cov
 
     - name: Checkout NeuroML2
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: NeuroML/NeuroML2
         ref: development
