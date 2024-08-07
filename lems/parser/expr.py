@@ -45,6 +45,7 @@ class ExprNode(LEMSBase):
 
         self.type = type
         """ Node type.
+
         :type: enum(ExprNode.OP, ExprNode.VALUE) """
 
 
@@ -64,6 +65,7 @@ class ValueNode(ExprNode):
         ExprNode.__init__(self, ExprNode.VALUE)
         self.value = value
         """ Value to be stored in this node.
+
         :type: string """
 
     def clean_up(self):
@@ -112,14 +114,17 @@ class OpNode(ExprNode):
 
         self.op = op
         """ Operation stored in this node.
+
         :type: string """
 
         self.left = left
         """ Left operand.
+
         :type: lems.parser.expr.ExprNode """
 
         self.right = right
         """ Right operand.
+
         :type: lems.parser.expr.ExprNode """
 
     def __str__(self):
@@ -159,10 +164,12 @@ class Func1Node(ExprNode):
 
         self.func = func
         """ Funcion stored in this node.
+
         :type: string """
 
         self.param = param
         """ Parameter.
+
         :type: lems.parser.expr.ExprNode """
 
     def __str__(self):
@@ -211,7 +218,8 @@ class ExprParser(LEMSBase):
     depth = 0
 
     """ Dictionary mapping operators to their priorities.
-    :type: dict(string -> Integer) """
+
+    :type: dict(string, Integer) """
 
     def __init__(self, parse_string):
         """
@@ -223,10 +231,12 @@ class ExprParser(LEMSBase):
 
         self.parse_string = parse_string
         """ Expression to be parsed.
+
         :type: string """
 
         self.token_list = None
         """ List of tokens from the expression to be parsed.
+
         :type: list(string) """
 
     def is_op(self, str):

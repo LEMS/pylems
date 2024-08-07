@@ -30,30 +30,37 @@ class Parameter(LEMSBase):
 
         self.name = name
         """ Name of the parameter.
+
         :type: str """
 
         self.dimension = dimension
         """ Physical dimension of the parameter.
+
         :type: str """
 
         self.fixed = False
         """ Whether the parameter has been fixed or not.
+
         :type: bool """
 
         self.fixed_value = None
         """ Value if fixed.
+
         :type: str """
 
         self.value = None
         """ Value of the parameter.
+
         :type: str """
 
         self.numeric_value = None
         """ Resolved numeric value.
+
         :type: float """
 
         self.description = description
         """ Description of this parameter.
+
         :type: str """
 
         self.minval = minval
@@ -133,18 +140,22 @@ class Property(LEMSBase):
 
         self.name = name
         """ Name of the property.
+
         :type: str """
 
         self.dimension = dimension
         """ Physical dimensions of the property.
+
         :type: str """
 
         self.description = description
         """ Description of the property.
+
         :type: str """
 
         self.default_value = default_value
         """ Default value of the property.
+
         :type: float """
 
     def toxml(self):
@@ -176,10 +187,12 @@ class IndexParameter(LEMSBase):
 
         self.name = name
         """ Name of the parameter.
+
         :type: str """
 
         self.description = description
         """ Description of this parameter.
+
         :type: str """
 
     def toxml(self):
@@ -213,18 +226,22 @@ class DerivedParameter(LEMSBase):
 
         self.name = name
         """ Name of the derived parameter.
+
         :type: str """
 
         self.dimension = dimension
         """ Physical dimensions of the derived parameter.
+
         :type: str """
 
         self.value = value
         """ Value of the derived parameter.
+
         :type: str """
 
         self.description = description
         """ Description of the derived parameter.
+
         :type: str """
 
         try:
@@ -270,26 +287,32 @@ class Constant(LEMSBase):
 
         self.name = name
         """ Name of the constant.
+
         :type: str """
 
         self.symbol = symbol
         """ Symbol of the constant.
+
         :type: str """
 
         self.value = value
         """ Value of the constant.
+
         :type: str """
 
         self.dimension = dimension
         """ Physical dimensions of the constant.
+
         :type: str """
 
         self.description = description
         """ Description of the constant.
+
         :type: str """
 
         self.numeric_value = None
         """ Numeric value of the constant.
+
         :type: float """
 
     def toxml(self):
@@ -326,6 +349,7 @@ class Exposure(LEMSBase):
 
         self.name = name
         """ Name of the exposure.
+
         :type: str """
 
         self.minval = minval
@@ -338,10 +362,12 @@ class Exposure(LEMSBase):
 
         self.dimension = dimension
         """ Physical dimension of the exposure.
+
         :type: str """
 
         self.description = description
         """ Description of this exposure.
+
         :type: str """
 
     def toxml(self):
@@ -374,14 +400,17 @@ class Requirement(LEMSBase):
 
         self.name = name
         """ Name of the requirement.
+
         :type: str """
 
         self.dimension = dimension
         """ Physical dimension of the requirement.
+
         :type: str """
 
         self.description = description
         """ Description of this requirement.
+
         :type: str """
 
     def toxml(self):
@@ -412,10 +441,12 @@ class ComponentRequirement(LEMSBase):
 
         self.name = name
         """ Name of the Component required.
+
         :type: str """
 
         self.description = description
         """ Description of this ComponentRequirement.
+
         :type: str """
 
     def toxml(self):
@@ -447,14 +478,17 @@ class InstanceRequirement(LEMSBase):
 
         self.name = name
         """ Name of the instance requirement.
+
         :type: str """
 
         self.type = type
         """ Type of the instance required.
+
         :type: str """
 
         self.description = description
         """ Description of this InstanceRequirement.
+
         :type: str """
 
     def toxml(self):
@@ -487,18 +521,22 @@ class Children(LEMSBase):
 
         self.name = name
         """ Name of the children.
+
         :type: str """
 
         self.type = type_
         """ Component type of the children.
+
         :type: str """
 
         self.description = description
         """ Description of the children.
+
         :type: str """
 
         self.multiple = multiple
         """ Single child / multiple children.
+
         :type: bool """
 
     def toxml(self):
@@ -528,14 +566,17 @@ class Text(LEMSBase):
 
         self.name = name
         """ Name of the text entry.
+
         :type: str """
 
         self.description = description
         """ Description of the text entry.
+
         :type: str """
 
         self.value = None
         """ Value of the text entry.
+
         :type: str """
 
     def toxml(self):
@@ -582,18 +623,22 @@ class Link(LEMSBase):
 
         self.name = name
         """ Name of the link entry.
+
         :type: str """
 
         self.type = type_
         """ Type of the link.
+
         :type: str """
 
         self.description = description
         """ Description of the link.
+
         :type: str """
 
         self.value = None
         """ Value of the link.
+
         :type: str """
 
     def toxml(self):
@@ -626,14 +671,17 @@ class Path(LEMSBase):
 
         self.name = name
         """ Name of the path entry.
+
         :type: str """
 
         self.description = description
         """ Description of the path entry.
+
         :type: str """
 
         self.value = None
         """ Value of the path entry.
+
         :type: str """
 
     def toxml(self):
@@ -666,6 +714,7 @@ class EventPort(LEMSBase):
 
         self.name = name
         """ Name of the event port.
+
         :type: str """
 
         d = direction.lower()
@@ -676,10 +725,12 @@ class EventPort(LEMSBase):
 
         self.direction = direction
         """ Direction - IN/OUT .
+
         :type: str """
 
         self.description = description
         """ Description of the event port.
+
         :type: str """
 
     def toxml(self):
@@ -712,18 +763,22 @@ class ComponentReference(LEMSBase):
 
         self.name = name
         """ Name of the component reference.
+
         :type: str """
 
         self.type = type_
         """ Type of the component reference.
+
         :type: str """
 
         self.local = local
         """ ???
+
         :type: str """
 
         self.referenced_component = None
         """ Component being referenced.
+
         :type: FatComponent """
 
     def toxml(self):
@@ -752,14 +807,17 @@ class Attachments(LEMSBase):
 
         self.name = name
         """ Name of the attachment collection.
+
         :type: str """
 
         self.type = type_
         """ Type of attachment.
+
         :type: str """
 
         self.description = description
         """ Description about the attachment.
+
         :type: str """
 
     def toxml(self):
@@ -792,82 +850,102 @@ class Fat(LEMSBase):
 
         self.parameters = Map()
         """ Map of parameters in this component type.
-        :type: Map(str -> lems.model.component.Parameter) """
+
+        :type: Map(str, lems.model.component.Parameter) """
 
         self.properties = Map()
         """ Map of properties in this component type.
-        :type: Map(str -> lems.model.component.Property) """
+
+        :type: Map(str, lems.model.component.Property) """
 
         self.derived_parameters = Map()
         """ Map of derived_parameters in this component type.
-        :type: Map(str -> lems.model.component.Parameter) """
+
+        :type: Map(str, lems.model.component.Parameter) """
 
         self.index_parameters = Map()
         """ Map of index_parameters in this component type.
-        :type: Map(str -> lems.model.component.IndexParameter) """
+
+        :type: Map(str, lems.model.component.IndexParameter) """
 
         self.constants = Map()
         """ Map of constants in this component type.
-        :type: Map(str -> lems.model.component.Constant) """
+
+        :type: Map(str, lems.model.component.Constant) """
 
         self.exposures = Map()
         """ Map of exposures in this component type.
-        :type: Map(str -> lems.model.component.Exposure) """
+
+        :type: Map(str, lems.model.component.Exposure) """
 
         self.requirements = Map()
         """ Map of requirements.
-        :type: Map(str -> lems.model.component.Requirement) """
+
+        :type: Map(str, lems.model.component.Requirement) """
 
         self.component_requirements = Map()
         """ Map of component requirements.
-        :type: Map(str -> lems.model.component.ComponentRequirement) """
+
+        :type: Map(str, lems.model.component.ComponentRequirement) """
 
         self.instance_requirements = Map()
         """ Map of instance requirements.
-        :type: Map(str -> lems.model.component.InstanceRequirement) """
+
+        :type: Map(str, lems.model.component.InstanceRequirement) """
 
         self.children = Map()
         """ Map of children.
-        :type: Map(str -> lems.model.component.Children) """
+
+        :type: Map(str, lems.model.component.Children) """
 
         self.texts = Map()
         """ Map of text entries.
-        :type: Map(str -> lems.model.component.Text) """
+
+        :type: Map(str, lems.model.component.Text) """
 
         self.links = Map()
         """ Map of links.
-        :type: Map(str -> lems.model.component.Link) """
+
+        :type: Map(str, lems.model.component.Link) """
 
         self.paths = Map()
         """ Map of path entries.
-        :type: Map(str -> lems.model.component.Path) """
+
+        :type: Map(str, lems.model.component.Path) """
 
         self.event_ports = Map()
         """ Map of event ports.
-        :type: Map(str -> lems.model.component.EventPort """
+
+        :type: Map(str, lems.model.component.EventPort """
 
         self.component_references = Map()
         """ Map of component references.
-        :type: Map(str -> lems.model.component.ComponentReference) """
+
+        :type: Map(str, lems.model.component.ComponentReference) """
 
         self.attachments = Map()
         """ Map of attachment type specifications.
-        :type: Map(str -> lems.model.component.Attachments) """
+
+        :type: Map(str, lems.model.component.Attachments) """
 
         self.dynamics = Dynamics()
         """ Behavioural dynamics object.
+
         :type: lems.model.dynamics.Dynamics """
 
         self.structure = Structure()
         """ Structural properties object.
+
         :type: lems.model.structure.Structure """
 
         self.simulation = Simulation()
         """ Simulation attributes.
+
         :type: lems.model.simulation.Simulation """
 
         self.types = set()
         """ Set of compatible component types.
+
         :type: set(str) """
 
     def add_parameter(self, parameter):
@@ -1089,14 +1167,17 @@ class ComponentType(Fat):
 
         self.name = name
         """ Name of the component type.
+
         :type: str """
 
         self.extends = extends
         """ Base component type.
+
         :type: str """
 
         self.description = description
         """ Description of this component type.
+
         :type: str """
 
         self.types.add(name)
@@ -1204,24 +1285,30 @@ class Component(LEMSBase):
 
         self.id = id_
         """ ID of the component.
+
         :type: str """
 
         self.type = type_
         """ Type of the component.
+
         :type: str """
 
         self.parameters = dict()
         """ Dictionary of parameter values.
+
         :type: str """
+
         for key in params.keys():
             self.parameters[key] = params[key]
 
         self.children = list()
         """ List of child components.
+
         :type: list(lems.model.component.Component) """
 
         self.parent_id = None
         """ Optional id of parent
+
         :type: str """
 
     def __str__(self):
@@ -1314,18 +1401,22 @@ class FatComponent(Fat):
 
         self.id = id_
         """ ID of the component.
+
         :type: str """
 
         self.type = type_
         """ Type of the component.
+
         :type: str """
 
         self.child_components = list()
         """ List of child components.
+
         :type: lems.model.component.FatComponent """
 
         self.parent_id = None
         """ Optional id of parent
+
         :type: str """
 
     def __str__(self):

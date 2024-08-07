@@ -25,6 +25,7 @@ class StateVariable(LEMSBase):
 
         self.name = name
         """ Name of the state variable.
+
         :type: str """
 
         self.minval = minval
@@ -37,10 +38,12 @@ class StateVariable(LEMSBase):
 
         self.dimension = dimension
         """ Dimension of the state variable.
+
         :type: str """
 
         self.exposure = exposure
         """ Exposure name for the state variable.
+
         :type: str """
 
     def __str__(self):
@@ -76,34 +79,42 @@ class DerivedVariable(LEMSBase):
 
         self.name = name
         """ Name of the derived variable.
+
         :type: str """
 
         self.dimension = params["dimension"] if "dimension" in params else None
         """ Dimension of the derived variable or None if computed.
+
         :type: str """
 
         self.exposure = params["exposure"] if "exposure" in params else None
         """ Exposure name for the derived variable.
+
         :type: str """
 
         self.select = params["select"] if "select" in params else None
         """ Selection path/expression for the derived variable.
+
         :type: str """
 
         self.value = params["value"] if "value" in params else None
         """ Value of the derived variable.
+
         :type: str """
 
         self.reduce = params["reduce"] if "reduce" in params else None
         """ Reduce method for the derived variable.
+
         :type: str """
 
         self.required = params["required"] if "required" in params else None
         """ Requried or not.
+
         :type: str """
 
         self.expression_tree = None
         """ Parse tree for the time derivative expression.
+
         :type: lems.parser.expr.ExprNode """
 
         if self.value != None:
@@ -146,18 +157,22 @@ class Case(LEMSBase):
 
         self.condition = condition
         """ Condition for this case.
+
         :type: str """
 
         self.value = value
         """ Value if the condition is true.
+
         :type: str """
 
         self.condition_expression_tree = None
         """ Parse tree for the case condition expression.
+
         :type: lems.parser.expr.ExprNode """
 
         self.value_expression_tree = None
         """ Parse tree for the case condition expression.
+
         :type: lems.parser.expr.ExprNode """
 
         try:
@@ -199,18 +214,22 @@ class ConditionalDerivedVariable(LEMSBase):
 
         self.name = name
         """ Name of the derived variable.
+
         :type: str """
 
         self.dimension = dimension
         """ Dimension of the state variable.
+
         :type: str """
 
         self.exposure = exposure
         """ Exposure name for the state variable.
+
         :type: str """
 
         self.cases = list()
         """ List of cases related to this conditional derived variable.
+
         :type: list(lems.model.dynamics.Case) """
 
     def add_case(self, case):
@@ -273,14 +292,17 @@ class TimeDerivative(LEMSBase):
 
         self.variable = variable
         """ Name of the variable for which the time derivative is being specified.
+
         :type: str """
 
         self.value = value
         """ Derivative expression.
+
         :type: str """
 
         self.expression_tree = None
         """ Parse tree for the time derivative expression.
+
         :type: lems.parser.expr.ExprNode """
 
         try:
@@ -327,14 +349,17 @@ class StateAssignment(Action):
 
         self.variable = variable
         """ Name of the variable for which the time derivative is being specified.
+
         :type: str """
 
         self.value = value
         """ Derivative expression.
+
         :type: str """
 
         self.expression_tree = None
         """ Parse tree for the time derivative expression.
+
         :type: lems.parser.expr.ExprNode """
 
         try:
@@ -374,6 +399,7 @@ class EventOut(Action):
 
         self.port = port
         """ Port on which the event comes in.
+
         :type: str """
 
     def toxml(self):
@@ -400,6 +426,7 @@ class Transition(Action):
 
         self.regime = regime
         """ Regime to transition to.
+
         :type: str """
 
     def toxml(self):
@@ -422,6 +449,7 @@ class EventHandler(LEMSBase):
 
         self.actions = list()
         """ List of actions to be performed in response to this event.
+
         :type: list(lems.model.dynamics.Action) """
 
     def __str__(self):
@@ -506,6 +534,7 @@ class OnCondition(EventHandler):
 
         self.test = test
         """ Condition to be tested for.
+
         :type: str """
 
         try:
@@ -553,6 +582,7 @@ class OnEvent(EventHandler):
 
         self.port = port
         """ Port on which the event comes in.
+
         :type: str """
 
     def __str__(self):
@@ -635,34 +665,42 @@ class KineticScheme(LEMSBase):
 
         self.name = name
         """ Name of the kinetic scheme.
+
         :type: str """
 
         self.nodes = nodes
         """ Nodes to be used for the kinetic scheme.
+
         :type: str """
 
         self.state_variable = state_variable
         """ State variable updated by the kinetic scheme.
+
         :type: str """
 
         self.edges = edges
         """ Edges to be used for the kinetic scheme.
+
         :type: str """
 
         self.edge_source = edge_source
         """ Attribute that defines the source of the transition.
+
         :type: str """
 
         self.edge_target = edge_target
         """ Attribute that defines the target of the transition.
+
         :type: str """
 
         self.forward_rate = forward_rate
         """ Name of the forward rate exposure.
+
         :type: str """
 
         self.reverse_rate = reverse_rate
         """ Name of the reverse rate exposure.
+
         :type: str """
 
     def toxml(self):
@@ -706,31 +744,38 @@ class Behavioral(LEMSBase):
 
         self.parent_behavioral = None
         """ Parent behavioral object.
+
         :type: lems.model.dynamics.Behavioral """
 
         self.state_variables = Map()
         """ Map of state variables in this behavior regime.
-        :type: dict(str -> lems.model.dynamics.StateVariable """
+
+        :type: dict(str, lems.model.dynamics.StateVariable """
 
         self.derived_variables = Map()
         """ Map of derived variables in this behavior regime.
-        :type: dict(str -> lems.model.dynamics.DerivedVariable """
+
+        :type: dict(str, lems.model.dynamics.DerivedVariable """
 
         self.conditional_derived_variables = Map()
         """ Map of conditional derived variables in this behavior regime.
-        :type: dict(str -> lems.model.dynamics.ConditionalDerivedVariable """
+
+        :type: dict(str, lems.model.dynamics.ConditionalDerivedVariable """
 
         self.time_derivatives = Map()
         """ Map of time derivatives in this behavior regime.
-        :type: dict(str -> lems.model.dynamics.TimeDerivative) """
+
+        :type: dict(str, lems.model.dynamics.TimeDerivative) """
 
         self.event_handlers = list()
         """ List of event handlers in this behavior regime.
+
         :type: list(lems.model.dynamics.EventHandler) """
 
         self.kinetic_schemes = Map()
         """ Map of kinetic schemes in this behavior regime.
-        :type: dict(str -> lems.model.dynamics.KineticScheme) """
+
+        :type: dict(str, lems.model.dynamics.KineticScheme) """
 
     def has_content(self):
         if (
@@ -898,14 +943,17 @@ class Regime(Behavioral):
 
         self.name = name
         """ Name of this behavior regime.
+
         :type: str """
 
         self.parent_behavioral = parent_behavioral
         """ Parent behavioral object.
+
         :type: lems.model.dynamics.Behavioral """
 
         self.initial = initial
         """ Initial behavior regime.
+
         :type: bool """
 
 
@@ -923,7 +971,8 @@ class Dynamics(Behavioral):
 
         self.regimes = Map()
         """ Map of behavior regimes.
-        :type: Map(str -> lems.model.dynamics.Regime) """
+
+        :type: Map(str, lems.model.dynamics.Regime) """
 
     def add_regime(self, regime):
         """

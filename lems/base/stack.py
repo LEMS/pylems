@@ -21,6 +21,7 @@ class Stack(LEMSBase):
 
         self.stack = []
         """ List used to store the stack contents.
+
         :type: list """
 
     def push(self, val):
