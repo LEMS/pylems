@@ -395,7 +395,6 @@ class Model(LEMSBase):
             f.flush()
             os.fsync(f.fileno())
 
-
     def resolve(self) -> lems.model.Model:
         """
         Resolves references in this model and returns resolved model.
