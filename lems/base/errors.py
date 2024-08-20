@@ -27,6 +27,7 @@ class LEMSError(Exception):
 
         self.message = None
         """ Error message
+
         :type: string """
 
         if params:
