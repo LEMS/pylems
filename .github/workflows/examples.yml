@@ -3,7 +3,7 @@ name: Check LEMS examples
 
 on:
   push:
-    branches:  [ master, development, experimental ]
+    branches:  [ master, development, experimental, test* ]
 
 jobs:
   verify:
