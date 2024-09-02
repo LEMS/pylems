@@ -9,14 +9,12 @@ import xml.etree.ElementTree as xe
 
 from lems.base.base import LEMSBase
 from lems.base.errors import ParseError
-
-from lems.model.fundamental import *
+from lems.base.util import make_id
 from lems.model.component import *
 from lems.model.dynamics import *
-from lems.model.structure import *
+from lems.model.fundamental import *
 from lems.model.simulation import *
-
-from lems.base.util import make_id
+from lems.model.structure import *
 
 
 def get_nons_tag_from_node(node):
@@ -209,9 +207,9 @@ class LEMSFileParser(LEMSBase):
         self.tag_parse_table["eventwriter"] = self.parse_event_writer
         self.tag_parse_table["derivedparameter"] = self.parse_derived_parameter
         self.tag_parse_table["derivedvariable"] = self.parse_derived_variable
-        self.tag_parse_table[
-            "conditionalderivedvariable"
-        ] = self.parse_conditional_derived_variable
+        self.tag_parse_table["conditionalderivedvariable"] = (
+            self.parse_conditional_derived_variable
+        )
         self.tag_parse_table["case"] = self.parse_case
         self.tag_parse_table["dimension"] = self.parse_dimension
         self.tag_parse_table["dynamics"] = self.parse_dynamics
@@ -1072,19 +1070,25 @@ class LEMSFileParser(LEMSBase):
 
         :raises ParseError: Raised when the file to be included is not specified.
         """
+        filename = None
+
+        # TODO: remove this hard coding for reading NeuroML includes...
+        if "file" not in node.lattrib:
+            if "href" in node.lattrib:
+                filename = node.lattrib["href"]
+        else:
+            filename = node.lattrib["file"]
+
+        if filename is None:
+            self.raise_error("<Include> must specify the file to be included.")
+
         if not self.include_includes:
             if self.model.debug:
-                print("Ignoring included LEMS file: %s" % node.lattrib["file"])
+                self.model.add_include(Include(filename))
+                print("Not including contents of %s" % filename)
         else:
-            # TODO: remove this hard coding for reading NeuroML includes...
-            if "file" not in node.lattrib:
-                if "href" in node.lattrib:
-                    self.model.include_file(node.lattrib["href"], self.include_dirs)
-                    return
-                else:
-                    self.raise_error("<Include> must specify the file to be included.")
-
-            self.model.include_file(node.lattrib["file"], self.include_dirs)
+            self.model.include_file(filename, self.include_dirs)
+            print("Included contents of %s" % filename)
 
     def parse_kinetic_scheme(self, node):
         """

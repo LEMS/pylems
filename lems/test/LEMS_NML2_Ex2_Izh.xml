@@ -1,0 +1,78 @@
+<Lems>
+
+        <!-- Example with Bursting Izhikevich cell -->
+
+        <!-- This is a file which can be read and executed by the LEMS Interpreter.
+             It imports the LEMS definitions of the core NeuroML 2 Components, creates
+             a model in "pure" NeuroML 2 and contains some LEMS elements for running
+             a simulation -->
+
+
+<!-- Specify which component to run -->
+<Target component="sim1"/>
+
+<!-- Include core NeuroML2 ComponentType definitions -->
+<Include file="Cells.xml"/>
+<Include file="Networks.xml"/>
+<Include file="Inputs.xml"/>
+<Include file="Simulation.xml"/>
+
+
+        <!-- Main NeuroML2 content. Based on http://www.izhikevich.org/publications/figure1.m -->
+
+<izhikevichCell id="izBurst" v0 = "-70mV" thresh = "30mV" a ="0.02" b = "0.2" c = "-50" d = "2"/>
+
+
+
+<pulseGeneratorDL id="i0" delay="22ms" duration="2000ms" amplitude="15" />
+
+<izhikevichCell id="izTonic" v0 = "-70mV" thresh = "30mV" a ="0.02" b = "0.2" c = "-65" d = "6"/>
+<pulseGeneratorDL id="i1" delay="20ms" duration="2000ms" amplitude="14" />
+
+<izhikevichCell id="izMixed" v0 = "-70mV" thresh = "30mV" a ="0.02" b = "0.2" c = "-55" d = "4"/>
+<pulseGeneratorDL id="i2" delay="20ms" duration="2000ms" amplitude="10" />
+
+<izhikevichCell id="izClass1" v0 = "-60mV" thresh = "30mV" a ="0.02" b = "-0.1" c = "-55" d = "6"/>
+<rampGeneratorDL id="rg0" delay="30ms" duration="170ms" startAmplitude="-32" finishAmplitude="50" baselineAmplitude="-32"/>
+
+<network id="net1">
+    <population id="izpopBurst" component="izBurst" size="1"/>
+    <population id="izpopTonic" component="izTonic" size="1"/>
+    <population id="izpopMixed" component="izMixed" size="1"/>
+    <population id="izpopClass1" component="izClass1" size="1"/>
+
+    <explicitInput target="izpopBurst[0]" input="i0" destination="synapses"/>
+    <explicitInput target="izpopTonic[0]" input="i1" destination="synapses"/>
+    <explicitInput target="izpopMixed[0]" input="i2" destination="synapses"/>
+    <explicitInput target="izpopClass1[0]" input="rg0" destination="synapses"/>
+</network>
+
+        <!-- End of NeuroML2 content -->
+
+
+<Simulation id="sim1" length="200ms" step="0.005ms" target="net1">
+
+    <Display id="d1" title="Ex2: Bursting Izhikevich cell in LEMS" timeScale="1ms" xmin="-20" xmax="220" ymin="-80" ymax="40">
+        <Line id ="v" quantity="izpopBurst[0]/v" scale="1mV"  color="#ee40FF" timeScale="1ms"/>
+        <Line id ="U" quantity="izpopBurst[0]/U" scale="1"  color="#BBA0AA" timeScale="1ms"/>
+        <Line id ="i" quantity="izpopBurst[0]/i0/I" scale="1"  color="#222222" timeScale="1ms"/>
+    </Display>
+
+    <Display id="d2" title="Ex2: Tonic spiking Izhikevich cell in LEMS" timeScale="1ms" xmin="-20" xmax="220" ymin="-80" ymax="40">
+        <Line id ="v" quantity="izpopTonic[0]/v" scale="1mV"  color="#ee40FF" timeScale="1ms"/>
+        <Line id ="U" quantity="izpopTonic[0]/U" scale="1V"  color="#BBA0AA" timeScale="1ms"/>
+        <Line id ="i" quantity="izpopTonic[0]/i1/I" scale="1"  color="#222222" timeScale="1ms"/>
+    </Display>
+
+    <Display id="d3" title="Ex2: Mixed mode Izhikevich cell in LEMS" timeScale="1ms" xmin="-20" xmax="220" ymin="-80" ymax="40">
+        <Line id ="v" quantity="izpopMixed[0]/v" scale="1mV"  color="#ee40FF" timeScale="1ms"/>
+        <Line id ="U" quantity="izpopMixed[0]/U" scale="1V"  color="#BBA0AA" timeScale="1ms"/>
+        <Line id ="i" quantity="izpopMixed[0]/i2/I" scale="1"  color="#222222" timeScale="1ms"/>
+    </Display>
+
+    <!-- See other examples for saving of data traces -->
+
+</Simulation>
+
+
+</Lems>
