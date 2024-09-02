@@ -3,7 +3,9 @@ Unit tests for loading/writing
 
 """
 
+import os
 import unittest
+
 from lems.model.model import Model
 
 
@@ -30,3 +32,47 @@ class TestLoadWrite(unittest.TestCase):
         file_name = "lems/test/hhcell_resaved2.xml"
         model.import_from_file(file_name)
         dom0 = model.export_to_dom()
+
+    def test_include_includes_is_true(self):
+        """Test that include_includes works as expected"""
+        cwd = os.getcwd()
+        os.chdir("lems/test/")
+        model = Model(
+            include_includes=True,
+            fail_on_missing_includes=True,
+        )
+        model.debug = True
+        model.add_include_directory("NeuroML2CoreTypes/")
+
+        model.import_from_file("LEMS_NML2_Ex2_Izh.xml")
+
+        model_string = model.export_to_dom().toprettyxml("    ", "\n")
+        print(model_string)
+        self.assertNotIn("<Include ", model_string)
+
+        self.assertEqual(0, len(model.includes))
+
+        os.chdir(cwd)
+
+    def test_include_includes_is_false(self):
+        """Test that include_includes works as expected"""
+        cwd = os.getcwd()
+        os.chdir("lems/test/")
+        model = Model(
+            include_includes=False,
+            fail_on_missing_includes=True,
+        )
+        model.debug = True
+        model.add_include_directory("NeuroML2CoreTypes/")
+
+        model.import_from_file("LEMS_NML2_Ex2_Izh.xml")
+
+        model_string = model.export_to_dom().toprettyxml("    ", "\n")
+        print(model_string)
+        self.assertIn("<Include ", model_string)
+
+        for include in model.includes:
+            inc_string = include.toxml()
+            self.assertIn("<Include file=", inc_string)
+
+        os.chdir(cwd)
