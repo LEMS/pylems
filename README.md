@@ -5,7 +5,7 @@
 [![Documentation Status](https://readthedocs.org/projects/pylems/badge/?version=latest)](https://pylems.readthedocs.io/en/latest/?badge=latest)
 [![PyPI](https://img.shields.io/pypi/v/pylems)](https://pypi.org/project/pylems/)
 
-A LEMS (http://lems.github.io/LEMS) simulator written in Python which can be used to run NeuroML2  models (see [here](https://docs.neuroml.org/Userdocs/Software/pyLEMS.html)).
+A [LEMS](http://lems.github.io/LEMS) simulator written in Python which can be used to run NeuroML2  models (see [here](https://docs.neuroml.org/Userdocs/Software/pyLEMS.html)).
 
 For more about PyLEMS see:
 
@@ -13,7 +13,7 @@ Michael Vella, Robert C. Cannon, Sharon Crook, Andrew P. Davison, Gautham Ganapa
 **libNeuroML and PyLEMS: using Python to combine procedural and declarative modeling approaches in computational neuroscience**
 [Frontiers in Neuroinformatics 2014](http://journal.frontiersin.org/Journal/10.3389/fninf.2014.00038/abstract), doi: 10.3389/fninf.2014.00038
 
-_**PLEASE CITE THE PAPER ABOVE IF YOU USE PYLEMS!**_
+_**PLEASE CITE THE PAPER ABOVE IF YOU USE PYLEMS!**_  
 
 For more details on LEMS see:
 
