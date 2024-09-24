@@ -6,9 +6,14 @@
 #
 # Run api tests on GitHub actions
 
-python examples/apitest.py
-python examples/apitest2.py
-python examples/loadtest.py
+cd examples
+python apitest.py
+python apitest2.py
+python apitest3.py
+python loadtest.py
+python apitest_maxmin.py
+cd ..
+
 
 # Update NeuroML2 path for CI
 if [ "$CI" = "true" ]; then
