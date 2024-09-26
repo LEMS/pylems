@@ -21,7 +21,7 @@ class Parameter(LEMSBase):
     Stores a parameter declaration.
     """
 
-    def __init__(self, name, dimension, description=""):
+    def __init__(self, name, dimension, minval, maxval, description=""):
         """
         Constructor.
 
@@ -61,6 +61,14 @@ class Parameter(LEMSBase):
         self.description = description
         """ Description of this parameter.
 
+        :type: str """
+
+        self.minval = minval
+        """ Minimum value of this parameter.
+        :type: str """
+
+        self.maxval = maxval
+        """ Maximum value of this parameter.
         :type: str """
 
     def toxml(self):
@@ -332,7 +340,7 @@ class Exposure(LEMSBase):
     Stores a exposure specification.
     """
 
-    def __init__(self, name, dimension, description=""):
+    def __init__(self, name, minval, maxval, dimension, description=""):
         """
         Constructor.
 
@@ -342,6 +350,14 @@ class Exposure(LEMSBase):
         self.name = name
         """ Name of the exposure.
 
+        :type: str """
+
+        self.minval = minval
+        """ Minimum value of this parameter.
+        :type: str """
+
+        self.maxval = maxval
+        """ Maximum value of this parameter.
         :type: str """
 
         self.dimension = dimension
