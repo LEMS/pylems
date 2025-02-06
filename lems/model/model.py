@@ -6,6 +6,7 @@ Model storage.
 """
 
 from __future__ import annotations
+
 import os
 from os.path import dirname
 
@@ -15,40 +16,35 @@ try:
 except ImportError:
     pass
 import copy
-
-import lems
-from lems import __schema_location__, __schema_version__
-from lems.base.base import LEMSBase
-from lems.base.util import merge_maps, merge_lists
-from lems.base.map import Map
-from lems.parser.LEMS import LEMSFileParser
-from lems.base.errors import ModelError
-from lems.base.errors import SimBuildError
-
-from lems.model.fundamental import Dimension, Unit, Include
-from lems.model.component import (
-    Constant,
-    ComponentType,
-    Component,
-    FatComponent,
-    Exposure,
-)
-from lems.model.simulation import (
-    Run,
-    Record,
-    EventRecord,
-    DataDisplay,
-    DataWriter,
-    EventWriter,
-)
-from lems.model.structure import With, EventConnection, ChildInstance, MultiInstantiate
-
+import logging
 import xml.dom.minidom as minidom
 from xml.parsers.expat import ExpatError, errors
 from xml.sax.saxutils import quoteattr
 
-
-import logging
+import lems
+from lems import __schema_location__, __schema_version__
+from lems.base.base import LEMSBase
+from lems.base.errors import ModelError, SimBuildError
+from lems.base.map import Map
+from lems.base.util import merge_lists, merge_maps
+from lems.model.component import (
+    Component,
+    ComponentType,
+    Constant,
+    Exposure,
+    FatComponent,
+)
+from lems.model.fundamental import Dimension, Include, Unit
+from lems.model.simulation import (
+    DataDisplay,
+    DataWriter,
+    EventRecord,
+    EventWriter,
+    Record,
+    Run,
+)
+from lems.model.structure import ChildInstance, EventConnection, MultiInstantiate, With
+from lems.parser.LEMS import LEMSFileParser
 
 
 class Model(LEMSBase):
@@ -285,7 +281,7 @@ class Model(LEMSBase):
 
             parser = LEMSFileParser(self, inc_dirs, self.include_includes)
             if os.access(path, os.F_OK):
-                if not path in self.included_files:
+                if path not in self.included_files:
                     with open(path) as f:
                         parser.parse(f.read())
                     self.included_files.append(path)
@@ -298,7 +294,7 @@ class Model(LEMSBase):
                 for inc_dir in inc_dirs:
                     new_path = inc_dir + "/" + path
                     if os.access(new_path, os.F_OK):
-                        if not new_path in self.included_files:
+                        if new_path not in self.included_files:
                             with open(new_path) as f:
                                 parser.parse(f.read())
                             self.included_files.append(new_path)
