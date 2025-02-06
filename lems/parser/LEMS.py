@@ -17,7 +17,50 @@ from lems.model.simulation import *
 from lems.model.structure import *
 
 
+def get_nons_attribute(attribute):
+    """Get attributes without namespace prefixes.
+
+    The parsed attributes will include their namespaces in {}:
+
+    eg: `{some_namespace_url}attribute=value`
+
+    Similar to tags, we replace these with their corresponding LEMS component
+    types.
+
+    :param attribute: attribute to strip namespace from
+    :type attribute: str
+    :returns: tweaked attribute
+    """
+    bits = attribute.split("}")
+    if len(bits) == 1:
+        return attribute
+    elif "/lems/" in bits[0]:
+        return bits[1]
+    elif "neuroml2" in bits[0]:
+        return bits[1]
+    elif "rdf" in bits[0]:
+        return "rdf_" + bits[1]
+    elif "model-qualifiers" in bits[0]:
+        return "bqmodel_" + bits[1]
+    elif "biology-qualifiers" in bits[0]:
+        return "bqbiol_" + bits[1]
+    else:
+        return "%s:%s" % (bits[0], bits[1])
+
 def get_nons_tag_from_node(node):
+    """Get tags without namespace prefixes.
+
+    The parsed tags will include their namespaces in {}:
+
+    eg: `<{some_namespace_url}mytag ..>`
+
+    Similar to attributes, we replace these with their corresponding LEMS
+    component types.
+
+    :param tag: tag to strip namespace from
+    :type tag: xml.ElementTree.Element
+    :returns: tweaked tag
+    """
     tag = node.tag
     bits = tag.split("}")
     if len(bits) == 1:
@@ -37,6 +80,12 @@ def get_nons_tag_from_node(node):
 
 
 class LEMSXMLNode:
+    """LEMS XML Node container class.
+
+    This does not include any namespace declarations in tags and their
+    attributes with their corresponding Component definitions (because LEMS
+    does not know what XML namespaces are).
+    """
     def __init__(self, pyxmlnode):
         self.tag = get_nons_tag_from_node(pyxmlnode)
         self.ltag = self.tag.lower()
@@ -45,8 +94,9 @@ class LEMSXMLNode:
         self.lattrib = dict()
 
         for k in pyxmlnode.attrib:
-            self.attrib[k] = pyxmlnode.attrib[k]
-            self.lattrib[k.lower()] = pyxmlnode.attrib[k]
+            k_nons = get_nons_attribute(k)
+            self.attrib[k_nons] = pyxmlnode.attrib[k]
+            self.lattrib[k_nons.lower()] = pyxmlnode.attrib[k]
 
         self.children = list()
         for pyxmlchild in pyxmlnode:
