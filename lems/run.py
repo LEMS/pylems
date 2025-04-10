@@ -121,7 +121,6 @@ fig_count = 0
 
 
 def process_simulation_output(sim, model, options):
-    global fig_count
 
     print("Processing results")
     rq = []
