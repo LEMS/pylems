@@ -9,11 +9,11 @@ import re
 
 from lems.base.base import LEMSBase
 from lems.base.errors import SimBuildError
+from lems.model.dynamics import *
+from lems.parser.expr import ExprNode
+from lems.sim.runnable import Regime as RunnableRegime
 from lems.sim.runnable import Runnable
 from lems.sim.sim import Simulation
-from lems.parser.expr import ExprNode
-from lems.model.dynamics import *
-from lems.sim.runnable import Regime as RunnableRegime
 
 
 class SimulationBuilder(LEMSBase):

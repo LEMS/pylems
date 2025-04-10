@@ -5,16 +5,14 @@ Exporter for dLEMS (formerly SOM). See https://github.com/borismarin/som-codegen
 :author: Boris Marin
 """
 
-import sys
-import re
 import json
+import re
+import sys
 from collections import OrderedDict
 
+from lems.model.dynamics import OnCondition, OnStart, StateAssignment
 from lems.model.model import Model
-from lems.sim.build import order_derived_variables, order_derived_parameters
-from lems.model.dynamics import OnStart
-from lems.model.dynamics import OnCondition
-from lems.model.dynamics import StateAssignment
+from lems.sim.build import order_derived_parameters, order_derived_variables
 
 SI_PREF = {"p": 1e-12, "n": 1e-9, "u": 1e-6, "m": 1e-3, "c": 1e-2}
 

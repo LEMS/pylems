@@ -5,10 +5,10 @@ Simulation.
 :organization: LEMS (https://github.com/organizations/LEMS)
 """
 
+import heapq
+
 from lems.base.base import LEMSBase
 from lems.base.errors import SimError
-
-import heapq
 
 
 class Simulation(LEMSBase):

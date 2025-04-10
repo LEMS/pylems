@@ -4,8 +4,8 @@ Unit tests for Unit/Dimension handling
 
 """
 
-
 import unittest
+
 from lems.model.fundamental import Dimension, Unit
 from lems.model.model import Model
 

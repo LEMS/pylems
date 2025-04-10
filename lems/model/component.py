@@ -5,15 +5,15 @@ Parameter, ComponentType and Component class definitions.
 :organization: LEMS (https://github.com/organizations/LEMS)
 """
 
-from lems.base.base import LEMSBase
-from lems.base.map import Map
-from lems.base.errors import ModelError, ParseError
-
-from lems.model.dynamics import Dynamics
-from lems.model.structure import Structure
-from lems.model.simulation import Simulation
-from lems.parser.expr import ExprParser
 from xml.sax.saxutils import quoteattr
+
+from lems.base.base import LEMSBase
+from lems.base.errors import ModelError, ParseError
+from lems.base.map import Map
+from lems.model.dynamics import Dynamics
+from lems.model.simulation import Simulation
+from lems.model.structure import Structure
+from lems.parser.expr import ExprParser
 
 
 class Parameter(LEMSBase):

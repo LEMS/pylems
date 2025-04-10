@@ -11,4 +11,3 @@ User documentation
    :maxdepth: 3
 
    modules
-
