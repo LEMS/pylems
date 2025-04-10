@@ -16,7 +16,7 @@ class StateVariable(LEMSBase):
     Store the specification of a state variable.
     """
 
-    def __init__(self, name, dimension, exposure=None):
+    def __init__(self, name, dimension, minval=None, maxval=None, exposure=None):
         """
         Constructor.
 
@@ -26,6 +26,14 @@ class StateVariable(LEMSBase):
         self.name = name
         """ Name of the state variable.
 
+        :type: str """
+
+        self.minval = minval
+        """ Minimum value of this parameter.
+        :type: str """
+
+        self.maxval = maxval
+        """ Maximum value of this parameter.
         :type: str """
 
         self.dimension = dimension
@@ -185,9 +193,9 @@ class Case(LEMSBase):
         """
         Exports this object into a LEMS XML object
         """
-
+        cond = ' condition="{0}"'.format(self.condition) if self.condition is not None else ''
         return (
-            '<Case condition="{0}" value="{1}"'.format(self.condition, self.value)
+            '<Case{0} value="{1}"'.format(cond, self.value)
             + "/>"
         )
 
