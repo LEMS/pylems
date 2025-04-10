@@ -4,15 +4,15 @@
 <ComponentType name="DisplayList">
     <Parameter name="timeScale" dimension="time"/>
     <Children name="lines" type="Line"/>
-    
-    <Text name="title"/>  
+
+    <Text name="title"/>
     <Text name="display"/>
 </ComponentType>
 
 
 
 <ComponentType name="Display">
-    <Text name="title"/>   
+    <Text name="title"/>
 	<Parameter name="xmin" dimension="none"/>
 	<Parameter name="xmax" dimension="none"/>
 	<Parameter name="ymin" dimension="none"/>
@@ -45,7 +45,7 @@
     <Dynamics>
         <StateVariable name="t" dimension="time"/>
     </Dynamics>
-    
+
     <Simulation>
         <Run component="target" variable="t" increment="step" total="length"/>
     </Simulation>
@@ -56,8 +56,8 @@
 <ComponentType name="SimulationSet">
     <Children name="simulations" type="Simulation"/>
     <Children name="displays" type="Display"/>
-    
-    
+
+
 </ComponentType>
 
 </Lems>

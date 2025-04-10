@@ -7,14 +7,13 @@ Copyright 2023 LEMS contributors
 Author: Ankur Sinha <sanjay DOT ankur AT gmail DOT com>
 """
 
-
-import unittest
 import os
+import unittest
+
 from lems.model.model import Model
 
 
 class TestExposure(unittest.TestCase):
-
     """Test getting exposures from LEMS models"""
 
     def test_exposure_getters(self):
