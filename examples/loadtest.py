@@ -1,7 +1,8 @@
 #! /usr/bin/python
 
-from lems.model.model import Model
 import sys
+
+from lems.model.model import Model
 
 model = Model()
 

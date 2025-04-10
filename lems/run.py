@@ -8,9 +8,8 @@ Command line simulation driver.
 import argparse
 
 from lems.model.model import Model
-from lems.sim.build import SimulationBuilder
 from lems.model.simulation import DataDisplay, DataWriter
-
+from lems.sim.build import SimulationBuilder
 
 dlems_info = "dLEMS (distilled LEMS in JSON format, see https://github.com/borismarin/som-codegen)"
 
@@ -121,7 +120,6 @@ fig_count = 0
 
 
 def process_simulation_output(sim, model, options):
-
     print("Processing results")
     rq = []
     for rn in sim.runnables:

@@ -369,7 +369,7 @@ class Model(LEMSBase):
             xmldom = minidom.parseString(xmlstr)
         except ExpatError as er:
             print("Parsing error:", errors.messages[er.code])
-            print("at: " + xmlstr[er.offset - 50: er.offset + 50])
+            print("at: " + xmlstr[er.offset - 50 : er.offset + 50])
             print("at: " + ("-" * 50) + "^")
             raise
         return xmldom
