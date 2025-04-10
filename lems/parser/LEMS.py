@@ -9,17 +9,58 @@ import xml.etree.ElementTree as xe
 
 from lems.base.base import LEMSBase
 from lems.base.errors import ParseError
-
-from lems.model.fundamental import *
+from lems.base.util import make_id
 from lems.model.component import *
 from lems.model.dynamics import *
-from lems.model.structure import *
+from lems.model.fundamental import *
 from lems.model.simulation import *
+from lems.model.structure import *
 
-from lems.base.util import make_id
 
+def get_nons_attribute(attribute):
+    """Get attributes without namespace prefixes.
+
+    The parsed attributes will include their namespaces in {}:
+
+    eg: `{some_namespace_url}attribute=value`
+
+    Similar to tags, we replace these with their corresponding LEMS component
+    types.
+
+    :param attribute: attribute to strip namespace from
+    :type attribute: str
+    :returns: tweaked attribute
+    """
+    bits = attribute.split("}")
+    if len(bits) == 1:
+        return attribute
+    elif "/lems/" in bits[0]:
+        return bits[1]
+    elif "neuroml2" in bits[0]:
+        return bits[1]
+    elif "rdf" in bits[0]:
+        return "rdf_" + bits[1]
+    elif "model-qualifiers" in bits[0]:
+        return "bqmodel_" + bits[1]
+    elif "biology-qualifiers" in bits[0]:
+        return "bqbiol_" + bits[1]
+    else:
+        return "%s:%s" % (bits[0], bits[1])
 
 def get_nons_tag_from_node(node):
+    """Get tags without namespace prefixes.
+
+    The parsed tags will include their namespaces in {}:
+
+    eg: `<{some_namespace_url}mytag ..>`
+
+    Similar to attributes, we replace these with their corresponding LEMS
+    component types.
+
+    :param tag: tag to strip namespace from
+    :type tag: xml.ElementTree.Element
+    :returns: tweaked tag
+    """
     tag = node.tag
     bits = tag.split("}")
     if len(bits) == 1:
@@ -39,6 +80,12 @@ def get_nons_tag_from_node(node):
 
 
 class LEMSXMLNode:
+    """LEMS XML Node container class.
+
+    This does not include any namespace declarations in tags and their
+    attributes with their corresponding Component definitions (because LEMS
+    does not know what XML namespaces are).
+    """
     def __init__(self, pyxmlnode):
         self.tag = get_nons_tag_from_node(pyxmlnode)
         self.ltag = self.tag.lower()
@@ -47,8 +94,9 @@ class LEMSXMLNode:
         self.lattrib = dict()
 
         for k in pyxmlnode.attrib:
-            self.attrib[k] = pyxmlnode.attrib[k]
-            self.lattrib[k.lower()] = pyxmlnode.attrib[k]
+            k_nons = get_nons_attribute(k)
+            self.attrib[k_nons] = pyxmlnode.attrib[k]
+            self.lattrib[k_nons.lower()] = pyxmlnode.attrib[k]
 
         self.children = list()
         for pyxmlchild in pyxmlnode:
@@ -209,9 +257,9 @@ class LEMSFileParser(LEMSBase):
         self.tag_parse_table["eventwriter"] = self.parse_event_writer
         self.tag_parse_table["derivedparameter"] = self.parse_derived_parameter
         self.tag_parse_table["derivedvariable"] = self.parse_derived_variable
-        self.tag_parse_table[
-            "conditionalderivedvariable"
-        ] = self.parse_conditional_derived_variable
+        self.tag_parse_table["conditionalderivedvariable"] = (
+            self.parse_conditional_derived_variable
+        )
         self.tag_parse_table["case"] = self.parse_case
         self.tag_parse_table["dimension"] = self.parse_dimension
         self.tag_parse_table["dynamics"] = self.parse_dynamics
@@ -1082,19 +1130,25 @@ class LEMSFileParser(LEMSBase):
 
         :raises ParseError: Raised when the file to be included is not specified.
         """
+        filename = None
+
+        # TODO: remove this hard coding for reading NeuroML includes...
+        if "file" not in node.lattrib:
+            if "href" in node.lattrib:
+                filename = node.lattrib["href"]
+        else:
+            filename = node.lattrib["file"]
+
+        if filename is None:
+            self.raise_error("<Include> must specify the file to be included.")
+
         if not self.include_includes:
             if self.model.debug:
-                print("Ignoring included LEMS file: %s" % node.lattrib["file"])
+                self.model.add_include(Include(filename))
+                print("Not including contents of %s" % filename)
         else:
-            # TODO: remove this hard coding for reading NeuroML includes...
-            if "file" not in node.lattrib:
-                if "href" in node.lattrib:
-                    self.model.include_file(node.lattrib["href"], self.include_dirs)
-                    return
-                else:
-                    self.raise_error("<Include> must specify the file to be included.")
-
-            self.model.include_file(node.lattrib["file"], self.include_dirs)
+            self.model.include_file(filename, self.include_dirs)
+            print("Included contents of %s" % filename)
 
     def parse_kinetic_scheme(self, node):
         """
