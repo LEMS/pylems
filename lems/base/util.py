@@ -7,7 +7,6 @@ PyLEMS utility classes / functions
 
 from lems import __schema_location__
 
-
 id_counter = 0
 
 

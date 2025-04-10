@@ -6,8 +6,8 @@ Behavioral dynamics of component types.
 """
 
 from lems.base.base import LEMSBase
-from lems.base.map import Map
 from lems.base.errors import ModelError, ParseError
+from lems.base.map import Map
 from lems.parser.expr import ExprParser
 
 

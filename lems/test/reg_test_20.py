@@ -8,18 +8,16 @@ Copyright 2023 LEMS contributors
 Author: Ankur Sinha <sanjay DOT ankur AT gmail DOT com>
 """
 
-
-import unittest
 import os
-import textwrap
 import tempfile
+import textwrap
 import typing
+import unittest
 
 from lems.run import run as lems_run
 
 
 class TestIssue20Regression(unittest.TestCase):
-
     """Regression test for issue #20
 
     PyLEMS does not initialise initMembPotential correctly.
@@ -58,9 +56,7 @@ class TestIssue20Regression(unittest.TestCase):
           </biophysicalProperties>
         </cell>
     </neuroml>
-            """.format(
-                initmembpot
-            )
+            """.format(initmembpot)
         )
         nml_file = tempfile.NamedTemporaryFile(mode="w+b")
         nml_file.write(str.encode(reg_20_nml))
@@ -82,9 +78,7 @@ class TestIssue20Regression(unittest.TestCase):
             </OutputFile>
         </Simulation>
     </Lems>
-            """.format(
-                nml_file.name
-            )
+            """.format(nml_file.name)
         )
 
         xml_file = tempfile.NamedTemporaryFile(mode="w+b")

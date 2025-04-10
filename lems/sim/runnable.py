@@ -5,15 +5,14 @@ Base class for runnable components.
 :organization: LEMS (https://github.com/organizations/LEMS)
 """
 
-from lems.base.base import LEMSBase
-from lems.base.stack import Stack
-from lems.base.errors import SimBuildError
-from lems.sim.recording import Recording
-
 import ast
 import sys
-
 from math import *
+
+from lems.base.base import LEMSBase
+from lems.base.errors import SimBuildError
+from lems.base.stack import Stack
+from lems.sim.recording import Recording
 
 # import math
 
@@ -393,8 +392,9 @@ class Runnable(Reflective):
                     childobj.add_variable_recorder2(data_output, recorder, new_path)
                 else:
                     raise SimBuildError(
-                        "Unable to find the child '{0}' in "
-                        "'{1}'".format(child, self.id)
+                        "Unable to find the child '{0}' in " "'{1}'".format(
+                            child, self.id
+                        )
                     )
             else:
                 raise SimBuildError(

@@ -6,8 +6,8 @@ Structural properties of component types.
 """
 
 from lems.base.base import LEMSBase
-from lems.base.map import Map
 from lems.base.errors import ModelError
+from lems.base.map import Map
 
 
 class With(LEMSBase):
@@ -273,7 +273,7 @@ class MultiInstantiate(LEMSBase):
         :type: str """
 
         self.number = number
-        """ Name of the paramter specifying the number of times the component 
+        """ Name of the paramter specifying the number of times the component
         reference is to be instantiated.
 
         :type: str"""

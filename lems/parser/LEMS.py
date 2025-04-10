@@ -47,6 +47,7 @@ def get_nons_attribute(attribute):
     else:
         return "%s:%s" % (bits[0], bits[1])
 
+
 def get_nons_tag_from_node(node):
     """Get tags without namespace prefixes.
 
@@ -86,6 +87,7 @@ class LEMSXMLNode:
     attributes with their corresponding Component definitions (because LEMS
     does not know what XML namespaces are).
     """
+
     def __init__(self, pyxmlnode):
         self.tag = get_nons_tag_from_node(pyxmlnode)
         self.ltag = self.tag.lower()

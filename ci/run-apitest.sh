@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Copyright 2023 LEMS contributors
-# Author: Ankur Sinha <sanjay DOT ankur AT gmail DOT com> 
+# Author: Ankur Sinha <sanjay DOT ankur AT gmail DOT com>
 # File : run-apitest.sh
 #
 # Run api tests on GitHub actions
