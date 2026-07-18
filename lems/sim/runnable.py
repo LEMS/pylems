@@ -719,7 +719,7 @@ class Runnable(Reflective):
             try:
                 idx = [k for k in self.__dict__ if self.__dict__[k] == child][0]
                 r.__dict__[idx] = child_copy
-            except:
+            except Exception:
                 pass
 
             # For groups and attachments:
@@ -729,7 +729,7 @@ class Runnable(Reflective):
                     r.__dict__[idx] = []
                 r.__dict__[idx].append(child_copy)
 
-            except:
+            except Exception:
                 pass
 
         # Copy event ports
