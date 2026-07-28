@@ -3,7 +3,7 @@ name: Check LEMS examples
 
 on:
   push:
-    branches:  [ master, development, experimental ]
+    branches:  [ master, development, experimental, test* ]
 
 jobs:
   verify:
@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - uses: nelonoel/branch-name@v1.0.1
 
     # https://stackoverflow.com/questions/58033366/how-to-get-current-branch-within-github-actions
@@ -21,7 +21,7 @@ jobs:
       id: extract_branch
 
     - name: Checkout jlems
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         repository: LEMS/jLEMS
         ref: ${{ steps.extract_branch.outputs.branch }}
