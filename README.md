@@ -13,7 +13,7 @@ Michael Vella, Robert C. Cannon, Sharon Crook, Andrew P. Davison, Gautham Ganapa
 **libNeuroML and PyLEMS: using Python to combine procedural and declarative modeling approaches in computational neuroscience**
 [Frontiers in Neuroinformatics 2014](http://journal.frontiersin.org/Journal/10.3389/fninf.2014.00038/abstract), doi: 10.3389/fninf.2014.00038
 
-_**PLEASE CITE THE PAPER ABOVE IF YOU USE PYLEMS!**_
+_**PLEASE CITE THE PAPER ABOVE IF YOU USE PYLEMS!**_  
 
 For more details on LEMS see:
 
@@ -97,3 +97,5 @@ TODO: Rest of examples require an update to the `<Simulation>` element, i.e. use
 - Improve dimension-checking on expressions.
 
 This code is distributed under the terms of the GNU Lesser General Public License.
+
+
