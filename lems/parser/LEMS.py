@@ -998,6 +998,16 @@ class LEMSFileParser(LEMSBase):
         except:
             self.raise_error("<Exposure> must specify a name")
 
+        if "minval" in node.lattrib:
+            minval = node.lattrib["minval"]
+        else:
+            minval = 0.0
+
+        if "maxval" in node.lattrib:
+            maxval = node.lattrib["maxval"]
+        else:
+            maxval = 0.0
+
         try:
             dimension = node.lattrib["dimension"]
         except:
@@ -1005,7 +1015,7 @@ class LEMSFileParser(LEMSBase):
 
         description = node.lattrib.get("description", "")
 
-        self.current_component_type.add_exposure(Exposure(name, dimension, description))
+        self.current_component_type.add_exposure(Exposure(name, minval, maxval, dimension, description))
 
     def parse_fixed(self, node):
         """
@@ -1298,13 +1308,23 @@ class LEMSFileParser(LEMSBase):
         except:
             self.raise_error("<Parameter> must specify a name")
 
+        if "minval" in node.lattrib:
+            minval = node.lattrib["minval"]
+        else:
+            minval = 0.0
+
+        if "maxval" in node.lattrib:
+            maxval = node.lattrib["maxval"]
+        else:
+            maxval = 0.0
+
         try:
             dimension = node.lattrib["dimension"]
         except:
             self.raise_error("Parameter '{0}' has no dimension", name)
 
         description = node.lattrib.get("description", "")
-        parameter = Parameter(name, dimension, description)
+        parameter = Parameter(name, dimension, minval, maxval, description)
 
         self.current_component_type.add_parameter(parameter)
 
@@ -1650,6 +1670,16 @@ class LEMSFileParser(LEMSBase):
         else:
             self.raise_error("<StateVariable> must specify a name")
 
+        if "minval" in node.lattrib:
+            minval = node.lattrib["minval"]
+        else:
+            minval = 0.0
+
+        if "maxval" in node.lattrib:
+            maxval = node.lattrib["maxval"]
+        else:
+            maxval = 0.0
+
         if "dimension" in node.lattrib:
             dimension = node.lattrib["dimension"]
         else:
@@ -1660,7 +1690,7 @@ class LEMSFileParser(LEMSBase):
         else:
             exposure = None
 
-        self.current_regime.add_state_variable(StateVariable(name, dimension, exposure))
+        self.current_regime.add_state_variable(StateVariable(name, minval, maxval, dimension, exposure))
 
     def parse_structure(self, node):
         """
