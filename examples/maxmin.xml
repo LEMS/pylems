@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<Lems xmlns="http://www.neuroml.org/lems/0.7.6" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.neuroml.org/lems/0.7.6 https://raw.githubusercontent.com/LEMS/LEMS/development/Schemas/LEMS/LEMS_v0.7.6.xsd">
+  <Dimension name="voltage" m="1" l="3" t="-3" i="-1"/>
+  <Dimension name="time" t="1"/>
+  <Dimension name="capacitance" m="-1" l="-2" t="4" i="2"/>
+  <Unit symbol="mV" dimension="voltage" power="-3" scale="1.0"/>
+  <Unit symbol="ms" dimension="time" power="-3" scale="1.0"/>
+  <Unit symbol="uF" dimension="capacitance" power="-12" scale="1.0"/>
+  <ComponentType name="iaf1" description="">
+    <Parameter name="threshold" dimension="voltage"/>
+    <Parameter name="reset" dimension="voltage"/>
+  </ComponentType>
+</Lems>
