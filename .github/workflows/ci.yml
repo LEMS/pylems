@@ -9,7 +9,7 @@ on:
 jobs:
   build:
 
-    runs-on: ${{ matrix.runs-on }}
+    runs-on: ${{ matrix.python-version == '3.9' && matrix.runs-on == 'ubuntu-latest' && 'ubuntu-24.04' || matrix.runs-on }}
     strategy:
       fail-fast: false
       matrix:
